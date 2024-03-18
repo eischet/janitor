@@ -3,7 +3,9 @@
     <modelVersion>4.0.0</modelVersion>
     <packaging>pom</packaging>
     <modules>
+        <module>janitor-utils</module>
         <module>janitor-api</module>
+        <module>janitor-lang</module>
     </modules>
     <groupId>com.eischet</groupId>
     <artifactId>janitor-project</artifactId>
