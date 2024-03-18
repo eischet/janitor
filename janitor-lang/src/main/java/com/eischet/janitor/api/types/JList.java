@@ -6,7 +6,6 @@ import com.eischet.janitor.json.*;
 import com.eischet.janitor.runtime.types.*;
 import com.eischet.janitor.json.JsonExportable;
 import com.eischet.janitor.json.JsonExportableList;
-import net.eischet.json.*;
 import org.eclipse.collections.api.collection.ImmutableCollection;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
