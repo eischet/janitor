@@ -1,0 +1,5 @@
+# Maven target folder
+target/
+# IntelliJ Idea Project files
+.idea/
+janitor.iml
