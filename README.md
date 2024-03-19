@@ -173,5 +173,6 @@ A Java developer has to explicitly enable access by either adding a module to th
 The worst a script can do "out of the box" is to consume CPU time and memory, and maybe run into an endless loop.
 
 This is vastly different from other scripting languages for the JVM, e.g. Jython, Rhino/Nashorn or Groovy, which operate as "first-class" languages.
-If you're looking for a language to write your whole JVM application in, instead of Java, Janitor is very probably not what you're looking for.
+If you're looking for a language to write your whole JVM application in, instead of Java, Janitor is very probably *not* what you're looking for.
+
 
