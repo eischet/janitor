@@ -90,7 +90,7 @@ These are the steps required to run a script:
 
 That's how it looks like in code:
 
-```
+```java
 public class SimplestEmbeddingTestCase {
 
     @Test
@@ -128,11 +128,32 @@ In your own application, you'll usually implement at least one type of runtime, 
 You'll also want to take a look at the *JanitorObject* interface, which classes need to implement in order to be used by scripts.
 A number of built-in types are provided, which all implement that interface, including Strings, Booleans, Dates, Numbers, Lists and Maps.
 
+By overriding the JanitorObject interface's "janitorGetAttribute" method, you can provide properties and methods to scripts. For example. this is how the JFloat class (builtin floating point numbers)
+implements the "int" property, which returns an integer value by truncating the floating point number:
+
+```java
+    @Override
+    public @Nullable JanitorObject janitorGetAttribute(final JanitorScriptProcess runningScript, final String name, final boolean required) throws JanitorNameException {
+        if (Objects.equals(name, "int")) {
+            return JInt.of((long) number);
+        }
+        return JConstant.super.janitorGetAttribute(runningScript, name, required);
+    }
+```
 
 
-Finally, let's have a look at how the String class implements its toUpperCase function:
+In a script, it's used like this:
 
 ```
+myFloat = 17.3 * 2;
+myInt = myFloat.int;
+assert(myInt == 34);
+```
+
+Everything else builds on this simple, string-based dispatch API.
+Finally, let's have a look at how the String class implements its toUpperCase function to see how to implement Java code that can be called by scripts:
+
+```java
     public static JString __toUpperCase(final JString self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);
         return JString.of(self.string.toUpperCase(Locale.ROOT));
@@ -140,6 +161,17 @@ Finally, let's have a look at how the String class implements its toUpperCase fu
 ```
 
 A typical callable, in this case a string method, will receive the object it was called on, the running script, and the call arguments.
+
 The JanitorScriptProcess represents the "process" that is currently executing. These objects are created by the run() method on JanitorScript instances.
 This is where a script's internal state lives during execution.
+
+
+# Sandboxing and Security
+
+Janitor does not allow scripts to access any platform-specific functionality by default. This includes file system access, network access, and especially reflection.
+A Java developer has to explicitly enable access by either adding a module to the runtime or by binding objects into a script's global scope.
+The worst a script can do "out of the box" is to consume CPU time and memory, and maybe run into an endless loop.
+
+This is vastly different from other scripting languages for the JVM, e.g. Jython, Rhino/Nashorn or Groovy, which operate as "first-class" languages.
+If you're looking for a language to write your whole JVM application in, instead of Java, Janitor is very probably not what you're looking for.
 

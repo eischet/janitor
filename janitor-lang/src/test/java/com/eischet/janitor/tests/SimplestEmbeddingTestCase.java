@@ -27,4 +27,15 @@ public class SimplestEmbeddingTestCase {
         assertEquals(7L, result.janitorGetHostValue());
     }
 
+    @Test
+    public void toInt() throws JanitorCompilerException, JanitorRuntimeException {
+        final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
+        final JanitorScript script = rt.compile("main", """
+                myFloat = 17.3 * 2;
+                myInt = myFloat.int;
+                assert(myInt == 34);
+                """);
+        script.run(globals -> globals.bind("x", 2));
+    }
+
 }
