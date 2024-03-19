@@ -113,9 +113,10 @@ public class SimplestEmbeddingTestCase {
 ```
 
 Looking at this simple unit test, we can see two main ways of using Janitor:
-* Run a script and fetch its *output*. Scripts mainly causing side effects will probably want to print (= log) something. 
+* Run a script and fetch its *output*. Scripts mainly causing side effects will probably want to print (= log) something.  
 * Run a script and fetch its *result*. When used as an expression language, that's what we're usually interested in.
 The implementation does not really differentiate between the two styles. The term "expression" is only used to describe the context in which a script is used.
+You have to decide which style is more appropriate for your specific use case.
 
 You can reuse script instances as often as you like, and this saves time by avoiding having to recompile a script again and again.
 
@@ -126,4 +127,19 @@ In your own application, you'll usually implement at least one type of runtime, 
 
 You'll also want to take a look at the *JanitorObject* interface, which classes need to implement in order to be used by scripts.
 A number of built-in types are provided, which all implement that interface, including Strings, Booleans, Dates, Numbers, Lists and Maps.
+
+
+
+Finally, let's have a look at how the String class implements its toUpperCase function:
+
+```
+    public static JString __toUpperCase(final JString self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
+        arguments.require(0);
+        return JString.of(self.string.toUpperCase(Locale.ROOT));
+    }
+```
+
+A typical callable, in this case a string method, will receive the object it was called on, the running script, and the call arguments.
+The JanitorScriptProcess represents the "process" that is currently executing. These objects are created by the run() method on JanitorScript instances.
+This is where a script's internal state lives during execution.
 
