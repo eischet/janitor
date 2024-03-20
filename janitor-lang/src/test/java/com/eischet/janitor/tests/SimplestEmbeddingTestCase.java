@@ -1,10 +1,10 @@
 package com.eischet.janitor.tests;
 
-import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
-import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
-import com.eischet.janitor.api.types.JanitorObject;
-import com.eischet.janitor.runtime.JanitorScript;
-import com.eischet.janitor.runtime.OutputCatchingTestRuntime;
+import com.eischet.janitor.cleanup.api.api.errors.compiler.JanitorCompilerException;
+import com.eischet.janitor.cleanup.api.api.errors.runtime.JanitorRuntimeException;
+import com.eischet.janitor.cleanup.api.api.types.JanitorObject;
+import com.eischet.janitor.cleanup.runtime.JanitorScript;
+import com.eischet.janitor.cleanup.runtime.OutputCatchingTestRuntime;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
