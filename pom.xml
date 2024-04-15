@@ -22,7 +22,7 @@
 
         <!-- dependency versions -->
         <dep.jetbrains-annotations>24.1.0</dep.jetbrains-annotations>
-        <dep.slf4j>2.0.12</dep.slf4j>
+        <dep.slf4j>2.0.13</dep.slf4j>
         <dep.eclipse-collections>11.1.0</dep.eclipse-collections>
     </properties>
 
