@@ -2,10 +2,9 @@
 
 grammar Janitor;
 
-script: topLevelStatement*; // Ein Skript besteht aus einer Reihe von Ausdrücken...
+script: topLevelStatement*; // A script consists of a number of top-level statements
 
-topLevelStatement // ... entweder ein Import- oder ein Block-Statement (Klassen sind aktuell nicht implementiert)
-    // : IMPORT (importAlias EQUAL)? qualifiedName STMT_TERM     # importStatement
+topLevelStatement
     : importStatement                                         # topLevelImportStatement
     | blockStatement                                          # topLevelBlockStatement
     ;
@@ -20,7 +19,7 @@ importClause
     | STRING_LITERAL_DOUBLE 'as' importAlias  # importStringDouble
     ;
 
-blockStatement // Block-Statements sind, was man üblicherweise so kennt:
+blockStatement
     : blockLabel=block                                                                      # nestedBlock
     | ifStatementDef                                                                        # ifStatement
     | FOR LPAREN validIdentifier IN expression RPAREN block                                 # forStatement
@@ -155,7 +154,7 @@ FLOAT_LITERAL:      (Digits '.' Digits? | '.' Digits) ExponentPart? [fFdD]? | Di
 DATE_LITERAL:       '@' '-'? [0-9] [0-9] [0-9] [0-9] '-' [0-9]? [0-9] '-' [0-9]? [0-9];
 DATE_TIME_LITERAL:  '@' '-'? [0-9] [0-9] [0-9] [0-9] '-' [0-9]? [0-9] '-' [0-9]? [0-9] '-' [0-9]? [0-9] ':' [0-9] [0-9] (':' [0-9][0-9])?;
 
-// ggf. sollte man hier noch 1-9 anhängen
+// maybe leading zeros should be suppressed by tweaking the expressions a bit
 YEARS_LITERAL:      '@' [0-9]+ 'y';
 MONTHS_LITERAL:     '@' [0-9]+ 'mo';
 WEEKS_LITERAL:      '@' [0-9]+ 'w';
@@ -223,7 +222,7 @@ COMMENT:            '/*' .*? '*/'    -> channel(HIDDEN);
 LINE_COMMENT:       '//' ~[\r\n]*    -> channel(HIDDEN);
 NEWLINE:            [\r\n]+ -> channel(HIDDEN);
 
-// https://groups.google.com/g/antlr-discussion/c/SzQJpVeSyHo
+// https://groups.google.com/g/antlr-discussion/c/SzQJpVeSyHo about skipping white space
 
 IDENTIFIER:         Letter LetterOrDigit*;
 
