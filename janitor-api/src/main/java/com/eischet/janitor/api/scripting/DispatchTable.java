@@ -138,7 +138,7 @@ public class DispatchTable<T> implements Dispatcher<JanitorWrapper<T>> {
      * @param getter property getter
      */
     public void addStringProperty(final String name, final Function<JanitorWrapper<T>, String> getter) {
-        map.put(name, (instance, runningScript) -> runningScript.getRuntime().nullableString(getter.apply(instance)));
+        map.put(name, (instance, runningScript) -> runningScript.getEnvironment().getBuiltins().nullableString(getter.apply(instance)));
     }
 
     /**
@@ -148,7 +148,7 @@ public class DispatchTable<T> implements Dispatcher<JanitorWrapper<T>> {
      * @param setter property setter
      */
     public void addStringProperty(final String name, final Function<JanitorWrapper<T>, String> getter, final BiConsumer<JanitorWrapper<T>, String> setter) {
-        map.put(name, (instance, runningScript) -> new TemporaryAssignable(runningScript.getRuntime().nullableString(getter.apply(instance)), value -> setter.accept(instance, JString.require(runningScript, value).janitorGetHostValue())));
+        map.put(name, (instance, runningScript) -> new TemporaryAssignable(runningScript.getEnvironment().getBuiltins().nullableString(getter.apply(instance)), value -> setter.accept(instance, JString.require(runningScript, value).janitorGetHostValue())));
     }
 
     /**

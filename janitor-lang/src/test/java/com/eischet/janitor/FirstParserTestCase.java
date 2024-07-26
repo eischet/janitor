@@ -367,7 +367,7 @@ public class FirstParserTestCase {
     @Test
     public void javaFunctionCalls() throws JanitorCompilerException, JanitorRuntimeException {
 
-        final JNativeMethod foo = JNativeMethod.of(args -> TestEnv.env.string("hallo"));
+        final JNativeMethod foo = JNativeMethod.of(args -> TestEnv.env.getBuiltins().string("hallo"));
 
         assertEquals("hallo", evaluate("""
             foo();
@@ -440,7 +440,7 @@ public class FirstParserTestCase {
                 @Override
                 public @Nullable JanitorObject janitorGetAttribute(final JanitorScriptProcess runningScript, final String name, final boolean required) throws JanitorNameException {
                     if ("name".equals(name)) {
-                        return TestEnv.env.string(moduleName);
+                        return TestEnv.env.getBuiltins().string(moduleName);
                     }
                     return JanitorModule.super.janitorGetAttribute(runningScript, name, required);
                 }
@@ -498,7 +498,7 @@ public class FirstParserTestCase {
                         @Override
                         public @Nullable JanitorObject janitorGetAttribute(final JanitorScriptProcess runningScript, final String name, final boolean required) throws JanitorNameException {
                             if ("name".equals(name)) {
-                                return TestEnv.env.string("dummy");
+                                return TestEnv.env.getBuiltins().string("dummy");
                             }
                             return JanitorModule.super.janitorGetAttribute(runningScript, name, required);
                         }
@@ -615,8 +615,8 @@ public class FirstParserTestCase {
         final JanitorObject foo = rt.compile("foo", "return {'id': 17, 'sc': 'dumbo'};").run(TestEnv.NO_GLOBALS);
         log.info("foo map: " + foo);
         final JMap fooMap = (JMap) foo;
-        assertEquals(17L, fooMap.get(TestEnv.env.string("id")).janitorGetHostValue());
-        assertEquals("dumbo", fooMap.get(TestEnv.env.string("sc")).janitorGetHostValue());
+        assertEquals(17L, fooMap.get(TestEnv.env.getBuiltins().string("id")).janitorGetHostValue());
+        assertEquals("dumbo", fooMap.get(TestEnv.env.getBuiltins().string("sc")).janitorGetHostValue());
     }
 
     @Test
@@ -638,8 +638,8 @@ public class FirstParserTestCase {
         final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
         final JList list = (JList) rt.compile("test", JSON).run(TestEnv.NO_GLOBALS);
         final JMap map = (JMap) list.get(JInt.of(0));
-        assertEquals(JInt.of(10), map.get(TestEnv.env.string("keepRunLogs")));
-        assertEquals("ACTPROC-BV", map.get(TestEnv.env.string("shortCode")).janitorGetHostValue());
+        assertEquals(JInt.of(10), map.get(TestEnv.env.getBuiltins().string("keepRunLogs")));
+        assertEquals("ACTPROC-BV", map.get(TestEnv.env.getBuiltins().string("shortCode")).janitorGetHostValue());
     }
 
 
@@ -740,8 +740,8 @@ public class FirstParserTestCase {
         final LocalDateTime testDate = LocalDateTime.of(2021, 11, 15, 12, 4);
         final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
         assertEquals(JDate.of(2021, 11, 15), rt.compile("test", "d.date()").run(g -> g.bind("d", JDateTime.ofNullable(testDate))));
-        assertEquals(TestEnv.env.string("12:04"), rt.compile("test", "d.time()").run(g -> g.bind("d", JDateTime.ofNullable(testDate))));
-        assertEquals(TestEnv.env.string("15.11.2021, 12:04:00"), rt.compile("test", "d.string()").run(g -> g.bind("d", JDateTime.ofNullable(testDate))));
+        assertEquals(TestEnv.env.getBuiltins().string("12:04"), rt.compile("test", "d.time()").run(g -> g.bind("d", JDateTime.ofNullable(testDate))));
+        assertEquals(TestEnv.env.getBuiltins().string("15.11.2021, 12:04:00"), rt.compile("test", "d.string()").run(g -> g.bind("d", JDateTime.ofNullable(testDate))));
         assertEquals(JBool.TRUE, rt.compile("test", "@now > @now.date()").run(TestEnv.NO_GLOBALS));
         assertEquals(JBool.FALSE, rt.compile("test", "@now < @now.date()").run(TestEnv.NO_GLOBALS));
         Long.compare(1, 2);
@@ -782,7 +782,7 @@ public class FirstParserTestCase {
     @Test
     public void stringFormat() throws Exception {
         final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
-        assertEquals(TestEnv.env.string("foo=bar"), rt.compile("test", "'%s=%s'.format('foo', 'bar')").run(TestEnv.NO_GLOBALS));
+        assertEquals(TestEnv.env.getBuiltins().string("foo=bar"), rt.compile("test", "'%s=%s'.format('foo', 'bar')").run(TestEnv.NO_GLOBALS));
     }
 
     @Test
@@ -954,9 +954,9 @@ public class FirstParserTestCase {
         });
         assertInstanceOf(JMap.class, map1);
         JMap jMap1 = (JMap) map1;
-        assertEquals(TestEnv.env.string("a"), jMap1.get(TestEnv.env.string("a")));
-        assertEquals(TestEnv.env.string("b"), jMap1.get(TestEnv.env.string("b")));
-        assertEquals(TestEnv.env.string("z"), jMap1.get(TestEnv.env.string("c")));
+        assertEquals(TestEnv.env.getBuiltins().string("a"), jMap1.get(TestEnv.env.getBuiltins().string("a")));
+        assertEquals(TestEnv.env.getBuiltins().string("b"), jMap1.get(TestEnv.env.getBuiltins().string("b")));
+        assertEquals(TestEnv.env.getBuiltins().string("z"), jMap1.get(TestEnv.env.getBuiltins().string("c")));
 
         final JanitorObject map2 = evaluate("""
             {}.parseJson('''{"a":"a", "b":[], "c":["c1", "c2"]}''');
@@ -964,13 +964,13 @@ public class FirstParserTestCase {
         });
         assertInstanceOf(JMap.class, map2);
         JMap jMap2 = (JMap) map2;
-        assertEquals(TestEnv.env.string("a"), jMap2.get(TestEnv.env.string("a")));
-        JList blist = (JList) jMap2.get(TestEnv.env.string("b"));
-        JList clist = (JList) jMap2.get(TestEnv.env.string("c"));
+        assertEquals(TestEnv.env.getBuiltins().string("a"), jMap2.get(TestEnv.env.getBuiltins().string("a")));
+        JList blist = (JList) jMap2.get(TestEnv.env.getBuiltins().string("b"));
+        JList clist = (JList) jMap2.get(TestEnv.env.getBuiltins().string("c"));
         assertEquals(0, blist.size());
         assertEquals(2, clist.size());
-        assertEquals(TestEnv.env.string("c1"), clist.get(0));
-        assertEquals(TestEnv.env.string("c2"), clist.get(1));
+        assertEquals(TestEnv.env.getBuiltins().string("c1"), clist.get(0));
+        assertEquals(TestEnv.env.getBuiltins().string("c2"), clist.get(1));
 
     }
 
@@ -1167,8 +1167,8 @@ public class FirstParserTestCase {
             return {from: "here", to: "eternity"};
             """).run();
         System.out.println("got map: " + map);
-        assertEquals("here", map.get(TestEnv.env.string("from")).janitorToString());
-        assertEquals("eternity", map.get(TestEnv.env.string("to")).janitorToString());
+        assertEquals("here", map.get(TestEnv.env.getBuiltins().string("from")).janitorToString());
+        assertEquals("eternity", map.get(TestEnv.env.getBuiltins().string("to")).janitorToString());
 
         final RunnableScript script = rt.compile("from_test", """
             for (i from 1 to 10) {
@@ -1312,11 +1312,11 @@ public class FirstParserTestCase {
         public @Nullable JanitorObject janitorGetAttribute(final JanitorScriptProcess runningScript, final String name, final boolean required) throws JanitorNameException {
             if (name.equals("from")) {
                 System.out.println("someone asked for property 'from'!");
-                return TestEnv.env.string("foo");
+                return TestEnv.env.getBuiltins().string("foo");
             }
             if (name.equals("to")) {
                 System.out.println("someone asked for property 'to'!");
-                return TestEnv.env.string("bar");
+                return TestEnv.env.getBuiltins().string("bar");
             }
             return JanitorObject.super.janitorGetAttribute(runningScript, name, required);
         }

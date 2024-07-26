@@ -39,15 +39,15 @@ public class JDateTimeClass {
 
     public static JString __time(final JDateTime csDateTime, final JanitorScriptProcess janitorScriptProcess, final JCallArgs jCallArgs) throws JanitorRuntimeException {
         jCallArgs.require(0);
-        return janitorScriptProcess.getRuntime().getEnvironment().string(janitorScriptProcess.getRuntime().getFormatting().asTimeString(csDateTime.janitorGetHostValue()));
+        return janitorScriptProcess.getRuntime().getEnvironment().getBuiltins().string(janitorScriptProcess.getRuntime().getFormatting().asTimeString(csDateTime.janitorGetHostValue()));
     }
 
     public static JString __string(final JDateTime csDateTime, final JanitorScriptProcess janitorScriptProcess, final JCallArgs jCallArgs) throws JanitorRuntimeException {
         final String fmt = jCallArgs.getOptionalStringValue(0, null);
         if (fmt == null) {
-            return janitorScriptProcess.getEnvironment().string(janitorScriptProcess.getRuntime().getFormatting().formatDateTime(csDateTime.janitorGetHostValue()));
+            return janitorScriptProcess.getEnvironment().getBuiltins().string(janitorScriptProcess.getRuntime().getFormatting().formatDateTime(csDateTime.janitorGetHostValue()));
         } else {
-            return janitorScriptProcess.getEnvironment().string(DateTimeFormatter.ofPattern(fmt).format(csDateTime.janitorGetHostValue()));
+            return janitorScriptProcess.getEnvironment().getBuiltins().string(DateTimeFormatter.ofPattern(fmt).format(csDateTime.janitorGetHostValue()));
         }
     }
 
@@ -58,9 +58,9 @@ public class JDateTimeClass {
         final ZonedDateTime zoned = fmt != null ? csDateTime.janitorGetHostValue().atZone(ZoneId.of(tz)) : null;
 
         if (fmt == null) {
-            return janitorScriptProcess.getEnvironment().string(janitorScriptProcess.getRuntime().getFormatting().formatDateTime(zoned));
+            return janitorScriptProcess.getEnvironment().getBuiltins().string(janitorScriptProcess.getRuntime().getFormatting().formatDateTime(zoned));
         } else {
-            return janitorScriptProcess.getEnvironment().string(DateTimeFormatter.ofPattern(fmt).format(zoned));
+            return janitorScriptProcess.getEnvironment().getBuiltins().string(DateTimeFormatter.ofPattern(fmt).format(zoned));
         }
     }
 
@@ -70,7 +70,7 @@ public class JDateTimeClass {
 
     public static JString __kw(final JDateTime jDateTime, final JanitorScriptProcess janitorScriptProcess, final JCallArgs jCallArgs) throws JanitorRuntimeException {
         final int kw = jDateTime.janitorGetHostValue().get(weekFields.weekOfWeekBasedYear());
-        return janitorScriptProcess.getEnvironment().string(kw < 10 ? "0" + kw : String.valueOf(kw));
+        return janitorScriptProcess.getEnvironment().getBuiltins().string(kw < 10 ? "0" + kw : String.valueOf(kw));
     }
 
 }

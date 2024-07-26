@@ -30,7 +30,7 @@ public class JListOperations {
     public static JString __toJson(final JList self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         try {
             arguments.require(0);
-            return runningScript.getRuntime().string(self.exportToJson(runningScript.getRuntime().getEnvironment()));
+            return runningScript.getEnvironment().getBuiltins().string(self.exportToJson(runningScript.getRuntime().getEnvironment()));
         } catch (JsonException e) {
             throw new JanitorNativeException(runningScript, "error exporting json", e);
         }
@@ -77,7 +77,7 @@ public class JListOperations {
 
     public static JString __join(final JList self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         final String separator = arguments.getOptionalStringValue(0, " ");
-        return runningScript.getEnvironment().string(self.stream().map(JanitorObject::janitorToString).collect(Collectors.joining(separator)));
+        return runningScript.getEnvironment().getBuiltins().string(self.stream().map(JanitorObject::janitorToString).collect(Collectors.joining(separator)));
     }
 
     public static JSet __toSet(final JList self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {

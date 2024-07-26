@@ -54,7 +54,7 @@ public abstract class BaseRuntime implements JanitorRuntime {
 
     @Override
     public @NotNull JanitorObject nullableString(@Nullable final String javaString) {
-        return enviroment.nullableString(javaString);
+        return enviroment.getBuiltins().nullableString(javaString);
     }
 
     public JanitorEnvironment getEnviroment() {
@@ -145,36 +145,6 @@ public abstract class BaseRuntime implements JanitorRuntime {
         }
     }
 
-    @Override
-    public void addModule(final @NotNull JanitorModuleRegistration registration) {
-        registerModule(registration);
-    }
-
-    @Override
-    public @Nullable JanitorObject nativeToScript(final @Nullable Object obj) {
-        return getEnviroment().nativeToScript(obj);
-    }
-
-    @Override
-    public String writeJson(final JsonWriter writer) throws JsonException {
-        return getEnviroment().writeJson(writer);
-    }
-
-    @Override
-    public JsonInputStream getLenientJsonConsumer(final String json) {
-        return getEnviroment().getLenientJsonConsumer(json);
-    }
-
-    @Override
-    public FilterPredicate filterScript(final String name, final String code) {
-        return enviroment.filterScript(name, code);
-    }
-
-
-    @Override
-    public @NotNull JString string(@Nullable final String javaString) {
-        return enviroment.string(javaString);
-    }
 
     @Override
     public void protect(final String title, final JanitorScriptProcess.ProtectedCall call) {
@@ -189,8 +159,4 @@ public abstract class BaseRuntime implements JanitorRuntime {
         warn(s); // TODO: print stack trace
     }
 
-    @Override
-    public @NotNull JString emptyString() {
-        return enviroment.emptyString();
-    }
 }

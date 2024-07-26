@@ -153,7 +153,7 @@ public class TemplateParser {
                         }
                     }, process.getCurrentScope()
             );
-            return runtime.string(stringWriter.toString());
+            return runtime.getEnvironment().getBuiltins().string(stringWriter.toString());
         } catch (JanitorCompilerException e) {
             throw new JanitorArgumentException(process, "invalid template", e);
         }

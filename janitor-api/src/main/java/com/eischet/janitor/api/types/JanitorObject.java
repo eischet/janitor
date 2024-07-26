@@ -137,7 +137,7 @@ public interface JanitorObject {
         // Handle the class attribute here, previously called _type (which should be removed from older scripts which use it).
         // LATER get rid of "_type".
         if ("_type".equals(name) || "class".equals(name)) {
-            return runningScript.getEnvironment().string(janitorClassName());
+            return runningScript.getEnvironment().getBuiltins().string(janitorClassName());
         }
         if (required) {
             final Object hv = janitorGetHostValue();

@@ -17,7 +17,7 @@ import java.util.function.Supplier;
  * The runtime in which Janitor scripts run. This is a sub-object of an enviroment, and more short-lived.
  * TODO: this is probably reduntant with JanitorEnvironment, and should be merged into it, though I'm not yet sure.
  */
-public interface JanitorRuntime extends JanitorEnvironment {
+public interface JanitorRuntime {
 
     JanitorEnvironment getEnvironment();
 

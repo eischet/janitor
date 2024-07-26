@@ -67,7 +67,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
     }
 
     public static JString parseLiteral(final JanitorEnvironment env, final @NotNull String literal) {
-        return env.string(unescapeJava(literal));
+        return env.getBuiltins().string(unescapeJava(literal));
     }
 
     public static String unescapeJava(final String literal) {
@@ -906,7 +906,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
                 } else if (litIdent != null) {
                     final String text = litIdent.getText();
 
-                    lit = new StringLiteral(location(prop.start, ctx.stop), env.string(text));
+                    lit = new StringLiteral(location(prop.start, ctx.stop), env.getBuiltins().string(text));
                 }
                 if (lit == null) {
                     throw new RuntimeException("map literal: keys must be single or double quoted strings, instead of: " + prop.getText());

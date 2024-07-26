@@ -77,7 +77,7 @@ public class JMap implements JanitorObject, JIterable, JsonWriter, JsonExportabl
     public static JString __toJson(final JMap self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         try {
             arguments.require(0);
-            return runningScript.getEnvironment().string(self.exportToJson(runningScript.getRuntime().getEnvironment()));
+            return runningScript.getEnvironment().getBuiltins().string(self.exportToJson(runningScript.getRuntime().getEnvironment()));
         } catch (JsonException e) {
             throw new JanitorNativeException(runningScript, "error exporting json", e);
         }
@@ -106,7 +106,7 @@ public class JMap implements JanitorObject, JIterable, JsonWriter, JsonExportabl
         if (localMethod != null) {
             return localMethod;
         }
-        final JString keyString = runningScript.getEnvironment().string(name);
+        final JString keyString = runningScript.getEnvironment().getBuiltins().string(name);
         if (map.containsKey(keyString)) {
             return map.get(keyString);
         }

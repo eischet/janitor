@@ -195,9 +195,9 @@ public class JanitorSemantics {
      */
     public static @NotNull JanitorObject multiply(JanitorScriptProcess process, final JanitorObject leftValue, final JanitorObject rightValue) throws JanitorRuntimeException {
         if (leftValue instanceof JString leftString && rightValue instanceof JInt rightInt) {
-            return process.getEnvironment().string(repeat(leftString.janitorGetHostValue(), rightInt.getValue()));
+            return process.getEnvironment().getBuiltins().string(repeat(leftString.janitorGetHostValue(), rightInt.getValue()));
         } else if (leftValue instanceof JInt leftInt && rightValue instanceof JString rightString) {
-            return process.getEnvironment().string(repeat(rightString.janitorGetHostValue(), leftInt.getValue()));
+            return process.getEnvironment().getBuiltins().string(repeat(rightString.janitorGetHostValue(), leftInt.getValue()));
         }
         return numericOperation(process, "multiply", leftValue, rightValue, (a, b) -> a * b, (a, b) -> a * b, null, null, null, null);
     }
@@ -371,7 +371,7 @@ public class JanitorSemantics {
      */
     public static @NotNull JanitorObject add(JanitorScriptProcess process, final JanitorObject leftValue, final JanitorObject rightValue) throws JanitorRuntimeException {
         if (leftValue instanceof JString || rightValue instanceof JString) {
-            return process.getEnvironment().string(leftValue.janitorGetHostValue() + String.valueOf(rightValue.janitorGetHostValue()));
+            return process.getEnvironment().getBuiltins().string(leftValue.janitorGetHostValue() + String.valueOf(rightValue.janitorGetHostValue()));
         }
         return numericOperation(process, "add", leftValue, rightValue, Long::sum, Double::sum, JDuration::add, JDuration::add, null, null);
     }

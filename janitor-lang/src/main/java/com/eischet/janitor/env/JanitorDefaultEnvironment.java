@@ -41,7 +41,6 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
     public static final FilterPredicate NUMB = x -> true;
 
     private final JanitorFormatting formatting;
-    private final JString emptyString;
 
     // TODO: date, datetime, float, list, set, map!
 
@@ -68,6 +67,7 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
     private final Map<String, AttributeLookupHandler<JMap>> mapAttributes = new HashMap<>();
     private final Map<String, AttributeLookupHandler<JInt>> intAttributes = new HashMap<>();
     private final Map<String, AttributeLookupHandler<JBinary>> binaryMethods = new HashMap<>();
+    private final JanitorDefaultBuiltins builtins;
     // TODO: Float is missing here in the old approach
 
     @Override
@@ -136,9 +136,8 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
 
     public JanitorDefaultEnvironment(JanitorFormatting formatting) {
         this.formatting = formatting;
+        this.builtins = new JanitorDefaultBuiltins();
 
-
-        this.emptyString = JString.of("");
 
         // TODO: these should all be replaced by proper DispatchTables, which were "invented" later.
         addStringMethod("length", JStringClass::__length);
@@ -357,18 +356,9 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
         return env.filterScript(name, code);
     }
 
+    @NotNull
     @Override
-    public @NotNull JString string(@Nullable final String javaString) {
-        return JString.of(javaString);
-    }
-
-    @Override
-    public @NotNull JanitorObject nullableString(@Nullable final String javaString) {
-        return JString.ofNullable(javaString);
-    }
-
-    @Override
-    public @NotNull JString emptyString() {
-        return emptyString;
+    public JanitorDefaultBuiltins getBuiltins() {
+        return builtins;
     }
 }

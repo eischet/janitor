@@ -74,10 +74,10 @@ public abstract class JanitorRuntimeException extends JanitorException implement
     @Override
     public @Nullable JanitorObject janitorGetAttribute(final JanitorScriptProcess runningScript, final String name, final boolean required) throws JanitorNameException {
         if ("message".equals(name)) {
-            return runningScript.getEnvironment().nullableString(getMessage());
+            return runningScript.getEnvironment().getBuiltins().nullableString(getMessage());
         }
         if ("type".equals(name)) {
-            return runningScript.getEnvironment().string(getClass().getSimpleName());
+            return runningScript.getEnvironment().getBuiltins().string(getClass().getSimpleName());
         }
         return JanitorObject.super.janitorGetAttribute(runningScript, name, required);
     }

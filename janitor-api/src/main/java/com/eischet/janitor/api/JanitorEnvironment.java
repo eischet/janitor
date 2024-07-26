@@ -81,22 +81,8 @@ public interface JanitorEnvironment extends JanitorUserEnvironment, JanitorImple
 
 
     /**
-     * Create a string object from a Java string.
-     * @param javaString the Java string
-     * @return the script string
+     * Access built-in classes like String, Date, etc.
+     * @return the built-in classes
      */
-    @NotNull JString string(@Nullable String javaString);
-
-    /**
-     * Create a nullable string object from a Java string.
-     * @param javaString the Java string
-     * @return the script string, or NULL if the Java string is null
-     */
-    @NotNull JanitorObject nullableString(@Nullable String javaString);
-
-    /**
-     * Create an empty string object (or, better, return a premade immutable instance).
-     * @return the empty string object
-     */
-    @NotNull JString emptyString();
+    @NotNull JanitorBuiltins getBuiltins();
 }

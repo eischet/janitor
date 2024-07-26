@@ -130,6 +130,25 @@ public class StringClassTestCase {
         testStringMethod("'000123'.removeLeadingZeros()", "123");
         testStringMethod("'foobar'.toBinaryUtf8()", "foobar".getBytes(StandardCharsets.UTF_8));
 
+        // some operations, not actual methods
+        testStringMethod("'foobar'[1:-1]", "ooba");
+        testStringMethod("'foobar'[1:]", "oobar");
+        testStringMethod("'foobar'[:-1]", "fooba");
+        testStringMethod("'foobar'[1:1]", "");
+        testStringMethod("'foobar'[1:2]", "o");
+        testStringMethod("'foobar'[1:3]", "oo");
+        testStringMethod("'foobar'[1:4]", "oob");
+        testStringMethod("'foobar'[1:5]", "ooba");
+        testStringMethod("'foobar'[1:6]", "oobar");
+        testStringMethod("'foobar'[-6]", "f");
+        testStringMethod("'foobar'[-5]", "o");
+        testStringMethod("'foobar'[-1]", "r");
+
+        // TODO: this returns f at the moment, but "" is better -> testStringMethod("'foobar'[1:0]", "");
+        // TODO: throws index out of bounds at the moment, but should not! testStringMethod("'foobar'[1:7]", "oobar");
+        // same: testStringMethod("'foobar'[1:8]", "oobar");
+        // Check how Python does it (and these snippets should be valid python code, too, anyways!). Do it like Python.
+
     }
 
 }
