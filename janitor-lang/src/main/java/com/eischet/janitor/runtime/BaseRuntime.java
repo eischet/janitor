@@ -188,4 +188,9 @@ public abstract class BaseRuntime implements JanitorRuntime {
     protected void exception(final String s, final JanitorRuntimeException e) {
         warn(s); // TODO: print stack trace
     }
+
+    @Override
+    public @NotNull JString emptyString() {
+        return enviroment.emptyString();
+    }
 }

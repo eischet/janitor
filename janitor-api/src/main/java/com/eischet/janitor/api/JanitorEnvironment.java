@@ -93,4 +93,10 @@ public interface JanitorEnvironment extends JanitorUserEnvironment, JanitorImple
      * @return the script string, or NULL if the Java string is null
      */
     @NotNull JanitorObject nullableString(@Nullable String javaString);
+
+    /**
+     * Create an empty string object (or, better, return a premade immutable instance).
+     * @return the empty string object
+     */
+    @NotNull JString emptyString();
 }

@@ -17,7 +17,8 @@ import java.util.Objects;
  * A string object, representing a string of characters.
  * This is one of the built-in types that Janitor provides automatically.
  */
-public class JString implements JConstant, JsonExportablePrimitive {
+public class JString  implements JConstant, JsonExportablePrimitive {
+
 
     /**
      * String class name.

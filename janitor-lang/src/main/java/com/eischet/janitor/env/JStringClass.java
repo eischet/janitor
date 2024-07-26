@@ -257,11 +257,13 @@ public class JStringClass {
     }
 
     public static JanitorObject __cutFilename(final JString self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
+        // TODO: remove this from the language, as it is only of interest for a single application!
         arguments.require(1);
         return runningScript.getEnvironment().string(cutFilename(self.janitorGetHostValue(), arguments.getInt(0).getAsInt()));
     }
 
     public static @Nullable String cutFilename(@Nullable String filename, int maxLength) {
+        // TODO: remove this from the language, as it is only of interest for a single application!
         if (filename == null) {
             return null;
         }

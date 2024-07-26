@@ -1,6 +1,6 @@
 package com.eischet.janitor.env;
 
-import com.eischet.janitor.api.scripting.AttributeLookupHandler;
+import com.eischet.janitor.api.scripting.*;
 import com.eischet.janitor.api.FilterPredicate;
 import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.JanitorScriptProcess;
@@ -41,6 +41,24 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
     public static final FilterPredicate NUMB = x -> true;
 
     private final JanitorFormatting formatting;
+    private final JString emptyString;
+
+    // TODO: date, datetime, float, list, set, map!
+
+    /*
+
+    // private final Dispatcher<JanitorWrapper<?>> dispatchAny = new DispatchTable<>();
+    // private final DispatchTable<?> dispatchRoot = new DispatchTable<>(FOO, null);
+    private final DispatchTable<JString> dispatchString = new DispatchTable<>(JString.CASTER, null);
+
+    {
+        //var disp = Dispatcher.chain(dispatchBuiltin, dispatchString);
+        var x = JString.of("foo");
+        dispatchString.dispatch(x, null, "foobar");
+    }
+
+     */
+
 
     private final Map<String, AttributeLookupHandler<? super JanitorObject>> anyAttributes = new HashMap<>();
     private final Map<String, AttributeLookupHandler<JString>> stringAttributes = new HashMap<>();
@@ -50,7 +68,7 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
     private final Map<String, AttributeLookupHandler<JMap>> mapAttributes = new HashMap<>();
     private final Map<String, AttributeLookupHandler<JInt>> intAttributes = new HashMap<>();
     private final Map<String, AttributeLookupHandler<JBinary>> binaryMethods = new HashMap<>();
-
+    // TODO: Float is missing here in the old approach
 
     @Override
     public JanitorObject lookupClassAttribute(final @NotNull JanitorScriptProcess runningScript, final @NotNull JanitorObject instance, final @NotNull String attributeName) {
@@ -118,6 +136,10 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
 
     public JanitorDefaultEnvironment(JanitorFormatting formatting) {
         this.formatting = formatting;
+
+
+        this.emptyString = JString.of("");
+
         // TODO: these should all be replaced by proper DispatchTables, which were "invented" later.
         addStringMethod("length", JStringClass::__length);
         addStringMethod("trim", JStringClass::__trim);
@@ -343,5 +365,10 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
     @Override
     public @NotNull JanitorObject nullableString(@Nullable final String javaString) {
         return JString.ofNullable(javaString);
+    }
+
+    @Override
+    public @NotNull JString emptyString() {
+        return emptyString;
     }
 }

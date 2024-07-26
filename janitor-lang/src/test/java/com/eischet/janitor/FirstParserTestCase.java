@@ -18,11 +18,9 @@ import com.eischet.janitor.api.types.*;
 import com.eischet.janitor.compiler.JanitorAntlrCompiler;
 import com.eischet.janitor.compiler.JanitorCompiler;
 import com.eischet.janitor.compiler.ast.statement.Script;
-import com.eischet.janitor.env.JanitorDefaultEnvironment;
 import com.eischet.janitor.lang.JanitorParser;
 import com.eischet.janitor.repl.JanitorRepl;
 import com.eischet.janitor.runtime.*;
-import com.eischet.janitor.runtime.modules.CollectionsModule;
 import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
@@ -42,21 +40,6 @@ public class FirstParserTestCase {
 
     private static final Logger log = LoggerFactory.getLogger(FirstParserTestCase.class);
 
-    private static final JanitorDefaultEnvironment env = new JanitorDefaultEnvironment(new JanitorFormattingGerman()) {
-        @Override
-        public void warn(final String message) {
-            System.err.println("WARN: " + message);
-        }
-    };
-
-    private static final Consumer<Scope> NO_GLOBALS = globals -> {
-    };
-
-    static {
-        // LATER: move these to a saner place!
-        BaseRuntime.addDefaultModule(CollectionsModule.REGISTRATION);
-    }
-
     @Test
     public void testLogging() {
         log.info("this should show up as a logging message");
@@ -67,7 +50,7 @@ public class FirstParserTestCase {
         final String source = "print('hello, world');";
         final JanitorParser.ScriptContext script = JanitorScript.parseScript(source);
         final ScriptModule module = ScriptModule.unnamed(source);
-        final Script scriptObject = JanitorCompiler.build(env, module, script, source);
+        final Script scriptObject = JanitorCompiler.build(TestEnv.env, module, script, source);
         final OutputCatchingTestRuntime runtime = new OutputCatchingTestRuntime();
 
         final Scope globalScope = Scope.createGlobalScope(module); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
@@ -82,7 +65,7 @@ public class FirstParserTestCase {
         final String source = "if (x > 10) { print('high'); } else { print('low'); }";
         final JanitorParser.ScriptContext script = JanitorScript.parseScript(source);
         final ScriptModule module = ScriptModule.unnamed(source);
-        final Script scriptObject = JanitorCompiler.build(env, module, script, source);
+        final Script scriptObject = JanitorCompiler.build(TestEnv.env, module, script, source);
         final OutputCatchingTestRuntime runtime = new OutputCatchingTestRuntime();
 
         final Scope globalScope = Scope.createGlobalScope(module); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
@@ -108,7 +91,7 @@ public class FirstParserTestCase {
         log.info("parsing: " + scriptSource + "\n");
         final JanitorParser.ScriptContext script = JanitorScript.parseScript(scriptSource);
         final ScriptModule module = ScriptModule.unnamed(scriptSource);
-        final Script scriptObject = JanitorCompiler.build(env, module, script, scriptSource);
+        final Script scriptObject = JanitorCompiler.build(TestEnv.env, module, script, scriptSource);
         final OutputCatchingTestRuntime runtime = new OutputCatchingTestRuntime();
 
         final Scope globalScope = Scope.createGlobalScope(module); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
@@ -122,7 +105,7 @@ public class FirstParserTestCase {
         log.info("parsing: " + expressionSource + "\n");
         final JanitorParser.ScriptContext script = JanitorScript.parseScript(expressionSource);
         final ScriptModule module = ScriptModule.unnamed(expressionSource);
-        final Script scriptObject = JanitorCompiler.build(env, module, script, expressionSource);
+        final Script scriptObject = JanitorCompiler.build(TestEnv.env, module, script, expressionSource);
         final OutputCatchingTestRuntime runtime = new OutputCatchingTestRuntime();
 
         final Scope globalScope = Scope.createGlobalScope(module); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
@@ -133,8 +116,8 @@ public class FirstParserTestCase {
 
     @Test
     public void compactIfElse() throws JanitorCompilerException, JanitorRuntimeException {
-        assertEquals("less\n", getOutput("if (1<4) { print('less'); } else { print('more'); }", NO_GLOBALS));
-        assertEquals("less\n", getOutput("if (1<4) {\n print('less'); \n} else {\n print('more'); \n}", NO_GLOBALS)); // same, but with line breaks
+        assertEquals("less\n", getOutput("if (1<4) { print('less'); } else { print('more'); }", TestEnv.NO_GLOBALS));
+        assertEquals("less\n", getOutput("if (1<4) {\n print('less'); \n} else {\n print('more'); \n}", TestEnv.NO_GLOBALS)); // same, but with line breaks
         assertEquals("less\n", getOutput("if (a<b) { print('less'); } else { print('more'); }", globals -> {
             globals.bind("a", 1);
             globals.bind("b", 100);
@@ -170,49 +153,49 @@ public class FirstParserTestCase {
 
     @Test
     public void scriptBindsVar() throws JanitorCompilerException, JanitorRuntimeException {
-        assertEquals("100\n", getOutput("x = 50; print(2*x);", NO_GLOBALS));
-        assertEquals("100\n", getOutput("x = 50; print(x+x);", NO_GLOBALS));
-        assertEquals("100\n", getOutput("x = 50; if (3>1) { x = 100; } print(x);", NO_GLOBALS));
-        assertThrows(JanitorNameException.class, () -> getOutput("print(yodel);", NO_GLOBALS), "name 'yodel' is not defined");
-        assertThrows(JanitorNameException.class, () -> getOutput("if (1<2) { x = 100; } print(x);", NO_GLOBALS), "name 'x' is not defined");
+        assertEquals("100\n", getOutput("x = 50; print(2*x);", TestEnv.NO_GLOBALS));
+        assertEquals("100\n", getOutput("x = 50; print(x+x);", TestEnv.NO_GLOBALS));
+        assertEquals("100\n", getOutput("x = 50; if (3>1) { x = 100; } print(x);", TestEnv.NO_GLOBALS));
+        assertThrows(JanitorNameException.class, () -> getOutput("print(yodel);", TestEnv.NO_GLOBALS), "name 'yodel' is not defined");
+        assertThrows(JanitorNameException.class, () -> getOutput("if (1<2) { x = 100; } print(x);", TestEnv.NO_GLOBALS), "name 'x' is not defined");
     }
 
     @Test
     public void loopingWhile() throws JanitorCompilerException, JanitorRuntimeException {
-        assertEquals("1\n2\n3\n", getOutput("i = 1; do { print(i); i = i + 1; } while (i < 4);", NO_GLOBALS));
-        assertEquals("1\n2\n3\n", getOutput("i = 1; do { print(i); i += 1; } while (i < 4);", NO_GLOBALS));
-        assertEquals("1\n2\n3\n", getOutput("i = 1; do { print(i); i++; } while (i < 4);", NO_GLOBALS));
-        assertEquals("3\n2\n1\n", getOutput("i = 3; while (i>0) { print(i); i = i - 1;  }", NO_GLOBALS));
-        assertEquals("3\n2\n1\n", getOutput("i = 3; while (i>0) { print(i); i -= 1;  }", NO_GLOBALS));
+        assertEquals("1\n2\n3\n", getOutput("i = 1; do { print(i); i = i + 1; } while (i < 4);", TestEnv.NO_GLOBALS));
+        assertEquals("1\n2\n3\n", getOutput("i = 1; do { print(i); i += 1; } while (i < 4);", TestEnv.NO_GLOBALS));
+        assertEquals("1\n2\n3\n", getOutput("i = 1; do { print(i); i++; } while (i < 4);", TestEnv.NO_GLOBALS));
+        assertEquals("3\n2\n1\n", getOutput("i = 3; while (i>0) { print(i); i = i - 1;  }", TestEnv.NO_GLOBALS));
+        assertEquals("3\n2\n1\n", getOutput("i = 3; while (i>0) { print(i); i -= 1;  }", TestEnv.NO_GLOBALS));
         // test the break statement
-        assertEquals("1\n2\n3\n", getOutput("i = 1; do { print(i); i = i + 1; if(i>3) { break; } } while (i < 8);", NO_GLOBALS));
+        assertEquals("1\n2\n3\n", getOutput("i = 1; do { print(i); i = i + 1; if(i>3) { break; } } while (i < 8);", TestEnv.NO_GLOBALS));
         // continue
-        assertEquals("2\n4\n6\n8\n10\n", getOutput("i = 0; do { i = i + 1; if (i % 2==1) { continue; } print(i);  } while (i < 10);", NO_GLOBALS));
+        assertEquals("2\n4\n6\n8\n10\n", getOutput("i = 0; do { i = i + 1; if (i % 2==1) { continue; } print(i);  } while (i < 10);", TestEnv.NO_GLOBALS));
 
 
     }
 
     @Test
     public void booleans() throws JanitorCompilerException, JanitorRuntimeException {
-        assertEquals("true\n", getOutput("print(true);", NO_GLOBALS));
-        assertEquals("false\n", getOutput("print(false);", NO_GLOBALS));
-        assertEquals("true\n", getOutput("print(true and true);", NO_GLOBALS));
-        assertEquals("true\n", getOutput("print(not false);", NO_GLOBALS));
-        assertEquals("false\n", getOutput("print(not true);", NO_GLOBALS));
-        assertEquals("false\n", getOutput("print(not 17);", NO_GLOBALS));
-        assertEquals("false\n", getOutput("print(not 'much');", NO_GLOBALS));
+        assertEquals("true\n", getOutput("print(true);", TestEnv.NO_GLOBALS));
+        assertEquals("false\n", getOutput("print(false);", TestEnv.NO_GLOBALS));
+        assertEquals("true\n", getOutput("print(true and true);", TestEnv.NO_GLOBALS));
+        assertEquals("true\n", getOutput("print(not false);", TestEnv.NO_GLOBALS));
+        assertEquals("false\n", getOutput("print(not true);", TestEnv.NO_GLOBALS));
+        assertEquals("false\n", getOutput("print(not 17);", TestEnv.NO_GLOBALS));
+        assertEquals("false\n", getOutput("print(not 'much');", TestEnv.NO_GLOBALS));
     }
 
     @Test
     public void blocks() throws JanitorCompilerException, JanitorRuntimeException {
-        assertEquals("17\n18\n", getOutput("{ print(17); } { print(18); }", NO_GLOBALS));
-        assertThrows(JanitorNameException.class, () -> getOutput("{ yodel=8; } { print(yodel); }", NO_GLOBALS), "name 'yodel' is not defined");
-        assertThrows(JanitorNameException.class, () -> getOutput("{ yodel=8; } print(yodel);", NO_GLOBALS), "name 'yodel' is not defined");
+        assertEquals("17\n18\n", getOutput("{ print(17); } { print(18); }", TestEnv.NO_GLOBALS));
+        assertThrows(JanitorNameException.class, () -> getOutput("{ yodel=8; } { print(yodel); }", TestEnv.NO_GLOBALS), "name 'yodel' is not defined");
+        assertThrows(JanitorNameException.class, () -> getOutput("{ yodel=8; } print(yodel);", TestEnv.NO_GLOBALS), "name 'yodel' is not defined");
     }
 
     @Test
     public void parensExpression() throws JanitorCompilerException, JanitorRuntimeException {
-        assertEquals("21\n", getOutput("x = (17 + (4)); print(x);", NO_GLOBALS));
+        assertEquals("21\n", getOutput("x = (17 + (4)); print(x);", TestEnv.NO_GLOBALS));
     }
 
     @Test
@@ -226,38 +209,38 @@ public class FirstParserTestCase {
     @Test
     public void nullingAndEquality() throws JanitorCompilerException, JanitorRuntimeException {
         assertEquals("ok\n", getOutput("if (a == null) { print('ok'); }", globals -> globals.bind("a", JNull.NULL)));
-        assertEquals("ok\n", getOutput("if (null == null) { print('ok'); }", NO_GLOBALS));
-        assertEquals("ok\n", getOutput("if (null != true) { print('ok'); }", NO_GLOBALS));
-        assertEquals("ok\n", getOutput("if (false != true) { print('ok'); }", NO_GLOBALS));
+        assertEquals("ok\n", getOutput("if (null == null) { print('ok'); }", TestEnv.NO_GLOBALS));
+        assertEquals("ok\n", getOutput("if (null != true) { print('ok'); }", TestEnv.NO_GLOBALS));
+        assertEquals("ok\n", getOutput("if (false != true) { print('ok'); }", TestEnv.NO_GLOBALS));
     }
 
     @Test
     public void assertStatement() throws JanitorCompilerException, JanitorRuntimeException {
-        getOutput("assert(1);", NO_GLOBALS);
-        getOutput("assert(true);", NO_GLOBALS);
-        assertThrows(JanitorAssertionException.class, () -> getOutput("assert(0);", NO_GLOBALS));
-        assertThrows(JanitorAssertionException.class, () -> getOutput("assert(false);", NO_GLOBALS));
+        getOutput("assert(1);", TestEnv.NO_GLOBALS);
+        getOutput("assert(true);", TestEnv.NO_GLOBALS);
+        assertThrows(JanitorAssertionException.class, () -> getOutput("assert(0);", TestEnv.NO_GLOBALS));
+        assertThrows(JanitorAssertionException.class, () -> getOutput("assert(false);", TestEnv.NO_GLOBALS));
     }
 
     @Test
     public void definingFunctions() throws JanitorCompilerException, JanitorRuntimeException {
-        assertEquals("", getOutput("function foo(x) { print(x); }", NO_GLOBALS));
-        assertEquals("4\n", getOutput("function foo(x) { print(4); } foo(4);", NO_GLOBALS)); // beachte: x wird ignoriert!
-        assertEquals("17\n", getOutput("function foo() { print(17); } foo();", NO_GLOBALS));
-        assertEquals("17\n", getOutput("function foo() { return 17; } print(foo());", NO_GLOBALS));
-        assertEquals("2\n3\n4\n", getOutput("x = 1; function pp() { x = x + 1; print(x); } pp(); pp(); pp();", NO_GLOBALS));
+        assertEquals("", getOutput("function foo(x) { print(x); }", TestEnv.NO_GLOBALS));
+        assertEquals("4\n", getOutput("function foo(x) { print(4); } foo(4);", TestEnv.NO_GLOBALS)); // beachte: x wird ignoriert!
+        assertEquals("17\n", getOutput("function foo() { print(17); } foo();", TestEnv.NO_GLOBALS));
+        assertEquals("17\n", getOutput("function foo() { return 17; } print(foo());", TestEnv.NO_GLOBALS));
+        assertEquals("2\n3\n4\n", getOutput("x = 1; function pp() { x = x + 1; print(x); } pp(); pp(); pp();", TestEnv.NO_GLOBALS));
 
 
-        assertEquals("99\n", getOutput("function foo() { return 99; } print(foo());", NO_GLOBALS));
-        assertEquals("99\n", getOutput("x = 88 + 11; function foo() { return x; } print(foo());", NO_GLOBALS));
+        assertEquals("99\n", getOutput("function foo() { return 99; } print(foo());", TestEnv.NO_GLOBALS));
+        assertEquals("99\n", getOutput("x = 88 + 11; function foo() { return x; } print(foo());", TestEnv.NO_GLOBALS));
 
-        assertEquals("4\n", getOutput("function foo(x) { print(x); } foo(4);", NO_GLOBALS));
+        assertEquals("4\n", getOutput("function foo(x) { print(x); } foo(4);", TestEnv.NO_GLOBALS));
 
-        assertEquals("4\n", getOutput("function a(x) { return x+1; } print(a(a(a(1)))); ", NO_GLOBALS));
+        assertEquals("4\n", getOutput("function a(x) { return x+1; } print(a(a(a(1)))); ", TestEnv.NO_GLOBALS));
 
-        assertEquals("4\n", getOutput("a = x -> x + 1; print(a(a(a(1)))); ", NO_GLOBALS));
-        assertEquals("4\n", getOutput("a = x -> { return x + 1; }; print(a(a(a(1)))); ", NO_GLOBALS));
-        assertEquals("55\n", getOutput("z = (x -> 5*x); print(z(11));", NO_GLOBALS));
+        assertEquals("4\n", getOutput("a = x -> x + 1; print(a(a(a(1)))); ", TestEnv.NO_GLOBALS));
+        assertEquals("4\n", getOutput("a = x -> { return x + 1; }; print(a(a(a(1)))); ", TestEnv.NO_GLOBALS));
+        assertEquals("55\n", getOutput("z = (x -> 5*x); print(z(11));", TestEnv.NO_GLOBALS));
         // das ist vielleicht auch etwas schräg: assertEquals("55\n", getOutput("z = a -> { return b -> a*b; }; print((z(11))(5));", NO_GLOBALS));
 
 
@@ -267,58 +250,58 @@ public class FirstParserTestCase {
     @Test
     public void postfixing() throws JanitorCompilerException, JanitorRuntimeException {
         // i++ is an expression, not a statement, and that should probably be unified away:
-        assertEquals("4\n", getOutput("i = 1; i++; i++; i++; print(i);", NO_GLOBALS));
-        assertEquals("3\n", getOutput("i = 1; assert(1==i++); assert(2==i++); print(i);", NO_GLOBALS));
-        assertEquals("14\n", getOutput("function foo(x) { return 2*x; } bar = foo(7); assert(bar==14); print(bar);", NO_GLOBALS));
-        assertEquals("", getOutput("i=10; while(i>0) { i--; }", NO_GLOBALS));
+        assertEquals("4\n", getOutput("i = 1; i++; i++; i++; print(i);", TestEnv.NO_GLOBALS));
+        assertEquals("3\n", getOutput("i = 1; assert(1==i++); assert(2==i++); print(i);", TestEnv.NO_GLOBALS));
+        assertEquals("14\n", getOutput("function foo(x) { return 2*x; } bar = foo(7); assert(bar==14); print(bar);", TestEnv.NO_GLOBALS));
+        assertEquals("", getOutput("i=10; while(i>0) { i--; }", TestEnv.NO_GLOBALS));
         assertEquals("100\n", getOutput("while (i<100) { i++; } print(i);", globals -> globals.bind("i", 0)));
     }
 
     @Test
     public void prefixing() throws JanitorCompilerException, JanitorRuntimeException {
         // assertEquals("", getOutput("i = 0; assert((--i)==-1);", NO_GLOBALS));
-        assertEquals("", getOutput("i = 1; assert((--i)==0);", NO_GLOBALS));
+        assertEquals("", getOutput("i = 1; assert((--i)==0);", TestEnv.NO_GLOBALS));
     }
 
     @Test
     public void negation() throws JanitorCompilerException, JanitorRuntimeException {
-        assertEquals("-1\n", getOutput("i = 2 - 3; print(i);", NO_GLOBALS));
-        assertEquals("-1\n", getOutput("i = -1; print(i);", NO_GLOBALS));
-        assertEquals("", getOutput("assert(-10<-5 and 10>5);", NO_GLOBALS));
-        assertThrows(JanitorAssertionException.class, () -> getOutput("assert(not (-10<-5));", NO_GLOBALS));
+        assertEquals("-1\n", getOutput("i = 2 - 3; print(i);", TestEnv.NO_GLOBALS));
+        assertEquals("-1\n", getOutput("i = -1; print(i);", TestEnv.NO_GLOBALS));
+        assertEquals("", getOutput("assert(-10<-5 and 10>5);", TestEnv.NO_GLOBALS));
+        assertThrows(JanitorAssertionException.class, () -> getOutput("assert(not (-10<-5));", TestEnv.NO_GLOBALS));
     }
 
     @Test
     public void stringMethods() throws JanitorCompilerException, JanitorRuntimeException {
-        assertEquals("hallo\n", getOutput("print('hallo');", NO_GLOBALS));
-        assertEquals("5\n", getOutput("print('hallo'.length());", NO_GLOBALS));
+        assertEquals("hallo\n", getOutput("print('hallo');", TestEnv.NO_GLOBALS));
+        assertEquals("5\n", getOutput("print('hallo'.length());", TestEnv.NO_GLOBALS));
 
-        assertEquals("5\n", getOutput("lf = 'hallo'.length; print(lf());", NO_GLOBALS));
+        assertEquals("5\n", getOutput("lf = 'hallo'.length; print(lf());", TestEnv.NO_GLOBALS));
 
-        assertEquals("5\n", getOutput("s = 'hallo'; lenFun = s.length; print(lenFun());", NO_GLOBALS));
+        assertEquals("5\n", getOutput("s = 'hallo'; lenFun = s.length; print(lenFun());", TestEnv.NO_GLOBALS));
 
-        assertEquals("oo\n", getOutput("print('foo'.substring(1));", NO_GLOBALS));
+        assertEquals("oo\n", getOutput("print('foo'.substring(1));", TestEnv.NO_GLOBALS));
 
-        assertEquals("123\n", getOutput("print('0000123'.removeLeadingZeros());", NO_GLOBALS));
+        assertEquals("123\n", getOutput("print('0000123'.removeLeadingZeros());", TestEnv.NO_GLOBALS));
     }
 
     @Test
     public void justEvaluateExpressions() throws JanitorCompilerException, JanitorRuntimeException {
         // evaluate("1+1", NO_GLOBALS);
-        assertEquals(2L, evaluate("1+1;", NO_GLOBALS).janitorGetHostValue());
-        assertEquals(2L, evaluate("1+1", NO_GLOBALS).janitorGetHostValue());
-        assertEquals(2L, evaluate("function foo() { return 1+1; } foo();", NO_GLOBALS).janitorGetHostValue());
-        assertEquals(2L, evaluate("function foo() { return 1+1; } foo()", NO_GLOBALS).janitorGetHostValue());
-        assertEquals(17L, evaluate("17", NO_GLOBALS).janitorGetHostValue());
+        assertEquals(2L, evaluate("1+1;", TestEnv.NO_GLOBALS).janitorGetHostValue());
+        assertEquals(2L, evaluate("1+1", TestEnv.NO_GLOBALS).janitorGetHostValue());
+        assertEquals(2L, evaluate("function foo() { return 1+1; } foo();", TestEnv.NO_GLOBALS).janitorGetHostValue());
+        assertEquals(2L, evaluate("function foo() { return 1+1; } foo()", TestEnv.NO_GLOBALS).janitorGetHostValue());
+        assertEquals(17L, evaluate("17", TestEnv.NO_GLOBALS).janitorGetHostValue());
 
 
     }
 
     @Test
     public void playWithWhitespace() throws JanitorCompilerException, JanitorRuntimeException {
-        assertEquals(3L, evaluate("1+1+1", NO_GLOBALS).janitorGetHostValue());
-        assertEquals(3L, evaluate("1+(\n1+1\n)", NO_GLOBALS).janitorGetHostValue());
-        assertEquals(4L, evaluate("'foo'\n.length()+1", NO_GLOBALS).janitorGetHostValue());
+        assertEquals(3L, evaluate("1+1+1", TestEnv.NO_GLOBALS).janitorGetHostValue());
+        assertEquals(3L, evaluate("1+(\n1+1\n)", TestEnv.NO_GLOBALS).janitorGetHostValue());
+        assertEquals(4L, evaluate("'foo'\n.length()+1", TestEnv.NO_GLOBALS).janitorGetHostValue());
     }
 
     @Test
@@ -336,7 +319,7 @@ public class FirstParserTestCase {
             JInt.of(3)
         )))));
 
-        assertEquals("1\n2\n3\n4\n", getOutput("i=4; for (i in [1,2,3]) { print(i); } print(i);", NO_GLOBALS));
+        assertEquals("1\n2\n3\n4\n", getOutput("i=4; for (i in [1,2,3]) { print(i); } print(i);", TestEnv.NO_GLOBALS));
 
 
     }
@@ -369,22 +352,22 @@ public class FirstParserTestCase {
 
     @Test
     public void someFloatingPoints() throws JanitorCompilerException, JanitorRuntimeException {
-        assertEquals("0.0\n", getOutput("print(0.0);", NO_GLOBALS));
-        assertEquals("1.5\n", getOutput("print(3.0/2.0);", NO_GLOBALS));
-        assertEquals("3.0\n", getOutput("print(2*1.5);", NO_GLOBALS));
+        assertEquals("0.0\n", getOutput("print(0.0);", TestEnv.NO_GLOBALS));
+        assertEquals("1.5\n", getOutput("print(3.0/2.0);", TestEnv.NO_GLOBALS));
+        assertEquals("3.0\n", getOutput("print(2*1.5);", TestEnv.NO_GLOBALS));
     }
 
     @Test
     public void weCanMultiplyStrings() throws JanitorCompilerException, JanitorRuntimeException {
-        assertEquals("*****", evaluate("'*'*5", NO_GLOBALS).janitorGetHostValue());
-        assertEquals("x***x", evaluate("'x'+3*'*'+'x'", NO_GLOBALS).janitorGetHostValue());
+        assertEquals("*****", evaluate("'*'*5", TestEnv.NO_GLOBALS).janitorGetHostValue());
+        assertEquals("x***x", evaluate("'x'+3*'*'+'x'", TestEnv.NO_GLOBALS).janitorGetHostValue());
     }
 
 
     @Test
     public void javaFunctionCalls() throws JanitorCompilerException, JanitorRuntimeException {
 
-        final JNativeMethod foo = JNativeMethod.of(args -> env.string("hallo"));
+        final JNativeMethod foo = JNativeMethod.of(args -> TestEnv.env.string("hallo"));
 
         assertEquals("hallo", evaluate("""
             foo();
@@ -400,7 +383,7 @@ public class FirstParserTestCase {
                     return 1/0;
                 }
                 fail();
-                """, NO_GLOBALS);
+                """, TestEnv.NO_GLOBALS);
         } catch (JanitorRuntimeException e) {
             log.info(e.getMessage());
         }
@@ -457,7 +440,7 @@ public class FirstParserTestCase {
                 @Override
                 public @Nullable JanitorObject janitorGetAttribute(final JanitorScriptProcess runningScript, final String name, final boolean required) throws JanitorNameException {
                     if ("name".equals(name)) {
-                        return env.string(moduleName);
+                        return TestEnv.env.string(moduleName);
                     }
                     return JanitorModule.super.janitorGetAttribute(runningScript, name, required);
                 }
@@ -515,7 +498,7 @@ public class FirstParserTestCase {
                         @Override
                         public @Nullable JanitorObject janitorGetAttribute(final JanitorScriptProcess runningScript, final String name, final boolean required) throws JanitorNameException {
                             if ("name".equals(name)) {
-                                return env.string("dummy");
+                                return TestEnv.env.string("dummy");
                             }
                             return JanitorModule.super.janitorGetAttribute(runningScript, name, required);
                         }
@@ -541,32 +524,32 @@ public class FirstParserTestCase {
     @Test
     public void dating() throws JanitorCompilerException, JanitorRuntimeException {
         final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
-        assertEquals(LocalDate.of(1976, 1, 10), rt.compile("test", "@1976-01-10").run(NO_GLOBALS).janitorGetHostValue());
-        assertEquals(LocalDateTime.of(1976, 1, 10, 11, 17, 30), rt.compile("test", "@1976-01-10-11:17:30").run(NO_GLOBALS).janitorGetHostValue());
-        assertEquals(LocalDateTime.of(1976, 1, 10, 11, 17, 0), rt.compile("test", "@1976-01-10-11:17").run(NO_GLOBALS).janitorGetHostValue());
+        assertEquals(LocalDate.of(1976, 1, 10), rt.compile("test", "@1976-01-10").run(TestEnv.NO_GLOBALS).janitorGetHostValue());
+        assertEquals(LocalDateTime.of(1976, 1, 10, 11, 17, 30), rt.compile("test", "@1976-01-10-11:17:30").run(TestEnv.NO_GLOBALS).janitorGetHostValue());
+        assertEquals(LocalDateTime.of(1976, 1, 10, 11, 17, 0), rt.compile("test", "@1976-01-10-11:17").run(TestEnv.NO_GLOBALS).janitorGetHostValue());
 
 
-        final JanitorObject fiveDays = rt.compile("test", "@5d").run(NO_GLOBALS);
+        final JanitorObject fiveDays = rt.compile("test", "@5d").run(TestEnv.NO_GLOBALS);
         assertInstanceOf(JDuration.class, fiveDays);
         assertEquals(5L, ((JDuration) fiveDays).getAmount());
         assertEquals(JDuration.JDurationKind.DAYS, ((JDuration) fiveDays).getUnit());
 
-        assertEquals(LocalDate.of(1976, 1, 11), rt.compile("test", "@1976-01-10 + @1d").run(NO_GLOBALS).janitorGetHostValue());
+        assertEquals(LocalDate.of(1976, 1, 11), rt.compile("test", "@1976-01-10 + @1d").run(TestEnv.NO_GLOBALS).janitorGetHostValue());
 
-        assertEquals(LocalDate.of(1976, 2, 10), rt.compile("test", "@1976-01-10 + @1mo").run(NO_GLOBALS).janitorGetHostValue());
+        assertEquals(LocalDate.of(1976, 2, 10), rt.compile("test", "@1976-01-10 + @1mo").run(TestEnv.NO_GLOBALS).janitorGetHostValue());
 
-        assertEquals(LocalDateTime.of(1976, 1, 10, 12, 30, 45), rt.compile("test", "@1976-01-10 + @12h + @30mi + @45s").run(NO_GLOBALS).janitorGetHostValue());
+        assertEquals(LocalDateTime.of(1976, 1, 10, 12, 30, 45), rt.compile("test", "@1976-01-10 + @12h + @30mi + @45s").run(TestEnv.NO_GLOBALS).janitorGetHostValue());
 
         // Dates müssen auch SUBTRAHIERBAR sein!
-        assertEquals(JDuration.of("1d"), rt.compile("test", "@1976-01-11 - @1976-01-10").run(NO_GLOBALS));
-        assertEquals(JDuration.of("2d"), rt.compile("test", "@1976-01-12 - @1976-01-10").run(NO_GLOBALS));
-        assertEquals(JBool.TRUE, rt.compile("test", "( @1976-01-12 - @1976-01-10 ) > @1d").run(NO_GLOBALS));
-        assertEquals(JBool.TRUE, rt.compile("test", "( @1976-01-12 - @1976-01-10 ) < @5d").run(NO_GLOBALS));
-        assertEquals(JBool.TRUE, rt.compile("test", "@2d > @1h").run(NO_GLOBALS));
-        assertEquals(JBool.TRUE, rt.compile("test", "@2d > @1d").run(NO_GLOBALS));
-        assertEquals(JBool.TRUE, rt.compile("test", "@2d == @2d").run(NO_GLOBALS));
-        assertEquals(JBool.TRUE, rt.compile("test", "@3d < @1w").run(NO_GLOBALS));
-        assertEquals(JBool.TRUE, rt.compile("test", "@3d <= @1w").run(NO_GLOBALS));
+        assertEquals(JDuration.of("1d"), rt.compile("test", "@1976-01-11 - @1976-01-10").run(TestEnv.NO_GLOBALS));
+        assertEquals(JDuration.of("2d"), rt.compile("test", "@1976-01-12 - @1976-01-10").run(TestEnv.NO_GLOBALS));
+        assertEquals(JBool.TRUE, rt.compile("test", "( @1976-01-12 - @1976-01-10 ) > @1d").run(TestEnv.NO_GLOBALS));
+        assertEquals(JBool.TRUE, rt.compile("test", "( @1976-01-12 - @1976-01-10 ) < @5d").run(TestEnv.NO_GLOBALS));
+        assertEquals(JBool.TRUE, rt.compile("test", "@2d > @1h").run(TestEnv.NO_GLOBALS));
+        assertEquals(JBool.TRUE, rt.compile("test", "@2d > @1d").run(TestEnv.NO_GLOBALS));
+        assertEquals(JBool.TRUE, rt.compile("test", "@2d == @2d").run(TestEnv.NO_GLOBALS));
+        assertEquals(JBool.TRUE, rt.compile("test", "@3d < @1w").run(TestEnv.NO_GLOBALS));
+        assertEquals(JBool.TRUE, rt.compile("test", "@3d <= @1w").run(TestEnv.NO_GLOBALS));
 
 
     }
@@ -610,30 +593,30 @@ public class FirstParserTestCase {
     @Test
     public void lists() throws JanitorCompilerException, JanitorRuntimeException {
         final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
-        rt.compile("foo", "for (i in [1,2,3]) { print(i); }").run(NO_GLOBALS);
+        rt.compile("foo", "for (i in [1,2,3]) { print(i); }").run(TestEnv.NO_GLOBALS);
         assertEquals("1\n2\n3\n", rt.getAllOutput());
     }
 
     @Test
     public void doMapsCollideWithBlocks() throws JanitorCompilerException, JanitorRuntimeException {
         final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
-        rt.compile("foo", "if (true) { } else { }").run(NO_GLOBALS);
-        final Object map = rt.compile("bar", "return {};").run(NO_GLOBALS);
+        rt.compile("foo", "if (true) { } else { }").run(TestEnv.NO_GLOBALS);
+        final Object map = rt.compile("bar", "return {};").run(TestEnv.NO_GLOBALS);
         assertTrue(map instanceof JMap);
     }
 
     @Test
     public void maps() throws JanitorCompilerException, JanitorRuntimeException {
         final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
-        final Object map = rt.compile("bar", "return {};").run(NO_GLOBALS);
+        final Object map = rt.compile("bar", "return {};").run(TestEnv.NO_GLOBALS);
         log.info("empty map: " + map);
         assertTrue(map instanceof JMap);
 
-        final JanitorObject foo = rt.compile("foo", "return {'id': 17, 'sc': 'dumbo'};").run(NO_GLOBALS);
+        final JanitorObject foo = rt.compile("foo", "return {'id': 17, 'sc': 'dumbo'};").run(TestEnv.NO_GLOBALS);
         log.info("foo map: " + foo);
         final JMap fooMap = (JMap) foo;
-        assertEquals(17L, fooMap.get(env.string("id")).janitorGetHostValue());
-        assertEquals("dumbo", fooMap.get(env.string("sc")).janitorGetHostValue());
+        assertEquals(17L, fooMap.get(TestEnv.env.string("id")).janitorGetHostValue());
+        assertEquals("dumbo", fooMap.get(TestEnv.env.string("sc")).janitorGetHostValue());
     }
 
     @Test
@@ -653,10 +636,10 @@ public class FirstParserTestCase {
             ]
             """;
         final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
-        final JList list = (JList) rt.compile("test", JSON).run(NO_GLOBALS);
+        final JList list = (JList) rt.compile("test", JSON).run(TestEnv.NO_GLOBALS);
         final JMap map = (JMap) list.get(JInt.of(0));
-        assertEquals(JInt.of(10), map.get(env.string("keepRunLogs")));
-        assertEquals("ACTPROC-BV", map.get(env.string("shortCode")).janitorGetHostValue());
+        assertEquals(JInt.of(10), map.get(TestEnv.env.string("keepRunLogs")));
+        assertEquals("ACTPROC-BV", map.get(TestEnv.env.string("shortCode")).janitorGetHostValue());
     }
 
 
@@ -674,15 +657,15 @@ public class FirstParserTestCase {
             return a + b;
             """
         );
-        assertEquals("hallowelt", script.run(NO_GLOBALS).janitorGetHostValue());
+        assertEquals("hallowelt", script.run(TestEnv.NO_GLOBALS).janitorGetHostValue());
 
     }
 
     @Test
     public void parseLiteral() throws Exception {
-        assertEquals("foo", JanitorAntlrCompiler.parseLiteral(env, "foo").janitorGetHostValue());
-        assertEquals("foo\\bar", JanitorAntlrCompiler.parseLiteral(env, "foo\\\\bar").janitorGetHostValue());
-        assertEquals("\"", JanitorAntlrCompiler.parseLiteral(env, "\\\"").janitorGetHostValue());
+        assertEquals("foo", JanitorAntlrCompiler.parseLiteral(TestEnv.env, "foo").janitorGetHostValue());
+        assertEquals("foo\\bar", JanitorAntlrCompiler.parseLiteral(TestEnv.env, "foo\\\\bar").janitorGetHostValue());
+        assertEquals("\"", JanitorAntlrCompiler.parseLiteral(TestEnv.env, "\\\"").janitorGetHostValue());
 
     }
 
@@ -690,16 +673,16 @@ public class FirstParserTestCase {
     public void escapism() throws Exception {
         final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
         final RunnableScript script = rt.compile("test", "return 'foo\\\\bar';");
-        assertEquals("foo\\bar", script.run(NO_GLOBALS).janitorGetHostValue());
+        assertEquals("foo\\bar", script.run(TestEnv.NO_GLOBALS).janitorGetHostValue());
 
         final RunnableScript script2 = rt.compile("test", "return \"'blah'\";");
-        assertEquals("'blah'", script2.run(NO_GLOBALS).janitorGetHostValue());
+        assertEquals("'blah'", script2.run(TestEnv.NO_GLOBALS).janitorGetHostValue());
 
-        assertEquals("\n", rt.compile("test", "return '\\n';").run(NO_GLOBALS).janitorGetHostValue());
+        assertEquals("\n", rt.compile("test", "return '\\n';").run(TestEnv.NO_GLOBALS).janitorGetHostValue());
 
         final RunnableScript script3 = rt.compile("test2", """
             return \"select usr_id from usr where regexp_like(usr_sc, '^\\\\d+$')";""");
-        assertEquals("select usr_id from usr where regexp_like(usr_sc, '^\\d+$')", script3.run(NO_GLOBALS).janitorGetHostValue());
+        assertEquals("select usr_id from usr where regexp_like(usr_sc, '^\\d+$')", script3.run(TestEnv.NO_GLOBALS).janitorGetHostValue());
 
     }
 
@@ -718,7 +701,7 @@ public class FirstParserTestCase {
                         
             return set;
             """);
-        final JanitorObject result = script.run(NO_GLOBALS);
+        final JanitorObject result = script.run(TestEnv.NO_GLOBALS);
 
         assertTrue(result instanceof JSet);
 
@@ -757,10 +740,10 @@ public class FirstParserTestCase {
         final LocalDateTime testDate = LocalDateTime.of(2021, 11, 15, 12, 4);
         final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
         assertEquals(JDate.of(2021, 11, 15), rt.compile("test", "d.date()").run(g -> g.bind("d", JDateTime.ofNullable(testDate))));
-        assertEquals(env.string("12:04"), rt.compile("test", "d.time()").run(g -> g.bind("d", JDateTime.ofNullable(testDate))));
-        assertEquals(env.string("15.11.2021, 12:04:00"), rt.compile("test", "d.string()").run(g -> g.bind("d", JDateTime.ofNullable(testDate))));
-        assertEquals(JBool.TRUE, rt.compile("test", "@now > @now.date()").run(NO_GLOBALS));
-        assertEquals(JBool.FALSE, rt.compile("test", "@now < @now.date()").run(NO_GLOBALS));
+        assertEquals(TestEnv.env.string("12:04"), rt.compile("test", "d.time()").run(g -> g.bind("d", JDateTime.ofNullable(testDate))));
+        assertEquals(TestEnv.env.string("15.11.2021, 12:04:00"), rt.compile("test", "d.string()").run(g -> g.bind("d", JDateTime.ofNullable(testDate))));
+        assertEquals(JBool.TRUE, rt.compile("test", "@now > @now.date()").run(TestEnv.NO_GLOBALS));
+        assertEquals(JBool.FALSE, rt.compile("test", "@now < @now.date()").run(TestEnv.NO_GLOBALS));
         Long.compare(1, 2);
     }
 
@@ -768,13 +751,13 @@ public class FirstParserTestCase {
     public void communicatingScopes() throws Exception {
         final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
         final RunnableScript firstScript = rt.compile("first", "i = 17;");
-        final ResultAndScope ras = firstScript.runAndKeepGlobals(NO_GLOBALS);
+        final ResultAndScope ras = firstScript.runAndKeepGlobals(TestEnv.NO_GLOBALS);
         final RunnableScript secondScript = rt.compile("second", "print(i);");
 
         final JanitorObject localI = ras.getScope().retrieveLocal("i");
         assertEquals(JInt.of(17), localI);
 
-        secondScript.runInScope(NO_GLOBALS, ras.getScope());
+        secondScript.runInScope(TestEnv.NO_GLOBALS, ras.getScope());
         assertEquals("17\n", rt.getAllOutput());
     }
 
@@ -782,24 +765,24 @@ public class FirstParserTestCase {
     public void emptyScriptsDoNothingAtAll() throws Exception {
         final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
         final RunnableScript firstScript = rt.compile("first", "");
-        assertEquals(JNull.NULL, firstScript.run(NO_GLOBALS));
+        assertEquals(JNull.NULL, firstScript.run(TestEnv.NO_GLOBALS));
         final RunnableScript secondScript = rt.compile("second", null);
-        assertEquals(JNull.NULL, secondScript.run(NO_GLOBALS));
+        assertEquals(JNull.NULL, secondScript.run(TestEnv.NO_GLOBALS));
     }
 
     @Test
     public void comparingStuff() throws Exception {
         final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
-        assertEquals(JBool.TRUE, rt.compile("test", "1<=2").run(NO_GLOBALS));
-        assertEquals(JBool.TRUE, rt.compile("test", "2>=0").run(NO_GLOBALS));
-        assertEquals(JBool.FALSE, rt.compile("test", "2<0").run(NO_GLOBALS));
+        assertEquals(JBool.TRUE, rt.compile("test", "1<=2").run(TestEnv.NO_GLOBALS));
+        assertEquals(JBool.TRUE, rt.compile("test", "2>=0").run(TestEnv.NO_GLOBALS));
+        assertEquals(JBool.FALSE, rt.compile("test", "2<0").run(TestEnv.NO_GLOBALS));
 
     }
 
     @Test
     public void stringFormat() throws Exception {
         final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
-        assertEquals(env.string("foo=bar"), rt.compile("test", "'%s=%s'.format('foo', 'bar')").run(NO_GLOBALS));
+        assertEquals(TestEnv.env.string("foo=bar"), rt.compile("test", "'%s=%s'.format('foo', 'bar')").run(TestEnv.NO_GLOBALS));
     }
 
     @Test
@@ -812,7 +795,7 @@ public class FirstParserTestCase {
             template = 'a=${a}, b=${b}, c=${c}!';
             return template.expand();
             """);
-        assertEquals("a=1, b=2, c=3!", script.run(NO_GLOBALS).janitorGetHostValue());
+        assertEquals("a=1, b=2, c=3!", script.run(TestEnv.NO_GLOBALS).janitorGetHostValue());
 
 
         final RunnableScript script2 = rt.compile("test", """
@@ -902,7 +885,7 @@ public class FirstParserTestCase {
             @Override
             public void execute() throws Throwable {
                 final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
-                rt.getCompilerSettings().setVerbose(true);
+                // rt.getCompilerSettings().setVerbose(true);
                 final RunnableScript script = rt.compile("illegalAssignment", "1=1");
                 script.run();
             }
@@ -971,9 +954,9 @@ public class FirstParserTestCase {
         });
         assertInstanceOf(JMap.class, map1);
         JMap jMap1 = (JMap) map1;
-        assertEquals(env.string("a"), jMap1.get(env.string("a")));
-        assertEquals(env.string("b"), jMap1.get(env.string("b")));
-        assertEquals(env.string("z"), jMap1.get(env.string("c")));
+        assertEquals(TestEnv.env.string("a"), jMap1.get(TestEnv.env.string("a")));
+        assertEquals(TestEnv.env.string("b"), jMap1.get(TestEnv.env.string("b")));
+        assertEquals(TestEnv.env.string("z"), jMap1.get(TestEnv.env.string("c")));
 
         final JanitorObject map2 = evaluate("""
             {}.parseJson('''{"a":"a", "b":[], "c":["c1", "c2"]}''');
@@ -981,13 +964,13 @@ public class FirstParserTestCase {
         });
         assertInstanceOf(JMap.class, map2);
         JMap jMap2 = (JMap) map2;
-        assertEquals(env.string("a"), jMap2.get(env.string("a")));
-        JList blist = (JList) jMap2.get(env.string("b"));
-        JList clist = (JList) jMap2.get(env.string("c"));
+        assertEquals(TestEnv.env.string("a"), jMap2.get(TestEnv.env.string("a")));
+        JList blist = (JList) jMap2.get(TestEnv.env.string("b"));
+        JList clist = (JList) jMap2.get(TestEnv.env.string("c"));
         assertEquals(0, blist.size());
         assertEquals(2, clist.size());
-        assertEquals(env.string("c1"), clist.get(0));
-        assertEquals(env.string("c2"), clist.get(1));
+        assertEquals(TestEnv.env.string("c1"), clist.get(0));
+        assertEquals(TestEnv.env.string("c2"), clist.get(1));
 
     }
 
@@ -1129,7 +1112,7 @@ public class FirstParserTestCase {
     @Test
     public void indexAssignmentOnMap() throws JanitorCompilerException, JanitorRuntimeException {
         final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
-        rt.getCompilerSettings().setVerbose(true);
+        // rt.getCompilerSettings().setVerbose(true);
         final RunnableScript script = rt.compile("indexed_assignment", "a = {}; a['foo'] = 'bar'; print(a['foo']);");
         script.run();
         assertEquals("bar\n", rt.getAllOutput());
@@ -1138,7 +1121,7 @@ public class FirstParserTestCase {
     @Test
     public void indexAssignmentOnList() throws JanitorCompilerException, JanitorRuntimeException {
         final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
-        rt.getCompilerSettings().setVerbose(true);
+        // rt.getCompilerSettings().setVerbose(true);
         final RunnableScript script = rt.compile("indexed_assignment", "a = ['baz']; a[0] = 'bar'; print(a[0]);");
         script.run();
         assertEquals("bar\n", rt.getAllOutput());
@@ -1184,8 +1167,8 @@ public class FirstParserTestCase {
             return {from: "here", to: "eternity"};
             """).run();
         System.out.println("got map: " + map);
-        assertEquals("here", map.get(env.string("from")).janitorToString());
-        assertEquals("eternity", map.get(env.string("to")).janitorToString());
+        assertEquals("here", map.get(TestEnv.env.string("from")).janitorToString());
+        assertEquals("eternity", map.get(TestEnv.env.string("to")).janitorToString());
 
         final RunnableScript script = rt.compile("from_test", """
             for (i from 1 to 10) {
@@ -1329,11 +1312,11 @@ public class FirstParserTestCase {
         public @Nullable JanitorObject janitorGetAttribute(final JanitorScriptProcess runningScript, final String name, final boolean required) throws JanitorNameException {
             if (name.equals("from")) {
                 System.out.println("someone asked for property 'from'!");
-                return env.string("foo");
+                return TestEnv.env.string("foo");
             }
             if (name.equals("to")) {
                 System.out.println("someone asked for property 'to'!");
-                return env.string("bar");
+                return TestEnv.env.string("bar");
             }
             return JanitorObject.super.janitorGetAttribute(runningScript, name, required);
         }
@@ -1391,8 +1374,8 @@ public class FirstParserTestCase {
         // Ich glaube, dank des verbesserten Codes für Closures ist das Problem gelöst...?
         final JanitorParser.ScriptContext script = JanitorScript.parseScript(scriptSource);
         final ScriptModule module = ScriptModule.unnamed(scriptSource);
-        final Script scriptObject = JanitorCompiler.build(env, module, script, scriptSource);
-        final SLFLoggingRuntime runtime = new SLFLoggingRuntime(env, LoggerFactory.getLogger(getClass()));
+        final Script scriptObject = JanitorCompiler.build(TestEnv.env, module, script, scriptSource);
+        final SLFLoggingRuntime runtime = new SLFLoggingRuntime(TestEnv.env, LoggerFactory.getLogger(getClass()));
 
         runtime.setTraceListener(System.out::println);
 
