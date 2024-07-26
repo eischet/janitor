@@ -122,7 +122,7 @@ public class JList implements JanitorObject, JIterable, Iterable<JanitorObject>,
             return this;
         }
         final JsonInputStream reader = env.getLenientJsonConsumer(json);
-        return parseJson(reader);
+        return parseJson(reader, env);
     }
 
     /**
@@ -132,10 +132,10 @@ public class JList implements JanitorObject, JIterable, Iterable<JanitorObject>,
      * @return this list
      * @throws JsonException if the JSON is invalid, e.g. it's not really a list
      */
-    public JList parseJson(final JsonInputStream reader) throws JsonException {
+    public JList parseJson(final JsonInputStream reader, final JanitorEnvironment env) throws JsonException {
         reader.beginArray();
         while (reader.hasNext()) {
-            add(JCollection.parseJsonValue(reader));
+            add(JCollection.parseJsonValue(reader, env));
         }
         reader.endArray();
         return this;

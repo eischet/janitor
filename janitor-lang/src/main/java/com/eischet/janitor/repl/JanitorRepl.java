@@ -37,7 +37,7 @@ public class JanitorRepl {
     public JanitorRepl(final JanitorRuntime runtime) {
         this.runtime = runtime;
         module = new ScriptModule("repl", "");
-        globalScope = Scope.createGlobalScope(module);
+        globalScope = Scope.createGlobalScope(runtime.getEnvironment(), module);
     }
 
 

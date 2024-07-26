@@ -50,7 +50,7 @@ public class JRegex implements JConstant {
                     final JString str = arguments.getString(0);
                     final Matcher matcher = self.janitorGetHostValue().matcher(str.janitorGetHostValue());
                     if (matcher.find()) {
-                        return JString.of(matcher.group(1));
+                        return runningScript.getEnvironment().getBuiltins().string(matcher.group(1));
                     } else {
                         return JNull.NULL;
                     }
@@ -65,7 +65,7 @@ public class JRegex implements JConstant {
                     final JString string = arguments.getString(0);
                     final JString with = arguments.getString(1);
                     final Matcher matcher = self.janitorGetHostValue().matcher(string.janitorGetHostValue());
-                    return JString.of(matcher.replaceAll(with.janitorToString()));
+                    return runningScript.getEnvironment().getBuiltins().string(matcher.replaceAll(with.janitorToString()));
                 }
             });
         }
@@ -77,7 +77,7 @@ public class JRegex implements JConstant {
                     final JString string = arguments.getString(0);
                     final JString with = arguments.getString(1);
                     final Matcher matcher = self.janitorGetHostValue().matcher(string.janitorGetHostValue());
-                    return JString.of(matcher.replaceFirst(with.janitorToString()));
+                    return runningScript.getEnvironment().getBuiltins().string(matcher.replaceFirst(with.janitorToString()));
                 }
             });
         }
@@ -90,7 +90,7 @@ public class JRegex implements JConstant {
                     final JString str = arguments.getString(0);
                     final Matcher matcher = self.janitorGetHostValue().matcher(str.janitorGetHostValue());
                     while (matcher.find()) {
-                        list.add(JString.of(matcher.group(1)));
+                        list.add(runningScript.getEnvironment().getBuiltins().string(matcher.group(1)));
                     }
                     return list;
                 }
@@ -105,7 +105,7 @@ public class JRegex implements JConstant {
                     final JString str = arguments.getString(0);
                     final String[] parts = str.janitorGetHostValue().split(self.janitorGetHostValue().pattern());
                     for (final String part : parts) {
-                        list.add(JString.of(part));
+                        list.add(runningScript.getEnvironment().getBuiltins().string(part));
                     }
                     return list;
                 }

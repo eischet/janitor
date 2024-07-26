@@ -71,7 +71,7 @@ public class JBinary implements JConstant {
             return boundMethod;
         }
         if ("string".equals(name)) {
-            return JString.ofNullable(janitorIsTrue() ? new String(this.arr) : null);
+            return runningScript.getEnvironment().getBuiltins().nullableString(janitorIsTrue() ? new String(this.arr) : null);
         }
         if ("length".equals(name)) {
             return JInt.of(size());
@@ -96,11 +96,11 @@ public class JBinary implements JConstant {
             final Map<String, JUnboundMethod<JBinary>> m = new HashMap<>();
             m.put("encodeBase64", (self, runningScript, arguments) -> {
                 if (self.arr == null) {
-                    return JString.ofNullable(null);
+                    return runningScript.getEnvironment().getBuiltins().nullableString(null);
                 }
-                return JString.of(new String(java.util.Base64.getEncoder().encode(self.arr)));
+                return runningScript.getEnvironment().getBuiltins().string(new String(java.util.Base64.getEncoder().encode(self.arr)));
             });
-            m.put("toString", (self, runningScript, arguments) -> JString.ofNullable(self.janitorIsTrue() ? new String(self.arr) : null));
+            m.put("toString", (self, runningScript, arguments) -> runningScript.getEnvironment().getBuiltins().nullableString(self.janitorIsTrue() ? new String(self.arr) : null));
             m.put("size", (self, runningScript, arguments) -> JInt.of(self.size()));
             methods = m;
         }

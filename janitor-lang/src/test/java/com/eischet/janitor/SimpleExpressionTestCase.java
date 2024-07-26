@@ -49,7 +49,7 @@ public class SimpleExpressionTestCase {
 
         final Location root = Location.at(module, 0, 0, 0, 0);
 
-        final Scope globalScope = Scope.createGlobalScope(module); // new Scope(root, null, null);
+        final Scope globalScope = Scope.createGlobalScope(runtime.getEnviroment(), module); // new Scope(root, null, null);
         prepareGlobals.accept(globalScope);
         final RunningScriptProcess runningScript = new RunningScriptProcess(runtime, globalScope, scriptObject);
         return runningScript.run();

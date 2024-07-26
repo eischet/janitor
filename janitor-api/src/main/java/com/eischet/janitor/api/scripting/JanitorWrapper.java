@@ -27,9 +27,18 @@ public class JanitorWrapper<T> implements JanitorObject {
         this.wrapped = wrapped;
     }
 
+    public <X extends JanitorWrapper<T>> JanitorWrapper(final X dispatcher, final T wrapped, final Class<X> cls) {
+        this.dispatcher = (Dispatcher<JanitorWrapper<T>>) dispatcher;
+        this.wrapped = wrapped;
+    }
+
     @Override
     public @Nullable JanitorObject janitorGetAttribute(final JanitorScriptProcess runningScript, final String name, final boolean required) throws JanitorNameException {
-        return dispatcher.dispatch(this, runningScript, name);
+        final JanitorObject attribute = dispatcher.dispatch(this, runningScript, name);
+        if (attribute != null) {
+            return attribute;
+        }
+        return JanitorObject.super.janitorGetAttribute(runningScript, name, required);
     }
 
     @Override

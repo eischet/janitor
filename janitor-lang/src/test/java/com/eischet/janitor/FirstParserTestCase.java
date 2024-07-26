@@ -53,7 +53,7 @@ public class FirstParserTestCase {
         final Script scriptObject = JanitorCompiler.build(TestEnv.env, module, script, source);
         final OutputCatchingTestRuntime runtime = new OutputCatchingTestRuntime();
 
-        final Scope globalScope = Scope.createGlobalScope(module); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
+        final Scope globalScope = Scope.createGlobalScope(runtime.getEnviroment(), module); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
         globalScope.bind("x", 17);
         final RunningScriptProcess runningScript = new RunningScriptProcess(runtime, globalScope, scriptObject);
         runningScript.run();
@@ -68,7 +68,7 @@ public class FirstParserTestCase {
         final Script scriptObject = JanitorCompiler.build(TestEnv.env, module, script, source);
         final OutputCatchingTestRuntime runtime = new OutputCatchingTestRuntime();
 
-        final Scope globalScope = Scope.createGlobalScope(module); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
+        final Scope globalScope = Scope.createGlobalScope(runtime.getEnviroment(), module); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
         globalScope.bind("x", 17);
         final RunningScriptProcess runningScript = new RunningScriptProcess(runtime, globalScope, scriptObject);
         runningScript.run();
@@ -94,7 +94,7 @@ public class FirstParserTestCase {
         final Script scriptObject = JanitorCompiler.build(TestEnv.env, module, script, scriptSource);
         final OutputCatchingTestRuntime runtime = new OutputCatchingTestRuntime();
 
-        final Scope globalScope = Scope.createGlobalScope(module); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
+        final Scope globalScope = Scope.createGlobalScope(runtime.getEnviroment(), module); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
         prepareGlobals.accept(globalScope);
         final RunningScriptProcess runningScript = new RunningScriptProcess(runtime, globalScope, scriptObject);
         runningScript.run();
@@ -108,7 +108,7 @@ public class FirstParserTestCase {
         final Script scriptObject = JanitorCompiler.build(TestEnv.env, module, script, expressionSource);
         final OutputCatchingTestRuntime runtime = new OutputCatchingTestRuntime();
 
-        final Scope globalScope = Scope.createGlobalScope(module); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
+        final Scope globalScope = Scope.createGlobalScope(runtime.getEnviroment(), module); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
         prepareGlobals.accept(globalScope);
         final RunningScriptProcess runningScript = new RunningScriptProcess(runtime, globalScope, scriptObject);
         return runningScript.run();
@@ -695,15 +695,15 @@ public class FirstParserTestCase {
             set = collections.set(1, 2, 3);
             set.add(4);
             set.add(5);
-                        
+
             set.add(99);
             set.remove(99);
-                        
+
             return set;
             """);
         final JanitorObject result = script.run(TestEnv.NO_GLOBALS);
 
-        assertTrue(result instanceof JSet);
+        assertInstanceOf(JSet.class, result);
 
         JSet set = (JSet) result;
 
@@ -1379,7 +1379,7 @@ public class FirstParserTestCase {
 
         runtime.setTraceListener(System.out::println);
 
-        final Scope globalScope = Scope.createGlobalScope(module); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
+        final Scope globalScope = Scope.createGlobalScope(runtime.getEnviroment(), module); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
         final RunningScriptProcess runningScript = new RunningScriptProcess(runtime, globalScope, scriptObject);
         runningScript.run();
     }

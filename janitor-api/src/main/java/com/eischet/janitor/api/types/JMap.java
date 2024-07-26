@@ -1,5 +1,6 @@
 package com.eischet.janitor.api.types;
 
+import com.eischet.janitor.api.JanitorBuiltins;
 import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.calls.JCallArgs;
@@ -9,6 +10,8 @@ import com.eischet.janitor.api.errors.runtime.JanitorNameException;
 import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.Scope;
+import com.eischet.janitor.api.scripting.Dispatcher;
+import com.eischet.janitor.api.scripting.JanitorWrapper;
 import com.eischet.janitor.api.traits.JAssignable;
 import com.eischet.janitor.api.traits.JIterable;
 import com.eischet.janitor.toolbox.json.api.*;
@@ -22,17 +25,22 @@ import java.util.function.Consumer;
  * A map object, representing a mutable map of Janitor objects.
  * This is one of the built-in types that Janitor provides automatically.
  */
-public class JMap implements JanitorObject, JIterable, JsonWriter, JsonExportableObject {
+public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> implements JanitorObject, JIterable, JsonWriter, JsonExportableObject {
 
     private final Map<JanitorObject, JanitorObject> map = new HashMap<>();
     private final Map<String, JNativeMethod> methods;
+    private final JanitorBuiltins builtins;
 
     // TODO: all the __implementation methods should be moved to janitor-lang, into a dispatch table
 
     /**
      * Create a new JMap.
      */
-    public JMap() {
+    public JMap(final Dispatcher<JanitorWrapper<Map<JanitorObject, JanitorObject>>> dispatch, JanitorBuiltins builtins) {
+        super(dispatch, new HashMap<>());
+        this.builtins = builtins;
+
+
         final Map<String, JNativeMethod> methods = new HashMap<>();
         // methods.put("parseJson", JNativeMethod.of(arguments -> parseJson(arguments.require(1).getString(0).janitorGetHostValue())));
 
@@ -110,7 +118,7 @@ public class JMap implements JanitorObject, JIterable, JsonWriter, JsonExportabl
         if (map.containsKey(keyString)) {
             return map.get(keyString);
         }
-        return JanitorObject.super.janitorGetAttribute(runningScript, name, required);
+        return super.janitorGetAttribute(runningScript, name, required);
     }
 
     /**
@@ -167,7 +175,7 @@ public class JMap implements JanitorObject, JIterable, JsonWriter, JsonExportabl
      * @param value the value
      */
     public void put(final String key, final JanitorObject value) {
-        map.put(JString.of(key), value);
+        map.put(builtins.nullableString(key), value);
     }
 
     /**
@@ -211,7 +219,7 @@ public class JMap implements JanitorObject, JIterable, JsonWriter, JsonExportabl
      * @param value the value
      */
     public void put(final @NotNull String key, final @Nullable String value) {
-        map.put(JString.of(key), JString.ofNullable(value));
+        map.put(builtins.nullableString(key),  builtins.nullableString(value));
     }
 
     /**
@@ -304,7 +312,7 @@ public class JMap implements JanitorObject, JIterable, JsonWriter, JsonExportabl
         }
         final JsonInputStream reader = env.getLenientJsonConsumer(json);
         // final JsonInputStream reader = GsonInputStream.lenient(json);
-        return parseJson(reader);
+        return parseJson(reader, env);
     }
 
     /**
@@ -314,13 +322,13 @@ public class JMap implements JanitorObject, JIterable, JsonWriter, JsonExportabl
      * @return the map
      * @throws JsonException if the JSON is invalid, e.g. it's not really a map
      */
-    public JMap parseJson(final JsonInputStream reader) throws JsonException {
+    public JMap parseJson(final JsonInputStream reader, final JanitorEnvironment env) throws JsonException {
         reader.beginObject();
         while (reader.hasNext()) {
             if (reader.peek() == JsonTokenType.END_OBJECT) {
                 break;
             }
-            put(JString.of(reader.nextKey()), JCollection.parseJsonValue(reader));
+            put(builtins.nullableString(reader.nextKey()), JCollection.parseJsonValue(reader, env));
         }
         reader.endObject();
         return this;
@@ -340,7 +348,7 @@ public class JMap implements JanitorObject, JIterable, JsonWriter, JsonExportabl
      * @param consumer the consumer of the value
      */
     public void extractString(final JanitorScriptProcess running, final String key, final Consumer<String> consumer) {
-        final JanitorObject value = map.get(JString.of(key));
+        final JanitorObject value = map.get(builtins.nullableString(key));
         if (value instanceof JString str) {
             consumer.accept(str.janitorGetHostValue());
         } else if (value != null) {
@@ -356,7 +364,7 @@ public class JMap implements JanitorObject, JIterable, JsonWriter, JsonExportabl
      * @param consumer the consumer of the value
      */
     public void extract(final String key, final Consumer<JanitorObject> consumer) {
-        final JanitorObject value = map.get(JString.of(key));
+        final JanitorObject value = map.get(builtins.nullableString(key));
         if (value != null && value != JNull.NULL) {
             consumer.accept(value);
         }

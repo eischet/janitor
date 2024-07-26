@@ -132,7 +132,7 @@ public class JanitorScript implements RunnableScript {
 
     @Override
     public @NotNull JanitorObject run(final @NotNull Consumer<Scope> prepareGlobals) throws JanitorRuntimeException {
-        final Scope globalScope = Scope.createGlobalScope(module); // new Scope(Location.at(module, 0, 0), BUILTIN_SCOPE, null);
+        final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), module); // new Scope(Location.at(module, 0, 0), BUILTIN_SCOPE, null);
         runtime.prepareGlobals(globalScope);
         prepareGlobals.accept(globalScope);
         final RunningScriptProcess runningScript = new RunningScriptProcess(runtime, globalScope, scriptObject);
@@ -154,7 +154,7 @@ public class JanitorScript implements RunnableScript {
 
     @Override
     public @NotNull ResultAndScope runAndKeepGlobals(final @NotNull Consumer<Scope> prepareGlobals) throws JanitorRuntimeException {
-        final Scope globalScope = Scope.createGlobalScope(module); // new Scope(Location.at(module, 0, 0), BUILTIN_SCOPE, null);
+        final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), module); // new Scope(Location.at(module, 0, 0), BUILTIN_SCOPE, null);
         runtime.prepareGlobals(globalScope);
         prepareGlobals.accept(globalScope);
         final RunningScriptProcess runningScript = new RunningScriptProcess(runtime, globalScope, scriptObject);

@@ -2,6 +2,7 @@ package com.eischet.janitor.api;
 
 import com.eischet.janitor.api.i18n.JanitorFormatting;
 import com.eischet.janitor.api.modules.JanitorModuleRegistration;
+import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.types.JNull;
 import com.eischet.janitor.api.types.JString;
 import com.eischet.janitor.api.types.JanitorObject;
@@ -85,4 +86,10 @@ public interface JanitorEnvironment extends JanitorUserEnvironment, JanitorImple
      * @return the built-in classes
      */
     @NotNull JanitorBuiltins getBuiltins();
+
+    /**
+     * Return the builtin scope, e.g. for adding thing to it.
+     * @return the built-in scope
+     */
+    Scope getBuiltinScope();
 }

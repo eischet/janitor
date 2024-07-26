@@ -1,5 +1,8 @@
 package com.eischet.janitor.env;
 
+import com.eischet.janitor.api.scopes.Location;
+import com.eischet.janitor.api.scopes.Scope;
+import com.eischet.janitor.api.scopes.ScriptModule;
 import com.eischet.janitor.api.scripting.*;
 import com.eischet.janitor.api.FilterPredicate;
 import com.eischet.janitor.api.JanitorEnvironment;
@@ -41,6 +44,15 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
     public static final FilterPredicate NUMB = x -> true;
 
     private final JanitorFormatting formatting;
+
+    private final Scope BUILTIN_SCOPE = Scope.createBuiltinScope(this, Location.at(ScriptModule.builtin(), 0, 0, 0, 0)); //  new Scope(Location.at(ScriptModule.builtin(), 0, 0), null, null);
+
+    {
+        BUILTIN_SCOPE.bindF("print", (rs, args) -> rs.getRuntime().print(rs, args));
+        BUILTIN_SCOPE.bindF("assert", Scope::doAssert);
+        BUILTIN_SCOPE.bind("__builtin__", BUILTIN_SCOPE); // not sure if this is actually a good idea, because that's a perfect circle of references.
+        BUILTIN_SCOPE.seal();
+    }
 
     // TODO: date, datetime, float, list, set, map!
 
@@ -140,7 +152,7 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
 
 
         // TODO: these should all be replaced by proper DispatchTables, which were "invented" later.
-        addStringMethod("length", JStringClass::__length);
+        // MOVED TO JanitorDefaultBuiltings: addStringMethod("length", JStringClass::__length);
         addStringMethod("trim", JStringClass::__trim);
         addStringMethod("contains", JStringClass::__contains);
         addStringMethod("containsIgnoreCase", JStringClass::__containsIgnoreCase);
@@ -293,7 +305,7 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
             return JFloat.of(dou);
         }
         if (o instanceof String string) {
-            return JString.of(string);
+            return builtins.string(string);
         }
         if (o instanceof Long lo) {
             return JInt.of(lo);
@@ -360,5 +372,10 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
     @Override
     public JanitorDefaultBuiltins getBuiltins() {
         return builtins;
+    }
+
+    @Override
+    public Scope getBuiltinScope() {
+        return BUILTIN_SCOPE;
     }
 }

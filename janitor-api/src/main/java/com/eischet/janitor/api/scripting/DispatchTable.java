@@ -238,7 +238,8 @@ public class DispatchTable<T> implements Dispatcher<JanitorWrapper<T>> {
         if (handler != null) {
             return handler.lookupAttribute(instance, process);
         }
-        return null;
+        return process.lookupClassAttribute(instance, name);
+        // return null;
     }
 
 }

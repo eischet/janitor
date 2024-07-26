@@ -1,6 +1,7 @@
 package com.eischet.janitor.api.scopes;
 
 
+import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.calls.JCallArgs;
 import com.eischet.janitor.api.errors.runtime.JanitorAssertionException;
@@ -37,24 +38,18 @@ import java.util.*;
  */
 public class Scope implements JanitorObject {
 
-    private static final Scope BUILTIN_SCOPE = createBuiltinScope(Location.at(ScriptModule.builtin(), 0, 0, 0, 0)); //  new Scope(Location.at(ScriptModule.builtin(), 0, 0), null, null);
-
-    static {
-        Scope.BUILTIN_SCOPE.bindF("print", (rs, args) -> rs.getRuntime().print(rs, args));
-        Scope.BUILTIN_SCOPE.bindF("assert", Scope::doAssert);
-        Scope.BUILTIN_SCOPE.bind("__builtin__", Scope.BUILTIN_SCOPE);
-        Scope.BUILTIN_SCOPE.seal();
-    }
 
     private final @Nullable Scope parent;
     private final Map<String, JanitorObject> variables = new HashMap<>(4);
     private final @Nullable Location location;
     private final @Nullable Scope moduleScope;
+    private final JanitorEnvironment env;
     private @Nullable Location ip;
     private @Nullable JanitorObject implicitObject;
     private boolean sealed = false;
 
-    private Scope(final @Nullable Location location, final @Nullable Scope parent, final @Nullable Scope moduleScope) {
+    private Scope(final JanitorEnvironment env, final @Nullable Location location, final @Nullable Scope parent, final @Nullable Scope moduleScope) {
+        this.env = env;
         this.location = location;
         this.parent = parent;
         this.moduleScope = moduleScope;
@@ -67,8 +62,8 @@ public class Scope implements JanitorObject {
      * @param module the module
      * @return the global scope
      */
-    public static Scope createGlobalScope(final ScriptModule module) {
-        return new Scope(Location.at(module, 0, 0, 0, 0), Scope.BUILTIN_SCOPE, null);
+    public static Scope createGlobalScope(final JanitorEnvironment env, final ScriptModule module) {
+        return new Scope(env, Location.at(module, 0, 0, 0, 0), env.getBuiltinScope(), null);
     }
 
     /**
@@ -77,8 +72,8 @@ public class Scope implements JanitorObject {
      * @param location the location
      * @return the builtin scope
      */
-    public static Scope createBuiltinScope(final Location location) {
-        return new Scope(location, null, null);
+    public static Scope createBuiltinScope(final JanitorEnvironment env, final Location location) {
+        return new Scope(env, location, null, null);
     }
 
     /**
@@ -88,7 +83,7 @@ public class Scope implements JanitorObject {
      * @return the main scope
      */
     public static Scope createMainScope(final Scope globalScope) {
-        return new Scope(null, globalScope, null);
+        return new Scope(globalScope.env, null, globalScope, null);
     }
 
     /**
@@ -99,7 +94,7 @@ public class Scope implements JanitorObject {
      * @return the fresh module scope
      */
     public static Scope createFreshModuleScope(final Scope moduleScope, final Scope currentScope) {
-        return new Scope(moduleScope.getLocation(), currentScope, moduleScope);
+        return new Scope(moduleScope.env, moduleScope.getLocation(), currentScope, moduleScope);
     }
 
     /**
@@ -110,7 +105,7 @@ public class Scope implements JanitorObject {
      * @return the fresh block scope
      */
     public static Scope createFreshBlockScope(final Location location, final Scope currentScope) {
-        return new Scope(location, currentScope, null);
+        return new Scope(currentScope.env, location, currentScope, null);
     }
 
     /**
@@ -382,7 +377,7 @@ public class Scope implements JanitorObject {
      * @return this scope (for chained, builder-style calls)
      */
     public Scope bind(final String variableName, final String variable) {
-        return bind(variableName, JString.of(variable));
+        return bind(variableName, env.getBuiltins().string(variable));
     }
 
     /**
@@ -435,6 +430,9 @@ public class Scope implements JanitorObject {
      * @return a JMap of variable names and their values
      */
     public JMap toMap() {
+        return null;
+        // TODO: needed to comment out due moving dispatch tables into builtins; delete this or make it work again.
+        /*
         final JMap dump = new JMap();
         if (moduleScope != null) {
             dump.putAll(moduleScope.toMap());
@@ -443,6 +441,8 @@ public class Scope implements JanitorObject {
         }
         variables.forEach((key, value) -> dump.put(JString.of(key), value));
         return dump;
+
+         */
     }
 
     @Override

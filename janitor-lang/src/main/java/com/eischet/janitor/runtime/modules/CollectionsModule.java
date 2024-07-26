@@ -6,7 +6,6 @@ import com.eischet.janitor.api.errors.runtime.JanitorNameException;
 import com.eischet.janitor.api.modules.JanitorModuleRegistration;
 import com.eischet.janitor.api.modules.JanitorNativeModule;
 import com.eischet.janitor.api.types.JList;
-import com.eischet.janitor.api.types.JMap;
 import com.eischet.janitor.api.types.JSet;
 import com.eischet.janitor.api.types.JanitorObject;
 import org.jetbrains.annotations.Nullable;
@@ -24,7 +23,7 @@ public class CollectionsModule extends JanitorNativeModule {
             return JNativeMethod.of(arguments -> new JList(arguments.getList().stream()));
         }
         if ("map".equals(name)) {
-            return JNativeMethod.of(arguments -> { arguments.require(0); return new JMap(); });
+            return JNativeMethod.of(arguments -> { arguments.require(0); return runningScript.getEnvironment().getBuiltins().map(); });
         }
         return null;
     }

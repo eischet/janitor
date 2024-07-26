@@ -4,6 +4,7 @@ import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.calls.JCallArgs;
 import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
+import com.eischet.janitor.api.scripting.JanitorWrapper;
 import com.eischet.janitor.api.types.*;
 import org.jetbrains.annotations.Nullable;
 
@@ -163,7 +164,7 @@ public class JStringClass {
         return runningScript.getEnvironment().getBuiltins().string(self.janitorGetHostValue().trim());
     }
 
-    public static JanitorObject __length(final JString self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static JanitorObject __length(final JanitorWrapper<String> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);
         return JInt.of(self.janitorGetHostValue().length());
     }

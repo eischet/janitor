@@ -2,6 +2,8 @@ package com.eischet.janitor.api.types;
 
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
+import com.eischet.janitor.api.scripting.Dispatcher;
+import com.eischet.janitor.api.scripting.JanitorWrapper;
 import com.eischet.janitor.api.strings.WildCardMatcher;
 import com.eischet.janitor.api.traits.JConstant;
 import com.eischet.janitor.api.util.ShortStringInterner;
@@ -9,7 +11,6 @@ import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonExportablePrimitive;
 import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
@@ -17,7 +18,7 @@ import java.util.Objects;
  * A string object, representing a string of characters.
  * This is one of the built-in types that Janitor provides automatically.
  */
-public class JString  implements JConstant, JsonExportablePrimitive {
+public class JString extends JanitorWrapper<String> implements JConstant, JsonExportablePrimitive {
 
 
     /**
@@ -25,12 +26,8 @@ public class JString  implements JConstant, JsonExportablePrimitive {
      */
     public static final String CLASS_NAME = "string";
 
-    /**
-     * Empty string constant.
-     */
-    public static final JString EMPTY = new JString("");
-
     protected final String string;
+
 
     @Override
     public boolean janitorIsTrue() {
@@ -57,10 +54,13 @@ public class JString  implements JConstant, JsonExportablePrimitive {
 
     /**
      * Create a new JString.
-     * @param string the string
+     *
+     * @param dispatcher
+     * @param string     the string
      */
-    protected JString(final String string) {
-        this.string = string != null && !string.isEmpty() ? ShortStringInterner.maybeIntern(string) : "";
+    protected JString(final Dispatcher<JanitorWrapper<String>> dispatcher, final String string) {
+        super(dispatcher, string != null && !string.isEmpty() ? ShortStringInterner.maybeIntern(string) : "");
+        this.string = super.wrapped; // TODO: remove this alias
     }
 
     /**
@@ -72,26 +72,6 @@ public class JString  implements JConstant, JsonExportablePrimitive {
         return string;
     }
 
-    /**
-     * Create a new JString.
-     * @param string the string
-     * @return the string, or NULL if the input is null
-     */
-    public static JanitorObject ofNullable(/* TODO: final JanitorEnvironment env, */final @Nullable String string) {
-        return string == null ? JNull.NULL : JString.of(string);
-    }
-
-    /**
-     * Create a new JString.
-     * @param string the string
-     * @return the string
-     */
-    public static JString of(final @Nullable String string) {
-        if (string == null || string.isEmpty()) {
-            return EMPTY;
-        }
-        return new JString(string);
-    }
 
     @Override
     public String janitorGetHostValue() {
@@ -152,6 +132,10 @@ public class JString  implements JConstant, JsonExportablePrimitive {
             return ok;
         }
         throw new JanitorArgumentException(scriptProcess, "Expected a string value, but got " + value.janitorClassName() + " instead.");
+    }
+
+    public static JString newInstance(final Dispatcher<JanitorWrapper<String>> dispatcher, final String value) {
+        return new JString(dispatcher, value);
     }
 
 }
