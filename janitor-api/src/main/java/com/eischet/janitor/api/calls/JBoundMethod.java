@@ -2,7 +2,7 @@ package com.eischet.janitor.api.calls;
 
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
-import com.eischet.janitor.api.traits.JCallable;
+import com.eischet.janitor.api.types.JCallable;
 import com.eischet.janitor.api.types.JanitorObject;
 import org.jetbrains.annotations.NotNull;
 

@@ -5,7 +5,7 @@ import com.eischet.janitor.api.errors.runtime.JanitorNameException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.api.scopes.Scope;
-import com.eischet.janitor.api.traits.JAssignable;
+import com.eischet.janitor.api.types.JAssignable;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.util.JanitorSemantics;
 import com.eischet.janitor.compiler.ast.expression.Expression;

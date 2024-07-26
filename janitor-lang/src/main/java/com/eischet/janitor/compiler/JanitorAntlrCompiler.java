@@ -4,7 +4,7 @@ import com.eischet.janitor.api.JanitorCompilerSettings;
 import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.api.scopes.ScriptModule;
-import com.eischet.janitor.api.types.*;
+import com.eischet.janitor.api.types.builtin.*;
 import com.eischet.janitor.compiler.ast.Ast;
 import com.eischet.janitor.compiler.ast.AstNode;
 import com.eischet.janitor.compiler.ast.expression.Expression;

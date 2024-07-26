@@ -1,7 +1,7 @@
 package com.eischet.janitor;
 
-import com.eischet.janitor.api.types.JDate;
-import com.eischet.janitor.api.types.JDateTime;
+import com.eischet.janitor.api.types.builtin.JDate;
+import com.eischet.janitor.api.types.builtin.JDateTime;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;

@@ -1,14 +1,17 @@
 package com.eischet.janitor.env;
 
+import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.calls.JCallArgs;
 import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
-import com.eischet.janitor.api.scripting.JanitorWrapper;
+import com.eischet.janitor.api.types.wrapper.JanitorWrapper;
+import com.eischet.janitor.api.types.builtin.*;
 import com.eischet.janitor.toolbox.json.api.JsonException;
-import com.eischet.janitor.api.traits.JCallable;
+import com.eischet.janitor.api.types.JCallable;
 import com.eischet.janitor.api.types.*;
+import com.eischet.janitor.toolbox.json.api.JsonInputStream;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -22,11 +25,45 @@ public class JListOperations {
 
     public static JList __parseJson(final JanitorWrapper<List<JanitorObject>> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         try {
-            return ((JList) self).parseJson(arguments.require(1).getString(0).janitorGetHostValue(), runningScript.getRuntime().getEnvironment());
+            return parseJson((JList) self, arguments.require(1).getString(0).janitorGetHostValue(), runningScript.getRuntime().getEnvironment());
         } catch (JsonException e) {
             throw new JanitorNativeException(runningScript, "error parsing json", e);
         }
     }
+
+    /**
+     * Read a JSON string, representing a list, into this list.
+     *
+     * @param json the JSON string
+     * @param env  the environment
+     * @return this list
+     * @throws JsonException if the JSON is invalid, e.g. it's not really a list
+     */
+    public static JList parseJson(final JList self, final String json, final JanitorEnvironment env) throws JsonException {
+        if (json == null || json.isBlank()) {
+            return self;
+        }
+        final JsonInputStream reader = env.getLenientJsonConsumer(json);
+        return parseJson(self, reader, env);
+    }
+
+
+    /**
+     * Read a JSON string, representing a list, into this list.
+     *
+     * @param reader the JSON reader
+     * @return this list
+     * @throws JsonException if the JSON is invalid, e.g. it's not really a list
+     */
+    public static JList parseJson(final JList self, final JsonInputStream reader, final JanitorEnvironment env) throws JsonException {
+        reader.beginArray();
+        while (reader.hasNext()) {
+            self.add(JCollection.parseJsonValue(reader, env));
+        }
+        reader.endArray();
+        return self;
+    }
+
 
     public static JString __toJson(final JanitorWrapper<List<JanitorObject>> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         try {

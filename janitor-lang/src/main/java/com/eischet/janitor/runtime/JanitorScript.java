@@ -7,7 +7,7 @@ import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.ResultAndScope;
 import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.scopes.ScriptModule;
-import com.eischet.janitor.api.types.JNull;
+import com.eischet.janitor.api.types.builtin.JNull;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.compiler.JanitorCompiler;
 import com.eischet.janitor.compiler.ast.statement.Script;

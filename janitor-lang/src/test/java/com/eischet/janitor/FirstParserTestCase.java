@@ -15,6 +15,7 @@ import com.eischet.janitor.api.scopes.ResultAndScope;
 import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.scopes.ScriptModule;
 import com.eischet.janitor.api.types.*;
+import com.eischet.janitor.api.types.builtin.*;
 import com.eischet.janitor.compiler.JanitorAntlrCompiler;
 import com.eischet.janitor.compiler.JanitorCompiler;
 import com.eischet.janitor.compiler.ast.statement.Script;

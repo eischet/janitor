@@ -3,7 +3,7 @@ package com.eischet.janitor.compiler.ast.expression.literal;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.Location;
-import com.eischet.janitor.api.types.JDateTime;
+import com.eischet.janitor.api.types.builtin.JDateTime;
 import com.eischet.janitor.api.types.JanitorObject;
 
 /**

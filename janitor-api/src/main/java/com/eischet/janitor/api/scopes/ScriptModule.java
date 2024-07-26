@@ -1,7 +1,7 @@
 package com.eischet.janitor.api.scopes;
 
 
-import com.eischet.janitor.api.calls.Memoized;
+import com.eischet.janitor.api.util.Memoized;
 
 import java.util.List;
 

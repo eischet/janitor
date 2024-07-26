@@ -1,9 +1,10 @@
 package com.eischet.janitor.env;
 
 import com.eischet.janitor.api.JanitorBuiltins;
-import com.eischet.janitor.api.scripting.DispatchTable;
-import com.eischet.janitor.api.scripting.JanitorWrapper;
+import com.eischet.janitor.api.types.wrapper.JanitorWrapperDispatchTable;
+import com.eischet.janitor.api.types.wrapper.JanitorWrapper;
 import com.eischet.janitor.api.types.*;
+import com.eischet.janitor.api.types.builtin.*;
 import com.eischet.janitor.api.util.DateTimeUtilities;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -19,12 +20,12 @@ public class JanitorDefaultBuiltins implements JanitorBuiltins {
     // TODO: figure out why I cannot write Dispatcher<JMap> here. I keep forgetting the subleties of the Java generics system...
     // I'm sure it's something with blah super foo extends lalala that everybody but me knows about. ;-)
 
-    private DispatchTable<Map<JanitorObject, JanitorObject>> mapDispatcher = new DispatchTable<>();
-    private DispatchTable<String> stringDispatcher = new DispatchTable<>();
-    private DispatchTable<List<JanitorObject>> listDispatcher = new DispatchTable<>();
-    private DispatchTable<Set<JanitorObject>> setDispatcher = new DispatchTable<>();
-    private DispatchTable<Long> intDispatcher = new DispatchTable<>();
-    private DispatchTable<byte[]> binaryDispatcher = new DispatchTable<>();
+    private JanitorWrapperDispatchTable<Map<JanitorObject, JanitorObject>> mapDispatcher = new JanitorWrapperDispatchTable<>();
+    private JanitorWrapperDispatchTable<String> stringDispatcher = new JanitorWrapperDispatchTable<>();
+    private JanitorWrapperDispatchTable<List<JanitorObject>> listDispatcher = new JanitorWrapperDispatchTable<>();
+    private JanitorWrapperDispatchTable<Set<JanitorObject>> setDispatcher = new JanitorWrapperDispatchTable<>();
+    private JanitorWrapperDispatchTable<Long> intDispatcher = new JanitorWrapperDispatchTable<>();
+    private JanitorWrapperDispatchTable<byte[]> binaryDispatcher = new JanitorWrapperDispatchTable<>();
 
 
     public JanitorDefaultBuiltins() {

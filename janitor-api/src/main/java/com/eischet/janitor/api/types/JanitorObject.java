@@ -3,6 +3,7 @@ package com.eischet.janitor.api.types;
 
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorNameException;
+import com.eischet.janitor.api.types.builtin.JString;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

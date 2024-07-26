@@ -4,7 +4,7 @@ import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.RunnableScript;
 import com.eischet.janitor.api.calls.JCallArgs;
-import com.eischet.janitor.api.types.JNull;
+import com.eischet.janitor.api.types.builtin.JNull;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.env.JanitorDefaultEnvironment;
 import com.eischet.janitor.runtime.BaseRuntime;

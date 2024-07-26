@@ -3,10 +3,10 @@ package com.eischet.janitor.env;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.calls.JCallArgs;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
-import com.eischet.janitor.api.types.JDate;
-import com.eischet.janitor.api.types.JDateTime;
-import com.eischet.janitor.api.types.JInt;
-import com.eischet.janitor.api.types.JString;
+import com.eischet.janitor.api.types.builtin.JDate;
+import com.eischet.janitor.api.types.builtin.JDateTime;
+import com.eischet.janitor.api.types.builtin.JInt;
+import com.eischet.janitor.api.types.builtin.JString;
 import com.eischet.janitor.json.impl.DateTimeUtils;
 
 import java.time.ZoneId;

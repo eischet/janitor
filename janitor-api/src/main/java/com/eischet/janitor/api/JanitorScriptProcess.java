@@ -6,8 +6,8 @@ import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.api.scopes.ResultAndScope;
 import com.eischet.janitor.api.scopes.Scope;
-import com.eischet.janitor.api.types.JFloat;
-import com.eischet.janitor.api.types.JString;
+import com.eischet.janitor.api.types.builtin.JFloat;
+import com.eischet.janitor.api.types.builtin.JString;
 import com.eischet.janitor.api.types.JanitorObject;
 import org.jetbrains.annotations.NotNull;
 

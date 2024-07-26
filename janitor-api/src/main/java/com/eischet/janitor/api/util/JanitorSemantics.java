@@ -5,9 +5,10 @@ import com.eischet.janitor.api.errors.runtime.JanitorArithmeticException;
 import com.eischet.janitor.api.errors.runtime.JanitorNotImplementedException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.errors.runtime.JanitorTypeException;
-import com.eischet.janitor.api.strings.SingleWildCardMatcher;
-import com.eischet.janitor.api.traits.JAssignable;
+import com.eischet.janitor.api.util.strings.SingleWildCardMatcher;
+import com.eischet.janitor.api.types.JAssignable;
 import com.eischet.janitor.api.types.*;
+import com.eischet.janitor.api.types.builtin.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;

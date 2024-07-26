@@ -9,7 +9,7 @@ import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.RunnableScript;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
-import com.eischet.janitor.api.types.JBool;
+import com.eischet.janitor.api.types.builtin.JBool;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.runtime.JanitorScript;
 import com.eischet.janitor.runtime.SLFLoggingRuntime;

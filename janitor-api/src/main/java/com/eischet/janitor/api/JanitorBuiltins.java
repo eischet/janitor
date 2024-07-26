@@ -1,6 +1,7 @@
 package com.eischet.janitor.api;
 
 import com.eischet.janitor.api.types.*;
+import com.eischet.janitor.api.types.builtin.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -64,12 +65,14 @@ public interface JanitorBuiltins {
     @NotNull JSet set(@NotNull Stream<JanitorObject> stream);
 
 
-    @NotNull JInt integer(long value);
+    @NotNull
+    JInt integer(long value);
 
     @NotNull JInt integer(int value);
 
     @NotNull JanitorObject nullableInteger(@Nullable Number value);
 
-    @NotNull JBinary binary(byte [] arr);
+    @NotNull
+    JBinary binary(byte [] arr);
 
 }

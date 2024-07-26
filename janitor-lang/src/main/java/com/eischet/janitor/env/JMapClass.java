@@ -1,12 +1,19 @@
 package com.eischet.janitor.env;
 
+import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.calls.JCallArgs;
 import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
-import com.eischet.janitor.api.scripting.JanitorWrapper;
+import com.eischet.janitor.api.types.wrapper.JanitorWrapper;
 import com.eischet.janitor.api.types.*;
+import com.eischet.janitor.api.types.builtin.JBool;
+import com.eischet.janitor.api.types.builtin.JMap;
+import com.eischet.janitor.api.types.builtin.JNull;
+import com.eischet.janitor.api.types.builtin.JString;
 import com.eischet.janitor.toolbox.json.api.JsonException;
+import com.eischet.janitor.toolbox.json.api.JsonInputStream;
+import com.eischet.janitor.toolbox.json.api.JsonTokenType;
 
 import java.util.Map;
 
@@ -68,7 +75,7 @@ public class JMapClass {
      */
     public static JMap __parseJson(final JanitorWrapper<Map<JanitorObject, JanitorObject>> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         try {
-            return ((JMap) self).parseJson(arguments.require(1).getString(0).janitorGetHostValue(), runningScript.getRuntime().getEnvironment());
+            return parseJson((JMap) self, arguments.require(1).getString(0).janitorGetHostValue(), runningScript.getRuntime().getEnvironment());
         } catch (JsonException e) {
             throw new JanitorNativeException(runningScript, "error parsing json", e);
         }
@@ -103,4 +110,41 @@ public class JMapClass {
     public static JanitorObject __values(JanitorWrapper<Map<JanitorObject, JanitorObject>> mapJanitorWrapper, JanitorScriptProcess scriptProcess, JCallArgs jCallArgs) {
         return scriptProcess.getEnvironment().getBuiltins().list(mapJanitorWrapper.janitorGetHostValue().values().stream());
     }
+
+    /**
+     * Parse a JSON string into a map.
+     *
+     * @param json the JSON string
+     * @param env  the environment
+     * @return the map
+     * @throws JsonException on JSON errors
+     */
+    public static JMap parseJson(final JMap self, final String json, final JanitorEnvironment env) throws JsonException {
+        if (json == null || json.isBlank()) {
+            return self;
+        }
+        final JsonInputStream reader = env.getLenientJsonConsumer(json);
+        // final JsonInputStream reader = GsonInputStream.lenient(json);
+        return parseJson(self, reader, env);
+    }
+
+    /**
+     * Parse a JSON string into a map.
+     *
+     * @param reader the JSON reader
+     * @return the map
+     * @throws JsonException if the JSON is invalid, e.g. it's not really a map
+     */
+    public static JMap parseJson(final JMap self, final JsonInputStream reader, final JanitorEnvironment env) throws JsonException {
+        reader.beginObject();
+        while (reader.hasNext()) {
+            if (reader.peek() == JsonTokenType.END_OBJECT) {
+                break;
+            }
+            self.put(env.getBuiltins().nullableString(reader.nextKey()), JCollection.parseJsonValue(reader, env));
+        }
+        reader.endObject();
+        return self;
+    }
+
 }

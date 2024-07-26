@@ -1,6 +1,6 @@
 package com.eischet.janitor.api.util;
 
-import com.eischet.janitor.api.types.JBool;
+import com.eischet.janitor.api.types.builtin.JBool;
 
 /**
  * Possible Results of comparison operations.
