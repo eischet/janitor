@@ -1,5 +1,8 @@
 package com.eischet.janitor.env;
 
+import com.eischet.janitor.api.calls.JCallArgs;
+import com.eischet.janitor.api.errors.runtime.JanitorAssertionException;
+import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.scopes.ScriptModule;
@@ -11,6 +14,7 @@ import com.eischet.janitor.api.calls.JBoundMethod;
 import com.eischet.janitor.api.calls.JUnboundMethod;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.i18n.JanitorFormatting;
+import com.eischet.janitor.api.util.JanitorSemantics;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.json.impl.JsonExportControls;
 import com.eischet.janitor.toolbox.json.api.JsonInputStream;
@@ -49,7 +53,7 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
 
     {
         BUILTIN_SCOPE.bindF("print", (rs, args) -> rs.getRuntime().print(rs, args));
-        BUILTIN_SCOPE.bindF("assert", Scope::doAssert);
+        BUILTIN_SCOPE.bindF("assert", JanitorDefaultEnvironment::doAssert);
         BUILTIN_SCOPE.bind("__builtin__", BUILTIN_SCOPE); // not sure if this is actually a good idea, because that's a perfect circle of references.
         BUILTIN_SCOPE.seal();
     }
@@ -250,5 +254,27 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
     @Override
     public Scope getBuiltinScope() {
         return BUILTIN_SCOPE;
+    }
+
+    /**
+     * Assert a condition.
+     *
+     * @param process the running script
+     * @param args    the arguments
+     * @return the condition
+     * @throws JanitorRuntimeException if the condition is not true
+     */
+    public static JanitorObject doAssert(final JanitorScriptProcess process, final JCallArgs args) throws JanitorRuntimeException {
+        // TODO: this is really not the right place to put this method, because it is not at all related to the scope. JanitorSemantics would be better, for example.
+        final JanitorObject condition = args.require(0, 1).get(0);
+        final String message = args.getOptionalStringValue(1, "");
+        if (!JanitorSemantics.isTruthy(condition)) {
+            if (message == null || message.isBlank()) {
+                throw new JanitorAssertionException(process, "assertion failed!");
+            } else {
+                throw new JanitorAssertionException(process, "assertion failed: " + message);
+            }
+        }
+        return condition;
     }
 }

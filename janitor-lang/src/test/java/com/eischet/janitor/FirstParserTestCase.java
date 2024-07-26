@@ -1281,7 +1281,7 @@ public class FirstParserTestCase {
     public void base64decodeStrings() throws JanitorRuntimeException, JanitorCompilerException {
         final String foobarbazAsString = "foobarbaz";
         final String foobarbazAsBase64 = "Zm9vYmFyYmF6";
-        final JBinary foobarbazAsBinary = new JBinary(foobarbazAsString.getBytes(StandardCharsets.UTF_8));
+        final JBinary foobarbazAsBinary = TestEnv.env.getBuiltins().binary(foobarbazAsString.getBytes(StandardCharsets.UTF_8));
 
         assertEquals(foobarbazAsBase64 + "\n", getOutput("print(binary.encodeBase64());", g -> g.bind("binary", foobarbazAsBinary)));
         assertEquals(foobarbazAsString + "\n", getOutput("print(base.decodeBase64().string);", g -> g.bind("base", foobarbazAsBase64)));

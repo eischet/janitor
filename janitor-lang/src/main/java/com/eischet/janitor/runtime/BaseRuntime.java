@@ -48,11 +48,6 @@ public abstract class BaseRuntime implements JanitorRuntime {
         return enviroment.lookupClassAttribute(runningScript, instance, attributeName);
     }
 
-    @Override
-    public @NotNull JanitorObject nullableString(@Nullable final String javaString) {
-        return enviroment.getBuiltins().nullableString(javaString);
-    }
-
     /**
      * Adds a module resolver.
      * The resolvers will be called in reverse order of addition, so later resolvers can override earlier ones.

@@ -1,33 +1,24 @@
 package com.eischet.janitor.api.types;
 
-import com.eischet.janitor.api.JanitorScriptProcess;
-import com.eischet.janitor.api.calls.JUnboundMethod;
-import com.eischet.janitor.api.errors.runtime.JanitorNameException;
+import com.eischet.janitor.api.scripting.Dispatcher;
+import com.eischet.janitor.api.scripting.JanitorWrapper;
 import com.eischet.janitor.api.traits.JConstant;
-import com.eischet.janitor.api.util.JanitorClass;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * A binary object, like a byte array.
  * This is one of the built-in types that Janitor provides automatically.
  */
-public class JBinary implements JConstant {
+public class JBinary extends JanitorWrapper<byte[]> implements JConstant {
 
-    private static final JBinaryClass cls = new JBinaryClass();
-    private final byte[] arr;
+    public static JBinary newInstance(final Dispatcher<JanitorWrapper<byte[]>> dispatcher, final byte[] wrapped) {
+        return new JBinary(dispatcher, wrapped);
+    }
 
-    /**
-     * Create a new JBinary from a byte array.
-     *
-     * @param arr the byte array
-     */
-    public JBinary(final byte[] arr) {
-        this.arr = arr;
+    private JBinary(final Dispatcher<JanitorWrapper<byte[]>> dispatcher, final byte[] wrapped) {
+        super(dispatcher, wrapped);
     }
 
     /**
@@ -37,7 +28,7 @@ public class JBinary implements JConstant {
      */
     @Override
     public boolean janitorIsTrue() {
-        return arr != null && arr.length > 0;
+        return wrapped != null && wrapped.length > 0;
     }
 
     /**
@@ -46,17 +37,17 @@ public class JBinary implements JConstant {
      * @return the size of the binary
      */
     public int size() {
-        return arr == null ? 0 : arr.length;
+        return wrapped == null ? 0 : wrapped.length;
     }
 
     @Override
     public byte[] janitorGetHostValue() {
-        return arr;
+        return wrapped;
     }
 
     @Override
     public String janitorToString() {
-        return Arrays.toString(arr);
+        return Arrays.toString(wrapped);
     }
 
     @Override
@@ -65,49 +56,8 @@ public class JBinary implements JConstant {
     }
 
     @Override
-    public @Nullable JanitorObject janitorGetAttribute(final JanitorScriptProcess runningScript, final String name, final boolean required) throws JanitorNameException {
-        final JanitorObject boundMethod = cls.getBoundMethod(name, this);
-        if (boundMethod != null) {
-            return boundMethod;
-        }
-        if ("string".equals(name)) {
-            return runningScript.getEnvironment().getBuiltins().nullableString(janitorIsTrue() ? new String(this.arr) : null);
-        }
-        if ("length".equals(name)) {
-            return runningScript.getEnvironment().getBuiltins().integer(size());
-        }
-        return JConstant.super.janitorGetAttribute(runningScript, name, required);
-    }
-
-    @Override
     public @NotNull String janitorClassName() {
         return "binary";
-    }
-
-    /**
-     * The class of a JBinary.
-     * TODO: this old implementation should be converted to a dispatch table instead
-     */
-    public static class JBinaryClass extends JanitorClass<JBinary> {
-
-        private static final Map<String, JUnboundMethod<JBinary>> methods;
-
-        static {
-            final Map<String, JUnboundMethod<JBinary>> m = new HashMap<>();
-            m.put("encodeBase64", (self, runningScript, arguments) -> {
-                if (self.arr == null) {
-                    return runningScript.getEnvironment().getBuiltins().nullableString(null);
-                }
-                return runningScript.getEnvironment().getBuiltins().string(new String(java.util.Base64.getEncoder().encode(self.arr)));
-            });
-            m.put("toString", (self, runningScript, arguments) -> runningScript.getEnvironment().getBuiltins().nullableString(self.janitorIsTrue() ? new String(self.arr) : null));
-            m.put("size", (self, runningScript, arguments) -> runningScript.getEnvironment().getBuiltins().integer(self.size()));
-            methods = m;
-        }
-
-        public JBinaryClass() {
-            super(null, methods);
-        }
     }
 
 }

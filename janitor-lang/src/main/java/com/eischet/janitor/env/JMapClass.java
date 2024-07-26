@@ -1,11 +1,11 @@
-package com.eischet.janitor.api.types;
+package com.eischet.janitor.env;
 
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.calls.JCallArgs;
-import com.eischet.janitor.api.calls.JNativeMethod;
 import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scripting.JanitorWrapper;
+import com.eischet.janitor.api.types.*;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 
 import java.util.Map;

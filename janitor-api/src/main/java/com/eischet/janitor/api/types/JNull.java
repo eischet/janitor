@@ -5,7 +5,7 @@ import com.eischet.janitor.toolbox.json.api.JsonExportablePrimitive;
 import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
 import org.jetbrains.annotations.NotNull;
 
-public class JNull implements JanitorObject, JsonExportablePrimitive {
+public final class JNull implements JanitorObject, JsonExportablePrimitive {
     public static final JNull NULL = new JNull();
 
     @Override

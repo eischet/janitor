@@ -47,7 +47,7 @@ public class QualifiedName extends AstNode implements Expression {
             }
         } else {
             throw new JanitorNameException(runningScript, "multipart qualified names are not yet implemented: " + parts);
-            // LATER: implement multipart qualified names
+            // LATER: implement multipart qualified names. I don't remember what this should be doing, though, so maybe this is a phantom feature....
         }
     }
 

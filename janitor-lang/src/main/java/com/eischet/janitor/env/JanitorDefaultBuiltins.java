@@ -24,6 +24,7 @@ public class JanitorDefaultBuiltins implements JanitorBuiltins {
     private DispatchTable<List<JanitorObject>> listDispatcher = new DispatchTable<>();
     private DispatchTable<Set<JanitorObject>> setDispatcher = new DispatchTable<>();
     private DispatchTable<Long> intDispatcher = new DispatchTable<>();
+    private DispatchTable<byte[]> binaryDispatcher = new DispatchTable<>();
 
 
     public JanitorDefaultBuiltins() {
@@ -101,6 +102,13 @@ public class JanitorDefaultBuiltins implements JanitorBuiltins {
 
         intDispatcher.addLongProperty("int", JanitorWrapper::janitorGetHostValue);
         intDispatcher.addObjectProperty("epoch", wrapper -> JDateTime.ofNullable(DateTimeUtilities.localFromEpochSeconds(wrapper.janitorGetHostValue())));
+
+
+        binaryDispatcher.addMethod("encodeBase64", JBinaryClass::__encodeBase64);
+        binaryDispatcher.addMethod("toString", JBinaryClass::__toString);
+        binaryDispatcher.addMethod("size", JBinaryClass::__size);
+        binaryDispatcher.addStringProperty("string", wrapper -> wrapper.janitorIsTrue() ? new String(wrapper.janitorGetHostValue()) : "");
+        binaryDispatcher.addIntegerProperty("length", wrapper -> wrapper.janitorGetHostValue() == null ? 0 : wrapper.janitorGetHostValue().length);
 
     }
 
@@ -185,6 +193,11 @@ public class JanitorDefaultBuiltins implements JanitorBuiltins {
             return zero;
         }
         return JInt.newInstance(intDispatcher, value.longValue());
+    }
+
+    @Override
+    public @NotNull JBinary binary(final byte[] arr) {
+        return JBinary.newInstance(binaryDispatcher, arr);
     }
 
 

@@ -3,13 +3,9 @@ package com.eischet.janitor.api.scopes;
 
 import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.JanitorScriptProcess;
-import com.eischet.janitor.api.calls.JCallArgs;
-import com.eischet.janitor.api.errors.runtime.JanitorAssertionException;
 import com.eischet.janitor.api.errors.runtime.JanitorNameException;
-import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.traits.JCallable;
 import com.eischet.janitor.api.types.*;
-import com.eischet.janitor.api.util.JanitorSemantics;
 import com.eischet.janitor.api.util.ShortStringInterner;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -124,28 +120,6 @@ public class Scope implements JanitorObject {
             runningScript.warn("contract violation: getOptionalMethod threw NameError for " + methodName);
             return JNull.NULL;
         }
-    }
-
-    /**
-     * Assert a condition.
-     *
-     * @param process the running script
-     * @param args    the arguments
-     * @return the condition
-     * @throws JanitorRuntimeException if the condition is not true
-     */
-    public static JanitorObject doAssert(final JanitorScriptProcess process, final JCallArgs args) throws JanitorRuntimeException {
-        // TODO: this is really not the right place to put this method, because it is not at all related to the scope. JanitorSemantics would be better, for example.
-        final JanitorObject condition = args.require(0, 1).get(0);
-        final String message = args.getOptionalStringValue(1, "");
-        if (!JanitorSemantics.isTruthy(condition)) {
-            if (message == null || message.isBlank()) {
-                throw new JanitorAssertionException(process, "assertion failed!");
-            } else {
-                throw new JanitorAssertionException(process, "assertion failed: " + message);
-            }
-        }
-        return condition;
     }
 
     /**

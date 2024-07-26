@@ -35,7 +35,7 @@ public class JStringClass {
     }
 
     public static JBinary __toBinaryUtf8(final JanitorWrapper<String> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
-        return new JBinary(self.janitorGetHostValue().getBytes(StandardCharsets.UTF_8));
+        return runningScript.getEnvironment().getBuiltins().binary(self.janitorGetHostValue().getBytes(StandardCharsets.UTF_8));
     }
 
 
@@ -295,7 +295,7 @@ public class JStringClass {
 
     public static JanitorObject __decodeBase64(final JanitorWrapper<String> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);
-        return new JBinary(Base64.getDecoder().decode(self.janitorGetHostValue()));
+        return runningScript.getEnvironment().getBuiltins().binary(Base64.getDecoder().decode(self.janitorGetHostValue()));
     }
 
 

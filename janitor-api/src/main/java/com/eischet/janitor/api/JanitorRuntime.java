@@ -9,7 +9,6 @@ import com.eischet.janitor.api.modules.JanitorModuleRegistration;
 import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.types.JanitorObject;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Supplier;
 
@@ -49,8 +48,6 @@ public interface JanitorRuntime {
     @NotNull JanitorFormatting getFormatting();
 
     JanitorObject lookupClassAttribute(final @NotNull JanitorScriptProcess runningScript, @NotNull JanitorObject instance, @NotNull String attributeName);
-
-    @NotNull JanitorObject nullableString(@Nullable String javaString);
 
     void protect(final String title, JanitorScriptProcess.ProtectedCall call);
 }
