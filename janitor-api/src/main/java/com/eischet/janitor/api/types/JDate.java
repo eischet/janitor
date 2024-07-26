@@ -215,13 +215,13 @@ public class JDate implements JConstant {
     public @Nullable JanitorObject janitorGetAttribute(final JanitorScriptProcess runningScript, final String name, final boolean required) throws JanitorNameException {
         // TODO: better convert this to a proper dispatch table
         if ("year".equals(name)) {
-            return JInt.of(getYear());
+            return runningScript.getEnvironment().getBuiltins().integer(getYear());
         }
         if ("month".equals(name)) {
-            return JInt.of(getMonth());
+            return runningScript.getEnvironment().getBuiltins().integer(getMonth());
         }
         if ("day".equals(name)) {
-            return JInt.of(getDayOfMonth());
+            return runningScript.getEnvironment().getBuiltins().integer(getDayOfMonth());
         }
         return JConstant.super.janitorGetAttribute(runningScript, name, required);
     }

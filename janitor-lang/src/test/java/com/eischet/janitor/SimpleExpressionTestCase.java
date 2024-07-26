@@ -6,16 +6,12 @@ import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.scopes.ScriptModule;
 import com.eischet.janitor.api.types.JBool;
-import com.eischet.janitor.api.types.JInt;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.compiler.JanitorCompiler;
 import com.eischet.janitor.compiler.ast.statement.Script;
 import com.eischet.janitor.env.JanitorDefaultEnvironment;
 import com.eischet.janitor.lang.JanitorParser;
-import com.eischet.janitor.runtime.JanitorFormattingGerman;
-import com.eischet.janitor.runtime.JanitorScript;
-import com.eischet.janitor.runtime.OutputCatchingTestRuntime;
-import com.eischet.janitor.runtime.RunningScriptProcess;
+import com.eischet.janitor.runtime.*;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +45,7 @@ public class SimpleExpressionTestCase {
 
         final Location root = Location.at(module, 0, 0, 0, 0);
 
-        final Scope globalScope = Scope.createGlobalScope(runtime.getEnviroment(), module); // new Scope(root, null, null);
+        final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), module); // new Scope(root, null, null);
         prepareGlobals.accept(globalScope);
         final RunningScriptProcess runningScript = new RunningScriptProcess(runtime, globalScope, scriptObject);
         return runningScript.run();
@@ -60,15 +56,15 @@ public class SimpleExpressionTestCase {
     public void testCS() throws JanitorCompilerException, JanitorRuntimeException {
 
 
-        assertEquals(JInt.of(17), eval("17"));
+        assertEquals(TestEnv.env.getBuiltins().integer(17), eval("17"));
         assertEquals(ENV.getBuiltins().string("hello"), eval("\"hello\""));
 
         assertEquals(ENV.getBuiltins().string("hello"), eval("'hello'"));
-        assertEquals(JInt.of(-7), eval("-7"));
+        assertEquals(TestEnv.env.getBuiltins().integer(-7), eval("-7"));
         // syntax error: eval("+9");
-        assertEquals(JInt.of(21), eval("17 + 4"));
-        assertEquals(JInt.of(22), eval("(17+4)+1"));
-        assertEquals(JInt.of(6), eval("1+2+3"));
+        assertEquals(TestEnv.env.getBuiltins().integer(21), eval("17 + 4"));
+        assertEquals(TestEnv.env.getBuiltins().integer(22), eval("(17+4)+1"));
+        assertEquals(TestEnv.env.getBuiltins().integer(6), eval("1+2+3"));
         assertEquals(ENV.getBuiltins().string("stefan"), eval("currentUser", globals -> globals.bind("currentUser", ENV.getBuiltins().string("stefan"))));
 
         assertEquals(JBool.TRUE, eval("i < 17", globals -> {
@@ -95,10 +91,10 @@ public class SimpleExpressionTestCase {
         assertEquals(JBool.TRUE, eval("22 == 2 * (10 + 1)"));
 
         assertEquals(JBool.TRUE, eval("22 == 2 * (i + 1)", globals -> {
-            globals.bind("i", JInt.of(10));
+            globals.bind("i", TestEnv.env.getBuiltins().integer(10));
         }));
         assertEquals(JBool.TRUE, eval("22 <= 2 * (i + 1)", globals -> {
-            globals.bind("i", JInt.of(10));
+            globals.bind("i", TestEnv.env.getBuiltins().integer(10));
         }));
 
         assertEquals(JBool.TRUE, eval("true"));
@@ -107,55 +103,57 @@ public class SimpleExpressionTestCase {
         assertEquals(JBool.TRUE, eval("not false"));
         assertEquals(JBool.FALSE, eval("not true"));
 
+        var TEN = TestEnv.env.getBuiltins().integer(10);
+
         assertEquals(JBool.FALSE, eval("i < 11 and i > 22", globals -> {
-            globals.bind("i", JInt.of(10));
+            globals.bind("i", TEN);
         }));
         assertEquals(JBool.FALSE, eval("(i < 11) and (i > 22)", globals -> {
-            globals.bind("i", JInt.of(10));
+            globals.bind("i", TEN);
         }));
         assertEquals(JBool.FALSE, eval("((i < 11) and (i > 22))", globals -> {
-            globals.bind("i", JInt.of(10));
+            globals.bind("i", TEN);
         }));
         assertEquals(JBool.TRUE, eval("i < 11 and i > 8", globals -> {
-            globals.bind("i", JInt.of(10));
+            globals.bind("i", TEN);
         }));
         assertEquals(JBool.TRUE, eval("(i < 11) and (i > 8)", globals -> {
-            globals.bind("i", JInt.of(10));
+            globals.bind("i", TEN);
         }));
         assertEquals(JBool.TRUE, eval("((i < 11) and (i > 8))", globals -> {
-            globals.bind("i", JInt.of(10));
+            globals.bind("i", TEN);
         }));
 
         // LATER assertEquals("UNDEFINED", eval("(i < (11 and i) > 8))", globals -> { globals.bind("i", CSConstantInteger.of(10));}));
         // WRONG assertEquals("UNDEFINED", eval("1<2<3", globals -> { globals.bind("i", CSConstantInteger.of(10));}));
 
         assertEquals(JBool.TRUE, eval("1<2==true", globals -> {
-            globals.bind("i", JInt.of(10));
+            globals.bind("i", TEN);
         }));
         assertEquals(JBool.TRUE, eval("i==10", globals -> {
-            globals.bind("i", JInt.of(10));
+            globals.bind("i", TEN);
         }));
         assertEquals(JBool.TRUE, eval("i==10==true", globals -> {
-            globals.bind("i", JInt.of(10));
+            globals.bind("i", TEN);
         }));
         assertEquals(JBool.TRUE, eval("(i==10)==true", globals -> {
-            globals.bind("i", JInt.of(10));
+            globals.bind("i", TEN);
         }));
         assertEquals(JBool.TRUE, eval("(10==i)==true", globals -> {
-            globals.bind("i", JInt.of(10));
+            globals.bind("i", TEN);
         }));
         assertEquals(JBool.TRUE, eval("(10==i)", globals -> {
-            globals.bind("i", JInt.of(10));
+            globals.bind("i", TEN);
         }));
 
         assertEquals(JBool.FALSE, eval("(10!=i)", globals -> {
-            globals.bind("i", JInt.of(10));
+            globals.bind("i", TEN);
         }));
         assertEquals(JBool.FALSE, eval("(i!=10)", globals -> {
-            globals.bind("i", JInt.of(10));
+            globals.bind("i", TEN);
         }));
         assertEquals(JBool.TRUE, eval("not (i!=10)", globals -> {
-            globals.bind("i", JInt.of(10));
+            globals.bind("i", TEN);
         }));
 
     }
@@ -165,7 +163,7 @@ public class SimpleExpressionTestCase {
         assertEquals(ENV.getBuiltins().string("bar"), eval("2 > 1 ? 'bar' : 'foo'"));
         assertEquals(ENV.getBuiltins().string("foo"), eval("2 < 1 ? 'bar' : 'foo'"));
         assertEquals(JBool.TRUE, eval("null or true"));
-        assertEquals(JInt.of(9), eval("( null or true ) ? 9 : 'foo' "));
+        assertEquals(TestEnv.env.getBuiltins().integer(9), eval("( null or true ) ? 9 : 'foo' "));
     }
 
 

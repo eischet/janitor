@@ -14,7 +14,7 @@ import org.jetbrains.annotations.Nullable;
  */
 public class JanitorWrapper<T> implements JanitorObject {
 
-    private final Dispatcher<JanitorWrapper<T>> dispatcher;
+    protected final Dispatcher<JanitorWrapper<T>> dispatcher;
     protected T wrapped;
 
     /**

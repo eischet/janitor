@@ -2,14 +2,13 @@ package com.eischet.janitor.api.types;
 
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
-import com.eischet.janitor.api.errors.runtime.JanitorNameException;
+import com.eischet.janitor.api.scripting.Dispatcher;
+import com.eischet.janitor.api.scripting.JanitorWrapper;
 import com.eischet.janitor.api.traits.JConstant;
-import com.eischet.janitor.api.util.DateTimeUtilities;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonExportablePrimitive;
 import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
@@ -17,17 +16,10 @@ import java.util.Objects;
  * An integer object, representing a 64-bit signed integer.
  * This is one of the built-in types that Janitor provides automatically.
  */
-public class JInt implements JConstant, JsonExportablePrimitive {
+public class JInt extends JanitorWrapper<Long> implements JConstant, JsonExportablePrimitive {
 
-    private final long integer;
-
-    /**
-     * Create a new JInt.
-     *
-     * @param integer the integer
-     */
-    public JInt(final long integer) {
-        this.integer = integer;
+    public JInt(final Dispatcher<JanitorWrapper<Long>> dispatcher, final Long wrapped) {
+        super(dispatcher, wrapped);
     }
 
     /**
@@ -45,55 +37,6 @@ public class JInt implements JConstant, JsonExportablePrimitive {
         throw new JanitorArgumentException(scriptProcess, "Expected an integer value, but got " + value.janitorClassName() + " instead.");
     }
 
-    /**
-     * Create a new JInt.
-     *
-     * @param value the integer
-     * @return the integer, or NULL if the input is null
-     */
-    public static JanitorObject ofNullable(final Long value) {
-        return value == null ? JNull.NULL : JInt.of(value);
-    }
-
-    /**
-     * Create a new JInt.
-     *
-     * @param value the integer
-     * @return the integer, or NULL if the input is null
-     */
-    public static JanitorObject ofNullable(final Integer value) {
-        return value == null ? JNull.NULL : JInt.of(value);
-    }
-
-    /**
-     * Create a new JInt.
-     *
-     * @param value the integer
-     * @return the integer
-     */
-    public static JInt of(final long value) {
-        return new JInt(value);
-    }
-
-    /**
-     * Create a new JInt, but return 0 when passed null.
-     *
-     * @param value the integer
-     * @return the integer
-     */
-    public static JInt ofNullableOrZero(final Long value) {
-        return value == null ? JInt.of(0) : JInt.of(value);
-    }
-
-    /**
-     * Create a new JInt.
-     *
-     * @param value the integer
-     * @return the integer
-     */
-    public static JInt of(final int value) {
-        return new JInt(value);
-    }
 
     /**
      * Defined truthiness: value is not zero.
@@ -102,12 +45,12 @@ public class JInt implements JConstant, JsonExportablePrimitive {
      */
     @Override
     public boolean janitorIsTrue() {
-        return integer != 0;
+        return wrapped != 0;
     }
 
     @Override
     public Long janitorGetHostValue() {
-        return integer;
+        return wrapped;
     }
 
     /**
@@ -116,7 +59,7 @@ public class JInt implements JConstant, JsonExportablePrimitive {
      * @return the integer as a double
      */
     public double getAsDouble() {
-        return integer;
+        return wrapped.doubleValue();
     }
 
     /**
@@ -126,12 +69,12 @@ public class JInt implements JConstant, JsonExportablePrimitive {
      * @return the integer as an int
      */
     public int getAsInt() {
-        return (int) integer;
+        return wrapped.intValue();
     }
 
     @Override
     public String toString() {
-        return String.valueOf(integer);
+        return String.valueOf(wrapped);
     }
 
     @Override
@@ -139,12 +82,12 @@ public class JInt implements JConstant, JsonExportablePrimitive {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         final JInt that = (JInt) o;
-        return integer == that.integer;
+        return wrapped.longValue() == ((JInt) o).janitorGetHostValue().longValue();
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(integer);
+        return Objects.hash(wrapped);
     }
 
     /**
@@ -153,20 +96,9 @@ public class JInt implements JConstant, JsonExportablePrimitive {
      * @return the integer
      */
     public long getValue() {
-        return integer;
+        return wrapped;
     }
 
-    @Override
-    public @Nullable JanitorObject janitorGetAttribute(final JanitorScriptProcess runningScript, final String name, final boolean required) throws JanitorNameException {
-        // TODO: convert this into a proper dispatch table
-        if (Objects.equals(name, "int")) {
-            return this;
-        }
-        if (Objects.equals(name, "epoch")) {
-            return JDateTime.ofNullable(DateTimeUtilities.localFromEpochSeconds(integer));
-        }
-        return JConstant.super.janitorGetAttribute(runningScript, name, required);
-    }
 
 
     @Override
@@ -176,13 +108,16 @@ public class JInt implements JConstant, JsonExportablePrimitive {
 
     @Override
     public boolean isDefaultOrEmpty() {
-        return integer == 0;
+        return wrapped == 0;
     }
 
     @Override
     public void writeJson(final JsonOutputStream producer) throws JsonException {
-        producer.value(integer);
+        producer.value(wrapped);
     }
 
+    public static JInt newInstance(final Dispatcher<JanitorWrapper<Long>> dispatcher, final long value) {
+        return new JInt(dispatcher, value);
+    }
 
 }

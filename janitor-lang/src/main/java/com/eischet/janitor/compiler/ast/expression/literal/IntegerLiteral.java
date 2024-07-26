@@ -16,9 +16,9 @@ public class IntegerLiteral extends Literal {
      * @param location where
      * @param value what
      */
-    public IntegerLiteral(final Location location, final long value) {
+    public IntegerLiteral(final Location location, final JInt value) {
         super(location);
-        this.variableInteger = JInt.of(value);
+        this.variableInteger = value;
     }
 
     @Override

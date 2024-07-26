@@ -75,7 +75,7 @@ public class Demo {
 
         @Override
         public void warn(final String warning) {
-            getEnviroment().warn(warning);
+            getEnvironment().warn(warning);
         }
     }
 

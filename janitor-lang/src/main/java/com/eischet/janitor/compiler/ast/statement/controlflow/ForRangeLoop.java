@@ -51,7 +51,7 @@ public class ForRangeLoop extends Statement {
                 for (long i = startInt.getValue(); i <= endIntValue; i++) {
                     try {
                         runningScript.enterBlock(getLocation());
-                        runningScript.getCurrentScope().bind(runningScript, loopVar, new JInt(i));
+                        runningScript.getCurrentScope().bind(runningScript, loopVar, runningScript.getEnvironment().getBuiltins().integer(i));
                         try {
                             block.execute(runningScript);
                         } catch (ContinueStatement.Continue ignored) {

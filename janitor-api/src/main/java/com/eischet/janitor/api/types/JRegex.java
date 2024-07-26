@@ -86,7 +86,7 @@ public class JRegex implements JConstant {
                 @Override
                 public JanitorObject call(final JRegex self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
                     arguments.require(1);
-                    final JList list = new JList();
+                    final JList list = runningScript.getEnvironment().getBuiltins().list();
                     final JString str = arguments.getString(0);
                     final Matcher matcher = self.janitorGetHostValue().matcher(str.janitorGetHostValue());
                     while (matcher.find()) {
@@ -101,7 +101,7 @@ public class JRegex implements JConstant {
                 @Override
                 public JanitorObject call(final JRegex self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
                     arguments.require(1);
-                    final JList list = new JList();
+                    final JList list = runningScript.getEnvironment().getBuiltins().list();
                     final JString str = arguments.getString(0);
                     final String[] parts = str.janitorGetHostValue().split(self.janitorGetHostValue().pattern());
                     for (final String part : parts) {

@@ -72,59 +72,18 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
 
 
     private final Map<String, AttributeLookupHandler<? super JanitorObject>> anyAttributes = new HashMap<>();
-    private final Map<String, AttributeLookupHandler<JString>> stringAttributes = new HashMap<>();
     private final Map<String, AttributeLookupHandler<JDateTime>> dateTimeAttributes = new HashMap<>();
-    private final Map<String, AttributeLookupHandler<JList>> listAttributes = new HashMap<>();
-    private final Map<String, AttributeLookupHandler<JSet>> setAttributes = new HashMap<>();
-    private final Map<String, AttributeLookupHandler<JMap>> mapAttributes = new HashMap<>();
-    private final Map<String, AttributeLookupHandler<JInt>> intAttributes = new HashMap<>();
     private final Map<String, AttributeLookupHandler<JBinary>> binaryMethods = new HashMap<>();
     private final JanitorDefaultBuiltins builtins;
     // TODO: Float is missing here in the old approach
 
     @Override
     public JanitorObject lookupClassAttribute(final @NotNull JanitorScriptProcess runningScript, final @NotNull JanitorObject instance, final @NotNull String attributeName) {
-        if (instance instanceof JString str) {
-            final JanitorObject attr = lookupStringAttribute(runningScript, str, attributeName);
-            if (attr != null) {
-                return attr;
-            }
-        } else if (instance instanceof JDateTime) {
+        // removed: Jstring, jlist, jmap, set, int
+        if (instance instanceof JDateTime) {
             final AttributeLookupHandler<JDateTime> attr = dateTimeAttributes.get(attributeName);
             if (attr != null) {
                 final JanitorObject lkup = attr.lookupAttribute((JDateTime) instance, runningScript);
-                if (lkup != null) {
-                    return lkup;
-                }
-            }
-        } else if (instance instanceof JList list) {
-            final AttributeLookupHandler<JList> attr = listAttributes.get(attributeName);
-            if (attr != null) {
-                final JanitorObject lkup = attr.lookupAttribute(list, runningScript);
-                if (lkup != null) {
-                    return lkup;
-                }
-            }
-        } else if (instance instanceof JSet set) {
-            final AttributeLookupHandler<JSet> attr = setAttributes.get(attributeName);
-            if (attr != null) {
-                final JanitorObject lkup = attr.lookupAttribute(set, runningScript);
-                if (lkup != null) {
-                    return lkup;
-                }
-            }
-        } else if (instance instanceof JMap map) {
-            final AttributeLookupHandler<JMap> attr = mapAttributes.get(attributeName);
-            if (attr != null) {
-                final JanitorObject lkup = attr.lookupAttribute(map, runningScript);
-                if (lkup != null) {
-                    return lkup;
-                }
-            }
-        } else if (instance instanceof JInt integer) {
-            final AttributeLookupHandler<JInt> attr = intAttributes.get(attributeName);
-            if (attr != null) {
-                final JanitorObject lkup = attr.lookupAttribute(integer, runningScript);
                 if (lkup != null) {
                     return lkup;
                 }
@@ -151,44 +110,12 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
         this.builtins = new JanitorDefaultBuiltins();
 
 
-        // TODO: these should all be replaced by proper DispatchTables, which were "invented" later.
-        // MOVED TO JanitorDefaultBuiltings: addStringMethod("length", JStringClass::__length);
-        addStringMethod("trim", JStringClass::__trim);
-        addStringMethod("contains", JStringClass::__contains);
-        addStringMethod("containsIgnoreCase", JStringClass::__containsIgnoreCase);
-        addStringMethod("splitLines", JStringClass::__splitLines);
-        addStringMethod("indexOf", JStringClass::__indexOf);
-        addStringMethod("empty", JStringClass::__empty);
-        addStringMethod("startsWith", JStringClass::__startsWith);
-        addStringMethod("endsWith", JStringClass::__endsWith);
-        addStringMethod("removeLeadingZeros", JStringClass::__removeLeadingZeros);
-        addStringMethod("substring", JStringClass::__substring);
-        addStringMethod("replaceAll", JStringClass::__replaceAll);
-        addStringMethod("replace", JStringClass::__replace);
-        addStringMethod("replaceFirst", JStringClass::__replaceFirst);
-        addStringMethod("toUpperCase", JStringClass::__toUpperCase);
-        addStringMethod("toLowerCase", JStringClass::__toLowerCase);
-        addStringMethod("count", JStringClass::__count);
-        addStringMethod("format", JStringClass::__format);
-        addStringMethod("expand", JStringClass::__expand);
-        addStringMethod("toBinaryUtf8", JStringClass::__toBinaryUtf8);
-        addStringMethod("int", JStringClass::__toInt);
-        addStringMethod("toInt", JStringClass::__toInt);
-        addStringMethod("toFloat", JStringClass::__toFloat);
-        addStringMethod("get", JStringClass::__get);
-        addStringMethod("__get__", JStringClass::__get); // das lassen wir auch so: keine Zuweisung per Index an String-Teile, die sind ja immutable
-        addStringMethod("isNumeric", JStringClass::__isNumeric);
-        addStringMethod("startsWithNumbers", JStringClass::__startsWithNumbers);
-        addStringMethod("parseDate", JStringClass::__parseDate);
-        addStringMethod("parseDateTime", JStringClass::__parseDateTime);
-        addStringMethod("cutFilename", JStringClass::__cutFilename);
-        addStringMethod("urlEncode", JStringClass::__urlEncode);
-        addStringMethod("urlDecode", JStringClass::__urlDecode);
-        addStringMethod("decodeBase64", JStringClass::__decodeBase64);
+
 
 
         // addDateTimeAttribute("epoch", (runningScript, instance) -> JDateTimeClass.__epoch(instance, runningScript, JCallArgs.empty("epoch", runningScript)));
-        addDateTimeAttribute("epoch", (instance, runningScript) -> JDateTimeClass.__epochAsAttribute(instance));
+        addDateTimeAttribute("epoch", (instance, runningScript) -> JDateTimeClass.__epochAsAttribute(instance, runningScript));
+
         addDateTimeMethod("toEpoch", JDateTimeClass::__epoch);
         addDateTimeMethod("date", JDateTimeClass::__date);
         addDateTimeMethod("time", JDateTimeClass::__time);
@@ -199,36 +126,8 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
         addDateTimeMethod("year", JDateTimeClass::__year);
         // LATER: Zeitzonen JZonedDateTime m.put("atZone", JDateTimeClass::__atZone);
 
-        addListMethod("toJson", JListOperations::__toJson);
-        addListMethod("parseJson", JListOperations::__parseJson);
-        addListMethod("count", JListOperations::__count);
-        addListMethod("filter", JListOperations::__filter);
-        addListMethod("map", JListOperations::__map);
-        addListMethod("join", JListOperations::__join);
-        addListMethod("toSet", JListOperations::__toSet);
-        addListMethod("size", JListOperations::__size);
-        addListMethod("isEmpty", JListOperations::__isEmpty);
-        addListMethod("contains", JListOperations::__contains);
-        addListMethod("randomSublist", JListOperations::__randomSublist);
-        addListMethod("addAll", JListOperations::__addAll);
-        addListMethod("put", JListOperations::__put);
-        addListMethod("add", JListOperations::__add);
-        addListMethod("get", JListOperations::__get);
-        addListMethod("__get__", JListOperations::__getSliced);
 
-        addSetMethod("add", JSetClass::__add);
-        addSetMethod("remove", JSetClass::__remove);
-        addSetMethod("contains", JSetClass::__contains);
-        addSetMethod("toList", JSetClass::__toList);
-        addSetMethod("size", JSetClass::__size);
-        addSetMethod("isEmpty", JSetClass::__isEmpty);
 
-        addMapMethod("toJson", JMap::__toJson);
-        addMapMethod("parseJson", JMap::__parseJson);
-    }
-
-    public void addStringAttribute(final String name, final AttributeLookupHandler<JString> attributeBuilder) {
-        stringAttributes.put(name, attributeBuilder);
     }
 
     public void addDateTimeAttribute(final String name, final AttributeLookupHandler<JDateTime> attributeBuilder) {
@@ -253,22 +152,6 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
     }
 
 
-    public void addListMethod(final String name, final JUnboundMethod<JList> method) {
-        listAttributes.put(name, (instance, runningScript) -> new JBoundMethod<>(name, instance, method));
-    }
-
-    public void addSetMethod(final String name, final JUnboundMethod<JSet> method) {
-        setAttributes.put(name, (instance, runningScript) -> new JBoundMethod<>(name, instance, method));
-    }
-
-    public void addMapMethod(final String name, final JUnboundMethod<JMap> method) {
-        mapAttributes.put(name, (instance, runningScript) -> new JBoundMethod<>(name, instance, method));
-    }
-
-    public void addStringMethod(final String name, final JUnboundMethod<JString> method) {
-        stringAttributes.put(name, (instance, runningScript) -> new JBoundMethod<>(name, instance, method));
-    }
-
     @Override
     public @NotNull JanitorFormatting getFormatting() {
         return formatting;
@@ -277,16 +160,6 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
     @Override
     public void addModule(final @NotNull JanitorModuleRegistration registration) {
 
-    }
-
-
-    private JanitorObject lookupStringAttribute(final JanitorScriptProcess runningScript, final JString instance, final String attributeName) {
-        final AttributeLookupHandler<JString> attributeBuilder = stringAttributes.get(attributeName);
-        if (attributeBuilder != null) {
-            return attributeBuilder.lookupAttribute(instance, runningScript);
-        } else {
-            return null;
-        }
     }
 
     public void addAnyAttribute(final String name, final AttributeLookupHandler<? super JanitorObject> attributeBuilder) {
@@ -308,10 +181,10 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
             return builtins.string(string);
         }
         if (o instanceof Long lo) {
-            return JInt.of(lo);
+            return builtins.integer(lo);
         }
         if (o instanceof Integer in) {
-            return JInt.of(in);
+            return builtins.integer(in);
         }
         if (o instanceof LocalDateTime localDateTime) {
             return JDateTime.ofNullable(localDateTime);

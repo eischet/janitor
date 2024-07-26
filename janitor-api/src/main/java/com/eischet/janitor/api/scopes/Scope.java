@@ -388,7 +388,7 @@ public class Scope implements JanitorObject {
      * @return this scope (for chained, builder-style calls)
      */
     public Scope bind(final String variableName, final long variable) {
-        return bind(variableName, JInt.of(variable));
+        return bind(variableName, env.getBuiltins().integer(variable));
     }
 
     /**
@@ -399,7 +399,7 @@ public class Scope implements JanitorObject {
      * @return this scope (for chained, builder-style calls)
      */
     public Scope bind(final String variableName, final int variable) {
-        return bind(variableName, JInt.of(variable));
+        return bind(variableName, env.getBuiltins().integer(variable));
     }
 
     /**

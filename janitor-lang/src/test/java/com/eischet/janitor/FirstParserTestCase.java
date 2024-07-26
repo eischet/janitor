@@ -53,7 +53,7 @@ public class FirstParserTestCase {
         final Script scriptObject = JanitorCompiler.build(TestEnv.env, module, script, source);
         final OutputCatchingTestRuntime runtime = new OutputCatchingTestRuntime();
 
-        final Scope globalScope = Scope.createGlobalScope(runtime.getEnviroment(), module); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
+        final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), module); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
         globalScope.bind("x", 17);
         final RunningScriptProcess runningScript = new RunningScriptProcess(runtime, globalScope, scriptObject);
         runningScript.run();
@@ -68,7 +68,7 @@ public class FirstParserTestCase {
         final Script scriptObject = JanitorCompiler.build(TestEnv.env, module, script, source);
         final OutputCatchingTestRuntime runtime = new OutputCatchingTestRuntime();
 
-        final Scope globalScope = Scope.createGlobalScope(runtime.getEnviroment(), module); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
+        final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), module); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
         globalScope.bind("x", 17);
         final RunningScriptProcess runningScript = new RunningScriptProcess(runtime, globalScope, scriptObject);
         runningScript.run();
@@ -94,7 +94,7 @@ public class FirstParserTestCase {
         final Script scriptObject = JanitorCompiler.build(TestEnv.env, module, script, scriptSource);
         final OutputCatchingTestRuntime runtime = new OutputCatchingTestRuntime();
 
-        final Scope globalScope = Scope.createGlobalScope(runtime.getEnviroment(), module); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
+        final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), module); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
         prepareGlobals.accept(globalScope);
         final RunningScriptProcess runningScript = new RunningScriptProcess(runtime, globalScope, scriptObject);
         runningScript.run();
@@ -108,7 +108,7 @@ public class FirstParserTestCase {
         final Script scriptObject = JanitorCompiler.build(TestEnv.env, module, script, expressionSource);
         final OutputCatchingTestRuntime runtime = new OutputCatchingTestRuntime();
 
-        final Scope globalScope = Scope.createGlobalScope(runtime.getEnviroment(), module); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
+        final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), module); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
         prepareGlobals.accept(globalScope);
         final RunningScriptProcess runningScript = new RunningScriptProcess(runtime, globalScope, scriptObject);
         return runningScript.run();
@@ -141,13 +141,13 @@ public class FirstParserTestCase {
                 print("very low");
             }
             """;
-        assertEquals("high\n", getOutput(script, g -> g.bind("x", JInt.of(11))));
-        assertEquals("high\n", getOutput(script, g -> g.bind("x", JInt.of(12))));
-        assertEquals("middle\n", getOutput(script, g -> g.bind("x", JInt.of(6))));
-        assertEquals("low\n", getOutput(script, g -> g.bind("x", JInt.of(5))));
-        assertEquals("low\n", getOutput(script, g -> g.bind("x", JInt.of(1))));
-        assertEquals("very low\n", getOutput(script, g -> g.bind("x", JInt.of(0))));
-        assertEquals("very low\n", getOutput(script, g -> g.bind("x", JInt.of(-100))));
+        assertEquals("high\n", getOutput(script, g -> g.bind("x", TestEnv.env.getBuiltins().integer(11))));
+        assertEquals("high\n", getOutput(script, g -> g.bind("x", TestEnv.env.getBuiltins().integer(12))));
+        assertEquals("middle\n", getOutput(script, g -> g.bind("x", TestEnv.env.getBuiltins().integer(6))));
+        assertEquals("low\n", getOutput(script, g -> g.bind("x", TestEnv.env.getBuiltins().integer(5))));
+        assertEquals("low\n", getOutput(script, g -> g.bind("x", TestEnv.env.getBuiltins().integer(1))));
+        assertEquals("very low\n", getOutput(script, g -> g.bind("x", TestEnv.env.getBuiltins().integer(0))));
+        assertEquals("very low\n", getOutput(script, g -> g.bind("x", TestEnv.env.getBuiltins().integer(-100))));
     }
 
 
@@ -307,16 +307,16 @@ public class FirstParserTestCase {
     @Test
     public void forLoops() throws JanitorCompilerException, JanitorRuntimeException {
         // einfache Schleife a la Python:
-        assertEquals("1\n2\n3\n", getOutput("for (i in list) { print(i); }", globals -> globals.bind("list", new JList(List.of(
-            JInt.of(1),
-            JInt.of(2),
-            JInt.of(3)
+        assertEquals("1\n2\n3\n", getOutput("for (i in list) { print(i); }", globals -> globals.bind("list", TestEnv.env.getBuiltins().list(List.of(
+                TestEnv.env.getBuiltins().integer(1),
+                TestEnv.env.getBuiltins().integer(2),
+                TestEnv.env.getBuiltins().integer(3)
         )))));
         // i im inneren Block ist separat vom i im äußeren Block:
-        assertEquals("1\n2\n3\n4\n", getOutput("i=4; for (i in list) { print(i); } print(i);", globals -> globals.bind("list", new JList(List.of(
-            JInt.of(1),
-            JInt.of(2),
-            JInt.of(3)
+        assertEquals("1\n2\n3\n4\n", getOutput("i=4; for (i in list) { print(i); } print(i);", globals -> globals.bind("list", TestEnv.env.getBuiltins().list(List.of(
+                TestEnv.env.getBuiltins().integer(1),
+                TestEnv.env.getBuiltins().integer(2),
+                TestEnv.env.getBuiltins().integer(3)
         )))));
 
         assertEquals("1\n2\n3\n4\n", getOutput("i=4; for (i in [1,2,3]) { print(i); } print(i);", TestEnv.NO_GLOBALS));
@@ -517,7 +517,7 @@ public class FirstParserTestCase {
 
     @Test
     public void iterateOverSomeLists() throws JanitorCompilerException, JanitorRuntimeException {
-        final JList jList = new JList(Stream.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10).map(JInt::of));
+        final JList jList = TestEnv.env.getBuiltins().list(Stream.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10).map(it -> TestEnv.env.getBuiltins().integer(it)));
         assertEquals("1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n", getOutput("for (id in records) { print(id); }", g -> g.bind("records", jList)));
     }
 
@@ -637,8 +637,8 @@ public class FirstParserTestCase {
             """;
         final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
         final JList list = (JList) rt.compile("test", JSON).run(TestEnv.NO_GLOBALS);
-        final JMap map = (JMap) list.get(JInt.of(0));
-        assertEquals(JInt.of(10), map.get(TestEnv.env.getBuiltins().string("keepRunLogs")));
+        final JMap map = (JMap) list.get(TestEnv.env.getBuiltins().integer(0));
+        assertEquals(TestEnv.env.getBuiltins().integer(10), map.get(TestEnv.env.getBuiltins().string("keepRunLogs")));
         assertEquals("ACTPROC-BV", map.get(TestEnv.env.getBuiltins().string("shortCode")).janitorGetHostValue());
     }
 
@@ -707,15 +707,15 @@ public class FirstParserTestCase {
 
         JSet set = (JSet) result;
 
-        assertTrue(set.janitorGetHostValue().contains(JInt.of(1)));
-        assertTrue(set.janitorGetHostValue().contains(JInt.of(2)));
-        assertTrue(set.janitorGetHostValue().contains(JInt.of(3)));
-        assertTrue(set.janitorGetHostValue().contains(JInt.of(4)));
-        assertTrue(set.janitorGetHostValue().contains(JInt.of(5)));
+        assertTrue(set.janitorGetHostValue().contains(TestEnv.env.getBuiltins().integer(1)));
+        assertTrue(set.janitorGetHostValue().contains(TestEnv.env.getBuiltins().integer(2)));
+        assertTrue(set.janitorGetHostValue().contains(TestEnv.env.getBuiltins().integer(3)));
+        assertTrue(set.janitorGetHostValue().contains(TestEnv.env.getBuiltins().integer(4)));
+        assertTrue(set.janitorGetHostValue().contains(TestEnv.env.getBuiltins().integer(5)));
 
-        assertFalse(set.janitorGetHostValue().contains(JInt.of(0)));
-        assertFalse(set.janitorGetHostValue().contains(JInt.of(6)));
-        assertFalse(set.janitorGetHostValue().contains(JInt.of(99)));
+        assertFalse(set.janitorGetHostValue().contains(TestEnv.env.getBuiltins().integer(0)));
+        assertFalse(set.janitorGetHostValue().contains(TestEnv.env.getBuiltins().integer(6)));
+        assertFalse(set.janitorGetHostValue().contains(TestEnv.env.getBuiltins().integer(99)));
 
         assertEquals(5, set.janitorGetHostValue().size());
 
@@ -755,7 +755,7 @@ public class FirstParserTestCase {
         final RunnableScript secondScript = rt.compile("second", "print(i);");
 
         final JanitorObject localI = ras.getScope().retrieveLocal("i");
-        assertEquals(JInt.of(17), localI);
+        assertEquals(TestEnv.env.getBuiltins().integer(17), localI);
 
         secondScript.runInScope(TestEnv.NO_GLOBALS, ras.getScope());
         assertEquals("17\n", rt.getAllOutput());
@@ -866,7 +866,7 @@ public class FirstParserTestCase {
             """);
         final JanitorObject result2 = s2.run();
         assertEquals("", rt2.getAllOutput());
-        assertEquals(JInt.of(2), result2);
+        assertEquals(TestEnv.env.getBuiltins().integer(2), result2);
 
         final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
         final RunnableScript script = rt.compile("tryCatching", """
@@ -1297,7 +1297,7 @@ public class FirstParserTestCase {
         @Override
         public @Nullable JanitorObject janitorGetAttribute(final JanitorScriptProcess runningScript, final String name, final boolean required) throws JanitorNameException {
             if ("x".equals(name)) {
-                return JInt.of(17);
+                return TestEnv.env.getBuiltins().integer(17);
             } else {
                 return null;
             }
@@ -1379,7 +1379,7 @@ public class FirstParserTestCase {
 
         runtime.setTraceListener(System.out::println);
 
-        final Scope globalScope = Scope.createGlobalScope(runtime.getEnviroment(), module); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
+        final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), module); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
         final RunningScriptProcess runningScript = new RunningScriptProcess(runtime, globalScope, scriptObject);
         runningScript.run();
     }

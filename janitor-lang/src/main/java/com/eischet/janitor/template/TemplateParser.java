@@ -149,6 +149,7 @@ public class TemplateParser {
             script.runInScope(g -> {
                         g.bind("__OUT__", writer.asObject("__OUT__"));
                         if (values != null) {
+                            // System.out.println("Setting implicit object: " + values);
                             g.setImplicitObject(values);
                         }
                     }, process.getCurrentScope()

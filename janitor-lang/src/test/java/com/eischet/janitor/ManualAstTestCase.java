@@ -58,9 +58,9 @@ public class ManualAstTestCase {
         final Scope global = Scope.createGlobalScope(environment, dummy); // new Scope(null, null, null);
         final Scope local1 = Scope.createFreshBlockScope(null, global); // new Scope(null, global, null);
 
-        global.bind("foo", JInt.of(100));
-        local1.bind("bar", JInt.of(200));
-        local1.bind("foo", JInt.of(300));
+        global.bind("foo", environment.getBuiltins().integer(100));
+        local1.bind("bar", environment.getBuiltins().integer(200));
+        local1.bind("foo", environment.getBuiltins().integer(300));
 
         assertEquals(300L, local1.lookup(proc, "foo", null).janitorGetHostValue());
         assertEquals(200L, local1.lookup(proc, "bar", null).janitorGetHostValue());
@@ -80,17 +80,15 @@ public class ManualAstTestCase {
         final Script script = new Script(null, List.of(printCall), null);
 
 
-
-
-        final Scope globalScope = Scope.createGlobalScope(runtime.getEnviroment(), null); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
-        globalScope.bind("x", JInt.of(17));
+        final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), null); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
+        globalScope.bind("x", runtime.getEnvironment().getBuiltins().integer(17));
 
         final RunningScriptProcess runningScript = new RunningScriptProcess(runtime, globalScope, script);
         runningScript.run();
         assertEquals("17\n", runtime.getAllOutput());
 
         runtime.resetOutput();
-        globalScope.bind("x", JInt.of(29));
+        globalScope.bind("x", runtime.getEnvironment().getBuiltins().integer(29));
         final RunningScriptProcess runningScript2 = new RunningScriptProcess(runtime, globalScope, script);
         runningScript2.run();
         assertEquals("29\n", runtime.getAllOutput());
@@ -101,7 +99,7 @@ public class ManualAstTestCase {
         final OutputCatchingTestRuntime runtime = new OutputCatchingTestRuntime();
         final Addition addition = new Addition(null,
             new VariableLookupExpression(null, "a"),
-            new IntegerLiteral(null, 4));
+            new IntegerLiteral(null,  runtime.getEnvironment().getBuiltins().integer(4)));
         final ExpressionList expressionList = new ExpressionList(null);
         expressionList.addExpression(addition);
         //final IR.Statement.PrintStatement printStatement = new IR.Statement.PrintStatement(null, expressionList);
@@ -111,8 +109,8 @@ public class ManualAstTestCase {
         final Script script = new Script(null, List.of(printCall), null);
 
 
-        final Scope globalScope = Scope.createGlobalScope(runtime.getEnviroment(), null); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
-        globalScope.bind("a", JInt.of(17));
+        final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), null); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
+        globalScope.bind("a", runtime.getEnvironment().getBuiltins().integer(17));
         final RunningScriptProcess runningScript = new RunningScriptProcess(runtime, globalScope, script);
         runningScript.run();
         assertEquals("21\n", runtime.getAllOutput());
@@ -134,9 +132,9 @@ public class ManualAstTestCase {
         final FunctionCallStatement printCall = new FunctionCallStatement(null, "print", null, expressionList);
         final Script script = new Script(null, List.of(printCall), null);
 
-        final Scope globalScope = Scope.createGlobalScope(runtime.getEnviroment(), null); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
-        globalScope.bind("a", JInt.of(17));
-        globalScope.bind("b", JInt.of(4));
+        final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), null); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
+        globalScope.bind("a", runtime.getEnvironment().getBuiltins().integer(17));
+        globalScope.bind("b", runtime.getEnvironment().getBuiltins().integer(4));
         final RunningScriptProcess runningScript = new RunningScriptProcess(runtime, globalScope, script);
         runningScript.run();
         assertEquals("21\n", runtime.getAllOutput());

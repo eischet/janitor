@@ -8,24 +8,23 @@ import com.eischet.janitor.toolbox.json.api.JsonExportablePrimitive;
 import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Objects;
-
 /**
  * A boolean object, which is probably the closest to Matthew 5:37 you can get using a computer.
  * This is one of the built-in types that Janitor provides automatically.
- * TODO: consider turning this into an enum, helping the java compiler understand that there's nothing but TRUE and FALSE.
+ * Booleans are designed to have no attributes, so there is no dispatcher and no class here.
+ * Personally, I do not see any value in having stuff like "true.thing", but if someone ever presents a valid use case, that might change.
  */
-public class JBool implements JConstant, JsonExportablePrimitive {
-
+public enum JBool implements JConstant, JsonExportablePrimitive {
     /**
      * Yes.
      */
-    public static final JBool TRUE = new JBool(true);
+    TRUE(true),
 
     /**
      * No.
      */
-    public static final JBool FALSE = new JBool(false);
+    FALSE(false);
+
 
     private final boolean value;
 
@@ -105,19 +104,6 @@ public class JBool implements JConstant, JsonExportablePrimitive {
      */
     public JBool opposite() {
         return this == TRUE ? FALSE : TRUE;
-    }
-
-    @Override
-    public boolean equals(final Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        final JBool that = (JBool) o;
-        return value == that.value;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(value);
     }
 
     @Override

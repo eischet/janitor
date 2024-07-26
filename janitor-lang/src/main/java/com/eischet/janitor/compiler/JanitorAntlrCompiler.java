@@ -191,7 +191,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
     @Override
     public IntegerLiteral visitIntegerLiteral(final JanitorParser.IntegerLiteralContext ctx) {
         if (verbose) log.info("visitIntegerLiteral {}", ctx.getText());
-        return new IntegerLiteral(location(ctx.start, ctx.stop), Long.parseLong(ctx.getText()));
+        return new IntegerLiteral(location(ctx.start, ctx.stop), env.getBuiltins().integer(Long.parseLong(ctx.getText())));
     }
 
     @Override

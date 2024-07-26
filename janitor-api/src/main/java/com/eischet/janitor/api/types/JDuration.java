@@ -235,19 +235,19 @@ public class JDuration implements JConstant, Comparable<JDuration> {
     public @Nullable JanitorObject janitorGetAttribute(final JanitorScriptProcess runningScript, final String name, final boolean required) throws JanitorNameException {
         // TODO: move this to a proper dispatch table
         if ("seconds".equals(name)) {
-            return JInt.of(toSeconds());
+            return runningScript.getEnvironment().getBuiltins().integer(toSeconds());
         }
         if ("minutes".equals(name)) {
-            return JInt.of(toSeconds() / 60);
+            return runningScript.getEnvironment().getBuiltins().integer(toSeconds() / 60);
         }
         if ("hours".equals(name)) {
-            return JInt.of(toSeconds() / 3600);
+            return runningScript.getEnvironment().getBuiltins().integer(toSeconds() / 3600);
         }
         if ("days".equals(name)) {
-            return JInt.of(toSeconds() / 86400);
+            return runningScript.getEnvironment().getBuiltins().integer(toSeconds() / 86400);
         }
         if ("weeks".equals(name)) {
-            return JInt.of(toSeconds() / 604800);
+            return runningScript.getEnvironment().getBuiltins().integer(toSeconds() / 604800);
         }
         return JConstant.super.janitorGetAttribute(runningScript, name, required);
     }

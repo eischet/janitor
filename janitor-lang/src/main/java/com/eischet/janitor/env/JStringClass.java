@@ -26,20 +26,20 @@ public class JStringClass {
 
     public static final int INDEX_NOT_FOUND = -1;
 
-    public static JString __format(final JString self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static JString __format(final JanitorWrapper<String> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         return runningScript.getEnvironment().getBuiltins().string(self.janitorGetHostValue().formatted(arguments.getList().stream().map(JanitorObject::janitorGetHostValue).toArray()));
     }
 
-    public static JString __expand(final JString self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
-        return runningScript.expandTemplate(self, arguments);
+    public static JString __expand(final JanitorWrapper<String> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
+        return runningScript.expandTemplate((JString) self, arguments);
     }
 
-    public static JBinary __toBinaryUtf8(final JString self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static JBinary __toBinaryUtf8(final JanitorWrapper<String> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         return new JBinary(self.janitorGetHostValue().getBytes(StandardCharsets.UTF_8));
     }
 
 
-    public static JString __get(final JString self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static JString __get(final JanitorWrapper<String> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         final String string = self.janitorGetHostValue();
         if (arguments.size() == 1) {
             int len = string.length();
@@ -88,7 +88,7 @@ public class JStringClass {
         throw new JanitorArgumentException(runningScript, "invalid arguments: " + arguments);
     }
 
-    public static JFloat __toFloat(final JString self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static JFloat __toFloat(final JanitorWrapper<String> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         final String string = self.janitorGetHostValue();
         if ("".equals(string) || string.isBlank()) {
             return JFloat.of(0);
@@ -102,34 +102,34 @@ public class JStringClass {
     }
 
 
-    public static JInt __toInt(final JString self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static JInt __toInt(final JanitorWrapper<String> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         final String string = self.janitorGetHostValue();
         if ("".equals(string) || string.isBlank()) {
-            return JInt.of(0);
+            return runningScript.getEnvironment().getBuiltins().integer(0);
         }
         try {
             final long iv = Long.parseLong(string, 10);
-            return JInt.of(iv);
+            return runningScript.getEnvironment().getBuiltins().integer(iv);
         } catch (NumberFormatException e) {
             throw new JanitorArgumentException(runningScript, "invalid value for toInt conversion: '" + string + "': " + e.getMessage());
         }
     }
 
-    public static JString __toUpperCase(final JString self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static JString __toUpperCase(final JanitorWrapper<String> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);
         return runningScript.getEnvironment().getBuiltins().string(self.janitorGetHostValue().toUpperCase(Locale.ROOT));
     }
 
-    public static JString __toLowerCase(final JString self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static JString __toLowerCase(final JanitorWrapper<String> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);
         return runningScript.getEnvironment().getBuiltins().string(self.janitorGetHostValue().toLowerCase(Locale.ROOT));
     }
 
-    public static JInt __count(final JString self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
-        return JInt.of(countMatches(self.janitorGetHostValue(), arguments.require(1).getString(0).janitorGetHostValue()));
+    public static JInt __count(final JanitorWrapper<String> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
+        return runningScript.getEnvironment().getBuiltins().integer(countMatches(self.janitorGetHostValue(), arguments.require(1).getString(0).janitorGetHostValue()));
     }
 
-    public static JString __replace(final JString self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static JString __replace(final JanitorWrapper<String> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(2);
         final String what = arguments.getString(0).janitorGetHostValue();
         final String with = arguments.getString(1).janitorGetHostValue();
@@ -139,7 +139,7 @@ public class JStringClass {
         return runningScript.getEnvironment().getBuiltins().string(result);
     }
 
-    public static JString __replaceFirst(final JString self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static JString __replaceFirst(final JanitorWrapper<String> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(2);
         final String what = arguments.getString(0).janitorGetHostValue();
         final String with = arguments.getString(1).janitorGetHostValue();
@@ -149,7 +149,7 @@ public class JStringClass {
         return runningScript.getEnvironment().getBuiltins().string(result);
     }
 
-    public static JString __replaceAll(final JString self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static JString __replaceAll(final JanitorWrapper<String> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(2);
         final String what = arguments.getString(0).janitorGetHostValue();
         final String with = arguments.getString(1).janitorGetHostValue();
@@ -159,40 +159,40 @@ public class JStringClass {
         return runningScript.getEnvironment().getBuiltins().string(result);
     }
 
-    public static JString __trim(final JString self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static JString __trim(final JanitorWrapper<String> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);
         return runningScript.getEnvironment().getBuiltins().string(self.janitorGetHostValue().trim());
     }
 
     public static JanitorObject __length(final JanitorWrapper<String> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);
-        return JInt.of(self.janitorGetHostValue().length());
+        return runningScript.getEnvironment().getBuiltins().integer(self.janitorGetHostValue().length());
     }
 
-    public static JanitorObject __empty(final JString self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static JanitorObject __empty(final JanitorWrapper<String> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);
         return JBool.map(self.janitorGetHostValue().isEmpty());
     }
 
-    public static JBool __contains(final JString self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static JBool __contains(final JanitorWrapper<String> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         return JBool.map(self.janitorGetHostValue().contains(arguments.getString(0).janitorGetHostValue()));
     }
 
-    public static JBool __containsIgnoreCase(final JString self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static JBool __containsIgnoreCase(final JanitorWrapper<String> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         return JBool.map(self.janitorGetHostValue().toLowerCase(Locale.GERMANY)
             .contains(arguments.getString(0).janitorGetHostValue().toLowerCase(Locale.GERMANY)));
     }
 
 
-    public static JList __splitLines(final JString self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static JList __splitLines(final JanitorWrapper<String> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         final ArrayList<JanitorObject> list = new ArrayList<>();
         for (final String s : self.janitorGetHostValue().split("\r?\n\r?")) {
             list.add(runningScript.getEnvironment().getBuiltins().nullableString(s));
         }
-        return new JList(list);
+        return runningScript.getEnvironment().getBuiltins().list(list);
     }
 
-    public static JBool __endsWith(final JString self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static JBool __endsWith(final JanitorWrapper<String> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         final JString with = arguments.require(1).getString(0);
         if (with.isEmpty()) {
             return JBool.FALSE;
@@ -205,19 +205,19 @@ public class JStringClass {
     private static final Pattern NUMBERS_ONLY = Pattern.compile("^\\d+$");
     private static final Pattern NUMBERS_AT_THE_START = Pattern.compile("^\\d+.*");
 
-    public static JBool __startsWithNumbers(final JString self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static JBool __startsWithNumbers(final JanitorWrapper<String> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);
         final String string = self.janitorGetHostValue();
         return JBool.map(string != null && NUMBERS_AT_THE_START.matcher(string).matches());
     }
 
-    public static JBool __isNumeric(final JString self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static JBool __isNumeric(final JanitorWrapper<String> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);
         final String string = self.janitorGetHostValue();
         return JBool.map(string != null && NUMBERS_ONLY.matcher(string).matches());
     }
 
-    public static JBool __startsWith(final JString self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static JBool __startsWith(final JanitorWrapper<String> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         final JString with = arguments.require(1).getString(0);
         if (with.isEmpty()) {
             return JBool.FALSE;
@@ -227,17 +227,17 @@ public class JStringClass {
         }
     }
 
-    public static JInt __indexOf(final JString self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
-        return JInt.of(self.janitorGetHostValue().indexOf(arguments.getString(0).janitorGetHostValue()));
+    public static JInt __indexOf(final JanitorWrapper<String> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
+        return runningScript.getEnvironment().getBuiltins().integer(self.janitorGetHostValue().indexOf(arguments.getString(0).janitorGetHostValue()));
     }
 
-    public static JString __substring(final JString self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static JString __substring(final JanitorWrapper<String> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         final int from = (int) arguments.getInt(0).getValue();
         final int to = arguments.size() > 1 ? (int) arguments.getInt(1).getValue() : self.janitorGetHostValue().length();
         return runningScript.getEnvironment().getBuiltins().string(self.janitorGetHostValue().substring(from, to));
     }
 
-    public static JString __removeLeadingZeros(final JString self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static JString __removeLeadingZeros(final JanitorWrapper<String> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);
         var s = self.janitorGetHostValue();
         while (s.startsWith("0")) {
@@ -247,17 +247,17 @@ public class JStringClass {
     }
 
 
-    public static JanitorObject __parseDate(final JString self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static JanitorObject __parseDate(final JanitorWrapper<String> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         final String format = arguments.require(1).getString(0).janitorGetHostValue();
         return JDate.parse(runningScript, self.janitorGetHostValue(), format);
     }
 
-    public static JanitorObject __parseDateTime(final JString self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static JanitorObject __parseDateTime(final JanitorWrapper<String> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         final String format = arguments.require(1).getString(0).janitorGetHostValue();
         return JDateTime.parse(runningScript, self.janitorGetHostValue(), format);
     }
 
-    public static JanitorObject __cutFilename(final JString self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static JanitorObject __cutFilename(final JanitorWrapper<String> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         // TODO: remove this from the language, as it is only of interest for a single application!
         arguments.require(1);
         return runningScript.getEnvironment().getBuiltins().string(cutFilename(self.janitorGetHostValue(), arguments.getInt(0).getAsInt()));
@@ -283,17 +283,17 @@ public class JStringClass {
     }
 
 
-    public static JanitorObject __urlEncode(final JString self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static JanitorObject __urlEncode(final JanitorWrapper<String> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);
         return runningScript.getEnvironment().getBuiltins().string(URLEncoder.encode(self.janitorGetHostValue(), StandardCharsets.UTF_8));
     }
 
-    public static JanitorObject __urlDecode(final JString self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static JanitorObject __urlDecode(final JanitorWrapper<String> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);
         return runningScript.getEnvironment().getBuiltins().string(URLDecoder.decode(self.janitorGetHostValue(), StandardCharsets.UTF_8));
     }
 
-    public static JanitorObject __decodeBase64(final JString self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static JanitorObject __decodeBase64(final JanitorWrapper<String> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);
         return new JBinary(Base64.getDecoder().decode(self.janitorGetHostValue()));
     }

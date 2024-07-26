@@ -3,11 +3,8 @@ package com.eischet.janitor.api.types;
 import com.eischet.janitor.api.JanitorBuiltins;
 import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.JanitorScriptProcess;
-import com.eischet.janitor.api.calls.JCallArgs;
-import com.eischet.janitor.api.calls.JNativeMethod;
 import com.eischet.janitor.api.calls.TemporaryAssignable;
 import com.eischet.janitor.api.errors.runtime.JanitorNameException;
-import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.scripting.Dispatcher;
@@ -27,11 +24,7 @@ import java.util.function.Consumer;
  */
 public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> implements JanitorObject, JIterable, JsonWriter, JsonExportableObject {
 
-    private final Map<JanitorObject, JanitorObject> map = new HashMap<>();
-    private final Map<String, JNativeMethod> methods;
     private final JanitorBuiltins builtins;
-
-    // TODO: all the __implementation methods should be moved to janitor-lang, into a dispatch table
 
     /**
      * Create a new JMap.
@@ -39,87 +32,8 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
     public JMap(final Dispatcher<JanitorWrapper<Map<JanitorObject, JanitorObject>>> dispatch, JanitorBuiltins builtins) {
         super(dispatch, new HashMap<>());
         this.builtins = builtins;
-
-
-        final Map<String, JNativeMethod> methods = new HashMap<>();
-        // methods.put("parseJson", JNativeMethod.of(arguments -> parseJson(arguments.require(1).getString(0).janitorGetHostValue())));
-
-        // TODO: move all these to a proper dispatch table
-        methods.put("get", JNativeMethod.of(arguments -> get(arguments.require(1).get(0))));
-        methods.put("__get__", JNativeMethod.of(arguments -> getIndexed(arguments.require(1).get(0))));
-        methods.put("put", JNativeMethod.ofVoid(arguments -> put(arguments.require(2).get(0), arguments.get(1))));
-        methods.put("size", JNativeMethod.of(arguments -> {
-            arguments.require(0);
-            return JInt.of(map.size());
-        }));
-        methods.put("isEmpty", JNativeMethod.of(arguments -> {
-            arguments.require(0);
-            return JBool.map(map.isEmpty());
-        }));
-        methods.put("keys", JNativeMethod.of(arguments -> {
-            arguments.require(0);
-            return new JList(map.keySet().stream());
-        }));
-        methods.put("values", JNativeMethod.of(arguments -> {
-            arguments.require(0);
-            return new JList(map.values().stream());
-        }));
-        /*
-        methods.put("toJson", JNativeMethod.of(arguments -> {
-            arguments.require(0);
-            return JString.of(exportToJson(runningScript.getRuntime().getEnvironment()));
-        }));
-         */
-        this.methods = methods;
     }
 
-    /**
-     * Script method: Convert the map to JSON, which is useful for calling JSON-based APIs from scripts.
-     *
-     * @param self          the map
-     * @param runningScript the script process
-     * @param arguments     the arguments
-     * @return the JSON string
-     * @throws JanitorRuntimeException on errors
-     */
-    public static JString __toJson(final JMap self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
-        try {
-            arguments.require(0);
-            return runningScript.getEnvironment().getBuiltins().string(self.exportToJson(runningScript.getRuntime().getEnvironment()));
-        } catch (JsonException e) {
-            throw new JanitorNativeException(runningScript, "error exporting json", e);
-        }
-    }
-
-    /**
-     * Script method: Parse a JSON string into an existing map.
-     *
-     * @param self          the map
-     * @param runningScript the script process
-     * @param arguments     the arguments
-     * @return the map itself
-     * @throws JanitorRuntimeException on JSON/runtime errors, e.g. the JSON is not a map but a list
-     */
-    public static JMap __parseJson(final JMap self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
-        try {
-            return self.parseJson(arguments.require(1).getString(0).janitorGetHostValue(), runningScript.getRuntime().getEnvironment());
-        } catch (JsonException e) {
-            throw new JanitorNativeException(runningScript, "error parsing json", e);
-        }
-    }
-
-    @Override
-    public @Nullable JanitorObject janitorGetAttribute(final JanitorScriptProcess runningScript, final String name, final boolean required) throws JanitorNameException {
-        final JNativeMethod localMethod = methods.get(name);
-        if (localMethod != null) {
-            return localMethod;
-        }
-        final JString keyString = runningScript.getEnvironment().getBuiltins().string(name);
-        if (map.containsKey(keyString)) {
-            return map.get(keyString);
-        }
-        return super.janitorGetAttribute(runningScript, name, required);
-    }
 
     /**
      * Get the keys of the map.
@@ -127,7 +41,7 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
      * @return the keys
      */
     public Set<JanitorObject> keySet() {
-        return map.keySet();
+        return wrapped.keySet();
     }
 
     /**
@@ -136,7 +50,7 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
      * @return the values
      */
     public Collection<JanitorObject> values() {
-        return map.values();
+        return wrapped.values();
     }
 
     /**
@@ -145,27 +59,38 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
      * @return the size
      */
     public int size() {
-        return map.size();
+        return wrapped.size();
     }
 
     @Override
     public Iterator<JanitorObject> getIterator() {
-        return map.keySet().iterator();
+        return wrapped.keySet().iterator();
     }
 
     @Override
     public Map<JanitorObject, JanitorObject> janitorGetHostValue() {
-        return map;
+        return new HashMap<>(wrapped);
     }
 
     @Override
     public String janitorToString() {
-        return map.toString();
+        return wrapped.toString();
     }
 
     @Override
     public boolean janitorIsTrue() {
-        return !map.isEmpty();
+        return !wrapped.isEmpty();
+    }
+
+    @Override
+    public @Nullable JanitorObject janitorGetAttribute(final JanitorScriptProcess runningScript, final String name, final boolean required) throws JanitorNameException {
+        @Nullable final JanitorObject attr = super.janitorGetAttribute(runningScript, name, required);
+        if (attr != null) {
+            return attr;
+        }
+        // this is very important for cases where the map is supposed to be used as an implicit object and for map.key access within scripts: return the map key by name
+        @NotNull final JString nameAsString = runningScript.getEnvironment().getBuiltins().string(name);
+        return wrapped.get(nameAsString);
     }
 
     /**
@@ -175,7 +100,7 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
      * @param value the value
      */
     public void put(final String key, final JanitorObject value) {
-        map.put(builtins.nullableString(key), value);
+        wrapped.put(builtins.nullableString(key), value);
     }
 
     /**
@@ -209,7 +134,7 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
      * @param value the value
      */
     public void put(final JanitorObject key, final JanitorObject value) {
-        map.put(key, value);
+        wrapped.put(key, value);
     }
 
     /**
@@ -219,7 +144,7 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
      * @param value the value
      */
     public void put(final @NotNull String key, final @Nullable String value) {
-        map.put(builtins.nullableString(key),  builtins.nullableString(value));
+        wrapped.put(builtins.nullableString(key),  builtins.nullableString(value));
     }
 
     /**
@@ -229,7 +154,7 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
      * @return the value, or NULL if the key is not present or if the associated value IS NULL.
      */
     public JanitorObject get(final JanitorObject key) {
-        return JanitorEnvironment.orNull(map.get(key));
+        return JanitorEnvironment.orNull(wrapped.get(key));
     }
 
     /**
@@ -253,7 +178,7 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
      * @return true if the map is empty
      */
     public boolean isEmpty() {
-        return map.isEmpty();
+        return wrapped.isEmpty();
     }
 
     /**
@@ -262,7 +187,7 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
      * @param map the other map
      */
     public void putAll(final JMap map) {
-        this.map.putAll(map.map);
+        this.wrapped.putAll(map.janitorGetHostValue());
     }
 
     /**
@@ -276,7 +201,7 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
      */
     public void applyTo(final JanitorScriptProcess rs, final JanitorObject target) throws JanitorNameException {
         final Set<JanitorObject> notAssignable = new HashSet<>();
-        map.forEach((key, value) -> {
+        wrapped.forEach((key, value) -> {
             @Nullable final JanitorObject prop = Scope.getOptionalMethod(target, rs, key.janitorToString());
             if (prop instanceof JAssignable assignableProperty) {
                 try {
@@ -348,7 +273,7 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
      * @param consumer the consumer of the value
      */
     public void extractString(final JanitorScriptProcess running, final String key, final Consumer<String> consumer) {
-        final JanitorObject value = map.get(builtins.nullableString(key));
+        final JanitorObject value = wrapped.get(builtins.nullableString(key));
         if (value instanceof JString str) {
             consumer.accept(str.janitorGetHostValue());
         } else if (value != null) {
@@ -364,7 +289,7 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
      * @param consumer the consumer of the value
      */
     public void extract(final String key, final Consumer<JanitorObject> consumer) {
-        final JanitorObject value = map.get(builtins.nullableString(key));
+        final JanitorObject value = wrapped.get(builtins.nullableString(key));
         if (value != null && value != JNull.NULL) {
             consumer.accept(value);
         }
@@ -377,19 +302,19 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
      * @return the value, or null if there's no such key
      */
     public @Nullable JanitorObject getNullable(final JString key) {
-        return map.getOrDefault(key, null);
+        return wrapped.getOrDefault(key, null);
     }
 
     @Override
     public boolean isDefaultOrEmpty() {
-        return map.isEmpty();
+        return wrapped.isEmpty();
     }
 
     @Override
     public void writeJson(final JsonOutputStream producer) throws JsonException {
         producer.beginObject();
 
-        for (final Map.Entry<JanitorObject, JanitorObject> pair : map.entrySet()) {
+        for (final Map.Entry<JanitorObject, JanitorObject> pair : wrapped.entrySet()) {
             if (pair.getValue() instanceof JsonExportable ex) {
                 if (ex.isDefaultOrEmpty()) {
                     continue;

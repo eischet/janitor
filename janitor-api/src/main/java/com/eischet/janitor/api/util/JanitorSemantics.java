@@ -104,7 +104,7 @@ public class JanitorSemantics {
      */
     public static @NotNull JanitorObject negate(JanitorScriptProcess process, final JanitorObject currentValue) throws JanitorRuntimeException {
         if (currentValue instanceof JInt v) {
-            return JInt.of(-v.getValue());
+            return process.getEnvironment().getBuiltins().integer(-v.getValue());
         } else if (currentValue instanceof JFloat f) {
             return JFloat.of(-f.getValue());
         } else {
@@ -140,7 +140,7 @@ public class JanitorSemantics {
     ) throws JanitorRuntimeException {
         try {
             if (leftValue instanceof JInt leftInteger && rightValue instanceof JInt rightInteger) {
-                return JInt.of(intOp.apply(leftInteger.getValue(), rightInteger.getValue()));
+                return process.getEnvironment().getBuiltins().integer(intOp.apply(leftInteger.getValue(), rightInteger.getValue()));
             } else if (leftValue instanceof JFloat leftFloat && rightValue instanceof JFloat rightFloat) {
                 return JFloat.of(floatOp.apply(leftFloat.getValue(), rightFloat.getValue()));
             } else if (leftValue instanceof JInt leftInteger && rightValue instanceof JFloat rightFloat) {
@@ -385,7 +385,7 @@ public class JanitorSemantics {
      */
     public static @NotNull JanitorObject increment(JanitorScriptProcess process, final JanitorObject currentValue) throws JanitorRuntimeException {
         if (currentValue instanceof JInt currentInteger) {
-            return JInt.of(currentInteger.getValue() + 1);
+            return process.getEnvironment().getBuiltins().integer(currentInteger.getValue() + 1);
         } else {
             throw new JanitorNotImplementedException(process, "we can only increment numbers at the moment");
         }
@@ -400,7 +400,7 @@ public class JanitorSemantics {
      */
     public static @NotNull JanitorObject decrement(JanitorScriptProcess process, final JanitorObject currentValue) throws JanitorRuntimeException {
         if (currentValue instanceof JInt currentInteger) {
-            return JInt.of(currentInteger.getValue() - 1);
+            return process.getEnvironment().getBuiltins().integer(currentInteger.getValue() - 1);
         } else {
             throw new JanitorNotImplementedException(process, "we can only decrement numbers at the moment");
         }

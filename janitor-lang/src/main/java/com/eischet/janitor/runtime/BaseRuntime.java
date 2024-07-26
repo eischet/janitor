@@ -6,12 +6,8 @@ import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.errors.runtime.JanitorNameException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.i18n.JanitorFormatting;
-import com.eischet.janitor.toolbox.json.api.JsonException;
-import com.eischet.janitor.toolbox.json.api.JsonInputStream;
-import com.eischet.janitor.toolbox.json.api.JsonWriter;
 import com.eischet.janitor.api.modules.JanitorModule;
 import com.eischet.janitor.api.modules.JanitorModuleRegistration;
-import com.eischet.janitor.api.types.JString;
 import com.eischet.janitor.api.types.JanitorObject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -55,10 +51,6 @@ public abstract class BaseRuntime implements JanitorRuntime {
     @Override
     public @NotNull JanitorObject nullableString(@Nullable final String javaString) {
         return enviroment.getBuiltins().nullableString(javaString);
-    }
-
-    public JanitorEnvironment getEnviroment() {
-        return enviroment;
     }
 
     /**

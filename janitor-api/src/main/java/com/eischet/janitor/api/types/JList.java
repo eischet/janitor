@@ -2,6 +2,9 @@ package com.eischet.janitor.api.types;
 
 import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.calls.TemporaryAssignable;
+import com.eischet.janitor.api.scripting.DispatchTable;
+import com.eischet.janitor.api.scripting.Dispatcher;
+import com.eischet.janitor.api.scripting.JanitorWrapper;
 import com.eischet.janitor.api.traits.JIterable;
 import com.eischet.janitor.toolbox.json.api.*;
 import org.jetbrains.annotations.NotNull;
@@ -13,65 +16,12 @@ import java.util.stream.Stream;
  * A list object, representing a mutable list of Janitor objects.
  * This is one of the built-in types that Janitor provides automatically.
  */
-public class JList implements JanitorObject, JIterable, Iterable<JanitorObject>, JsonExportableList {
+public class JList extends JanitorWrapper<List<JanitorObject>> implements JanitorObject, JIterable, Iterable<JanitorObject>, JsonExportableList {
 
-    private final List<JanitorObject> list;
-
-    /**
-     * Create a new JList.
-     */
-    public JList() {
-        this.list = new ArrayList<>();
+    private JList(final Dispatcher<JanitorWrapper<List<JanitorObject>>> dispatcher, final List<JanitorObject> list) {
+        super(dispatcher, list);
     }
 
-    /**
-     * Create a new JList.
-     *
-     * @param initialSize the initial size
-     */
-    public JList(int initialSize) {
-        this.list = new ArrayList<>(initialSize);
-    }
-
-    /**
-     * Create a new JList.
-     * The array you pass in is copied.
-     *
-     * @param init the initial elements
-     */
-    public JList(final Collection<? extends JanitorObject> init) {
-        this.list = new ArrayList<>(init);
-    }
-
-    /**
-     * Create a new JList from a stream.
-     *
-     * @param init the stream
-     */
-    public JList(final Stream<? extends JanitorObject> init) {
-        this();
-        init.forEach(list::add);
-    }
-
-    /**
-     * Create a new JList from a Java list.
-     *
-     * @param elements the list
-     */
-    public JList(final List<JanitorObject> elements) {
-        this();
-        list.addAll(elements);
-    }
-
-    /**
-     * Create a new JList from another JList.
-     * The original list is copied.
-     *
-     * @param source the source list
-     */
-    public JList(final JList source) {
-        list = new ArrayList<>(source.list);
-    }
 
     /**
      * Convert a Python-like index into an actual list index.
@@ -90,24 +40,15 @@ public class JList implements JanitorObject, JIterable, Iterable<JanitorObject>,
     }
 
     /**
-     * Create a new JList.
-     *
-     * @param valueList the list
-     * @return the list
+     * Create a new instance and <b>take ownership of the list passed to us.</b>
+     * @param listDispatcher method dispatcher
+     * @param objects initial list
+     * @return this
      */
-    public static JList of(final List<? extends JanitorObject> valueList) {
-        return new JList(valueList);
+    public static JList newInstance(final DispatchTable<List<JanitorObject>> listDispatcher, final List<JanitorObject> objects) {
+        return new JList(listDispatcher, objects);
     }
 
-    /**
-     * Create a new JList.
-     *
-     * @param valueStream the stream
-     * @return the list
-     */
-    public static JList of(final Stream<? extends JanitorObject> valueStream) {
-        return new JList(valueStream);
-    }
 
     /**
      * Read a JSON string, representing a list, into this list.
@@ -147,7 +88,7 @@ public class JList implements JanitorObject, JIterable, Iterable<JanitorObject>,
      * @return the size
      */
     public int size() {
-        return list.size();
+        return wrapped.size();
     }
 
     /**
@@ -157,7 +98,7 @@ public class JList implements JanitorObject, JIterable, Iterable<JanitorObject>,
      * @return the element
      */
     public JanitorObject get(int index) {
-        return list.get(index);
+        return wrapped.get(index);
     }
 
     /**
@@ -167,7 +108,7 @@ public class JList implements JanitorObject, JIterable, Iterable<JanitorObject>,
      * @return the element
      */
     public JanitorObject get(JInt index) {
-        return list.get(toIndex(index.getAsInt(), list.size()));
+        return wrapped.get(toIndex(index.getAsInt(), wrapped.size()));
     }
 
     /**
@@ -179,7 +120,7 @@ public class JList implements JanitorObject, JIterable, Iterable<JanitorObject>,
      * @return the element
      */
     public JanitorObject getIndexed(JInt index) {
-        return new TemporaryAssignable(get(index), value -> list.set(toIndex(index.getAsInt(), list.size()), value));
+        return new TemporaryAssignable(get(index), value -> wrapped.set(toIndex(index.getAsInt(), wrapped.size()), value));
     }
 
     /**
@@ -192,13 +133,13 @@ public class JList implements JanitorObject, JIterable, Iterable<JanitorObject>,
     public JanitorObject getRange(JInt start, JInt end) {
         // LATER: stepping
         // LATER: wrap in TemporaryAssignable for things like list[10:] = ["rest", "of", "list"];
-        final int startIndex = toIndex(start.getAsInt(), list.size());
-        final int endIndex = toIndex(end.getAsInt(), list.size());
-        final List<JanitorObject> subList = list.subList(Math.min(startIndex, endIndex), Math.max(startIndex, endIndex));
+        final int startIndex = toIndex(start.getAsInt(), wrapped.size());
+        final int endIndex = toIndex(end.getAsInt(), wrapped.size());
+        final List<JanitorObject> subList = wrapped.subList(Math.min(startIndex, endIndex), Math.max(startIndex, endIndex));
         if (endIndex < startIndex) {
             Collections.reverse(subList);
         }
-        return new JList(subList);
+        return new JList(dispatcher, subList);
     }
 
     /**
@@ -208,7 +149,7 @@ public class JList implements JanitorObject, JIterable, Iterable<JanitorObject>,
      * @param value the value
      */
     public void add(JInt i, JanitorObject value) {
-        list.add(i.janitorGetHostValue().intValue(), value);
+        wrapped.add(i.janitorGetHostValue().intValue(), value);
     }
 
     /**
@@ -217,7 +158,7 @@ public class JList implements JanitorObject, JIterable, Iterable<JanitorObject>,
      * @param value the value
      */
     public void add(JanitorObject value) {
-        list.add(value.janitorUnpack());
+        wrapped.add(value.janitorUnpack());
     }
 
     /**
@@ -226,7 +167,7 @@ public class JList implements JanitorObject, JIterable, Iterable<JanitorObject>,
      * @param value the value
      */
     public void remove(JanitorObject value) {
-        list.remove(value.janitorUnpack());
+        wrapped.remove(value.janitorUnpack());
     }
 
     /**
@@ -236,17 +177,17 @@ public class JList implements JanitorObject, JIterable, Iterable<JanitorObject>,
      * @param value the value
      */
     public void put(JInt index, JanitorObject value) {
-        list.set(index.janitorGetHostValue().intValue(), value);
+        wrapped.set(index.janitorGetHostValue().intValue(), value);
     }
 
     @Override
     public List<JanitorObject> janitorGetHostValue() {
-        return list;
+        return List.copyOf(wrapped);
     }
 
     @Override
     public String toString() {
-        return list.toString();
+        return wrapped.toString();
     }
 
     /**
@@ -256,12 +197,12 @@ public class JList implements JanitorObject, JIterable, Iterable<JanitorObject>,
      */
     @Override
     public boolean janitorIsTrue() {
-        return !list.isEmpty();
+        return !wrapped.isEmpty();
     }
 
     @Override
     public Iterator<JanitorObject> getIterator() {
-        return list.iterator();
+        return wrapped.iterator();
     }
 
     /**
@@ -270,7 +211,7 @@ public class JList implements JanitorObject, JIterable, Iterable<JanitorObject>,
      * @return the stream
      */
     public Stream<JanitorObject> stream() {
-        return list.stream();
+        return wrapped.stream();
     }
 
     /**
@@ -279,10 +220,10 @@ public class JList implements JanitorObject, JIterable, Iterable<JanitorObject>,
      * @return the first element, or NULL if the list was empty
      */
     public JanitorObject popFirst() {
-        if (list.isEmpty()) {
+        if (wrapped.isEmpty()) {
             return JNull.NULL;
         } else {
-            return list.remove(0);
+            return wrapped.remove(0);
         }
     }
 
@@ -303,7 +244,7 @@ public class JList implements JanitorObject, JIterable, Iterable<JanitorObject>,
      * @return true if the list is empty
      */
     public boolean isEmpty() {
-        return list.isEmpty();
+        return wrapped.isEmpty();
     }
 
     @Override
@@ -314,7 +255,7 @@ public class JList implements JanitorObject, JIterable, Iterable<JanitorObject>,
     @Override
     public void writeJson(final JsonOutputStream producer) throws JsonException {
         producer.beginArray();
-        for (final JanitorObject jObj : list) {
+        for (final JanitorObject jObj : wrapped) {
             if (jObj instanceof JsonExportable ex) {
                 ex.writeJson(producer);
             } else if (jObj instanceof JsonWriter jw) {

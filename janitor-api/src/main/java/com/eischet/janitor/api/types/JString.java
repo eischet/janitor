@@ -26,12 +26,10 @@ public class JString extends JanitorWrapper<String> implements JConstant, JsonEx
      */
     public static final String CLASS_NAME = "string";
 
-    protected final String string;
-
 
     @Override
     public boolean janitorIsTrue() {
-        return !string.isEmpty();
+        return !wrapped.isEmpty();
     }
 
     private WildCardMatcher wildCardMatcher;
@@ -55,12 +53,11 @@ public class JString extends JanitorWrapper<String> implements JConstant, JsonEx
     /**
      * Create a new JString.
      *
-     * @param dispatcher
+     * @param dispatcher method/attribute dispatch table
      * @param string     the string
      */
     protected JString(final Dispatcher<JanitorWrapper<String>> dispatcher, final String string) {
         super(dispatcher, string != null && !string.isEmpty() ? ShortStringInterner.maybeIntern(string) : "");
-        this.string = super.wrapped; // TODO: remove this alias
     }
 
     /**
@@ -69,18 +66,18 @@ public class JString extends JanitorWrapper<String> implements JConstant, JsonEx
      */
     @Override
     public String toString() {
-        return string;
+        return wrapped;
     }
 
 
     @Override
     public String janitorGetHostValue() {
-        return string;
+        return wrapped;
     }
 
     @Override
     public String janitorToString() {
-        return string;
+        return wrapped;
     }
 
     /**
@@ -89,7 +86,7 @@ public class JString extends JanitorWrapper<String> implements JConstant, JsonEx
      * @see String#isEmpty()
      */
     public boolean isEmpty() {
-        return string.isEmpty();
+        return wrapped.isEmpty();
     }
 
     @Override
@@ -97,12 +94,12 @@ public class JString extends JanitorWrapper<String> implements JConstant, JsonEx
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         final JString that = (JString) o;
-        return Objects.equals(string, that.string);
+        return Objects.equals(this.wrapped, that.wrapped);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(string);
+        return Objects.hash(wrapped);
     }
 
     @Override
@@ -112,12 +109,12 @@ public class JString extends JanitorWrapper<String> implements JConstant, JsonEx
 
     @Override
     public boolean isDefaultOrEmpty() {
-        return string == null || string.isEmpty();
+        return wrapped == null || wrapped.isEmpty();
     }
 
     @Override
     public void writeJson(final JsonOutputStream producer) throws JsonException {
-        producer.value(string);
+        producer.value(wrapped);
     }
 
     /**

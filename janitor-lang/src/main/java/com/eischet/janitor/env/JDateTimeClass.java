@@ -25,11 +25,11 @@ public class JDateTimeClass {
 
     public static JInt __epoch(final JDateTime csDateTime, final JanitorScriptProcess janitorScriptProcess, final JCallArgs jCallArgs) throws JanitorRuntimeException {
         jCallArgs.require(0);
-        return JInt.of(csDateTime.janitorGetHostValue().toEpochSecond(DateTimeUtils.getZoneId().getRules().getOffset(csDateTime.janitorGetHostValue())));
+        return janitorScriptProcess.getEnvironment().getBuiltins().integer(csDateTime.janitorGetHostValue().toEpochSecond(DateTimeUtils.getZoneId().getRules().getOffset(csDateTime.janitorGetHostValue())));
     }
 
-    public static JInt __epochAsAttribute(final JDateTime csDateTime) {
-        return JInt.of(csDateTime.janitorGetHostValue().toEpochSecond(DateTimeUtils.getZoneId().getRules().getOffset(csDateTime.janitorGetHostValue())));
+    public static JInt __epochAsAttribute(final JDateTime csDateTime, final JanitorScriptProcess runningScript) {
+        return runningScript.getEnvironment().getBuiltins().integer(csDateTime.janitorGetHostValue().toEpochSecond(DateTimeUtils.getZoneId().getRules().getOffset(csDateTime.janitorGetHostValue())));
     }
 
     public static JDate __date(final JDateTime csDateTime, final JanitorScriptProcess janitorScriptProcess, final JCallArgs jCallArgs) throws JanitorRuntimeException {
@@ -65,7 +65,7 @@ public class JDateTimeClass {
     }
 
     public static JInt __year(final JDateTime jDateTime, final JanitorScriptProcess janitorScriptProcess, final JCallArgs jCallArgs) throws JanitorRuntimeException {
-        return JInt.of(jDateTime.janitorGetHostValue().getYear());
+        return janitorScriptProcess.getEnvironment().getBuiltins().integer(jDateTime.janitorGetHostValue().getYear());
     }
 
     public static JString __kw(final JDateTime jDateTime, final JanitorScriptProcess janitorScriptProcess, final JCallArgs jCallArgs) throws JanitorRuntimeException {

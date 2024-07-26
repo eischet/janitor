@@ -117,7 +117,7 @@ public class JFloat implements JConstant, JsonExportablePrimitive {
         // TODO: convert this into a proper dispatch table
         // TODO: int is inconsistent with the int() method used elsewhere, which leads to notable confusion
         if (Objects.equals(name, "int")) {
-            return JInt.of((long) number);
+            return runningScript.getEnvironment().getBuiltins().integer((long) number);
         }
         return JConstant.super.janitorGetAttribute(runningScript, name, required);
     }

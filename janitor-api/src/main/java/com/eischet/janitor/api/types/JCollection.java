@@ -12,7 +12,7 @@ public abstract class JCollection {
 
     public static JanitorObject parseJsonValue(JsonInputStream reader, final JanitorEnvironment env) throws JsonException {
         return switch (reader.peek()) {
-            case BEGIN_ARRAY -> new JList().parseJson(reader, env);
+            case BEGIN_ARRAY -> env.getBuiltins().list().parseJson(reader, env);
             case END_ARRAY -> throw new JsonException("Unexpected end of array at " + reader.getPath());
             case BEGIN_OBJECT -> env.getBuiltins().map().parseJson(reader, env);
             case END_OBJECT -> throw new JsonException("Unexpected end of object at " + reader.getPath());

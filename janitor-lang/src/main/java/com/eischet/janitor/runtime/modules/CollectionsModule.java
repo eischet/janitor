@@ -5,8 +5,6 @@ import com.eischet.janitor.api.calls.JNativeMethod;
 import com.eischet.janitor.api.errors.runtime.JanitorNameException;
 import com.eischet.janitor.api.modules.JanitorModuleRegistration;
 import com.eischet.janitor.api.modules.JanitorNativeModule;
-import com.eischet.janitor.api.types.JList;
-import com.eischet.janitor.api.types.JSet;
 import com.eischet.janitor.api.types.JanitorObject;
 import org.jetbrains.annotations.Nullable;
 
@@ -17,13 +15,16 @@ public class CollectionsModule extends JanitorNativeModule {
     @Override
     public @Nullable JanitorObject janitorGetAttribute(final JanitorScriptProcess runningScript, final String name, final boolean required) throws JanitorNameException {
         if ("set".equals(name)) {
-            return JNativeMethod.of(arguments -> new JSet(arguments.getList().stream()));
+            return JNativeMethod.of(arguments -> runningScript.getEnvironment().getBuiltins().set(arguments.getList().stream()));
         }
         if ("list".equals(name)) {
-            return JNativeMethod.of(arguments -> new JList(arguments.getList().stream()));
+            return JNativeMethod.of(arguments -> runningScript.getEnvironment().getBuiltins().list(arguments.getList()));
         }
         if ("map".equals(name)) {
-            return JNativeMethod.of(arguments -> { arguments.require(0); return runningScript.getEnvironment().getBuiltins().map(); });
+            return JNativeMethod.of(arguments -> {
+                arguments.require(0);
+                return runningScript.getEnvironment().getBuiltins().map();
+            });
         }
         return null;
     }

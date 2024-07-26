@@ -74,7 +74,7 @@ public class JBinary implements JConstant {
             return runningScript.getEnvironment().getBuiltins().nullableString(janitorIsTrue() ? new String(this.arr) : null);
         }
         if ("length".equals(name)) {
-            return JInt.of(size());
+            return runningScript.getEnvironment().getBuiltins().integer(size());
         }
         return JConstant.super.janitorGetAttribute(runningScript, name, required);
     }
@@ -101,7 +101,7 @@ public class JBinary implements JConstant {
                 return runningScript.getEnvironment().getBuiltins().string(new String(java.util.Base64.getEncoder().encode(self.arr)));
             });
             m.put("toString", (self, runningScript, arguments) -> runningScript.getEnvironment().getBuiltins().nullableString(self.janitorIsTrue() ? new String(self.arr) : null));
-            m.put("size", (self, runningScript, arguments) -> JInt.of(self.size()));
+            m.put("size", (self, runningScript, arguments) -> runningScript.getEnvironment().getBuiltins().integer(self.size()));
             methods = m;
         }
 

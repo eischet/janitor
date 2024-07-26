@@ -29,13 +29,13 @@ public class ListLiteral extends Literal {
     @Override
     public JList evaluate(final JanitorScriptProcess runningScript) throws JanitorRuntimeException {
         if (elements.isEmpty()) {
-            return new JList();
+            return runningScript.getEnvironment().getBuiltins().list();
         } else {
             final List<JanitorObject> evaluatedElements = new ArrayList<>(elements.size());
             for (final Expression element : elements) {
                 evaluatedElements.add(element.evaluate(runningScript).janitorUnpack());
             }
-            return new JList(evaluatedElements);
+            return runningScript.getEnvironment().getBuiltins().list(evaluatedElements);
         }
     }
 

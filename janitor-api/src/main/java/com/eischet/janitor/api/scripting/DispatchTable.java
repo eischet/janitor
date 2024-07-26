@@ -61,7 +61,7 @@ public class DispatchTable<T> implements Dispatcher<JanitorWrapper<T>> {
      * @param getter property getter
      */
     public void addIntegerProperty(final String name, final Function<JanitorWrapper<T>, Integer> getter) {
-        map.put(name, (instance, runningScript) -> JInt.of(getter.apply(instance)));
+        map.put(name, (instance, runningScript) -> runningScript.getEnvironment().getBuiltins().integer(getter.apply(instance)));
     }
 
     /**
@@ -71,7 +71,7 @@ public class DispatchTable<T> implements Dispatcher<JanitorWrapper<T>> {
      * @param setter property setter
      */
     public void addIntegerProperty(final String name, final Function<JanitorWrapper<T>, Integer> getter, final BiConsumer<JanitorWrapper<T>, Integer> setter) {
-        map.put(name, (instance, runningScript) -> new TemporaryAssignable(JInt.of(getter.apply(instance)), value -> setter.accept(instance, JInt.requireInt(runningScript, value).janitorGetHostValue().intValue())));
+        map.put(name, (instance, runningScript) -> new TemporaryAssignable(runningScript.getEnvironment().getBuiltins().integer(getter.apply(instance)), value -> setter.accept(instance, JInt.requireInt(runningScript, value).janitorGetHostValue().intValue())));
     }
 
     /**
@@ -80,7 +80,7 @@ public class DispatchTable<T> implements Dispatcher<JanitorWrapper<T>> {
      * @param getter property getter
      */
     public void addLongProperty(final String name, final Function<JanitorWrapper<T>, Long> getter) {
-        map.put(name, (instance, runningScript) -> JInt.of(getter.apply(instance)));
+        map.put(name, (instance, runningScript) -> runningScript.getEnvironment().getBuiltins().integer(getter.apply(instance)));
     }
 
     /**
@@ -90,7 +90,7 @@ public class DispatchTable<T> implements Dispatcher<JanitorWrapper<T>> {
      * @param setter property setter
      */
     public void addLongProperty(final String name, final Function<JanitorWrapper<T>, Long> getter, final BiConsumer<JanitorWrapper<T>, Long> setter) {
-        map.put(name, (instance, runningScript) -> new TemporaryAssignable(JInt.of(getter.apply(instance)), value -> setter.accept(instance, JInt.requireInt(runningScript, value).janitorGetHostValue())));
+        map.put(name, (instance, runningScript) -> new TemporaryAssignable(runningScript.getEnvironment().getBuiltins().integer(getter.apply(instance)), value -> setter.accept(instance, JInt.requireInt(runningScript, value).janitorGetHostValue())));
     }
 
     /**
