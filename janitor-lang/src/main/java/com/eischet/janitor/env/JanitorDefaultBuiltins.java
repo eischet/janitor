@@ -1,11 +1,11 @@
 package com.eischet.janitor.env;
 
 import com.eischet.janitor.api.JanitorBuiltins;
-import com.eischet.janitor.api.types.dispatch.RegularDispatchTable;
-import com.eischet.janitor.api.types.wrapped.JanitorWrapperDispatchTable;
-import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
-import com.eischet.janitor.api.types.*;
+import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.*;
+import com.eischet.janitor.api.types.dispatch.RegularDispatchTable;
+import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
+import com.eischet.janitor.api.types.wrapped.JanitorWrapperDispatchTable;
 import com.eischet.janitor.runtime.DateTimeUtilities;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -16,22 +16,20 @@ import java.util.stream.Stream;
 
 public class JanitorDefaultBuiltins implements JanitorBuiltins {
 
-    private final JString emptyString;
-    private final JInt zero;
+    protected final JanitorWrapperDispatchTable<Map<JanitorObject, JanitorObject>> mapDispatcher = new JanitorWrapperDispatchTable<>();
+    protected final JanitorWrapperDispatchTable<String> stringDispatcher = new JanitorWrapperDispatchTable<>();
 
     // TODO: figure out why I cannot write Dispatcher<JMap> here. I keep forgetting the subleties of the Java generics system...
     // I'm sure it's something with blah super foo extends lalala that everybody but me knows about. ;-)
-
-    private JanitorWrapperDispatchTable<Map<JanitorObject, JanitorObject>> mapDispatcher = new JanitorWrapperDispatchTable<>();
-    private JanitorWrapperDispatchTable<String> stringDispatcher = new JanitorWrapperDispatchTable<>();
-    private JanitorWrapperDispatchTable<List<JanitorObject>> listDispatcher = new JanitorWrapperDispatchTable<>();
-    private JanitorWrapperDispatchTable<Set<JanitorObject>> setDispatcher = new JanitorWrapperDispatchTable<>();
-    private JanitorWrapperDispatchTable<Long> intDispatcher = new JanitorWrapperDispatchTable<>();
-    private JanitorWrapperDispatchTable<byte[]> binaryDispatcher = new JanitorWrapperDispatchTable<>();
-    private JanitorWrapperDispatchTable<Double> floatDispatcher = new JanitorWrapperDispatchTable<>();
-    private JanitorWrapperDispatchTable<Pattern> regexDispatcher = new JanitorWrapperDispatchTable<>();
-
-    private RegularDispatchTable<JDuration> durationDispatch = new RegularDispatchTable<>();
+    protected final JanitorWrapperDispatchTable<List<JanitorObject>> listDispatcher = new JanitorWrapperDispatchTable<>();
+    protected final JanitorWrapperDispatchTable<Set<JanitorObject>> setDispatcher = new JanitorWrapperDispatchTable<>();
+    protected final JanitorWrapperDispatchTable<Long> intDispatcher = new JanitorWrapperDispatchTable<>();
+    protected final JanitorWrapperDispatchTable<byte[]> binaryDispatcher = new JanitorWrapperDispatchTable<>();
+    protected final JanitorWrapperDispatchTable<Double> floatDispatcher = new JanitorWrapperDispatchTable<>();
+    protected final JanitorWrapperDispatchTable<Pattern> regexDispatcher = new JanitorWrapperDispatchTable<>();
+    protected final RegularDispatchTable<JDuration> durationDispatch = new RegularDispatchTable<>();
+    private final JString emptyString;
+    private final JInt zero;
 
     public JanitorDefaultBuiltins() {
         emptyString = JString.newInstance(stringDispatcher, "");
@@ -82,22 +80,22 @@ public class JanitorDefaultBuiltins implements JanitorBuiltins {
         mapDispatcher.addMethod("keys", JMapClass::__keys);
         mapDispatcher.addMethod("values", JMapClass::__values);
 
-        listDispatcher.addMethod("toJson", JListOperations::__toJson);
-        listDispatcher.addMethod("parseJson", JListOperations::__parseJson);
-        listDispatcher.addMethod("count", JListOperations::__count);
-        listDispatcher.addMethod("filter", JListOperations::__filter);
-        listDispatcher.addMethod("map", JListOperations::__map);
-        listDispatcher.addMethod("join", JListOperations::__join);
-        listDispatcher.addMethod("toSet", JListOperations::__toSet);
-        listDispatcher.addMethod("size", JListOperations::__size);
-        listDispatcher.addMethod("isEmpty", JListOperations::__isEmpty);
-        listDispatcher.addMethod("contains", JListOperations::__contains);
-        listDispatcher.addMethod("randomSublist", JListOperations::__randomSublist);
-        listDispatcher.addMethod("addAll", JListOperations::__addAll);
-        listDispatcher.addMethod("put", JListOperations::__put);
-        listDispatcher.addMethod("add", JListOperations::__add);
-        listDispatcher.addMethod("get", JListOperations::__get);
-        listDispatcher.addMethod("__get__", JListOperations::__getSliced);
+        listDispatcher.addMethod("toJson", JListClass::__toJson);
+        listDispatcher.addMethod("parseJson", JListClass::__parseJson);
+        listDispatcher.addMethod("count", JListClass::__count);
+        listDispatcher.addMethod("filter", JListClass::__filter);
+        listDispatcher.addMethod("map", JListClass::__map);
+        listDispatcher.addMethod("join", JListClass::__join);
+        listDispatcher.addMethod("toSet", JListClass::__toSet);
+        listDispatcher.addMethod("size", JListClass::__size);
+        listDispatcher.addMethod("isEmpty", JListClass::__isEmpty);
+        listDispatcher.addMethod("contains", JListClass::__contains);
+        listDispatcher.addMethod("randomSublist", JListClass::__randomSublist);
+        listDispatcher.addMethod("addAll", JListClass::__addAll);
+        listDispatcher.addMethod("put", JListClass::__put);
+        listDispatcher.addMethod("add", JListClass::__add);
+        listDispatcher.addMethod("get", JListClass::__get);
+        listDispatcher.addMethod("__get__", JListClass::__getSliced);
 
         setDispatcher.addMethod("add", JSetClass::__add);
         setDispatcher.addMethod("remove", JSetClass::__remove);
@@ -150,7 +148,7 @@ public class JanitorDefaultBuiltins implements JanitorBuiltins {
 
     @Override
     public @NotNull JMap map() {
-        return new JMap(mapDispatcher, this);
+        return JMap.newInstance(mapDispatcher, this);
     }
 
     @Override
@@ -164,12 +162,12 @@ public class JanitorDefaultBuiltins implements JanitorBuiltins {
     }
 
     @Override
-    public @NotNull JList list(@NotNull final List<JanitorObject> list) {
+    public @NotNull JList list(@NotNull final List<? extends JanitorObject> list) {
         return JList.newInstance(listDispatcher, new ArrayList<>(list));
     }
 
     @Override
-    public @NotNull JList list(@NotNull final Stream<JanitorObject> stream) {
+    public @NotNull JList list(@NotNull final Stream<? extends JanitorObject> stream) {
         return JList.newInstance(listDispatcher, new ArrayList<>(stream.toList()));
     }
 
@@ -179,12 +177,12 @@ public class JanitorDefaultBuiltins implements JanitorBuiltins {
     }
 
     @Override
-    public @NotNull JSet set(@NotNull final Collection<JanitorObject> collection) {
+    public @NotNull JSet set(@NotNull final Collection<? extends JanitorObject> collection) {
         return JSet.newInstance(setDispatcher, new HashSet<>(collection));
     }
 
     @Override
-    public @NotNull JSet set(@NotNull final Stream<JanitorObject> stream) {
+    public @NotNull JSet set(@NotNull final Stream<? extends JanitorObject> stream) {
         return JSet.newInstance(setDispatcher, new HashSet<>(stream.toList()));
     }
 
@@ -222,11 +220,12 @@ public class JanitorDefaultBuiltins implements JanitorBuiltins {
 
     /**
      * Create a new JFloat.
+     *
      * @param value the number
      * @return the number, or NULL if the input is null
      */
     @Override
-    public @NotNull JanitorObject nullableFloat(final Double value) {
+    public @NotNull JanitorObject nullableFloatingPoint(final Double value) {
         if (value == null) {
             return JNull.NULL;
         } else {
@@ -236,6 +235,7 @@ public class JanitorDefaultBuiltins implements JanitorBuiltins {
 
     /**
      * Create a new JFloat.
+     *
      * @param value the number
      * @return the number
      */
@@ -246,6 +246,7 @@ public class JanitorDefaultBuiltins implements JanitorBuiltins {
 
     /**
      * Create a new JFloat.
+     *
      * @param value the number
      * @return the number
      */
@@ -256,6 +257,7 @@ public class JanitorDefaultBuiltins implements JanitorBuiltins {
 
     /**
      * Create a new JFloat.
+     *
      * @param value the number
      * @return the number
      */
@@ -272,5 +274,60 @@ public class JanitorDefaultBuiltins implements JanitorBuiltins {
     @Override
     public @NotNull JRegex regex(@NotNull final Pattern pattern) {
         return JRegex.newInstance(regexDispatcher, pattern);
+    }
+
+    /**
+     * Retrieve an Internals object, which then gives access to the internal dispatch tables.
+     * Frowned upon in most situations, for embedding and extending the scripting runtime, this is a key feature.
+     *
+     * @return internals
+     */
+    public Internals internals() {
+        return new Internals();
+    }
+
+    /**
+     * Internals class for JanitorDefaultBuiltins.
+     * <p>Use an instance of this class, obtained via {@link JanitorDefaultBuiltins#internals()}, to access the internal dispatch tables.
+     * This is useful for extending the scripting runtime.</p>
+     * <p>This class is separate from the JanitorDefaultBuiltins class only to avoid polluting its public API.</p>
+     */
+    public class Internals {
+
+        public JanitorWrapperDispatchTable<Map<JanitorObject, JanitorObject>> getMapDispatcher() {
+            return mapDispatcher;
+        }
+
+        public JanitorWrapperDispatchTable<String> getStringDispatcher() {
+            return stringDispatcher;
+        }
+
+        public JanitorWrapperDispatchTable<List<JanitorObject>> getListDispatcher() {
+            return listDispatcher;
+        }
+
+        public JanitorWrapperDispatchTable<Set<JanitorObject>> getSetDispatcher() {
+            return setDispatcher;
+        }
+
+        public JanitorWrapperDispatchTable<Long> getIntDispatcher() {
+            return intDispatcher;
+        }
+
+        public JanitorWrapperDispatchTable<byte[]> getBinaryDispatcher() {
+            return binaryDispatcher;
+        }
+
+        public JanitorWrapperDispatchTable<Double> getFloatDispatcher() {
+            return floatDispatcher;
+        }
+
+        public JanitorWrapperDispatchTable<Pattern> getRegexDispatcher() {
+            return regexDispatcher;
+        }
+
+        public RegularDispatchTable<JDuration> getDurationDispatch() {
+            return durationDispatch;
+        }
     }
 }

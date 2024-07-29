@@ -12,6 +12,7 @@ import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 import com.eischet.janitor.api.types.JAssignable;
 import com.eischet.janitor.api.types.JIterable;
 import com.eischet.janitor.api.types.JanitorObject;
+import com.eischet.janitor.api.types.wrapped.JanitorWrapperDispatchTable;
 import com.eischet.janitor.toolbox.json.api.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -30,7 +31,7 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
     /**
      * Create a new JMap.
      */
-    public JMap(final Dispatcher<JanitorWrapper<Map<JanitorObject, JanitorObject>>> dispatch, JanitorBuiltins builtins) {
+    private JMap(final Dispatcher<JanitorWrapper<Map<JanitorObject, JanitorObject>>> dispatch, JanitorBuiltins builtins) {
         super(dispatch, new HashMap<>());
         this.builtins = builtins;
     }
@@ -295,6 +296,10 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
             }
         }
         producer.endObject();
+    }
+
+    public static JMap newInstance(final JanitorWrapperDispatchTable<Map<JanitorObject, JanitorObject>> dispatch, JanitorBuiltins builtins) {
+        return new JMap(dispatch, builtins);
     }
 
 }

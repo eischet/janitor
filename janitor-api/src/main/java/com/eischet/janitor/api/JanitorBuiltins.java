@@ -35,6 +35,7 @@ public interface JanitorBuiltins {
     /**
      * Return a new String object, or NULL if the value is null.
      * "nullable" refers to our scripting NULL, not to Java null.
+     * (Typescript might express this more concisely as "JString | JNull")
      *
      * @param value a Java String or null
      * @return a JString from the Java String, or NULL
@@ -52,18 +53,18 @@ public interface JanitorBuiltins {
     JList list(int initialSize);
 
     @NotNull
-    JList list(@NotNull List<JanitorObject> list);
+    JList list(@NotNull List<? extends JanitorObject> list);
 
     @NotNull
-    JList list(@NotNull Stream<JanitorObject> stream);
+    JList list(@NotNull Stream<? extends JanitorObject> stream);
 
 
     @NotNull
     JSet set();
 
-    @NotNull JSet set(@NotNull Collection<JanitorObject> list);
+    @NotNull JSet set(@NotNull Collection<? extends JanitorObject> list);
 
-    @NotNull JSet set(@NotNull Stream<JanitorObject> stream);
+    @NotNull JSet set(@NotNull Stream<? extends JanitorObject> stream);
 
 
     @NotNull
@@ -76,7 +77,8 @@ public interface JanitorBuiltins {
     @NotNull
     JBinary binary(byte @NotNull [] arr);
 
-    @NotNull JanitorObject nullableFloat(final Double value);
+    @NotNull JanitorObject nullableFloatingPoint(final Double value);
+
 
     @NotNull JFloat floatingPoint(double value);
 

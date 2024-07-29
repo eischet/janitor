@@ -16,6 +16,7 @@ import com.eischet.janitor.compiler.ast.statement.FunctionCallStatement;
 import com.eischet.janitor.compiler.ast.statement.Script;
 import com.eischet.janitor.env.JanitorDefaultEnvironment;
 import com.eischet.janitor.runtime.*;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -44,7 +45,7 @@ public class ManualAstTestCase {
             }
 
             @Override
-            public JanitorObject run() throws JanitorRuntimeException {
+            public @NotNull JanitorObject run() throws JanitorRuntimeException {
                 return null; // ??? müsste das nicht implemtiert sein??
             }
 

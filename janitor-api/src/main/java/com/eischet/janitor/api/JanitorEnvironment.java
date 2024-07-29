@@ -3,8 +3,11 @@ package com.eischet.janitor.api;
 import com.eischet.janitor.api.i18n.JanitorFormatting;
 import com.eischet.janitor.api.modules.JanitorModuleRegistration;
 import com.eischet.janitor.api.scopes.Scope;
+import com.eischet.janitor.api.types.builtin.JList;
+import com.eischet.janitor.api.types.builtin.JMap;
 import com.eischet.janitor.api.types.builtin.JNull;
 import com.eischet.janitor.api.types.JanitorObject;
+import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonInputStream;
 import com.eischet.janitor.toolbox.json.api.JsonOutputSupport;
 import org.jetbrains.annotations.NotNull;
@@ -91,4 +94,12 @@ public interface JanitorEnvironment extends JanitorUserEnvironment, JanitorImple
      * @return the built-in scope
      */
     Scope getBuiltinScope();
+
+
+    @NotNull
+    JMap parseJsonToMap(final String json) throws JsonException;
+
+    @NotNull
+    JList parseJsonToList(final String json) throws JsonException;
+
 }

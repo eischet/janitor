@@ -66,10 +66,17 @@ public interface JanitorScriptProcess {
 
     JString expandTemplate(JString template, JCallArgs arguments) throws JanitorRuntimeException;
 
+    @NotNull
     JanitorObject run() throws JanitorRuntimeException;
 
+    @NotNull
     default JanitorEnvironment getEnvironment() {
         return getRuntime().getEnvironment();
+    }
+
+    @NotNull
+    default JanitorBuiltins getBuiltins() {
+        return getEnvironment().getBuiltins();
     }
 
     default void protect(final String title, ProtectedCall call) {

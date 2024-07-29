@@ -8,6 +8,7 @@ import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.compiler.ast.statement.Script;
 import com.eischet.janitor.compiler.ast.statement.controlflow.ReturnStatement;
+import org.jetbrains.annotations.NotNull;
 
 public class RunningScriptProcess extends AbstractScriptProcess {
 
@@ -23,7 +24,7 @@ public class RunningScriptProcess extends AbstractScriptProcess {
         getRuntime().warn(warning);
     }
 
-    public JanitorObject run() throws JanitorRuntimeException {
+    public @NotNull JanitorObject run() throws JanitorRuntimeException {
         try {
             script.execute(this);
             return getScriptResult();

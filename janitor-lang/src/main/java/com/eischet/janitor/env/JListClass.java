@@ -18,9 +18,8 @@ import java.util.stream.Collectors;
 
 /**
  * Operations for list objects.
- * TODO: wrap these with a DispatchTable, to allow greater customisation options to hosts.
  */
-public class JListOperations {
+public class JListClass {
 
 
     public static JList __parseJson(final JanitorWrapper<List<JanitorObject>> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {

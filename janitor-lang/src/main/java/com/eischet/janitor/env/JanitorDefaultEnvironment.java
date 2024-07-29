@@ -79,7 +79,7 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
     private final Map<String, AttributeLookupHandler<? super JanitorObject>> anyAttributes = new HashMap<>();
     private final Map<String, AttributeLookupHandler<JDateTime>> dateTimeAttributes = new HashMap<>();
     private final Map<String, AttributeLookupHandler<JBinary>> binaryMethods = new HashMap<>();
-    private final JanitorDefaultBuiltins builtins;
+    protected final JanitorDefaultBuiltins builtins;
     // TODO: Float is missing here in the old approach
 
     @Override
@@ -277,5 +277,15 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
             }
         }
         return condition;
+    }
+
+    @Override
+    public @NotNull JMap parseJsonToMap(final String json) throws JsonException {
+        return JMapClass.parseJson(getBuiltins().map(), json, this);
+    }
+
+    @Override
+    public @NotNull JList parseJsonToList(final String json) throws JsonException {
+        return JListClass.parseJson(getBuiltins().list(), json, this);
     }
 }
