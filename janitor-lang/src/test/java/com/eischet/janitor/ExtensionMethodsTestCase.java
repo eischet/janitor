@@ -80,12 +80,26 @@ public class ExtensionMethodsTestCase {
         ENV.getBuiltins().internals().getIntDispatcher().addLongProperty("times2", (self) -> self.janitorGetHostValue() * 2);
         assertEquals(10L, script3.run().janitorGetHostValue()); // now there it is
 
+
+        // Finally, add a property to all built-in classes. Your own classes can opt in to this, too, by accessing the baseDispatcher
+        // explicitly when creating your own dispatch table, or by calling into the baseDispatcher at runtime.
+        ENV.getBuiltins().internals().getBaseDispatcher().addStringProperty("omega", self -> "Ω");
+        final String scriptSource4 = "return (17).omega;"; // parens are necessary here, because 17.omega would (fail to) parse as float
+        final RunnableScript script4 = RT.compile("test", scriptSource4);
+        assertEquals("Ω", script4.run().janitorGetHostValue());
+
+        // Yes, dates have the new attribute, too.
+        final String scriptSource5 = "return @today.omega;";
+        final RunnableScript script5 = RT.compile("test", scriptSource5);
+        assertEquals("Ω", script5.run().janitorGetHostValue());
+
         // Extending built-in classes couldn't be easier, IMHO. The signature (self, runningScript, arguments) is a bit cumbersome to remember, though.
         // Workaround: when your IDE suggests to write "new JUnboundMethod...", autocomplete this and have a normal signature to look at. Then,
         // write your code, and finally let your IDE collapse everything to be written like above, if you prefer. That works fine in IntelliJ IDEA.
         // Properties are easier to write; just keep in mind that the method names in the Dispatch Table refer to Java "Long", "Int" etc, not to
         // scripting types, then the mental model should be clear.
     }
+
 
 
 }

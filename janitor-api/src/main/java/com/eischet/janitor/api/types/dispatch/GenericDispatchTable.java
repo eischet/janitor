@@ -17,7 +17,22 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 public abstract class GenericDispatchTable<T extends JanitorObject> implements Dispatcher<T> {
+
+    private interface Delegate<T> {
+        JanitorObject delegate(final T instance, final JanitorScriptProcess process, final String name);
+    }
+
+
     private final Map<String, AttributeLookupHandler<T>> map = new HashMap<>();
+    private final Delegate<T> parentLookupHandler;
+
+    public GenericDispatchTable() {
+        parentLookupHandler = null;
+    }
+
+    public <P extends JanitorObject> GenericDispatchTable(final Dispatcher<P> parent, final Function<T, P> caster) {
+        parentLookupHandler = (instance, process, name) -> parent.dispatch(caster.apply(instance), process, name);
+    }
 
     /**
      * Adds a method to the dispatch table.
@@ -222,6 +237,9 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
         final AttributeLookupHandler<T> handler = map.get(name);
         if (handler != null) {
             return handler.lookupAttribute(instance, process);
+        }
+        if (parentLookupHandler != null) {
+            return parentLookupHandler.delegate(instance, process, name);
         }
         return null;
     }

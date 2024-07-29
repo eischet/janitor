@@ -76,6 +76,16 @@ public class Location {
     }
 
     /**
+     * Create a location that specifies nothing more than the module.
+     *
+     * @param module a module
+     * @return a location that points to the module only
+     */
+    public static Location virtual(final ScriptModule module) {
+        return Location.at(module, 0, 0, 0, 0);
+    }
+
+    /**
      * Get the module of this location.
      *
      * @return the module

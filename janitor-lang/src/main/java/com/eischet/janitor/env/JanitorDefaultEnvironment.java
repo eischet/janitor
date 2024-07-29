@@ -13,7 +13,10 @@ import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.scopes.ScriptModule;
 import com.eischet.janitor.api.types.JanitorObject;
-import com.eischet.janitor.api.types.builtin.*;
+import com.eischet.janitor.api.types.builtin.JBool;
+import com.eischet.janitor.api.types.builtin.JList;
+import com.eischet.janitor.api.types.builtin.JMap;
+import com.eischet.janitor.api.types.builtin.JNull;
 import com.eischet.janitor.api.util.ObjectUtilities;
 import com.eischet.janitor.json.impl.GsonInputStream;
 import com.eischet.janitor.json.impl.GsonOutputStream;
@@ -46,28 +49,7 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
     protected final JanitorDefaultBuiltins builtins;
     private final JanitorFormatting formatting;
 
-    private final Scope builtinScope = Scope.createBuiltinScope(this, Location.at(
-            ScriptModule.builtin(),
-            0,
-            0,
-            0,
-            0)); //  new Scope(Location.at(ScriptModule.builtin(), 0, 0), null, null);
-
-    // TODO: date, datetime, float, list, set, map!
-
-    /*
-
-    // private final Dispatcher<JanitorWrapper<?>> dispatchAny = new DispatchTable<>();
-    // private final DispatchTable<?> dispatchRoot = new DispatchTable<>(FOO, null);
-    private final DispatchTable<JString> dispatchString = new DispatchTable<>(JString.CASTER, null);
-
-    {
-        //var disp = Dispatcher.chain(dispatchBuiltin, dispatchString);
-        var x = JString.of("foo");
-        dispatchString.dispatch(x, null, "foobar");
-    }
-
-     */
+    private final Scope builtinScope = Scope.createBuiltinScope(this, Location.virtual(ScriptModule.builtin()));
 
     {
         builtinScope.bindF("print", (rs, args) -> rs.getRuntime().print(rs, args));
@@ -75,23 +57,10 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
         builtinScope.bind("__builtin__", builtinScope); // not sure if this is actually a good idea, because that's a perfect circle of references.
         builtinScope.seal();
     }
-    // TODO: Float is missing here in the old approach
 
     public JanitorDefaultEnvironment(JanitorFormatting formatting) {
         this.formatting = formatting;
         this.builtins = new JanitorDefaultBuiltins();
-
-
-    }
-
-    public void setupBuiltinScope(final Consumer<Scope> consumer) {
-        consumer.accept(builtinScope);
-    }
-
-
-
-    public static FilterPredicate of(final JanitorEnvironment env, final String name, final String code) {
-        return env.filterScript(name, code);
     }
 
     /**
@@ -114,6 +83,18 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
             }
         }
         return condition;
+    }
+
+    /**
+     * Set up the builtin scope.
+     * <p>Call this method to place variables/functions into the builtin scope.</p>
+     * <p>Note that all scripts running against this environment will share these variables.
+     * It is probably not a good idea to make them modifiable, because modifications will stick!</p>
+     *
+     * @param consumer a callback that receives the builtin scope
+     */
+    public void setupBuiltinScope(final Consumer<Scope> consumer) {
+        consumer.accept(builtinScope);
     }
 
     @Override
@@ -182,7 +163,7 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
         return GsonInputStream.lenient(json);
     }
 
-    // TODO: das gehört ins ENV, nicht hierher!
+
     @Override
     public FilterPredicate filterScript(final String name, final String code) {
         if (code == null || code.isEmpty() || code.trim().isEmpty()) {

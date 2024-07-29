@@ -25,26 +25,33 @@ import static com.eischet.janitor.api.types.builtin.JDateTime.DATE_FORMAT_SHORT;
 
 public class JanitorDefaultBuiltins implements JanitorBuiltins {
 
+    protected final RegularDispatchTable<JanitorObject> baseDispatcher = new RegularDispatchTable<>();
+
     protected final JanitorWrapperDispatchTable<Map<JanitorObject, JanitorObject>> mapDispatcher = new JanitorWrapperDispatchTable<>();
-    protected final JanitorWrapperDispatchTable<String> stringDispatcher = new JanitorWrapperDispatchTable<>();
+    protected final JanitorWrapperDispatchTable<String> stringDispatcher = new JanitorWrapperDispatchTable<>(baseDispatcher, it -> it);
 
     // TODO: figure out why I cannot write Dispatcher<JMap> here. I keep forgetting the subleties of the Java generics system...
     // I'm sure it's something with blah super foo extends lalala that everybody but me knows about. ;-)
-    protected final JanitorWrapperDispatchTable<List<JanitorObject>> listDispatcher = new JanitorWrapperDispatchTable<>();
-    protected final JanitorWrapperDispatchTable<Set<JanitorObject>> setDispatcher = new JanitorWrapperDispatchTable<>();
-    protected final JanitorWrapperDispatchTable<Long> intDispatcher = new JanitorWrapperDispatchTable<>();
-    protected final JanitorWrapperDispatchTable<byte[]> binaryDispatcher = new JanitorWrapperDispatchTable<>();
-    protected final JanitorWrapperDispatchTable<Double> floatDispatcher = new JanitorWrapperDispatchTable<>();
-    protected final JanitorWrapperDispatchTable<Pattern> regexDispatcher = new JanitorWrapperDispatchTable<>();
-    protected final RegularDispatchTable<JDuration> durationDispatch = new RegularDispatchTable<>();
-    protected final RegularDispatchTable<JDateTime> dateTimeDispatch = new RegularDispatchTable<>();
-    protected final RegularDispatchTable<JDate> dateDispatch = new RegularDispatchTable<>();
+
+
+
+    protected final JanitorWrapperDispatchTable<List<JanitorObject>> listDispatcher = new JanitorWrapperDispatchTable<>(baseDispatcher, it -> it);
+    protected final JanitorWrapperDispatchTable<Set<JanitorObject>> setDispatcher = new JanitorWrapperDispatchTable<>(baseDispatcher, it -> it);
+    protected final JanitorWrapperDispatchTable<Long> intDispatcher = new JanitorWrapperDispatchTable<>(baseDispatcher, it -> it);
+    protected final JanitorWrapperDispatchTable<byte[]> binaryDispatcher = new JanitorWrapperDispatchTable<>(baseDispatcher, it -> it);
+    protected final JanitorWrapperDispatchTable<Double> floatDispatcher = new JanitorWrapperDispatchTable<>(baseDispatcher, it -> it);
+    protected final JanitorWrapperDispatchTable<Pattern> regexDispatcher = new JanitorWrapperDispatchTable<>(baseDispatcher, it -> it);
+    protected final RegularDispatchTable<JDuration> durationDispatch = new RegularDispatchTable<>(baseDispatcher, it -> it);
+    protected final RegularDispatchTable<JDateTime> dateTimeDispatch = new RegularDispatchTable<>(baseDispatcher, it -> it);
+    protected final RegularDispatchTable<JDate> dateDispatch = new RegularDispatchTable<>(baseDispatcher, it -> it);
 
 
     private final JString emptyString;
     private final JInt zero;
 
     public JanitorDefaultBuiltins() {
+        baseDispatcher.addStringProperty("class", JanitorObject::janitorClassName);
+
         emptyString = JString.newInstance(stringDispatcher, "");
         zero = JInt.newInstance(intDispatcher, 0);
 
@@ -321,6 +328,10 @@ public class JanitorDefaultBuiltins implements JanitorBuiltins {
      */
     public class Internals {
 
+        public RegularDispatchTable<JanitorObject> getBaseDispatcher() {
+            return baseDispatcher;
+        }
+
         public JanitorWrapperDispatchTable<Map<JanitorObject, JanitorObject>> getMapDispatcher() {
             return mapDispatcher;
         }
@@ -423,23 +434,6 @@ public class JanitorDefaultBuiltins implements JanitorBuiltins {
         return date(LocalDate.now());
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     @Override
     public @NotNull JanitorObject nullableDateFromLiteral(@Nullable final String text) {
         if ("today".equals(text)) {
@@ -503,7 +497,5 @@ public class JanitorDefaultBuiltins implements JanitorBuiltins {
             return JNull.NULL;
         }
     }
-
-
 
 }
