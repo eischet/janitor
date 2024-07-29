@@ -141,9 +141,9 @@ Everything else builds on this simple, string-based dispatch API.
 Finally, let's have a look at how the String class implements its toUpperCase function to see how to implement Java code that can be called by scripts:
 
 ```java
-    public static JString __toUpperCase(final JString self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
-        arguments.require(0);
-        return JString.of(self.string.toUpperCase(Locale.ROOT));
+    public static JString __toUpperCase(final JanitorWrapper<String> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
+        arguments.require(0); // no arguments allowed
+        return runningScript.getBuiltins().string(self.janitorGetHostValue().toUpperCase(Locale.ROOT));
     }
 ```
 
@@ -151,6 +151,10 @@ A typical callable, in this case a string method, will receive the object it was
 
 The JanitorScriptProcess represents the "process" that is currently executing. These objects are created by the run() method on JanitorScript instances.
 This is where a script's internal state lives during execution.
+
+The clause `runningScript.getBuiltins().string(...)` might look alien at first, but the language maintains a set of dispatch tables for built-in types,
+which you can easily add methods and properties to when customizing the language for your application, and this syntax is the price paid for that feature.
+
 
 
 # Sandboxing and Security

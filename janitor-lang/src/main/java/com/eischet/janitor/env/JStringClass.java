@@ -118,7 +118,7 @@ public class JStringClass {
 
     public static JString __toUpperCase(final JanitorWrapper<String> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);
-        return runningScript.getEnvironment().getBuiltins().string(self.janitorGetHostValue().toUpperCase(Locale.ROOT));
+        return runningScript.getBuiltins().string(self.janitorGetHostValue().toUpperCase(Locale.ROOT));
     }
 
     public static JString __toLowerCase(final JanitorWrapper<String> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
