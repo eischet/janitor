@@ -4,6 +4,7 @@ import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.RunnableScript;
 import com.eischet.janitor.api.calls.JCallArgs;
+import com.eischet.janitor.api.types.JCallable;
 import com.eischet.janitor.api.types.builtin.JNull;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.env.JanitorDefaultEnvironment;
@@ -38,7 +39,8 @@ public class Demo {
             // create a runtime -- this is the thing that actually runs the scripts:
             final DemoRuntime runtime = new DemoRuntime(env);
             final RunnableScript script = runtime.compile(scriptPath.getFileName().toString(), fullScript);
-            script.run(g -> {});
+
+            script.run();
         } catch (Exception e) {
 
             e.printStackTrace(System.err);
@@ -50,6 +52,21 @@ public class Demo {
 
         public DemoEnvironment() {
             super(new JanitorFormattingLocale(Locale.getDefault()));
+
+            // Add some built-in symbols, which will be available to all scripts.
+            // Better don't make them modifiable, because modifications will stick!
+            setupBuiltinScope(globals -> {
+                // put a "version" string into the global scope
+                globals.bind("version", "0.9.3");
+                // place an "exit()" function in the global scope.
+                // note that I wouldn't want to use System.exit() in a real world use case,
+                // but for the demo I guess it's fine.
+                globals.bind("exit", ((JCallable) (runningScript, args) -> {
+                    System.err.println("hard exit!");
+                    System.exit(0);
+                    return JNull.NULL;
+                }).asObject("exit"));
+            });
         }
 
         @Override

@@ -746,9 +746,9 @@ public class FirstParserTestCase {
     public void datingFormats() throws JanitorCompilerException, JanitorRuntimeException {
         final LocalDateTime testDate = LocalDateTime.of(2021, 11, 15, 12, 4);
         final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
-        assertEquals(JDate.of(2021, 11, 15), rt.compile("test", "d.date()").run(g -> g.bind("d", JDateTime.ofNullable(testDate))));
-        assertEquals(TestEnv.env.getBuiltins().string("12:04"), rt.compile("test", "d.time()").run(g -> g.bind("d", JDateTime.ofNullable(testDate))));
-        assertEquals(TestEnv.env.getBuiltins().string("15.11.2021, 12:04:00"), rt.compile("test", "d.string()").run(g -> g.bind("d", JDateTime.ofNullable(testDate))));
+        assertEquals(TestEnv.env.getBuiltins().date(2021, 11, 15), rt.compile("test", "d.date()").run(g -> g.bind("d", TestEnv.env.getBuiltins().nullableDateTime(testDate))));
+        assertEquals(TestEnv.env.getBuiltins().string("12:04"), rt.compile("test", "d.time()").run(g -> g.bind("d", TestEnv.env.getBuiltins().nullableDateTime(testDate))));
+        assertEquals(TestEnv.env.getBuiltins().string("15.11.2021, 12:04:00"), rt.compile("test", "d.string()").run(g -> g.bind("d", TestEnv.env.getBuiltins().nullableDateTime(testDate))));
         assertEquals(JBool.TRUE, rt.compile("test", "@now > @now.date()").run(TestEnv.NO_GLOBALS));
         assertEquals(JBool.FALSE, rt.compile("test", "@now < @now.date()").run(TestEnv.NO_GLOBALS));
         Long.compare(1, 2);

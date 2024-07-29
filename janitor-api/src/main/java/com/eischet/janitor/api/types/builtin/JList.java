@@ -8,6 +8,7 @@ import com.eischet.janitor.api.types.JIterable;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.toolbox.json.api.*;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.*;
 import java.util.stream.Stream;
@@ -150,7 +151,7 @@ public class JList extends JanitorWrapper<List<JanitorObject>> implements Janito
     }
 
     @Override
-    public List<JanitorObject> janitorGetHostValue() {
+    public @Unmodifiable List<JanitorObject> janitorGetHostValue() {
         return List.copyOf(wrapped);
     }
 

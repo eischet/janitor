@@ -43,11 +43,6 @@ public abstract class BaseRuntime implements JanitorRuntime {
         this.formatting = environment.getFormatting();
     }
 
-    @Override
-    public JanitorObject lookupClassAttribute(final @NotNull JanitorScriptProcess runningScript, final @NotNull JanitorObject instance, final @NotNull String attributeName) {
-        return enviroment.lookupClassAttribute(runningScript, instance, attributeName);
-    }
-
     /**
      * Adds a module resolver.
      * The resolvers will be called in reverse order of addition, so later resolvers can override earlier ones.

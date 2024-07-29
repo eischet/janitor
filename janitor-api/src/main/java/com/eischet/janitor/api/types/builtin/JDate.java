@@ -2,115 +2,35 @@ package com.eischet.janitor.api.types.builtin;
 
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
-import com.eischet.janitor.api.errors.runtime.JanitorNameException;
 import com.eischet.janitor.api.types.JConstant;
 import com.eischet.janitor.api.types.JanitorObject;
+import com.eischet.janitor.api.types.composed.JanitorComposed;
+import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.Objects;
 
 /**
  * A date object, representing a date in the Gregorian calendar.
  * This is one of the built-in types that Janitor provides automatically.
- *
- * TODO: convert this to a composite
  */
-public class JDate implements JConstant {
+public class JDate extends JanitorComposed<JDate> implements JConstant {
 
-    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    public static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     private final long date;
 
-    /**
-     * Create a new JDate.
-     * @param date the date
-     */
-    public JDate(final LocalDate date) {
-        this.date = packLocalDate(date);
+    public JDate(final Dispatcher<JDate> dispatcher, final long date) {
+        super(dispatcher);
+        this.date = date;
     }
 
-    /**
-     * Create a new JDate.
-     * @param year the year
-     * @param month the month
-     * @param day the day
-     */
-    private JDate(final long year, final long month, final long day) {
-        this.date = packLocalDate(year, month, day);
+    public static JDate newInstance(final Dispatcher<JDate> dispatcher, final long date) {
+        return new JDate(dispatcher,  date);
     }
 
-    /**
-     * Create a new JDate.
-     * @param text the date as a string
-     */
-    public JDate(final String text) {
-        if ("today".equals(text)) {
-            date = packLocalDate(LocalDate.now());
-        } else {
-            date = packLocalDate(LocalDate.parse(text, DATE_FORMAT));
-        }
-    }
-
-    /**
-     * Create a new JDate.
-     * @return the current date
-     */
-    public static JDate today() {
-        return new JDate("today");
-    }
-
-    /**
-     * Create a new JDate.
-     * @param localDate the date
-     * @return the date
-     */
-    public static JDate of(final LocalDate localDate) {
-        return new JDate(localDate);
-    }
-
-    /**
-     * Create a new JDate.
-     * @param year the year
-     * @param month the month
-     * @param day the day
-     * @return the date
-     */
-    public static JDate of(final int year, final int month, final int day) {
-        return new JDate(year, month, day);
-    }
-
-    /**
-     * Create a new JDate.
-     * @param year the year
-     * @param month the month
-     * @param day the day
-     * @return the date
-     */
-    public static JDate of(final long year, final long month, final long day) {
-        return new JDate(year, month, day);
-    }
-
-    /**
-     * Parse a date from a string.
-     * @param runningScript the running script
-     * @param string the string
-     * @param format the format
-     * @return the date
-     */
-    public static JanitorObject parse(final JanitorScriptProcess runningScript, final String string, final String format) {
-        try {
-            final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
-            final LocalDate d = LocalDate.parse(string, formatter);
-            return of(d);
-        } catch (DateTimeParseException e) {
-            runningScript.warn("error parsing date '%s' with format '%s': %s".formatted(string, format, e.getMessage()));
-            return JNull.NULL;
-        }
-    }
 
     /**
      * Unpack a date from a compact representation.
@@ -159,15 +79,6 @@ public class JDate implements JConstant {
             ld.getYear() * 100L * 100L * 100L * 100L * 100L;
     }
 
-    /**
-     * Create a new JDate.
-     * @param localDate the date
-     * @return the date or NULL
-     */
-    public static JanitorObject ofNullable(final LocalDate localDate) {
-        return localDate == null ? JNull.NULL : new JDate(localDate);
-    }
-
     @Override
     public LocalDate janitorGetHostValue() {
         return unpackLocalDate(date);
@@ -212,21 +123,6 @@ public class JDate implements JConstant {
     @Override
     public @NotNull String janitorClassName() {
         return "date";
-    }
-
-    @Override
-    public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess runningScript, final @NotNull String name, final boolean required) throws JanitorNameException {
-        // TODO: better convert this to a proper dispatch table
-        if ("year".equals(name)) {
-            return runningScript.getEnvironment().getBuiltins().integer(getYear());
-        }
-        if ("month".equals(name)) {
-            return runningScript.getEnvironment().getBuiltins().integer(getMonth());
-        }
-        if ("day".equals(name)) {
-            return runningScript.getEnvironment().getBuiltins().integer(getDayOfMonth());
-        }
-        return JConstant.super.janitorGetAttribute(runningScript, name, required);
     }
 
 

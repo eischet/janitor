@@ -121,6 +121,17 @@ public class JanitorSemantics {
         }
     }
 
+
+    public interface BinOp<L, R, T> {
+        T apply(JanitorScriptProcess process, L left, R right) throws JanitorRuntimeException;
+
+
+        static <L, R, T> BinOp<L, R, T> adapt(BiFunction<L, R, T> function) {
+            return (process, left, right) -> function.apply(left, right);
+        }
+
+    }
+
     /**
      * Perform a numeric operation on two objects.
      * This is really like the "center of math" in the current implementation.
@@ -140,52 +151,52 @@ public class JanitorSemantics {
      */
     private static JanitorObject numericOperation(final JanitorScriptProcess process, final String name,
                                                   final JanitorObject leftValue, final JanitorObject rightValue,
-                                                  final BiFunction<Long, Long, Long> intOp,
-                                                  final BiFunction<Double, Double, Double> floatOp,
-                                                  final BiFunction<JDate, JDuration, JanitorObject> dateOp,
-                                                  final BiFunction<JDateTime, JDuration, JanitorObject> dateTimeOp,
-                                                  final BiFunction<JDate, JDate, JanitorObject> dateDateOp,
-                                                  final BiFunction<JDateTime, JDateTime, JanitorObject> dateTimeDateTimeOp
+                                                  final BinOp<Long, Long, Long> intOp,
+                                                  final BinOp<Double, Double, Double> floatOp,
+                                                  final BinOp<JDate, JDuration, JanitorObject> dateOp,
+                                                  final BinOp<JDateTime, JDuration, JanitorObject> dateTimeOp,
+                                                  final BinOp<JDate, JDate, JanitorObject> dateDateOp,
+                                                  final BinOp<JDateTime, JDateTime, JanitorObject> dateTimeDateTimeOp
     ) throws JanitorRuntimeException {
         try {
             if (leftValue instanceof JInt leftInteger && rightValue instanceof JInt rightInteger) {
-                return process.getEnvironment().getBuiltins().integer(intOp.apply(leftInteger.getValue(), rightInteger.getValue()));
+                return process.getEnvironment().getBuiltins().integer(intOp.apply(process, leftInteger.getValue(), rightInteger.getValue()));
             } else if (leftValue instanceof JFloat leftFloat && rightValue instanceof JFloat rightFloat) {
-                return process.getEnvironment().getBuiltins().floatingPoint(floatOp.apply(leftFloat.getValue(), rightFloat.getValue()));
+                return process.getEnvironment().getBuiltins().floatingPoint(floatOp.apply(process, leftFloat.getValue(), rightFloat.getValue()));
             } else if (leftValue instanceof JInt leftInteger && rightValue instanceof JFloat rightFloat) {
-                return process.getEnvironment().getBuiltins().floatingPoint(floatOp.apply(leftInteger.getAsDouble(), rightFloat.getValue()));
+                return process.getEnvironment().getBuiltins().floatingPoint(floatOp.apply(process, leftInteger.getAsDouble(), rightFloat.getValue()));
             } else if (leftValue instanceof JFloat leftFloat && rightValue instanceof JInt rightInteger) {
-                return process.getEnvironment().getBuiltins().floatingPoint(floatOp.apply(leftFloat.getValue(), rightInteger.getAsDouble()));
+                return process.getEnvironment().getBuiltins().floatingPoint(floatOp.apply(process, leftFloat.getValue(), rightInteger.getAsDouble()));
             } else if (leftValue instanceof JDateTime leftDate && rightValue instanceof JDateTime rightDate) {
                 if (dateOp == null) {
                     throw new JanitorTypeException(process, "we cannot %s datetimes; got %s [%s] and %s [%s]".formatted(name, leftValue, ObjectUtilities.simpleClassNameOf(leftValue), rightValue, ObjectUtilities.simpleClassNameOf(rightValue)));
                 }
-                return dateTimeDateTimeOp.apply(leftDate, rightDate);
+                return dateTimeDateTimeOp.apply(process, leftDate, rightDate);
             } else if (leftValue instanceof JDate leftDate && rightValue instanceof JDate rightDate) {
                 if (dateOp == null) {
                     throw new JanitorTypeException(process, "we cannot %s dates; got %s [%s] and %s [%s]".formatted(name, leftValue, ObjectUtilities.simpleClassNameOf(leftValue), rightValue, ObjectUtilities.simpleClassNameOf(rightValue)));
                 }
-                return dateDateOp.apply(leftDate, rightDate);
+                return dateDateOp.apply(process, leftDate, rightDate);
             } else if (leftValue instanceof JDuration duration && rightValue instanceof JDateTime dateTime) {
                 if (dateOp == null) {
                     throw new JanitorTypeException(process, "we cannot %s datetimes and durations; got %s [%s] and %s [%s]".formatted(name, leftValue, ObjectUtilities.simpleClassNameOf(leftValue), rightValue, ObjectUtilities.simpleClassNameOf(rightValue)));
                 }
-                return dateTimeOp.apply(dateTime, duration);
+                return dateTimeOp.apply(process, dateTime, duration);
             } else if (leftValue instanceof JDateTime dateTime && rightValue instanceof JDuration duration) {
                 if (dateOp == null) {
                     throw new JanitorTypeException(process, "we cannot %s datetimes and durations; got %s [%s] and %s [%s]".formatted(name, leftValue, ObjectUtilities.simpleClassNameOf(leftValue), rightValue, ObjectUtilities.simpleClassNameOf(rightValue)));
                 }
-                return dateTimeOp.apply(dateTime, duration);
+                return dateTimeOp.apply(process, dateTime, duration);
             } else if (leftValue instanceof JDuration duration && rightValue instanceof JDate date) {
                 if (dateOp == null) {
                     throw new JanitorTypeException(process, "we cannot %s dates and durations; got %s [%s] and %s [%s]".formatted(name, leftValue, ObjectUtilities.simpleClassNameOf(leftValue), rightValue, ObjectUtilities.simpleClassNameOf(rightValue)));
                 }
-                return dateOp.apply(date, duration);
+                return dateOp.apply(process, date, duration);
             } else if (leftValue instanceof JDate date && rightValue instanceof JDuration duration) {
                 if (dateOp == null) {
                     throw new JanitorTypeException(process, "we cannot %s dates and durations; got %s [%s] and %s [%s]".formatted(name, leftValue, ObjectUtilities.simpleClassNameOf(leftValue), rightValue, ObjectUtilities.simpleClassNameOf(rightValue)));
                 }
-                return dateOp.apply(date, duration);
+                return dateOp.apply(process, date, duration);
             } else {
                 throw new JanitorTypeException(process, "we can only %s numbers at the moment; got %s [%s] and %s [%s]".formatted(name, leftValue, ObjectUtilities.simpleClassNameOf(leftValue), rightValue, ObjectUtilities.simpleClassNameOf(rightValue)));
             }
@@ -209,7 +220,7 @@ public class JanitorSemantics {
         } else if (leftValue instanceof JInt leftInt && rightValue instanceof JString rightString) {
             return process.getEnvironment().getBuiltins().string(repeat(rightString.janitorGetHostValue(), leftInt.getValue()));
         }
-        return numericOperation(process, "multiply", leftValue, rightValue, (a, b) -> a * b, (a, b) -> a * b, null, null, null, null);
+        return numericOperation(process, "multiply", leftValue, rightValue, (p, a, b) -> a * b, (p, a, b) -> a * b, null, null, null, null);
     }
 
     /**
@@ -222,7 +233,7 @@ public class JanitorSemantics {
      * @throws JanitorRuntimeException on errors
      */
     public static @NotNull JanitorObject divide(final JanitorScriptProcess process, final JanitorObject leftValue, final JanitorObject rightValue) throws JanitorRuntimeException {
-        return numericOperation(process, "divide", leftValue, rightValue, (a, b) -> a / b, (a, b) -> a / b, null, null, null, null);
+        return numericOperation(process, "divide", leftValue, rightValue, (p, a, b) -> a / b, (p, a, b) -> a / b, null, null, null, null);
     }
 
     /**
@@ -235,7 +246,7 @@ public class JanitorSemantics {
      * @throws JanitorRuntimeException on errors
      */
     public static @NotNull JanitorObject modulo(JanitorScriptProcess process, final JanitorObject leftValue, final JanitorObject rightValue) throws JanitorRuntimeException {
-        return numericOperation(process, "modulo", leftValue, rightValue, (a, b) -> a % b, (a, b) -> a % b, null, null, null, null);
+        return numericOperation(process, "modulo", leftValue, rightValue, (p, a, b) -> a % b, (p, a, b) -> a % b, null, null, null, null);
     }
 
     /**
@@ -248,9 +259,9 @@ public class JanitorSemantics {
      * @throws JanitorRuntimeException on errors
      */
     public static @NotNull JanitorObject subtract(JanitorScriptProcess process, final JanitorObject leftValue, final JanitorObject rightValue) throws JanitorRuntimeException {
-        return numericOperation(process, "subtract", leftValue, rightValue, (a, b) -> a - b, (a, b) -> a - b, JDuration::subtract, JDuration::subtract,
-                (jDate, jDate2) -> durationBetween(process.getEnvironment().getBuiltins(), jDate, jDate2),
-                (jDateTime, jDateTime2) -> durationBetween(process.getEnvironment().getBuiltins(), jDateTime, jDateTime2));
+        return numericOperation(process, "subtract", leftValue, rightValue, (p, a, b) -> a - b, (p, a, b) -> a - b, JDuration::subtract, JDuration::subtract,
+                (proc, jDate, jDate2) -> durationBetween(process.getEnvironment().getBuiltins(), jDate, jDate2),
+                (proc, jDateTime, jDateTime2) -> durationBetween(process.getEnvironment().getBuiltins(), jDateTime, jDateTime2));
     }
 
     /**
@@ -396,8 +407,12 @@ public class JanitorSemantics {
         if (leftValue instanceof JString || rightValue instanceof JString) {
             return process.getEnvironment().getBuiltins().string(leftValue.janitorGetHostValue() + String.valueOf(rightValue.janitorGetHostValue()));
         }
-        return numericOperation(process, "add", leftValue, rightValue, Long::sum, Double::sum, JDuration::add, JDuration::add, null, null);
+        return numericOperation(process, "add", leftValue, rightValue, longSum, doubleSum, JDuration::add, JDuration::add, null, null);
     }
+
+    private static final BinOp<Long, Long, Long> longSum = BinOp.adapt(Long::sum);
+    private static final BinOp<Double, Double, Double> doubleSum = BinOp.adapt(Double::sum);
+
 
     /**
      * Increment a value.

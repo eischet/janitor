@@ -7,6 +7,7 @@ import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
+import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -22,7 +23,7 @@ class JanitorANTLRErrorListener implements ANTLRErrorListener {
         this.source = source;
     }
 
-    private List<String> splitSource() {
+    private @Unmodifiable List<String> splitSource() {
         return List.of(source.split("\r?\n\r?"));
     }
 

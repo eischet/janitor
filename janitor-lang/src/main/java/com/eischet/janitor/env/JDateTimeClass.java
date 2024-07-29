@@ -28,13 +28,13 @@ public class JDateTimeClass {
         return janitorScriptProcess.getEnvironment().getBuiltins().integer(csDateTime.janitorGetHostValue().toEpochSecond(DateTimeUtils.getZoneId().getRules().getOffset(csDateTime.janitorGetHostValue())));
     }
 
-    public static JInt __epochAsAttribute(final JDateTime csDateTime, final JanitorScriptProcess runningScript) {
-        return runningScript.getEnvironment().getBuiltins().integer(csDateTime.janitorGetHostValue().toEpochSecond(DateTimeUtils.getZoneId().getRules().getOffset(csDateTime.janitorGetHostValue())));
+    public static long __epochAsAttribute(final JDateTime csDateTime) {
+        return csDateTime.janitorGetHostValue().toEpochSecond(DateTimeUtils.getZoneId().getRules().getOffset(csDateTime.janitorGetHostValue()));
     }
 
     public static JDate __date(final JDateTime csDateTime, final JanitorScriptProcess janitorScriptProcess, final JCallArgs jCallArgs) throws JanitorRuntimeException {
         jCallArgs.require(0);
-        return JDate.of(csDateTime.janitorGetHostValue().toLocalDate());
+        return janitorScriptProcess.getBuiltins().date(csDateTime.janitorGetHostValue().toLocalDate());
     }
 
     public static JString __time(final JDateTime csDateTime, final JanitorScriptProcess janitorScriptProcess, final JCallArgs jCallArgs) throws JanitorRuntimeException {

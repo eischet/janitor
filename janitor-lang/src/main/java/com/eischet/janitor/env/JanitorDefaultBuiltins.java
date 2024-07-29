@@ -1,6 +1,7 @@
 package com.eischet.janitor.env;
 
 import com.eischet.janitor.api.JanitorBuiltins;
+import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.*;
 import com.eischet.janitor.api.types.dispatch.RegularDispatchTable;
@@ -10,9 +11,17 @@ import com.eischet.janitor.runtime.DateTimeUtilities;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+
+import static com.eischet.janitor.api.types.builtin.JDate.DATE_FORMAT;
+import static com.eischet.janitor.api.types.builtin.JDateTime.DATE_FORMAT_LONG;
+import static com.eischet.janitor.api.types.builtin.JDateTime.DATE_FORMAT_SHORT;
 
 public class JanitorDefaultBuiltins implements JanitorBuiltins {
 
@@ -28,6 +37,10 @@ public class JanitorDefaultBuiltins implements JanitorBuiltins {
     protected final JanitorWrapperDispatchTable<Double> floatDispatcher = new JanitorWrapperDispatchTable<>();
     protected final JanitorWrapperDispatchTable<Pattern> regexDispatcher = new JanitorWrapperDispatchTable<>();
     protected final RegularDispatchTable<JDuration> durationDispatch = new RegularDispatchTable<>();
+    protected final RegularDispatchTable<JDateTime> dateTimeDispatch = new RegularDispatchTable<>();
+    protected final RegularDispatchTable<JDate> dateDispatch = new RegularDispatchTable<>();
+
+
     private final JString emptyString;
     private final JInt zero;
 
@@ -105,7 +118,7 @@ public class JanitorDefaultBuiltins implements JanitorBuiltins {
         setDispatcher.addMethod("isEmpty", JSetClass::__isEmpty);
 
         intDispatcher.addLongProperty("int", JanitorWrapper::janitorGetHostValue);
-        intDispatcher.addObjectProperty("epoch", wrapper -> JDateTime.ofNullable(DateTimeUtilities.localFromEpochSeconds(wrapper.janitorGetHostValue())));
+        intDispatcher.addObjectProperty("epoch", wrapper -> dateTime(DateTimeUtilities.localFromEpochSeconds(wrapper.janitorGetHostValue())));
 
         floatDispatcher.addLongProperty("int", doubleJanitorWrapper -> doubleJanitorWrapper.janitorGetHostValue().longValue());
 
@@ -127,6 +140,20 @@ public class JanitorDefaultBuiltins implements JanitorBuiltins {
         regexDispatcher.addMethod("replaceFirst", JRegexClass::replaceFirst);
         regexDispatcher.addMethod("split", JRegexClass::split);
 
+
+        dateTimeDispatch.addLongProperty("epoch", JDateTimeClass::__epochAsAttribute);
+        dateTimeDispatch.addMethod("toEpoch", JDateTimeClass::__epoch);
+        dateTimeDispatch.addMethod("date", JDateTimeClass::__date);
+        dateTimeDispatch.addMethod("time", JDateTimeClass::__time);
+        dateTimeDispatch.addMethod("string", JDateTimeClass::__string);
+        dateTimeDispatch.addMethod("format", JDateTimeClass::__string);
+        dateTimeDispatch.addMethod("formatAtTimezone", JDateTimeClass::__formatAtTimezone);
+        dateTimeDispatch.addMethod("kw", JDateTimeClass::__kw);
+        dateTimeDispatch.addMethod("year", JDateTimeClass::__year);
+
+        dateDispatch.addLongProperty("year", JDate::getYear);
+        dateDispatch.addLongProperty("month", JDate::getMonth);
+        dateDispatch.addLongProperty("day", JDate::getDayOfMonth);
 
     }
 
@@ -329,5 +356,154 @@ public class JanitorDefaultBuiltins implements JanitorBuiltins {
         public RegularDispatchTable<JDuration> getDurationDispatch() {
             return durationDispatch;
         }
+
+        public RegularDispatchTable<JDateTime> getDateTimeDispatch() {
+            return dateTimeDispatch;
+        }
+
     }
+
+    /**
+     * Create a new JDateTime.
+     *
+     * @param text the date and time as a string
+     */
+    @Override
+    public @NotNull JanitorObject nullableDateTimeFromLiteral(@Nullable final String text) {
+        if ("now".equals(text)) {
+            return dateTime(LocalDateTime.now());
+        } else if (text == null) {
+            return JNull.NULL;
+        } else if (text.lastIndexOf(':') != text.indexOf(':')) {
+            return dateTime(LocalDateTime.parse(text, DATE_FORMAT_LONG));
+        } else {
+            return dateTime((LocalDateTime.parse(text, DATE_FORMAT_SHORT)));
+        }
+    }
+
+
+
+    @Override
+    public @NotNull JDateTime dateTime(@NotNull final LocalDateTime dateTime) {
+        return JDateTime.newInstance(dateTimeDispatch, dateTime);
+    }
+
+    /**
+     * Create a new JDateTime.
+     * @param dateTime the date and time
+     * @return the date and time, or NULL if the input is null
+     */
+    @Override
+    public @NotNull JanitorObject nullableDateTime(@Nullable final LocalDateTime dateTime) {
+        return dateTime == null ? JNull.NULL : JDateTime.newInstance(dateTimeDispatch, dateTime);
+    }
+
+    /**
+     * Create a new JDateTime.
+     * @return the current date and time
+     */
+    @Override
+    public @NotNull JDateTime now() {
+        return JDateTime.newInstance(dateTimeDispatch, LocalDateTime.now());
+    }
+
+
+    @Override
+    public @NotNull JDate date(final @NotNull LocalDate date) {
+        return JDate.newInstance(dateDispatch, JDate.packLocalDate(date));
+    }
+
+    @Override
+    public @NotNull JanitorObject nullableDate(@Nullable final LocalDate date) {
+        return date == null ? JNull.NULL : date(date);
+    }
+
+    @Override
+    public @NotNull JDate today() {
+        return date(LocalDate.now());
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    @Override
+    public @NotNull JanitorObject nullableDateFromLiteral(@Nullable final String text) {
+        if ("today".equals(text)) {
+            return date(LocalDate.now());
+        } else {
+            return date(LocalDate.parse(text, DATE_FORMAT));
+        }
+    }
+
+
+
+
+
+    /**
+     * Create a new JDate.
+     * @param localDate the date
+     * @return the date
+    public static JDate of(final LocalDate localDate) {
+        return new JDate(localDate);
+    }
+     */
+
+    /**
+     * Create a new JDate.
+     * @param year the year
+     * @param month the month
+     * @param day the day
+     * @return the date
+    public static JDate of(final int year, final int month, final int day) {
+        return new JDate(year, month, day);
+    }
+     */
+
+    /**
+     * Create a new JDate.
+     * @param year the year
+     * @param month the month
+     * @param day the day
+     * @return the date
+     */
+    @Override
+    public JDate date(final long year, final long month, final long day) {
+        return date(LocalDate.of((int) year, (int) month, (int) day));
+    }
+
+    /**
+     * Parse a date from a string.
+     * @param runningScript the running script
+     * @param string the string
+     * @param format the format
+     * @return the date
+     */
+    @Override
+    public JanitorObject parseNullableDate(final JanitorScriptProcess runningScript, final String string, final String format) {
+        try {
+            final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
+            final LocalDate d = LocalDate.parse(string, formatter);
+            return date(d);
+        } catch (DateTimeParseException e) {
+            runningScript.warn("error parsing date '%s' with format '%s': %s".formatted(string, format, e.getMessage()));
+            return JNull.NULL;
+        }
+    }
+
+
+
 }

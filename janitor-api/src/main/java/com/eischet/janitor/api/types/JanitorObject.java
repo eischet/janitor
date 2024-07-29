@@ -124,19 +124,13 @@ public interface JanitorObject {
      */
     @Nullable
     default JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess runningScript, final @NotNull String name, final boolean required) throws JanitorNameException {
-        // First, try to find a method in the class of this object, which is managed by the Enviroment:
-        final JanitorObject envMeth = runningScript.lookupClassAttribute(this, name);
-        if (envMeth != null) {
-            return envMeth;
-        }
-
-        // Next, try delegating the lookup to a wrapped object:
+        // Try delegating the lookup to a wrapped object:
         final @Nullable JanitorObject innerConstant = janitorUnpack();
         if (innerConstant != this && innerConstant != null) {
             return innerConstant.janitorGetAttribute(runningScript, name, required);
         }
         // Handle the class attribute here, previously called _type (which should be removed from older scripts which use it).
-        // LATER get rid of "_type".
+        // LATER get rid of "_type", used in a few legacy scripts
         if ("_type".equals(name) || "class".equals(name)) {
             return runningScript.getEnvironment().getBuiltins().string(janitorClassName());
         }

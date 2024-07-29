@@ -5,6 +5,8 @@ import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.types.JConstant;
 import com.eischet.janitor.api.types.JanitorObject;
+import com.eischet.janitor.api.types.composed.JanitorComposed;
+import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -16,13 +18,11 @@ import java.time.format.DateTimeParseException;
 /**
  * A datetime object, representing a date and time in the Gregorian calendar.
  * This is one of the built-in types that Janitor provides automatically.
- *
- * TODO: convert this to a composite
  */
-public class JDateTime implements JConstant {
+public class JDateTime extends JanitorComposed<JDateTime> implements JConstant {
 
-    private static final DateTimeFormatter DATE_FORMAT_LONG = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH:mm:ss");
-    private static final DateTimeFormatter DATE_FORMAT_SHORT = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH:mm");
+    public static final DateTimeFormatter DATE_FORMAT_LONG = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH:mm:ss");
+    public static final DateTimeFormatter DATE_FORMAT_SHORT = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH:mm");
 
     protected final long dateTime;
 
@@ -30,44 +30,15 @@ public class JDateTime implements JConstant {
      * Create a new JDateTime.
      * @param dateTime the date and time
      */
-    public JDateTime(final LocalDateTime dateTime) {
+    private JDateTime(final Dispatcher<JDateTime> dispatch, final LocalDateTime dateTime) {
+        super(dispatch);
         this.dateTime = packLocalDateTime(dateTime);
     }
 
-    /**
-     * Create a new JDateTime.
-     * @param text the date and time as a string
-     */
-    public JDateTime(final String text) {
-        if ("now".equals(text)) {
-            dateTime = packLocalDateTime(LocalDateTime.now());
-        } else if (text.lastIndexOf(':') != text.indexOf(':')) {
-            dateTime = packLocalDateTime(LocalDateTime.parse(text, DATE_FORMAT_LONG));
-        } else {
-            dateTime = packLocalDateTime(LocalDateTime.parse(text, DATE_FORMAT_SHORT));
-        }
+    public static JDateTime newInstance(final Dispatcher<JDateTime> dispatcher, final LocalDateTime dateTime) {
+        return new JDateTime(dispatcher, dateTime);
     }
 
-    /**
-     * Create a new JDateTime.
-     * @return the current date and time
-     */
-    public static JDateTime now() {
-        return new JDateTime("now");
-    }
-
-    /**
-     * Create a new JDateTime.
-     * @param dateTime the date and time
-     * @return the date and time, or NULL if the input is null
-     */
-    public static JanitorObject ofNullable(final LocalDateTime dateTime) {
-        if (dateTime != null) {
-            return new JDateTime(dateTime);
-        } else {
-            return JNull.NULL;
-        }
-    }
 
     /**
      * Create a new JDateTime from a packed representation.
@@ -173,7 +144,7 @@ public class JDateTime implements JConstant {
         try {
             final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
             final LocalDateTime d = LocalDateTime.parse(string, formatter);
-            return ofNullable(d);
+            return runningScript.getBuiltins().dateTime(d);
         } catch (DateTimeParseException e) {
             runningScript.warn(String.format("error parsing date '%s' with format '%s': %s", string, format, e.getMessage()));
             return JNull.NULL;
@@ -184,15 +155,14 @@ public class JDateTime implements JConstant {
      * Get the date part of the date and time.
      * @return the date
      */
-    public JDate toDate() {
-        return JDate.of(janitorGetHostValue().toLocalDate());
+    public JDate toDate(final JanitorScriptProcess process) {
+        return process.getBuiltins().date(janitorGetHostValue().toLocalDate());
     }
 
     @Override
     public @NotNull String janitorClassName() {
         return "datetime";
     }
-
 
 
 

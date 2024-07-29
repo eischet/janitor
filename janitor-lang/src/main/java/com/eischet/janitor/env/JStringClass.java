@@ -250,7 +250,7 @@ public class JStringClass {
 
     public static JanitorObject __parseDate(final JanitorWrapper<String> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         final String format = arguments.require(1).getString(0).janitorGetHostValue();
-        return JDate.parse(runningScript, self.janitorGetHostValue(), format);
+        return  runningScript.getBuiltins().parseNullableDate(runningScript, self.janitorGetHostValue(), format);
     }
 
     public static JanitorObject __parseDateTime(final JanitorWrapper<String> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
@@ -274,7 +274,7 @@ public class JStringClass {
         if (filename.length() <= maxLength) {
             return filename;
         }
-        String[] parts = filename.split("\\.(?=[^\\.]+$)");
+        String[] parts = filename.split("\\.(?=[^.]+$)");
         if (parts.length > 1) {
             filename = parts[0].substring(0, maxLength - parts[1].length() - 1).trim() + "." + parts[1].trim();
         } else {

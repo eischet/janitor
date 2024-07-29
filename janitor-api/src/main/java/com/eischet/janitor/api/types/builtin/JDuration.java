@@ -1,5 +1,6 @@
 package com.eischet.janitor.api.types.builtin;
 
+import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.types.JConstant;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
@@ -110,18 +111,18 @@ public class JDuration extends JanitorComposed<JDuration> implements JConstant, 
      * @param duration the duration
      * @return the new date or datetime
      */
-    public static JanitorObject add(final JDate date, final JDuration duration) {
+    public static JanitorObject add(final JanitorScriptProcess process, final JDate date, final JDuration duration) {
         if (duration.getUnit() == null || duration.getAmount() == 0) {
             return date;
         }
         return switch (duration.getUnit()) {
-            case YEARS -> new JDate(date.janitorGetHostValue().plusYears(duration.getAmount()));
-            case MONTHS -> new JDate(date.janitorGetHostValue().plusMonths(duration.getAmount()));
-            case WEEKS -> new JDate(date.janitorGetHostValue().plusWeeks(duration.getAmount()));
-            case DAYS -> new JDate(date.janitorGetHostValue().plusDays(duration.getAmount()));
-            case HOURS -> new JDateTime(date.janitorGetHostValue().atStartOfDay().plusHours(duration.getAmount()));
-            case MINUTES -> new JDateTime(date.janitorGetHostValue().atStartOfDay().plusMinutes(duration.getAmount()));
-            case SECONDS -> new JDateTime(date.janitorGetHostValue().atStartOfDay().plusSeconds(duration.getAmount()));
+            case YEARS -> process.getBuiltins().date(date.janitorGetHostValue().plusYears(duration.getAmount()));
+            case MONTHS -> process.getBuiltins().date(date.janitorGetHostValue().plusMonths(duration.getAmount()));
+            case WEEKS -> process.getBuiltins().date(date.janitorGetHostValue().plusWeeks(duration.getAmount()));
+            case DAYS -> process.getBuiltins().date(date.janitorGetHostValue().plusDays(duration.getAmount()));
+            case HOURS -> process.getBuiltins().dateTime(date.janitorGetHostValue().atStartOfDay().plusHours(duration.getAmount()));
+            case MINUTES -> process.getBuiltins().dateTime(date.janitorGetHostValue().atStartOfDay().plusMinutes(duration.getAmount()));
+            case SECONDS -> process.getBuiltins().dateTime(date.janitorGetHostValue().atStartOfDay().plusSeconds(duration.getAmount()));
         };
     }
 
@@ -131,18 +132,18 @@ public class JDuration extends JanitorComposed<JDuration> implements JConstant, 
      * @param duration the duration
      * @return the new datetime
      */
-    public static JanitorObject add(final JDateTime dateTime, final JDuration duration) {
+    public static JanitorObject add(final JanitorScriptProcess process, final JDateTime dateTime, final JDuration duration) {
         if (duration.getUnit() == null || duration.getAmount() == 0) {
             return dateTime;
         }
         return switch (duration.getUnit()) {
-            case YEARS -> new JDateTime(dateTime.janitorGetHostValue().plusYears(duration.getAmount()));
-            case MONTHS -> new JDateTime(dateTime.janitorGetHostValue().plusMonths(duration.getAmount()));
-            case WEEKS -> new JDateTime(dateTime.janitorGetHostValue().plusWeeks(duration.getAmount()));
-            case DAYS -> new JDateTime(dateTime.janitorGetHostValue().plusDays(duration.getAmount()));
-            case HOURS -> new JDateTime(dateTime.janitorGetHostValue().plusHours(duration.getAmount()));
-            case MINUTES -> new JDateTime(dateTime.janitorGetHostValue().plusMinutes(duration.getAmount()));
-            case SECONDS -> new JDateTime(dateTime.janitorGetHostValue().plusSeconds(duration.getAmount()));
+            case YEARS -> process.getBuiltins().dateTime(dateTime.janitorGetHostValue().plusYears(duration.getAmount()));
+            case MONTHS -> process.getBuiltins().dateTime(dateTime.janitorGetHostValue().plusMonths(duration.getAmount()));
+            case WEEKS -> process.getBuiltins().dateTime(dateTime.janitorGetHostValue().plusWeeks(duration.getAmount()));
+            case DAYS -> process.getBuiltins().dateTime(dateTime.janitorGetHostValue().plusDays(duration.getAmount()));
+            case HOURS -> process.getBuiltins().dateTime(dateTime.janitorGetHostValue().plusHours(duration.getAmount()));
+            case MINUTES -> process.getBuiltins().dateTime(dateTime.janitorGetHostValue().plusMinutes(duration.getAmount()));
+            case SECONDS -> process.getBuiltins().dateTime(dateTime.janitorGetHostValue().plusSeconds(duration.getAmount()));
         };
     }
 
@@ -155,18 +156,18 @@ public class JDuration extends JanitorComposed<JDuration> implements JConstant, 
      * @return the new date or datetime
      * TODO wouldn't it be much simpler to add(date, -duration) here?
      */
-    public static JanitorObject subtract(final JDate date, final JDuration duration) {
+    public static JanitorObject subtract(final JanitorScriptProcess process, final JDate date, final JDuration duration) {
         if (duration.getUnit() == null || duration.getAmount() == 0) {
             return date;
         }
         return switch (duration.getUnit()) {
-            case YEARS -> new JDate(date.janitorGetHostValue().minusYears(duration.getAmount()));
-            case MONTHS -> new JDate(date.janitorGetHostValue().minusMonths(duration.getAmount()));
-            case WEEKS -> new JDate(date.janitorGetHostValue().minusWeeks(duration.getAmount()));
-            case DAYS -> new JDate(date.janitorGetHostValue().minusDays(duration.getAmount()));
-            case HOURS -> new JDateTime(date.janitorGetHostValue().atStartOfDay().minusHours(duration.getAmount()));
-            case MINUTES -> new JDateTime(date.janitorGetHostValue().atStartOfDay().minusMinutes(duration.getAmount()));
-            case SECONDS -> new JDateTime(date.janitorGetHostValue().atStartOfDay().minusSeconds(duration.getAmount()));
+            case YEARS -> process.getBuiltins().date(date.janitorGetHostValue().minusYears(duration.getAmount()));
+            case MONTHS -> process.getBuiltins().date(date.janitorGetHostValue().minusMonths(duration.getAmount()));
+            case WEEKS -> process.getBuiltins().date(date.janitorGetHostValue().minusWeeks(duration.getAmount()));
+            case DAYS -> process.getBuiltins().date(date.janitorGetHostValue().minusDays(duration.getAmount()));
+            case HOURS -> process.getBuiltins().dateTime(date.janitorGetHostValue().atStartOfDay().minusHours(duration.getAmount()));
+            case MINUTES -> process.getBuiltins().dateTime(date.janitorGetHostValue().atStartOfDay().minusMinutes(duration.getAmount()));
+            case SECONDS -> process.getBuiltins().dateTime(date.janitorGetHostValue().atStartOfDay().minusSeconds(duration.getAmount()));
         };
     }
 
@@ -177,18 +178,18 @@ public class JDuration extends JanitorComposed<JDuration> implements JConstant, 
      * @return the new datetime
      * TODO wouldn't it be much simpler to add(datetime, -duration) here?
      */
-    public static JanitorObject subtract(final JDateTime dateTime, final JDuration duration) {
+    public static JanitorObject subtract(final JanitorScriptProcess process, final JDateTime dateTime, final JDuration duration) {
         if (duration.getUnit() == null || duration.getAmount() == 0) {
             return dateTime;
         }
         return switch (duration.getUnit()) {
-            case YEARS -> new JDateTime(dateTime.janitorGetHostValue().minusYears(duration.getAmount()));
-            case MONTHS -> new JDateTime(dateTime.janitorGetHostValue().minusMonths(duration.getAmount()));
-            case WEEKS -> new JDateTime(dateTime.janitorGetHostValue().minusWeeks(duration.getAmount()));
-            case DAYS -> new JDateTime(dateTime.janitorGetHostValue().minusDays(duration.getAmount()));
-            case HOURS -> new JDateTime(dateTime.janitorGetHostValue().minusHours(duration.getAmount()));
-            case MINUTES -> new JDateTime(dateTime.janitorGetHostValue().minusMinutes(duration.getAmount()));
-            case SECONDS -> new JDateTime(dateTime.janitorGetHostValue().minusSeconds(duration.getAmount()));
+            case YEARS -> process.getBuiltins().dateTime(dateTime.janitorGetHostValue().minusYears(duration.getAmount()));
+            case MONTHS -> process.getBuiltins().dateTime(dateTime.janitorGetHostValue().minusMonths(duration.getAmount()));
+            case WEEKS -> process.getBuiltins().dateTime(dateTime.janitorGetHostValue().minusWeeks(duration.getAmount()));
+            case DAYS -> process.getBuiltins().dateTime(dateTime.janitorGetHostValue().minusDays(duration.getAmount()));
+            case HOURS -> process.getBuiltins().dateTime(dateTime.janitorGetHostValue().minusHours(duration.getAmount()));
+            case MINUTES -> process.getBuiltins().dateTime(dateTime.janitorGetHostValue().minusMinutes(duration.getAmount()));
+            case SECONDS -> process.getBuiltins().dateTime(dateTime.janitorGetHostValue().minusSeconds(duration.getAmount()));
         };
     }
 

@@ -5,6 +5,8 @@ import com.eischet.janitor.api.types.builtin.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -90,4 +92,27 @@ public interface JanitorBuiltins {
     @NotNull JDuration duration(long value, JDuration.JDurationKind kind);
 
     @NotNull JRegex regex(@NotNull Pattern pattern);
+
+
+    @NotNull JanitorObject nullableDateTime(@Nullable LocalDateTime dateTime);
+
+    @NotNull JDateTime dateTime(@NotNull LocalDateTime dateTime);
+
+    @NotNull JanitorObject nullableDateTimeFromLiteral(@Nullable String text);
+
+    @NotNull JanitorObject nullableDateFromLiteral(@Nullable String text);
+
+    @NotNull JDateTime now();
+
+
+    @NotNull JDate today();
+
+    @NotNull JDate date(final @NotNull LocalDate date);
+
+
+    @NotNull JanitorObject nullableDate(@Nullable LocalDate date);
+
+    JDate date(long year, long month, long day);
+
+    JanitorObject parseNullableDate(JanitorScriptProcess runningScript, String string, String format);
 }

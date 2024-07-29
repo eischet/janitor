@@ -62,11 +62,6 @@ public abstract class AbstractScriptProcess implements JanitorScriptProcess {
     }
 
     @Override
-    public JanitorObject lookupClassAttribute(final JanitorObject instance, final String attributeName)  {
-        return runtime.lookupClassAttribute(this, instance, attributeName);
-    }
-
-    @Override
     public void pushModuleScope(final Scope moduleScope) {
         log.debug("pushing module scope: {} on top of current scope {}", moduleScope, currentScope);
         currentScope = Scope.createFreshModuleScope(moduleScope, currentScope);

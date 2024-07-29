@@ -142,7 +142,7 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
      * @param getter property getter
      */
     public void addDateProperty(final String name, final Function<T, LocalDate> getter) {
-        map.put(name, (instance, runningScript) -> JDate.ofNullable(getter.apply(instance)));
+        map.put(name, (instance, runningScript) -> runningScript.getBuiltins().nullableDate(getter.apply(instance)));
     }
 
     /**
@@ -152,7 +152,7 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
      * @param setter property setter
      */
     public void addDateProperty(final String name, final Function<T, LocalDate> getter, final BiConsumer<T, LocalDate> setter) {
-        map.put(name, (instance, runningScript) -> new TemporaryAssignable(JDate.ofNullable(getter.apply(instance)), value -> setter.accept(instance, JDate.require(runningScript, value).janitorGetHostValue())));
+        map.put(name, (instance, runningScript) -> new TemporaryAssignable(runningScript.getBuiltins().date(getter.apply(instance)), value -> setter.accept(instance, JDate.require(runningScript, value).janitorGetHostValue())));
     }
 
     /**
@@ -161,7 +161,7 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
      * @param getter property getter
      */
     public void addDateTimeProperty(final String name, final Function<T, LocalDateTime> getter) {
-        map.put(name, (instance, runningScript) -> JDateTime.ofNullable(getter.apply(instance)));
+        map.put(name, (instance, runningScript) -> runningScript.getBuiltins().nullableDateTime(getter.apply(instance)));
     }
 
     /**
@@ -171,7 +171,7 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
      * @param setter property setter
      */
     public void addDateTimeProperty(final String name, final Function<T, LocalDateTime> getter, final BiConsumer<T, LocalDateTime> setter) {
-        map.put(name, (instance, runningScript) -> new TemporaryAssignable(JDateTime.ofNullable(getter.apply(instance)), value -> setter.accept(instance, JDateTime.require(runningScript, value).janitorGetHostValue())));
+        map.put(name, (instance, runningScript) -> new TemporaryAssignable(runningScript.getBuiltins().nullableDateTime(getter.apply(instance)), value -> setter.accept(instance, JDateTime.require(runningScript, value).janitorGetHostValue())));
     }
 
     /**
@@ -223,8 +223,7 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
         if (handler != null) {
             return handler.lookupAttribute(instance, process);
         }
-        return process.lookupClassAttribute(instance, name);
-        // return null;
+        return null;
     }
     
 }

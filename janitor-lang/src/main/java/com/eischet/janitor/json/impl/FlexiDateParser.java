@@ -4,6 +4,7 @@ import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
+import org.jetbrains.annotations.Unmodifiable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,7 +19,7 @@ public class FlexiDateParser implements JsonDeserializer<LocalDateTime> {
 
     private static final Logger log = LoggerFactory.getLogger(FlexiDateParser.class);
 
-    private static final List<DateTimeFormatter> FORMATTERS = List.of(
+    private static final @Unmodifiable List<DateTimeFormatter> FORMATTERS = List.of(
         DateTimeFormatter.ISO_LOCAL_DATE_TIME,
         DateTimeFormatter.ISO_OFFSET_DATE_TIME
         );

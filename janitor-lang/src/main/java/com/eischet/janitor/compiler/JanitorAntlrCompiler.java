@@ -4,6 +4,7 @@ import com.eischet.janitor.api.JanitorCompilerSettings;
 import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.api.scopes.ScriptModule;
+import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.*;
 import com.eischet.janitor.compiler.ast.Ast;
 import com.eischet.janitor.compiler.ast.AstNode;
@@ -206,7 +207,12 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
         if ("today".equals(text)) {
             return new TodayLiteral(location(ctx.start, ctx.stop));
         }
-        return new DateLiteral(location(ctx.start, ctx.stop), new JDate(text));
+        final JanitorObject litConst = env.getBuiltins().nullableDateFromLiteral(text);
+        if (litConst instanceof JDate date) {
+            return new DateLiteral(location(ctx.start, ctx.stop), date);
+        } else {
+            throw new RuntimeException("invalid date literal: " + text);
+        }
     }
 
     @Override
@@ -215,7 +221,12 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
         if ("now".equals(text)) {
             return new NowLiteral(location(ctx.start, ctx.stop));
         }
-        return new DateTimeLiteral(location(ctx.start, ctx.stop), new JDateTime(text));
+        final @NotNull JanitorObject literalValue = env.getBuiltins().nullableDateTimeFromLiteral(text);
+        if (literalValue instanceof JDateTime dt) {
+            return new DateTimeLiteral(location(ctx.start, ctx.stop), dt);
+        } else {
+            throw new RuntimeException("invalid datetime literal: " + text);
+        }
     }
 
     @Override

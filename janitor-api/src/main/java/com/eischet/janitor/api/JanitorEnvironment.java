@@ -42,17 +42,6 @@ public interface JanitorEnvironment extends JanitorUserEnvironment, JanitorImple
     void addModule(final @NotNull JanitorModuleRegistration registration);
 
     /**
-     * Look up an attribute on a class.
-     * This was a first step towards easier extension of built-in classes, but should be replaced by dispatch tables.
-     *
-     * @param runningScript the running script
-     * @param instance the object instance
-     * @param attributeName the attribute name
-     * @return the attribute value, or null if the attribute does not exist
-     */
-    @Nullable JanitorObject lookupClassAttribute(final @NotNull JanitorScriptProcess runningScript, final @NotNull JanitorObject instance, final @NotNull String attributeName);
-
-    /**
      * Convert a native object to a script object.
      * @param obj the object to convert
      * @return the converted object

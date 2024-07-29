@@ -2,8 +2,8 @@ package com.eischet.janitor.api.types;
 
 /**
  * Interface for objects that can be converted to a JanitorObject.
- * This is a simple approach to making your existing Java classes compatible with Janitor.
- * TODO: not currently used within the janitor project, but in existing client code. Figure out if needed at all in here.
+ * This is a simple approach to making your existing Java classes compatible with Janitor by simply adding this
+ * interface to provide some kind of wrapper object. probably something like JanitorWrapper&lt;T&gt;.
  */
 public interface JanitorAware {
 

@@ -62,8 +62,6 @@ public interface JanitorScriptProcess {
 
     JanitorObject lookup(String text);
 
-    JanitorObject lookupClassAttribute(JanitorObject instance, String attributeName);
-
     JString expandTemplate(JString template, JCallArgs arguments) throws JanitorRuntimeException;
 
     @NotNull

@@ -6,7 +6,6 @@ import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.i18n.JanitorFormatting;
 import com.eischet.janitor.api.modules.JanitorModule;
 import com.eischet.janitor.api.modules.JanitorModuleRegistration;
-import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.types.JanitorObject;
 import org.jetbrains.annotations.NotNull;
 
@@ -34,9 +33,6 @@ public interface JanitorRuntime {
 
     void trace(Supplier<String> traceMessageSupplier);
 
-    default void prepareGlobals(Scope globalScope) {
-    }
-
     default JanitorCompilerSettings getCompilerSettings() {
         return JanitorCompilerSettings.DEFAUlTS;
     }
@@ -46,8 +42,6 @@ public interface JanitorRuntime {
     void warn(String warning);
 
     @NotNull JanitorFormatting getFormatting();
-
-    JanitorObject lookupClassAttribute(final @NotNull JanitorScriptProcess runningScript, @NotNull JanitorObject instance, @NotNull String attributeName);
 
     void protect(final String title, JanitorScriptProcess.ProtectedCall call);
 }

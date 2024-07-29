@@ -66,7 +66,7 @@ public class ScriptModule {
      * @return null on any errors, or else the line at the given index
      */
     public static String getLine(final List<String> lines, int line) {
-        if (line > lines.size() || line < 1 || lines.isEmpty()) {
+        if (line > lines.size() || line < 1) {
             return null;
         }
         return lines.get(line - 1);
@@ -105,7 +105,7 @@ public class ScriptModule {
         final String text = getLine(sourceLines.get(), line);
         if (text != null && text.trim().equals("{")) {
             return getLine(sourceLines.get(), line - 1) + "\n    " + text;
-            // die 4 Spaces kommen daher, dass sonst die Einrückung im Stack Trace nicht passt...
+            // the four space characters make the stack trace align correctly ...
         }
         return text;
     }
