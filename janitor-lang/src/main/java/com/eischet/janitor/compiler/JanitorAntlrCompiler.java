@@ -221,7 +221,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
     @Override
     public Ast visitDurationLiteral(final JanitorParser.DurationLiteralContext ctx) {
         final String text = ctx.getText().substring(1); // cut @
-        return new DurationLiteral(location(ctx.start, ctx.stop), JDuration.of(text));
+        return new DurationLiteral(location(ctx.start, ctx.stop), text, env.getBuiltins());
     }
 
 
@@ -854,7 +854,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
     @Override
     public Ast visitFloatLiteral(final JanitorParser.FloatLiteralContext ctx) {
         if (verbose) log.info("visitFloatLiteral {}", ctx.getText());
-        return new FloatLiteral(location(ctx.start, ctx.stop), Double.parseDouble(ctx.getText()));
+        return new FloatLiteral(location(ctx.start, ctx.stop), Double.parseDouble(ctx.getText()), env.getBuiltins());
     }
 
     @Override

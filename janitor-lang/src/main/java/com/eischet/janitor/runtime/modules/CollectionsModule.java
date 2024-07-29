@@ -6,6 +6,7 @@ import com.eischet.janitor.api.errors.runtime.JanitorNameException;
 import com.eischet.janitor.api.modules.JanitorModuleRegistration;
 import com.eischet.janitor.api.modules.JanitorNativeModule;
 import com.eischet.janitor.api.types.JanitorObject;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class CollectionsModule extends JanitorNativeModule {
@@ -13,7 +14,7 @@ public class CollectionsModule extends JanitorNativeModule {
     public static final JanitorModuleRegistration REGISTRATION = new JanitorModuleRegistration("collections", CollectionsModule::new);
 
     @Override
-    public @Nullable JanitorObject janitorGetAttribute(final JanitorScriptProcess runningScript, final String name, final boolean required) throws JanitorNameException {
+    public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess runningScript, final @NotNull String name, final boolean required) throws JanitorNameException {
         if ("set".equals(name)) {
             return JNativeMethod.of(arguments -> runningScript.getEnvironment().getBuiltins().set(arguments.getList().stream()));
         }

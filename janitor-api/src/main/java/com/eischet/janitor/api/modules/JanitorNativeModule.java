@@ -13,7 +13,7 @@ import org.jetbrains.annotations.Nullable;
 public abstract class JanitorNativeModule implements JanitorModule {
 
     @Override
-    public abstract @Nullable JanitorObject janitorGetAttribute(final JanitorScriptProcess runningScript, final String name, final boolean required) throws JanitorNameException;
+    public abstract @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess runningScript, final @NotNull String name, final boolean required) throws JanitorNameException;
 
     @Override
     public @NotNull String janitorClassName() {

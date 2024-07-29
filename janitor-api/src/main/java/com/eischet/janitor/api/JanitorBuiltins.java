@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**
@@ -75,4 +76,16 @@ public interface JanitorBuiltins {
     @NotNull
     JBinary binary(byte [] arr);
 
+    @NotNull JanitorObject nullableFloat(final Double value);
+
+    @NotNull JFloat floatingPoint(double value);
+
+    @NotNull JFloat floatingPoint(long value);
+
+    @NotNull JFloat floatingPoint(int value);
+
+
+    @NotNull JDuration duration(long value, JDuration.JDurationKind kind);
+
+    @NotNull JRegex regex(@NotNull Pattern pattern);
 }

@@ -1,15 +1,17 @@
 package com.eischet.janitor.env;
 
 import com.eischet.janitor.api.JanitorBuiltins;
-import com.eischet.janitor.api.types.wrapper.JanitorWrapperDispatchTable;
-import com.eischet.janitor.api.types.wrapper.JanitorWrapper;
+import com.eischet.janitor.api.types.dispatch.RegularDispatchTable;
+import com.eischet.janitor.api.types.wrapped.JanitorWrapperDispatchTable;
+import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 import com.eischet.janitor.api.types.*;
 import com.eischet.janitor.api.types.builtin.*;
-import com.eischet.janitor.api.util.DateTimeUtilities;
+import com.eischet.janitor.runtime.DateTimeUtilities;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 public class JanitorDefaultBuiltins implements JanitorBuiltins {
@@ -26,7 +28,10 @@ public class JanitorDefaultBuiltins implements JanitorBuiltins {
     private JanitorWrapperDispatchTable<Set<JanitorObject>> setDispatcher = new JanitorWrapperDispatchTable<>();
     private JanitorWrapperDispatchTable<Long> intDispatcher = new JanitorWrapperDispatchTable<>();
     private JanitorWrapperDispatchTable<byte[]> binaryDispatcher = new JanitorWrapperDispatchTable<>();
+    private JanitorWrapperDispatchTable<Double> floatDispatcher = new JanitorWrapperDispatchTable<>();
+    private JanitorWrapperDispatchTable<Pattern> regexDispatcher = new JanitorWrapperDispatchTable<>();
 
+    private RegularDispatchTable<JDuration> durationDispatch = new RegularDispatchTable<>();
 
     public JanitorDefaultBuiltins() {
         emptyString = JString.newInstance(stringDispatcher, "");
@@ -104,12 +109,26 @@ public class JanitorDefaultBuiltins implements JanitorBuiltins {
         intDispatcher.addLongProperty("int", JanitorWrapper::janitorGetHostValue);
         intDispatcher.addObjectProperty("epoch", wrapper -> JDateTime.ofNullable(DateTimeUtilities.localFromEpochSeconds(wrapper.janitorGetHostValue())));
 
+        floatDispatcher.addLongProperty("int", doubleJanitorWrapper -> doubleJanitorWrapper.janitorGetHostValue().longValue());
 
         binaryDispatcher.addMethod("encodeBase64", JBinaryClass::__encodeBase64);
         binaryDispatcher.addMethod("toString", JBinaryClass::__toString);
         binaryDispatcher.addMethod("size", JBinaryClass::__size);
         binaryDispatcher.addStringProperty("string", wrapper -> wrapper.janitorIsTrue() ? new String(wrapper.janitorGetHostValue()) : "");
         binaryDispatcher.addIntegerProperty("length", wrapper -> wrapper.janitorGetHostValue() == null ? 0 : wrapper.janitorGetHostValue().length);
+
+        durationDispatch.addLongProperty("seconds", JDuration::toSeconds);
+        durationDispatch.addLongProperty("minutes", self -> self.toSeconds() / 60);
+        durationDispatch.addLongProperty("hours", self -> self.toSeconds() / 3600);
+        durationDispatch.addLongProperty("days", self -> self.toSeconds() / 86400);
+        durationDispatch.addLongProperty("weeks", self -> self.toSeconds() / 604800);
+
+        regexDispatcher.addMethod("extract", JRegexClass::extract);
+        regexDispatcher.addMethod("extractAll", JRegexClass::extractAll);
+        regexDispatcher.addMethod("replaceAll", JRegexClass::replaceAll);
+        regexDispatcher.addMethod("replaceFirst", JRegexClass::replaceFirst);
+        regexDispatcher.addMethod("split", JRegexClass::split);
+
 
     }
 
@@ -201,5 +220,57 @@ public class JanitorDefaultBuiltins implements JanitorBuiltins {
         return JBinary.newInstance(binaryDispatcher, arr);
     }
 
+    /**
+     * Create a new JFloat.
+     * @param value the number
+     * @return the number, or NULL if the input is null
+     */
+    @Override
+    public @NotNull JanitorObject nullableFloat(final Double value) {
+        if (value == null) {
+            return JNull.NULL;
+        } else {
+            return JFloat.newInstance(floatDispatcher, value);
+        }
+    }
 
+    /**
+     * Create a new JFloat.
+     * @param value the number
+     * @return the number
+     */
+    @Override
+    public @NotNull JFloat floatingPoint(final double value) {
+        return JFloat.newInstance(floatDispatcher, value);
+    }
+
+    /**
+     * Create a new JFloat.
+     * @param value the number
+     * @return the number
+     */
+    @Override
+    public @NotNull JFloat floatingPoint(final long value) {
+        return JFloat.newInstance(floatDispatcher, value);
+    }
+
+    /**
+     * Create a new JFloat.
+     * @param value the number
+     * @return the number
+     */
+    @Override
+    public @NotNull JFloat floatingPoint(final int value) {
+        return JFloat.newInstance(floatDispatcher, value);
+    }
+
+    @Override
+    public @NotNull JDuration duration(final long value, final JDuration.JDurationKind kind) {
+        return JDuration.newInstance(durationDispatch, value, kind);
+    }
+
+    @Override
+    public @NotNull JRegex regex(@NotNull final Pattern pattern) {
+        return JRegex.newInstance(regexDispatcher, pattern);
+    }
 }

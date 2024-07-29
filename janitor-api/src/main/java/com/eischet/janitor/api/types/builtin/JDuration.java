@@ -4,6 +4,8 @@ import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorNameException;
 import com.eischet.janitor.api.types.JConstant;
 import com.eischet.janitor.api.types.JanitorObject;
+import com.eischet.janitor.api.types.composed.JanitorComposed;
+import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -15,7 +17,7 @@ import java.time.temporal.TemporalUnit;
  * A duration object, representing a time span.
  * This is one of the built-in types that Janitor provides automatically.
  */
-public class JDuration implements JConstant, Comparable<JDuration> {
+public class JDuration extends JanitorComposed<JDuration> implements JConstant, Comparable<JDuration> {
 
     private final long amount;
     private final JDurationKind unit;
@@ -25,7 +27,8 @@ public class JDuration implements JConstant, Comparable<JDuration> {
      * @param amount the amount
      * @param unit the unit
      */
-    public JDuration(final long amount, final JDurationKind unit) {
+    public JDuration(final Dispatcher<JDuration> dispatcher, final long amount, final JDurationKind unit) {
+        super(dispatcher);
         this.amount = amount;
         this.unit = unit;
     }
@@ -193,64 +196,9 @@ public class JDuration implements JConstant, Comparable<JDuration> {
         };
     }
 
-    /**
-     * Calculate the difference between two dates.
-     * Time flies from the left to the right in this context, in case you're wondering about the parameter names.
-     * @param left the left date
-     * @param right the right date
-     * @return the duration between the two dates
-     */
-    public static JDuration between(final JDate left, final JDate right) {
-        return new JDuration(Duration.between(right.janitorGetHostValue().atStartOfDay(), left.janitorGetHostValue().atStartOfDay()).toDays(), JDurationKind.DAYS);
-    }
 
-    /**
-     * Calculate the difference between two datetimes.
-     * Time flies from the left to the right in this context, in case you're wondering about the parameter names.
-     * @param left the left date
-     * @param right the right date
-     * @return the duration between the two dates
-     */
-    public static JDuration between(final JDateTime left, final JDateTime right) {
-        return new JDuration(Duration.between(right.janitorGetHostValue(), left.janitorGetHostValue()).toSeconds(), JDurationKind.SECONDS);
-    }
-
-
-    /**
-     * Create a duration from a string.
-     * @param text a string
-     * @return a duraction, of null when not valid
-     */
-    public static @Nullable JDuration of(final String text) {
-        for (final JDurationKind value : JDurationKind.values()) {
-            if (text.endsWith(value.tag)) {
-                return new JDuration(Long.parseLong(text.substring(0, text.length() - value.tag.length())), value);
-            }
-        }
-        return null;
-    }
-
-
-
-    @Override
-    public @Nullable JanitorObject janitorGetAttribute(final JanitorScriptProcess runningScript, final String name, final boolean required) throws JanitorNameException {
-        // TODO: move this to a proper dispatch table
-        if ("seconds".equals(name)) {
-            return runningScript.getEnvironment().getBuiltins().integer(toSeconds());
-        }
-        if ("minutes".equals(name)) {
-            return runningScript.getEnvironment().getBuiltins().integer(toSeconds() / 60);
-        }
-        if ("hours".equals(name)) {
-            return runningScript.getEnvironment().getBuiltins().integer(toSeconds() / 3600);
-        }
-        if ("days".equals(name)) {
-            return runningScript.getEnvironment().getBuiltins().integer(toSeconds() / 86400);
-        }
-        if ("weeks".equals(name)) {
-            return runningScript.getEnvironment().getBuiltins().integer(toSeconds() / 604800);
-        }
-        return JConstant.super.janitorGetAttribute(runningScript, name, required);
+    public static JDuration newInstance(final Dispatcher<JDuration> dispatcher, final long amount, final JDurationKind unit) {
+        return new JDuration(dispatcher, amount, unit);
     }
 
     /**

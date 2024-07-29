@@ -1,7 +1,7 @@
 package com.eischet.janitor.compiler.ast.expression.binary;
 
 import com.eischet.janitor.api.scopes.Location;
-import com.eischet.janitor.api.util.JanitorSemantics;
+import com.eischet.janitor.runtime.JanitorSemantics;
 import com.eischet.janitor.compiler.ast.expression.Expression;
 
 /**

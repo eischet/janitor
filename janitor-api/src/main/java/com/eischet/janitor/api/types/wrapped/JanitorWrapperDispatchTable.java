@@ -1,4 +1,4 @@
-package com.eischet.janitor.api.types.wrapper;
+package com.eischet.janitor.api.types.wrapped;
 
 import com.eischet.janitor.api.types.dispatch.GenericDispatchTable;
 

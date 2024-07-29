@@ -7,7 +7,7 @@ import com.eischet.janitor.api.calls.JVoidMethod;
 import com.eischet.janitor.api.calls.TemporaryAssignable;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.*;
-import com.eischet.janitor.api.types.wrapper.JanitorWrapper;
+import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -84,7 +84,7 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
      * @param getter property getter
      */
     public void addDoubleProperty(final String name, final Function<T, Double> getter, final BiConsumer<T, Double> setter) {
-        map.put(name, (instance, runningScript) -> new TemporaryAssignable(JFloat.of(getter.apply(instance)), value -> setter.accept(instance, runningScript.requireFloat(value).janitorGetHostValue())));
+        map.put(name, (instance, runningScript) -> new TemporaryAssignable(runningScript.getEnvironment().getBuiltins().floatingPoint(getter.apply(instance)), value -> setter.accept(instance, runningScript.requireFloat(value).janitorGetHostValue())));
     }
 
     /**

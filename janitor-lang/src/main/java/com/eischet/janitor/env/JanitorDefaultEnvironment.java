@@ -15,14 +15,14 @@ import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.i18n.JanitorFormatting;
 import com.eischet.janitor.api.types.builtin.*;
 import com.eischet.janitor.api.types.dispatch.AttributeLookupHandler;
-import com.eischet.janitor.api.util.JanitorSemantics;
+import com.eischet.janitor.runtime.JanitorSemantics;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.json.impl.JsonExportControls;
 import com.eischet.janitor.toolbox.json.api.JsonInputStream;
 import com.eischet.janitor.toolbox.json.api.JsonWriter;
 import com.eischet.janitor.api.modules.JanitorModuleRegistration;
 import com.eischet.janitor.api.types.*;
-import com.eischet.janitor.api.util.DateTimeUtilities;
+import com.eischet.janitor.runtime.DateTimeUtilities;
 import com.eischet.janitor.api.util.ObjectUtilities;
 import com.eischet.janitor.json.impl.GsonInputStream;
 import com.eischet.janitor.json.impl.GsonOutputStream;
@@ -180,7 +180,7 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
             return JNull.NULL;
         }
         if (o instanceof Double dou) {
-            return JFloat.of(dou);
+            return builtins.floatingPoint(dou);
         }
         if (o instanceof String string) {
             return builtins.string(string);
@@ -204,7 +204,7 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
             return JDateTime.ofNullable(DateTimeUtilities.convert(date));
         }
         if (o instanceof BigDecimal bigDecimal) {
-            return JFloat.of(bigDecimal.doubleValue());
+            return builtins.floatingPoint(bigDecimal.doubleValue());
         }
         if (o instanceof Boolean bool) {
             return JBool.of(bool);

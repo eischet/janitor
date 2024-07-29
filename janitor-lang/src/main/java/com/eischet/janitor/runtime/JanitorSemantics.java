@@ -1,16 +1,19 @@
-package com.eischet.janitor.api.util;
+package com.eischet.janitor.runtime;
 
+import com.eischet.janitor.api.JanitorBuiltins;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorArithmeticException;
 import com.eischet.janitor.api.errors.runtime.JanitorNotImplementedException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.errors.runtime.JanitorTypeException;
-import com.eischet.janitor.api.util.strings.SingleWildCardMatcher;
 import com.eischet.janitor.api.types.JAssignable;
-import com.eischet.janitor.api.types.*;
+import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.*;
+import com.eischet.janitor.api.util.ObjectUtilities;
+import com.eischet.janitor.api.util.strings.SingleWildCardMatcher;
 import org.jetbrains.annotations.NotNull;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiFunction;
@@ -26,28 +29,29 @@ public class JanitorSemantics {
 
     static {
         POSSIBLE_COMPARISONS = List.of(
-            new JanitorComparison<>(JInt.class, JInt.class, (left, right) -> ComparisonResult.adaptJava(Long.compare(left.janitorGetHostValue(), right.janitorGetHostValue()))),
-            new JanitorComparison<>(JDuration.class, JDuration.class, (left, right) -> ComparisonResult.adaptJava(Long.compare(left.toSeconds(), right.toSeconds()))),
-            new JanitorComparison<>(JDateTime.class, JDateTime.class, (left, right) -> ComparisonResult.adaptJava(Long.compare(left.getInternalRepresentation(), right.getInternalRepresentation()))),
-            new JanitorComparison<>(JDate.class, JDate.class, (left, right) -> ComparisonResult.adaptJava(Long.compare(left.getInternalRepresentation(), right.getInternalRepresentation()))),
-            new JanitorComparison<>(JString.class, JString.class, (left, right) -> {
-                final String a1 = left.janitorGetHostValue();
-                final String leftString = a1 == null ? "" : a1;
-                final String a = right.janitorGetHostValue();
-                final String rightString = a == null ? "" : a;
-                return ComparisonResult.adaptJava(leftString.compareTo(rightString));
-            }),
-            new JanitorComparison<>(JDateTime.class, JDate.class, (left, right) -> ComparisonResult.adaptJava(Long.compare(left.getInternalRepresentation(), right.getInternalRepresentation()))),
-            new JanitorComparison<>(JDate.class, JDateTime.class, (left, right) -> ComparisonResult.adaptJava(Long.compare(left.getInternalRepresentation(), right.getInternalRepresentation()))),
-            new JanitorComparison<>(JInt.class, JFloat.class, (left, right) -> ComparisonResult.adaptJava(Double.compare(left.getAsDouble(), right.getValue()))),
-            new JanitorComparison<>(JFloat.class, JFloat.class, (left, right) -> ComparisonResult.adaptJava(Double.compare(left.getValue(), right.getValue()))),
-            new JanitorComparison<>(JFloat.class, JInt.class, (left, right) -> ComparisonResult.adaptJava(Double.compare(left.getValue(), right.getAsDouble())))
+                new JanitorComparison<>(JInt.class, JInt.class, (left, right) -> ComparisonResult.adaptJava(Long.compare(left.janitorGetHostValue(), right.janitorGetHostValue()))),
+                new JanitorComparison<>(JDuration.class, JDuration.class, (left, right) -> ComparisonResult.adaptJava(Long.compare(left.toSeconds(), right.toSeconds()))),
+                new JanitorComparison<>(JDateTime.class, JDateTime.class, (left, right) -> ComparisonResult.adaptJava(Long.compare(left.getInternalRepresentation(), right.getInternalRepresentation()))),
+                new JanitorComparison<>(JDate.class, JDate.class, (left, right) -> ComparisonResult.adaptJava(Long.compare(left.getInternalRepresentation(), right.getInternalRepresentation()))),
+                new JanitorComparison<>(JString.class, JString.class, (left, right) -> {
+                    final String a1 = left.janitorGetHostValue();
+                    final String leftString = a1 == null ? "" : a1;
+                    final String a = right.janitorGetHostValue();
+                    final String rightString = a == null ? "" : a;
+                    return ComparisonResult.adaptJava(leftString.compareTo(rightString));
+                }),
+                new JanitorComparison<>(JDateTime.class, JDate.class, (left, right) -> ComparisonResult.adaptJava(Long.compare(left.getInternalRepresentation(), right.getInternalRepresentation()))),
+                new JanitorComparison<>(JDate.class, JDateTime.class, (left, right) -> ComparisonResult.adaptJava(Long.compare(left.getInternalRepresentation(), right.getInternalRepresentation()))),
+                new JanitorComparison<>(JInt.class, JFloat.class, (left, right) -> ComparisonResult.adaptJava(Double.compare(left.getAsDouble(), right.getValue()))),
+                new JanitorComparison<>(JFloat.class, JFloat.class, (left, right) -> ComparisonResult.adaptJava(Double.compare(left.getValue(), right.getValue()))),
+                new JanitorComparison<>(JFloat.class, JInt.class, (left, right) -> ComparisonResult.adaptJava(Double.compare(left.getValue(), right.getAsDouble())))
 
         );
     }
 
     /**
      * Perform a logical NOT operation.
+     *
      * @param parameter the parameter
      * @return the result
      * @throws JanitorRuntimeException if something goes wrong
@@ -58,6 +62,7 @@ public class JanitorSemantics {
 
     /**
      * Figure out if an object is true or false in a boolean context.
+     *
      * @param conditionValue the value
      * @return true if the value is truthy, false otherwise
      * @throws JanitorRuntimeException if something goes wrong
@@ -76,7 +81,8 @@ public class JanitorSemantics {
 
     /**
      * Check two objects for equality.
-     * @param leftValue the left value
+     *
+     * @param leftValue  the left value
      * @param rightValue the right value
      * @return TRUE if the values are equals, or FALSE if not.
      */
@@ -88,7 +94,8 @@ public class JanitorSemantics {
 
     /**
      * Check two objects for equality.
-     * @param leftValue the left value
+     *
+     * @param leftValue  the left value
      * @param rightValue the right value
      * @return FALSE if the values are equals, or TRUE if not.
      */
@@ -98,7 +105,8 @@ public class JanitorSemantics {
 
     /**
      * Perform a logical "-" operation.
-     * @param process the process
+     *
+     * @param process      the process
      * @param currentValue the value
      * @return the result
      * @throws JanitorRuntimeException if something goes wrong
@@ -107,7 +115,7 @@ public class JanitorSemantics {
         if (currentValue instanceof JInt v) {
             return process.getEnvironment().getBuiltins().integer(-v.getValue());
         } else if (currentValue instanceof JFloat f) {
-            return JFloat.of(-f.getValue());
+            return process.getEnvironment().getBuiltins().floatingPoint(-f.getValue());
         } else {
             throw new JanitorNotImplementedException(process, "we can only negate numbers");
         }
@@ -117,15 +125,15 @@ public class JanitorSemantics {
      * Perform a numeric operation on two objects.
      * This is really like the "center of math" in the current implementation.
      *
-     * @param process the process
-     * @param name name of the operation
-     * @param leftValue left value / object
-     * @param rightValue right value / object
-     * @param intOp the operation to apply if both values are integers
-     * @param floatOp the operation to apply if both values are floats
-     * @param dateOp the operation to apply to a date and a duration
-     * @param dateTimeOp the operation to apply to a datetime and a duration
-     * @param dateDateOp the operation to apply if both values are dates
+     * @param process            the process
+     * @param name               name of the operation
+     * @param leftValue          left value / object
+     * @param rightValue         right value / object
+     * @param intOp              the operation to apply if both values are integers
+     * @param floatOp            the operation to apply if both values are floats
+     * @param dateOp             the operation to apply to a date and a duration
+     * @param dateTimeOp         the operation to apply to a datetime and a duration
+     * @param dateDateOp         the operation to apply if both values are dates
      * @param dateTimeDateTimeOp the operation to apply if both values are date times
      * @return the result
      * @throws JanitorRuntimeException on errors
@@ -143,11 +151,11 @@ public class JanitorSemantics {
             if (leftValue instanceof JInt leftInteger && rightValue instanceof JInt rightInteger) {
                 return process.getEnvironment().getBuiltins().integer(intOp.apply(leftInteger.getValue(), rightInteger.getValue()));
             } else if (leftValue instanceof JFloat leftFloat && rightValue instanceof JFloat rightFloat) {
-                return JFloat.of(floatOp.apply(leftFloat.getValue(), rightFloat.getValue()));
+                return process.getEnvironment().getBuiltins().floatingPoint(floatOp.apply(leftFloat.getValue(), rightFloat.getValue()));
             } else if (leftValue instanceof JInt leftInteger && rightValue instanceof JFloat rightFloat) {
-                return JFloat.of(floatOp.apply(leftInteger.getAsDouble(), rightFloat.getValue()));
+                return process.getEnvironment().getBuiltins().floatingPoint(floatOp.apply(leftInteger.getAsDouble(), rightFloat.getValue()));
             } else if (leftValue instanceof JFloat leftFloat && rightValue instanceof JInt rightInteger) {
-                return JFloat.of(floatOp.apply(leftFloat.getValue(), rightInteger.getAsDouble()));
+                return process.getEnvironment().getBuiltins().floatingPoint(floatOp.apply(leftFloat.getValue(), rightInteger.getAsDouble()));
             } else if (leftValue instanceof JDateTime leftDate && rightValue instanceof JDateTime rightDate) {
                 if (dateOp == null) {
                     throw new JanitorTypeException(process, "we cannot %s datetimes; got %s [%s] and %s [%s]".formatted(name, leftValue, ObjectUtilities.simpleClassNameOf(leftValue), rightValue, ObjectUtilities.simpleClassNameOf(rightValue)));
@@ -188,8 +196,9 @@ public class JanitorSemantics {
 
     /**
      * Multiply two values.
-     * @param process the running script
-     * @param leftValue the left value
+     *
+     * @param process    the running script
+     * @param leftValue  the left value
      * @param rightValue the right value
      * @return the multiplication result
      * @throws JanitorRuntimeException on errors
@@ -205,8 +214,9 @@ public class JanitorSemantics {
 
     /**
      * Divide two values.
-     * @param process the running script
-     * @param leftValue the left value
+     *
+     * @param process    the running script
+     * @param leftValue  the left value
      * @param rightValue the right value
      * @return the division result
      * @throws JanitorRuntimeException on errors
@@ -217,8 +227,9 @@ public class JanitorSemantics {
 
     /**
      * Multiply two values, returning the remainder.
-     * @param process the running script
-     * @param leftValue the left value
+     *
+     * @param process    the running script
+     * @param leftValue  the left value
      * @param rightValue the right value
      * @return the multiplication result's remainder
      * @throws JanitorRuntimeException on errors
@@ -229,19 +240,23 @@ public class JanitorSemantics {
 
     /**
      * Subtract two values.
-     * @param process the running script
-     * @param leftValue the left value
+     *
+     * @param process    the running script
+     * @param leftValue  the left value
      * @param rightValue the right value
      * @return the subtraction result
      * @throws JanitorRuntimeException on errors
      */
     public static @NotNull JanitorObject subtract(JanitorScriptProcess process, final JanitorObject leftValue, final JanitorObject rightValue) throws JanitorRuntimeException {
-        return numericOperation(process, "subtract", leftValue, rightValue, (a, b) -> a - b, (a, b) -> a - b, JDuration::subtract, JDuration::subtract, JDuration::between, JDuration::between);
+        return numericOperation(process, "subtract", leftValue, rightValue, (a, b) -> a - b, (a, b) -> a - b, JDuration::subtract, JDuration::subtract,
+                (jDate, jDate2) -> durationBetween(process.getEnvironment().getBuiltins(), jDate, jDate2),
+                (jDateTime, jDateTime2) -> durationBetween(process.getEnvironment().getBuiltins(), jDateTime, jDateTime2));
     }
 
     /**
      * Perform a logical OR operation.
-     * @param leftValue left value
+     *
+     * @param leftValue  left value
      * @param rightValue right value
      * @return OR
      * @throws JanitorRuntimeException on errors
@@ -257,8 +272,9 @@ public class JanitorSemantics {
 
     /**
      * Perform a wildcard match operation on a string.
-     * @param process the running script
-     * @param leftValue the left value
+     *
+     * @param process    the running script
+     * @param leftValue  the left value
      * @param rightValue the right value
      * @return TRUE or FALSE
      * @throws JanitorRuntimeException on errors
@@ -280,8 +296,9 @@ public class JanitorSemantics {
 
     /**
      * Perform an inverse wildcard match operation on a string.
-     * @param process the running script
-     * @param leftValue the left value
+     *
+     * @param process    the running script
+     * @param leftValue  the left value
      * @param rightValue the right value
      * @return TRUE if NOT MATCHED, or FALSE if matched
      * @throws JanitorRuntimeException on errors
@@ -303,8 +320,9 @@ public class JanitorSemantics {
 
     /**
      * Compare two objects.
-     * @param process the runnign script process
-     * @param leftValue the left object
+     *
+     * @param process    the runnign script process
+     * @param leftValue  the left object
      * @param rightValue the right object
      * @return TRUE or FALSE
      * @throws JanitorRuntimeException on errors
@@ -319,9 +337,10 @@ public class JanitorSemantics {
 
     /**
      * Assign a value to an assignable.
-     * @param process the running script
+     *
+     * @param process    the running script
      * @param assignable the assignable
-     * @param evalRight the value to assign
+     * @param evalRight  the value to assign
      * @throws JanitorRuntimeException on errors
      */
     public static void assign(JanitorScriptProcess process, final JAssignable assignable, final JanitorObject evalRight) throws JanitorRuntimeException {
@@ -332,8 +351,9 @@ public class JanitorSemantics {
 
     /**
      * Compare two objects.
-     * @param process the runnign script process
-     * @param leftValue the left object
+     *
+     * @param process    the runnign script process
+     * @param leftValue  the left object
      * @param rightValue the right object
      * @return TRUE or FALSE
      * @throws JanitorRuntimeException on errors
@@ -348,8 +368,9 @@ public class JanitorSemantics {
 
     /**
      * Compare two objects.
-     * @param process the running script process
-     * @param _leftValue the left object
+     *
+     * @param process     the running script process
+     * @param _leftValue  the left object
      * @param _rightValue the right object
      * @return TRUE or FALSE
      * @throws JanitorRuntimeException on errors
@@ -364,8 +385,9 @@ public class JanitorSemantics {
 
     /**
      * Add two values.
-     * @param process the running script process
-     * @param leftValue the left value
+     *
+     * @param process    the running script process
+     * @param leftValue  the left value
      * @param rightValue the right value
      * @return the addition result
      * @throws JanitorRuntimeException on errors
@@ -379,7 +401,8 @@ public class JanitorSemantics {
 
     /**
      * Increment a value.
-     * @param process the running script process
+     *
+     * @param process      the running script process
      * @param currentValue the value
      * @return value++
      * @throws JanitorRuntimeException on errors
@@ -394,7 +417,8 @@ public class JanitorSemantics {
 
     /**
      * Increment a value.
-     * @param process the running script process
+     *
+     * @param process      the running script process
      * @param currentValue the value
      * @return value--
      * @throws JanitorRuntimeException on errors
@@ -409,8 +433,9 @@ public class JanitorSemantics {
 
     /**
      * Compare two objects.
-     * @param process the runnign script process
-     * @param leftValue the left object
+     *
+     * @param process    the runnign script process
+     * @param leftValue  the left object
      * @param rightValue the right object
      * @return TRUE or FALSE
      * @throws JanitorRuntimeException on errors
@@ -425,7 +450,8 @@ public class JanitorSemantics {
 
     /**
      * Compare two objects, trying to make them compatible when needed.
-     * @param leftX left object
+     *
+     * @param leftX  left object
      * @param rightX right object
      * @return the result of comparing them
      */
@@ -443,7 +469,8 @@ public class JanitorSemantics {
 
     /**
      * Repeat the string s num times, i.e. s * num like in Python.
-     * @param s the string
+     *
+     * @param s   the string
      * @param num the number of repetitions
      * @return the repeated string
      */
@@ -456,8 +483,33 @@ public class JanitorSemantics {
     }
 
     /**
+     * Calculate the difference between two dates.
+     * Time flies from the left to the right in this context, in case you're wondering about the parameter names.
+     *
+     * @param left  the left date
+     * @param right the right date
+     * @return the duration between the two dates
+     */
+    public static JDuration durationBetween(final JanitorBuiltins builtins, final JDate left, final JDate right) {
+        return builtins.duration(Duration.between(right.janitorGetHostValue().atStartOfDay(), left.janitorGetHostValue().atStartOfDay()).toDays(), JDuration.JDurationKind.DAYS);
+    }
+
+    /**
+     * Calculate the difference between two datetimes.
+     * Time flies from the left to the right in this context, in case you're wondering about the parameter names.
+     *
+     * @param left  the left date
+     * @param right the right date
+     * @return the duration between the two dates
+     */
+    public static JDuration durationBetween(final JanitorBuiltins builtins, final JDateTime left, final JDateTime right) {
+        return builtins.duration(Duration.between(right.janitorGetHostValue(), left.janitorGetHostValue()).toSeconds(), JDuration.JDurationKind.SECONDS);
+    }
+
+    /**
      * Interface for comparison operations.
-     * @param <LEFT> left type
+     *
+     * @param <LEFT>  left type
      * @param <RIGHT> right type
      */
     @FunctionalInterface

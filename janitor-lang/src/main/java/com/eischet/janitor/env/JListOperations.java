@@ -6,7 +6,7 @@ import com.eischet.janitor.api.calls.JCallArgs;
 import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
-import com.eischet.janitor.api.types.wrapper.JanitorWrapper;
+import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 import com.eischet.janitor.api.types.builtin.*;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.api.types.JCallable;

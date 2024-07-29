@@ -4,7 +4,7 @@ import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.calls.JCallArgs;
 import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
-import com.eischet.janitor.api.types.wrapper.JanitorWrapper;
+import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 import com.eischet.janitor.api.types.*;
 import com.eischet.janitor.api.types.builtin.*;
 import org.jetbrains.annotations.Nullable;
@@ -92,11 +92,11 @@ public class JStringClass {
     public static JFloat __toFloat(final JanitorWrapper<String> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         final String string = self.janitorGetHostValue();
         if ("".equals(string) || string.isBlank()) {
-            return JFloat.of(0);
+            return runningScript.getEnvironment().getBuiltins().floatingPoint(0);
         }
         try {
             final double iv = Double.parseDouble(string);
-            return JFloat.of(iv);
+            return runningScript.getEnvironment().getBuiltins().floatingPoint(iv);
         } catch (NumberFormatException e) {
             throw new JanitorArgumentException(runningScript, "invalid value for toFloat conversion: '" + string + "': " + e.getMessage());
         }

@@ -213,7 +213,7 @@ public class JDate implements JConstant {
     }
 
     @Override
-    public @Nullable JanitorObject janitorGetAttribute(final JanitorScriptProcess runningScript, final String name, final boolean required) throws JanitorNameException {
+    public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess runningScript, final @NotNull String name, final boolean required) throws JanitorNameException {
         // TODO: better convert this to a proper dispatch table
         if ("year".equals(name)) {
             return runningScript.getEnvironment().getBuiltins().integer(getYear());

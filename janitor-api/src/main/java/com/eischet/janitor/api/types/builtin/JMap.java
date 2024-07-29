@@ -8,7 +8,7 @@ import com.eischet.janitor.api.errors.runtime.JanitorNameException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
-import com.eischet.janitor.api.types.wrapper.JanitorWrapper;
+import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 import com.eischet.janitor.api.types.JAssignable;
 import com.eischet.janitor.api.types.JIterable;
 import com.eischet.janitor.api.types.JanitorObject;
@@ -84,7 +84,7 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
     }
 
     @Override
-    public @Nullable JanitorObject janitorGetAttribute(final JanitorScriptProcess runningScript, final String name, final boolean required) throws JanitorNameException {
+    public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess runningScript, final @NotNull String name, final boolean required) throws JanitorNameException {
         @Nullable final JanitorObject attr = super.janitorGetAttribute(runningScript, name, required);
         if (attr != null) {
             return attr;

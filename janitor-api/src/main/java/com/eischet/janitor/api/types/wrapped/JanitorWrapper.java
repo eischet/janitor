@@ -1,9 +1,10 @@
-package com.eischet.janitor.api.types.wrapper;
+package com.eischet.janitor.api.types.wrapped;
 
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorNameException;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.api.types.JanitorObject;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 
@@ -16,25 +17,25 @@ import org.jetbrains.annotations.Nullable;
 public class JanitorWrapper<T> implements JanitorObject {
 
     protected final Dispatcher<JanitorWrapper<T>> dispatcher;
-    protected T wrapped;
+    protected @NotNull T wrapped;
 
     /**
      * Create a new JanitorWrapper.
      * @param dispatcher the dispatcher
      * @param wrapped the wrapped object
      */
-    public JanitorWrapper(final Dispatcher<JanitorWrapper<T>> dispatcher, final T wrapped) {
+    public JanitorWrapper(final @NotNull Dispatcher<JanitorWrapper<T>> dispatcher, final @NotNull T wrapped) {
         this.dispatcher = dispatcher;
         this.wrapped = wrapped;
     }
 
-    public <X extends JanitorWrapper<T>> JanitorWrapper(final X dispatcher, final T wrapped, final Class<X> cls) {
+    public <X extends JanitorWrapper<T>> JanitorWrapper(final @NotNull X dispatcher, final @NotNull T wrapped, final @NotNull Class<X> cls) {
         this.dispatcher = (Dispatcher<JanitorWrapper<T>>) dispatcher;
         this.wrapped = wrapped;
     }
 
     @Override
-    public @Nullable JanitorObject janitorGetAttribute(final JanitorScriptProcess runningScript, final String name, final boolean required) throws JanitorNameException {
+    public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess runningScript, final @NotNull String name, final boolean required) throws JanitorNameException {
         final JanitorObject attribute = dispatcher.dispatch(this, runningScript, name);
         if (attribute != null) {
             return attribute;
@@ -45,5 +46,10 @@ public class JanitorWrapper<T> implements JanitorObject {
     @Override
     public T janitorGetHostValue() {
         return wrapped;
+    }
+
+    @Override
+    public String toString() {
+        return wrapped.toString();
     }
 }

@@ -18,10 +18,12 @@ import com.eischet.janitor.api.types.*;
 import com.eischet.janitor.api.types.builtin.*;
 import com.eischet.janitor.compiler.JanitorAntlrCompiler;
 import com.eischet.janitor.compiler.JanitorCompiler;
+import com.eischet.janitor.compiler.ast.expression.literal.DurationLiteral;
 import com.eischet.janitor.compiler.ast.statement.Script;
 import com.eischet.janitor.lang.JanitorParser;
 import com.eischet.janitor.repl.JanitorRepl;
 import com.eischet.janitor.runtime.*;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
@@ -439,7 +441,7 @@ public class FirstParserTestCase {
         for (final String moduleName : List.of("foo", "bar", "baz")) {
             rt.registerModule(new JanitorModuleRegistration(moduleName, () -> new JanitorModule() {
                 @Override
-                public @Nullable JanitorObject janitorGetAttribute(final JanitorScriptProcess runningScript, final String name, final boolean required) throws JanitorNameException {
+                public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess runningScript, final @NotNull String name, final boolean required) throws JanitorNameException {
                     if ("name".equals(name)) {
                         return TestEnv.env.getBuiltins().string(moduleName);
                     }
@@ -497,7 +499,7 @@ public class FirstParserTestCase {
                 if ("dummy".equals(name)) {
                     return new JanitorModule() {
                         @Override
-                        public @Nullable JanitorObject janitorGetAttribute(final JanitorScriptProcess runningScript, final String name, final boolean required) throws JanitorNameException {
+                        public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess runningScript, final @NotNull String name, final boolean required) throws JanitorNameException {
                             if ("name".equals(name)) {
                                 return TestEnv.env.getBuiltins().string("dummy");
                             }
@@ -542,8 +544,8 @@ public class FirstParserTestCase {
         assertEquals(LocalDateTime.of(1976, 1, 10, 12, 30, 45), rt.compile("test", "@1976-01-10 + @12h + @30mi + @45s").run(TestEnv.NO_GLOBALS).janitorGetHostValue());
 
         // Dates müssen auch SUBTRAHIERBAR sein!
-        assertEquals(JDuration.of("1d"), rt.compile("test", "@1976-01-11 - @1976-01-10").run(TestEnv.NO_GLOBALS));
-        assertEquals(JDuration.of("2d"), rt.compile("test", "@1976-01-12 - @1976-01-10").run(TestEnv.NO_GLOBALS));
+        assertEquals(DurationLiteral.parse("1d", TestEnv.env.getBuiltins()), rt.compile("test", "@1976-01-11 - @1976-01-10").run(TestEnv.NO_GLOBALS));
+        assertEquals(DurationLiteral.parse("2d", TestEnv.env.getBuiltins()), rt.compile("test", "@1976-01-12 - @1976-01-10").run(TestEnv.NO_GLOBALS));
         assertEquals(JBool.TRUE, rt.compile("test", "( @1976-01-12 - @1976-01-10 ) > @1d").run(TestEnv.NO_GLOBALS));
         assertEquals(JBool.TRUE, rt.compile("test", "( @1976-01-12 - @1976-01-10 ) < @5d").run(TestEnv.NO_GLOBALS));
         assertEquals(JBool.TRUE, rt.compile("test", "@2d > @1h").run(TestEnv.NO_GLOBALS));
@@ -554,6 +556,10 @@ public class FirstParserTestCase {
 
 
     }
+
+
+
+
 
     @Test
     public void wildcards() throws JanitorCompilerException, JanitorRuntimeException {
@@ -1296,7 +1302,7 @@ public class FirstParserTestCase {
     public static class FooModule extends JanitorNativeModule {
 
         @Override
-        public @Nullable JanitorObject janitorGetAttribute(final JanitorScriptProcess runningScript, final String name, final boolean required) throws JanitorNameException {
+        public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess runningScript, final @NotNull String name, final boolean required) throws JanitorNameException {
             if ("x".equals(name)) {
                 return TestEnv.env.getBuiltins().integer(17);
             } else {
@@ -1310,7 +1316,7 @@ public class FirstParserTestCase {
 
 
         @Override
-        public @Nullable JanitorObject janitorGetAttribute(final JanitorScriptProcess runningScript, final String name, final boolean required) throws JanitorNameException {
+        public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess runningScript, final @NotNull String name, final boolean required) throws JanitorNameException {
             if (name.equals("from")) {
                 System.out.println("someone asked for property 'from'!");
                 return TestEnv.env.getBuiltins().string("foo");

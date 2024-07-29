@@ -211,7 +211,7 @@ public abstract class AbstractScriptProcess implements JanitorScriptProcess {
             return alreadyMatches;
         }
         if (value instanceof Number num) {
-            return JFloat.of(num.doubleValue());
+            return getEnvironment().getBuiltins().floatingPoint(num.doubleValue());
         }
         throw new JanitorArgumentException(this, "Expected float instead of " + value);
     }

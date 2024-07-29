@@ -123,7 +123,7 @@ public interface JanitorObject {
      * @throws JanitorNameException if the attribute does not exist but is required
      */
     @Nullable
-    default JanitorObject janitorGetAttribute(JanitorScriptProcess runningScript, String name, final boolean required) throws JanitorNameException {
+    default JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess runningScript, final @NotNull String name, final boolean required) throws JanitorNameException {
         // First, try to find a method in the class of this object, which is managed by the Enviroment:
         final JanitorObject envMeth = runningScript.lookupClassAttribute(this, name);
         if (envMeth != null) {
@@ -164,7 +164,7 @@ public interface JanitorObject {
      * @return an instance of that type, derived from this object or an inner object, when compatible, or null when not compatible
      * @param <T> the type required by the caller
      */
-    default <T extends JanitorObject> @Nullable T janitorCoerce(final Class<T> type) {
+    default <T extends JanitorObject> @Nullable T janitorCoerce(final @NotNull Class<T> type) {
         if (type.isAssignableFrom(this.getClass())) {
             return type.cast(this);
         } else {

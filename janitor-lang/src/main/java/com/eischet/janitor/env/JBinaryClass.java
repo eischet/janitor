@@ -2,7 +2,7 @@ package com.eischet.janitor.env;
 
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.calls.JCallArgs;
-import com.eischet.janitor.api.types.wrapper.JanitorWrapper;
+import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 import com.eischet.janitor.api.types.builtin.JInt;
 import com.eischet.janitor.api.types.builtin.JString;
 

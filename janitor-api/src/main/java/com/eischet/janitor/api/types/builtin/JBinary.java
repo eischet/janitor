@@ -1,7 +1,7 @@
 package com.eischet.janitor.api.types.builtin;
 
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
-import com.eischet.janitor.api.types.wrapper.JanitorWrapper;
+import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 import com.eischet.janitor.api.types.JConstant;
 import org.jetbrains.annotations.NotNull;
 

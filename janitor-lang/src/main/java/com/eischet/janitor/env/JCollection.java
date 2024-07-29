@@ -3,8 +3,6 @@ package com.eischet.janitor.env;
 import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.JBool;
-import com.eischet.janitor.api.types.builtin.JFloat;
-import com.eischet.janitor.api.types.builtin.JMap;
 import com.eischet.janitor.api.types.builtin.JNull;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonInputStream;
@@ -23,7 +21,7 @@ public abstract class JCollection {
             case END_OBJECT -> throw new JsonException("Unexpected end of object at " + reader.getPath());
             case NAME -> throw new JsonException("Unexpected name array at " + reader.getPath());
             case STRING -> env.getBuiltins().nullableString(reader.nextString());
-            case NUMBER -> JFloat.of(reader.nextDouble());
+            case NUMBER -> env.getBuiltins().floatingPoint(reader.nextDouble());
             case BOOLEAN -> JBool.of(reader.nextBoolean());
             case NULL -> {
                 reader.nextNullObject();

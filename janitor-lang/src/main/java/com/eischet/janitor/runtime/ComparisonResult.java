@@ -1,4 +1,4 @@
-package com.eischet.janitor.api.util;
+package com.eischet.janitor.runtime;
 
 import com.eischet.janitor.api.types.builtin.JBool;
 

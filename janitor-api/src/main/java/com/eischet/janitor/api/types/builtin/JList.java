@@ -1,9 +1,9 @@
 package com.eischet.janitor.api.types.builtin;
 
 import com.eischet.janitor.api.calls.TemporaryAssignable;
-import com.eischet.janitor.api.types.wrapper.JanitorWrapperDispatchTable;
+import com.eischet.janitor.api.types.wrapped.JanitorWrapperDispatchTable;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
-import com.eischet.janitor.api.types.wrapper.JanitorWrapper;
+import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 import com.eischet.janitor.api.types.JIterable;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.toolbox.json.api.*;

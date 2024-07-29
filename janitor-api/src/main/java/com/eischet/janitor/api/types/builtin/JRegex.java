@@ -8,6 +8,8 @@ import com.eischet.janitor.api.errors.runtime.JanitorNameException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.JConstant;
 import com.eischet.janitor.api.types.JanitorObject;
+import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
+import com.eischet.janitor.api.types.wrapped.JanitorWrapperDispatchTable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -18,101 +20,19 @@ import java.util.regex.Pattern;
  * A regex object, representing a regular expression.
  * This is one of the built-in types that Janitor provides automatically.
  */
-public class JRegex implements JConstant {
-
-    private final Pattern pattern;
+public class JRegex extends JanitorWrapper<Pattern> implements JConstant {
 
     /**
      * Create a new JRegex.
      * @param pattern the pattern
      */
-    public JRegex(final Pattern pattern) {
-        this.pattern = pattern;
-    }
-
-    @Override
-    public Pattern janitorGetHostValue() {
-        return pattern;
+    private JRegex(final JanitorWrapperDispatchTable<Pattern> dispatch, final Pattern pattern) {
+        super(dispatch, pattern);
     }
 
     @Override
     public String janitorToString() {
-        return pattern.toString();
-    }
-
-    @Override
-    public @Nullable JanitorObject janitorGetAttribute(final JanitorScriptProcess runningScript, final String name, final boolean required) throws JanitorNameException {
-        // TODO: convert this into a proper dispatch table
-        if ("extract".equals(name)) {
-            return new JBoundMethod<>("extract", this, new JUnboundMethod<>() {
-                @Override
-                public JanitorObject call(final JRegex self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
-                    arguments.require(1);
-                    final JString str = arguments.getString(0);
-                    final Matcher matcher = self.janitorGetHostValue().matcher(str.janitorGetHostValue());
-                    if (matcher.find()) {
-                        return runningScript.getEnvironment().getBuiltins().string(matcher.group(1));
-                    } else {
-                        return JNull.NULL;
-                    }
-                }
-            });
-        }
-        if ("replaceAll".equals(name)) {
-            return new JBoundMethod<>("replaceAll", this, new JUnboundMethod<>() {
-                @Override
-                public JanitorObject call(final JRegex self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
-                    arguments.require(2);
-                    final JString string = arguments.getString(0);
-                    final JString with = arguments.getString(1);
-                    final Matcher matcher = self.janitorGetHostValue().matcher(string.janitorGetHostValue());
-                    return runningScript.getEnvironment().getBuiltins().string(matcher.replaceAll(with.janitorToString()));
-                }
-            });
-        }
-        if ("replaceFirst".equals(name)) {
-            return new JBoundMethod<>("replaceFirst", this, new JUnboundMethod<>() {
-                @Override
-                public JanitorObject call(final JRegex self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
-                    arguments.require(2);
-                    final JString string = arguments.getString(0);
-                    final JString with = arguments.getString(1);
-                    final Matcher matcher = self.janitorGetHostValue().matcher(string.janitorGetHostValue());
-                    return runningScript.getEnvironment().getBuiltins().string(matcher.replaceFirst(with.janitorToString()));
-                }
-            });
-        }
-        if ("extractAll".equals(name)) {
-            return new JBoundMethod<>("extractAll", this, new JUnboundMethod<>() {
-                @Override
-                public JanitorObject call(final JRegex self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
-                    arguments.require(1);
-                    final JList list = runningScript.getEnvironment().getBuiltins().list();
-                    final JString str = arguments.getString(0);
-                    final Matcher matcher = self.janitorGetHostValue().matcher(str.janitorGetHostValue());
-                    while (matcher.find()) {
-                        list.add(runningScript.getEnvironment().getBuiltins().string(matcher.group(1)));
-                    }
-                    return list;
-                }
-            });
-        }
-        if ("split".equals(name)) {
-            return new JBoundMethod<>("split", this, new JUnboundMethod<>() {
-                @Override
-                public JanitorObject call(final JRegex self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
-                    arguments.require(1);
-                    final JList list = runningScript.getEnvironment().getBuiltins().list();
-                    final JString str = arguments.getString(0);
-                    final String[] parts = str.janitorGetHostValue().split(self.janitorGetHostValue().pattern());
-                    for (final String part : parts) {
-                        list.add(runningScript.getEnvironment().getBuiltins().string(part));
-                    }
-                    return list;
-                }
-            });
-        }
-        return JConstant.super.janitorGetAttribute(runningScript, name, required);
+        return wrapped.toString();
     }
 
     @Override
@@ -120,4 +40,7 @@ public class JRegex implements JConstant {
         return "regex";
     }
 
+    public static JRegex newInstance(final JanitorWrapperDispatchTable<Pattern> dispatch, final Pattern pattern) {
+        return new JRegex(dispatch, pattern);
+    }
 }
