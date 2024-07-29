@@ -16,6 +16,8 @@ import java.time.format.DateTimeParseException;
 /**
  * A datetime object, representing a date and time in the Gregorian calendar.
  * This is one of the built-in types that Janitor provides automatically.
+ *
+ * TODO: convert this to a composite
  */
 public class JDateTime implements JConstant {
 

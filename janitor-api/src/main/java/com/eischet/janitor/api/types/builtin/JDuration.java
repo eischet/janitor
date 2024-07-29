@@ -1,15 +1,11 @@
 package com.eischet.janitor.api.types.builtin;
 
-import com.eischet.janitor.api.JanitorScriptProcess;
-import com.eischet.janitor.api.errors.runtime.JanitorNameException;
 import com.eischet.janitor.api.types.JConstant;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;
 
@@ -205,7 +201,7 @@ public class JDuration extends JanitorComposed<JDuration> implements JConstant, 
      * Kinds of durations, from second to year.
      */
     public enum JDurationKind {
-        // I'm really not a big fan of these Doc comments, BUT I've decided to provide good Javadocs, and without them
+        // I'm really not a big fan of these Doc comments, BUT I've decided to provide good Javadocs, and without them,
         // we get errors building the Javadoc. So here we are.
         /** Years  */  YEARS("y", ChronoUnit.YEARS),
         /** Months */  MONTHS("mo", ChronoUnit.MONTHS),

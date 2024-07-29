@@ -13,8 +13,6 @@ import com.eischet.janitor.toolbox.json.api.JsonExportablePrimitive;
 import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Objects;
-
 /**
  * A string object, representing a string of characters.
  * This is one of the built-in types that Janitor provides automatically.
@@ -91,26 +89,13 @@ public class JString extends JanitorWrapper<String> implements JConstant, JsonEx
     }
 
     @Override
-    public boolean equals(final Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        final JString that = (JString) o;
-        return Objects.equals(this.wrapped, that.wrapped);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(wrapped);
-    }
-
-    @Override
     public @NotNull String janitorClassName() {
         return CLASS_NAME;
     }
 
     @Override
     public boolean isDefaultOrEmpty() {
-        return wrapped == null || wrapped.isEmpty();
+        return wrapped.isEmpty();
     }
 
     @Override

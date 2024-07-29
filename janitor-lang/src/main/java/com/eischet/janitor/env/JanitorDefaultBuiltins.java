@@ -216,7 +216,7 @@ public class JanitorDefaultBuiltins implements JanitorBuiltins {
     }
 
     @Override
-    public @NotNull JBinary binary(final byte[] arr) {
+    public @NotNull JBinary binary(final byte @NotNull [] arr) {
         return JBinary.newInstance(binaryDispatcher, arr);
     }
 

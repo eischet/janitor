@@ -7,6 +7,8 @@ import com.eischet.janitor.api.types.JanitorObject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Objects;
+
 
 /**
  * A wrapper around a value that can be used in a Janitor script.
@@ -51,5 +53,18 @@ public class JanitorWrapper<T> implements JanitorObject {
     @Override
     public String toString() {
         return wrapped.toString();
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        if (this == object) return true;
+        if (object == null || getClass() != object.getClass()) return false;
+        final JanitorWrapper<?> that = (JanitorWrapper<?>) object;
+        return Objects.equals(wrapped, that.wrapped);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(wrapped);
     }
 }

@@ -56,7 +56,7 @@ public enum JBool implements JConstant, JsonExportablePrimitive {
      * Create a new JBool.
      * @param value the value
      */
-    private JBool(final boolean value) {
+    JBool(final boolean value) {
         this.value = value;
     }
 

@@ -16,6 +16,8 @@ import java.util.Objects;
 /**
  * A date object, representing a date in the Gregorian calendar.
  * This is one of the built-in types that Janitor provides automatically.
+ *
+ * TODO: convert this to a composite
  */
 public class JDate implements JConstant {
 

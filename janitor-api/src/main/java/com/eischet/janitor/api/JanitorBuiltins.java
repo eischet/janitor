@@ -74,7 +74,7 @@ public interface JanitorBuiltins {
     @NotNull JanitorObject nullableInteger(@Nullable Number value);
 
     @NotNull
-    JBinary binary(byte [] arr);
+    JBinary binary(byte @NotNull [] arr);
 
     @NotNull JanitorObject nullableFloat(final Double value);
 

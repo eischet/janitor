@@ -73,18 +73,6 @@ public class JInt extends JanitorWrapper<Long> implements JConstant, JsonExporta
         return wrapped.intValue();
     }
 
-    @Override
-    public String toString() {
-        return String.valueOf(wrapped);
-    }
-
-    @Override
-    public boolean equals(final Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        final JInt that = (JInt) o;
-        return wrapped.longValue() == ((JInt) o).janitorGetHostValue().longValue();
-    }
 
     @Override
     public int hashCode() {

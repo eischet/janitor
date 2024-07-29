@@ -154,11 +154,6 @@ public class JList extends JanitorWrapper<List<JanitorObject>> implements Janito
         return List.copyOf(wrapped);
     }
 
-    @Override
-    public String toString() {
-        return wrapped.toString();
-    }
-
     /**
      * Define truthiness: list is not empty.
      *

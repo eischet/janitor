@@ -13,11 +13,11 @@ import java.util.Arrays;
  */
 public class JBinary extends JanitorWrapper<byte[]> implements JConstant {
 
-    public static JBinary newInstance(final Dispatcher<JanitorWrapper<byte[]>> dispatcher, final byte[] wrapped) {
+    public static JBinary newInstance(final @NotNull Dispatcher<JanitorWrapper<byte[]>> dispatcher, final byte @NotNull [] wrapped) {
         return new JBinary(dispatcher, wrapped);
     }
 
-    private JBinary(final Dispatcher<JanitorWrapper<byte[]>> dispatcher, final byte[] wrapped) {
+    private JBinary(final Dispatcher<JanitorWrapper<byte[]>> dispatcher, final byte @NotNull [] wrapped) {
         super(dispatcher, wrapped);
     }
 
@@ -28,7 +28,7 @@ public class JBinary extends JanitorWrapper<byte[]> implements JConstant {
      */
     @Override
     public boolean janitorIsTrue() {
-        return wrapped != null && wrapped.length > 0;
+        return wrapped.length > 0;
     }
 
     /**
@@ -37,7 +37,7 @@ public class JBinary extends JanitorWrapper<byte[]> implements JConstant {
      * @return the size of the binary
      */
     public int size() {
-        return wrapped == null ? 0 : wrapped.length;
+        return wrapped.length;
     }
 
     @Override
