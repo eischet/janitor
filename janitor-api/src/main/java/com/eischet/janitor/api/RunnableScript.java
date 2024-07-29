@@ -26,7 +26,7 @@ public interface RunnableScript {
     @NotNull JanitorObject run(@NotNull Consumer<Scope> prepareGlobals) throws JanitorRuntimeException;
 
     /**
-     * Run the script with a given global scope, and keep the global scope afterwards.
+     * Run the script with a given global scope, and keep the global scope afterward.
      * @param prepareGlobals a consumer that can add variables to the global scope
      * @return the script's result and the global scope
      * @throws JanitorRuntimeException on runtime errors
@@ -35,7 +35,7 @@ public interface RunnableScript {
 
     /**
      * Run the script with a given global scope.
-     * The usual way of obtaining such a scope is be using runAndKeepGlobals.
+     * The usual way of obtaining such a scope is by using runAndKeepGlobals.
      *
      * @param prepareGlobals a consumer that can add variables to the global scope
      * @param parentScope the parent scope to use
