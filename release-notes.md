@@ -1,7 +1,7 @@
 # 0.9.2, 2024-07-27
 
-An older "class" implementation is removed and replace by a new "dispatch table" approach, which is easier to extend.
-Most built-in classes have been updated to use dispatch tables.
+An older "class" implementation  is removed and replace by a new "dispatch table" approach, which is easier to extend.
+Most built-in classes have been updated to use dispatch tables instead of classes or even hand-written dispatch logic.
 A number of implementation details have been moved out of the "api" intoto the "lang" implementation package.
 
 
