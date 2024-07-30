@@ -17,4 +17,4 @@ A number of implementation details have been moved out of the "api" into the "la
 
 # Initial Release 0.9.1, 2024-07-17
 
-This is the first internal pre-release, after the language grew within a bigger application for a couple of years.
+This is the first public release, after the language grew within a custom application for a couple of years.
