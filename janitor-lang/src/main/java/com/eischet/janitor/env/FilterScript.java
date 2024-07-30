@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 /**
  * A filter predicate implemented as a script.
  * This covers one majore use case of the Janitor language: applying user-supplied filters to Java streams/collections.
+ * @see FilterPredicate
  */
 public class FilterScript implements FilterPredicate {
 

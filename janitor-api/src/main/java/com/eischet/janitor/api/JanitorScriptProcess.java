@@ -3,6 +3,7 @@ package com.eischet.janitor.api;
 import com.eischet.janitor.api.calls.JCallArgs;
 import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
+import com.eischet.janitor.api.i18n.JanitorFormatting;
 import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.api.scopes.ResultAndScope;
 import com.eischet.janitor.api.scopes.Scope;
@@ -77,11 +78,16 @@ public interface JanitorScriptProcess {
         return getEnvironment().getBuiltins();
     }
 
+    @NotNull
+    default JanitorFormatting getFormatting() {
+        return getEnvironment().getFormatting();
+    }
+
     /**
-     * Run script code (i.e. code that can throw JanitorRuntimeException).
-     *
-     * @param title
-     * @param call
+     * Run script code without throwing a script runtime exception on errors.
+     * The environment may report an exception, but it may not throw.
+     * @param title a name for the protected code block, shown in an exception report
+     * @param call the code to execute
      */
     default void protect(final String title, ProtectedCall call) {
         getRuntime().protect(title, call);

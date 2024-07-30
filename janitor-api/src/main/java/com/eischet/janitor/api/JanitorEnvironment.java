@@ -1,7 +1,10 @@
 package com.eischet.janitor.api;
 
+import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.i18n.JanitorFormatting;
+import com.eischet.janitor.api.modules.JanitorModule;
 import com.eischet.janitor.api.modules.JanitorModuleRegistration;
+import com.eischet.janitor.api.modules.ModuleResolver;
 import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.types.builtin.JList;
 import com.eischet.janitor.api.types.builtin.JMap;
@@ -91,4 +94,16 @@ public interface JanitorEnvironment extends JanitorUserEnvironment, JanitorImple
     @NotNull
     JList parseJsonToList(final String json) throws JsonException;
 
+    /**
+     * Register a module, making it available to script code.
+     * @param moduleRegistration a module registration, containing of a name for the module and a pointer to it.
+     */
+    void registerModule(final JanitorModuleRegistration moduleRegistration);
+
+    @NotNull
+    JanitorModule getModuleByQualifier(final JanitorScriptProcess process, String name) throws JanitorRuntimeException;
+
+    @NotNull JanitorModule getModuleByStringName(final JanitorScriptProcess process, String name) throws JanitorRuntimeException;
+
+    void addModuleResolver(final ModuleResolver resolver);
 }

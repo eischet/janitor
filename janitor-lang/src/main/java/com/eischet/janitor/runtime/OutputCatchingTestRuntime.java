@@ -6,24 +6,25 @@ import com.eischet.janitor.api.calls.JCallArgs;
 import com.eischet.janitor.api.types.builtin.JNull;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.env.JanitorDefaultEnvironment;
+import com.eischet.janitor.runtime.modules.CollectionsModule;
 
 public class OutputCatchingTestRuntime extends BaseRuntime {
 
-    private static final JanitorEnvironment ENV = new JanitorDefaultEnvironment(new JanitorFormattingGerman()) {
-        @Override
-        public void warn(final String message) {
-            System.err.println(message);
-        }
-    };
+    public static OutputCatchingTestRuntime fresh() {
+        final JanitorEnvironment ENV = new JanitorDefaultEnvironment(new JanitorFormattingGerman()) {
+            @Override
+            public void warn(final String message) {
+                System.err.println(message);
+            }
+        };
+        ENV.registerModule(CollectionsModule.REGISTRATION);
+        return new OutputCatchingTestRuntime(ENV);
+    }
 
     final StringBuffer output = new StringBuffer();
 
-    public OutputCatchingTestRuntime() {
+    private OutputCatchingTestRuntime(final JanitorEnvironment ENV) {
         super(ENV);
-    }
-
-    public OutputCatchingTestRuntime(final JanitorEnvironment env) {
-        super(env);
     }
 
     @Override

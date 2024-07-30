@@ -2,10 +2,6 @@ package com.eischet.janitor.api;
 
 import com.eischet.janitor.api.calls.JCallArgs;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
-import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
-import com.eischet.janitor.api.i18n.JanitorFormatting;
-import com.eischet.janitor.api.modules.JanitorModule;
-import com.eischet.janitor.api.modules.JanitorModuleRegistration;
 import com.eischet.janitor.api.types.JanitorObject;
 import org.jetbrains.annotations.NotNull;
 
@@ -13,7 +9,6 @@ import java.util.function.Supplier;
 
 /**
  * The runtime in which Janitor scripts run. This is a sub-object of an enviroment, and more short-lived.
- * TODO: this is probably reduntant with JanitorEnvironment, and should be merged into it, though I'm not yet sure.
  */
 public interface JanitorRuntime {
 
@@ -21,13 +16,6 @@ public interface JanitorRuntime {
 
     RunnableScript compile(String moduleName, String source) throws JanitorCompilerException;
     RunnableScript checkCompile(String moduleName, String source) throws JanitorCompilerException;
-
-
-    void registerModule(final JanitorModuleRegistration moduleRegistration);
-    @NotNull JanitorModule getModuleByQualifier(final JanitorScriptProcess process, String name) throws JanitorRuntimeException;
-
-    @NotNull JanitorModule getModuleByStringName(final JanitorScriptProcess process, String name) throws JanitorRuntimeException;
-
     JanitorObject print(JanitorScriptProcess rs, JCallArgs args);
 
 
@@ -48,7 +36,11 @@ public interface JanitorRuntime {
         getEnvironment().warn(warning);
     }
 
-    @NotNull JanitorFormatting getFormatting();
-
-    void protect(final String title, JanitorScriptProcess.ProtectedCall call);
+    /**
+     * Run script code without throwing a script runtime exception on errors.
+     * The environment may report an exception, but it may not throw.
+     * @param title a name for the protected code block, shown in an exception report
+     * @param call the code to execute
+     */
+    void protect(final @NotNull String title, @NotNull JanitorScriptProcess.ProtectedCall call);
 }

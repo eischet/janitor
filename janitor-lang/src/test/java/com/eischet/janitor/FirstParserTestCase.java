@@ -11,6 +11,7 @@ import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.modules.JanitorModule;
 import com.eischet.janitor.api.modules.JanitorModuleRegistration;
 import com.eischet.janitor.api.modules.JanitorNativeModule;
+import com.eischet.janitor.api.modules.ModuleResolver;
 import com.eischet.janitor.api.scopes.ResultAndScope;
 import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.scopes.ScriptModule;
@@ -54,7 +55,7 @@ public class FirstParserTestCase {
         final JanitorParser.ScriptContext script = JanitorScript.parseScript(source);
         final ScriptModule module = ScriptModule.unnamed(source);
         final Script scriptObject = JanitorCompiler.build(TestEnv.env, module, script, source);
-        final OutputCatchingTestRuntime runtime = new OutputCatchingTestRuntime();
+        final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
 
         final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), module); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
         globalScope.bind("x", 17);
@@ -69,7 +70,7 @@ public class FirstParserTestCase {
         final JanitorParser.ScriptContext script = JanitorScript.parseScript(source);
         final ScriptModule module = ScriptModule.unnamed(source);
         final Script scriptObject = JanitorCompiler.build(TestEnv.env, module, script, source);
-        final OutputCatchingTestRuntime runtime = new OutputCatchingTestRuntime();
+        final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
 
         final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), module); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
         globalScope.bind("x", 17);
@@ -95,7 +96,7 @@ public class FirstParserTestCase {
         final JanitorParser.ScriptContext script = JanitorScript.parseScript(scriptSource);
         final ScriptModule module = ScriptModule.unnamed(scriptSource);
         final Script scriptObject = JanitorCompiler.build(TestEnv.env, module, script, scriptSource);
-        final OutputCatchingTestRuntime runtime = new OutputCatchingTestRuntime();
+        final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
 
         final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), module); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
         prepareGlobals.accept(globalScope);
@@ -109,7 +110,7 @@ public class FirstParserTestCase {
         final JanitorParser.ScriptContext script = JanitorScript.parseScript(expressionSource);
         final ScriptModule module = ScriptModule.unnamed(expressionSource);
         final Script scriptObject = JanitorCompiler.build(TestEnv.env, module, script, expressionSource);
-        final OutputCatchingTestRuntime runtime = new OutputCatchingTestRuntime();
+        final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
 
         final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), module); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
         prepareGlobals.accept(globalScope);
@@ -414,8 +415,8 @@ public class FirstParserTestCase {
 
     @Test
     public void modulesTest() throws JanitorCompilerException, JanitorRuntimeException {
-        final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
-        rt.registerModule(new JanitorModuleRegistration("foo", FooModule::new));
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
+        rt.getEnvironment().registerModule(new JanitorModuleRegistration("foo", FooModule::new));
 
         final RunnableScript s = rt.compile("test", """
             import foo;
@@ -437,9 +438,12 @@ public class FirstParserTestCase {
 
     @Test
     public void multiImport() throws JanitorCompilerException, JanitorRuntimeException {
-        final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
+
+
+
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         for (final String moduleName : List.of("foo", "bar", "baz")) {
-            rt.registerModule(new JanitorModuleRegistration(moduleName, () -> new JanitorModule() {
+            rt.getEnvironment().registerModule(new JanitorModuleRegistration(moduleName, () -> new JanitorModule() {
                 @Override
                 public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess runningScript, final @NotNull String name, final boolean required) throws JanitorNameException {
                     if ("name".equals(name)) {
@@ -492,7 +496,7 @@ public class FirstParserTestCase {
             """);
         assertThrows(JanitorRuntimeException.class, s5::run, "Module not found: dummy");
 
-        rt.addModuleResolver(new BaseRuntime.ModuleResolver() {
+        rt.getEnvironment().addModuleResolver(new ModuleResolver() {
             @Override
             public @Nullable JanitorModule resolveModuleByStringName(final JanitorScriptProcess process, final String name) {
                 log.info("resolveModuleByStringName: " + name);
@@ -526,7 +530,7 @@ public class FirstParserTestCase {
 
     @Test
     public void dating() throws JanitorCompilerException, JanitorRuntimeException {
-        final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         assertEquals(LocalDate.of(1976, 1, 10), rt.compile("test", "@1976-01-10").run(TestEnv.NO_GLOBALS).janitorGetHostValue());
         assertEquals(LocalDateTime.of(1976, 1, 10, 11, 17, 30), rt.compile("test", "@1976-01-10-11:17:30").run(TestEnv.NO_GLOBALS).janitorGetHostValue());
         assertEquals(LocalDateTime.of(1976, 1, 10, 11, 17, 0), rt.compile("test", "@1976-01-10-11:17").run(TestEnv.NO_GLOBALS).janitorGetHostValue());
@@ -563,14 +567,14 @@ public class FirstParserTestCase {
 
     @Test
     public void wildcards() throws JanitorCompilerException, JanitorRuntimeException {
-        final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         assertEquals(Boolean.TRUE, rt.compile("test", "'foo' ~ 'f*'").run().janitorGetHostValue());
         assertEquals(Boolean.FALSE, rt.compile("test", "'bar' ~ 'f*'").run().janitorGetHostValue());
     }
 
     @Test
     public void regexes() throws JanitorCompilerException, JanitorRuntimeException {
-        final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         assertEquals(Boolean.TRUE, rt.compile("test", "'foo' ~ re/foo/").run().janitorGetHostValue());
         assertEquals(Boolean.TRUE, rt.compile("test", "'foo' ~ re/f../").run().janitorGetHostValue());
         assertEquals(Boolean.FALSE, rt.compile("test", "'foo' ~ re/\\d+/").run().janitorGetHostValue());
@@ -599,14 +603,14 @@ public class FirstParserTestCase {
 
     @Test
     public void lists() throws JanitorCompilerException, JanitorRuntimeException {
-        final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         rt.compile("foo", "for (i in [1,2,3]) { print(i); }").run(TestEnv.NO_GLOBALS);
         assertEquals("1\n2\n3\n", rt.getAllOutput());
     }
 
     @Test
     public void doMapsCollideWithBlocks() throws JanitorCompilerException, JanitorRuntimeException {
-        final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         rt.compile("foo", "if (true) { } else { }").run(TestEnv.NO_GLOBALS);
         final Object map = rt.compile("bar", "return {};").run(TestEnv.NO_GLOBALS);
         assertTrue(map instanceof JMap);
@@ -614,7 +618,7 @@ public class FirstParserTestCase {
 
     @Test
     public void maps() throws JanitorCompilerException, JanitorRuntimeException {
-        final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         final Object map = rt.compile("bar", "return {};").run(TestEnv.NO_GLOBALS);
         log.info("empty map: " + map);
         assertTrue(map instanceof JMap);
@@ -642,7 +646,7 @@ public class FirstParserTestCase {
                 }
             ]
             """;
-        final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         final JList list = (JList) rt.compile("test", JSON).run(TestEnv.NO_GLOBALS);
         final JMap map = (JMap) list.get(TestEnv.env.getBuiltins().integer(0));
         assertEquals(TestEnv.env.getBuiltins().integer(10), map.get(TestEnv.env.getBuiltins().string("keepRunLogs")));
@@ -654,7 +658,7 @@ public class FirstParserTestCase {
 
     @Test
     public void longStringsCollide() throws Exception {
-        final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         final RunnableScript script = rt.compile("test", """
             a = '''hallo''';
             c = ""\"ignore""\";
@@ -678,7 +682,7 @@ public class FirstParserTestCase {
 
     @Test
     public void escapism() throws Exception {
-        final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         final RunnableScript script = rt.compile("test", "return 'foo\\\\bar';");
         assertEquals("foo\\bar", script.run(TestEnv.NO_GLOBALS).janitorGetHostValue());
 
@@ -695,7 +699,7 @@ public class FirstParserTestCase {
 
     @Test
     public void collections() throws Exception {
-        final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         final RunnableScript script = rt.compile("test", """
             import collections;
 
@@ -745,7 +749,7 @@ public class FirstParserTestCase {
     @Test
     public void datingFormats() throws JanitorCompilerException, JanitorRuntimeException {
         final LocalDateTime testDate = LocalDateTime.of(2021, 11, 15, 12, 4);
-        final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         assertEquals(TestEnv.env.getBuiltins().date(2021, 11, 15), rt.compile("test", "d.date()").run(g -> g.bind("d", TestEnv.env.getBuiltins().nullableDateTime(testDate))));
         assertEquals(TestEnv.env.getBuiltins().string("12:04"), rt.compile("test", "d.time()").run(g -> g.bind("d", TestEnv.env.getBuiltins().nullableDateTime(testDate))));
         assertEquals(TestEnv.env.getBuiltins().string("15.11.2021, 12:04:00"), rt.compile("test", "d.string()").run(g -> g.bind("d", TestEnv.env.getBuiltins().nullableDateTime(testDate))));
@@ -756,7 +760,7 @@ public class FirstParserTestCase {
 
     @Test
     public void communicatingScopes() throws Exception {
-        final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         final RunnableScript firstScript = rt.compile("first", "i = 17;");
         final ResultAndScope ras = firstScript.runAndKeepGlobals(TestEnv.NO_GLOBALS);
         final RunnableScript secondScript = rt.compile("second", "print(i);");
@@ -770,7 +774,7 @@ public class FirstParserTestCase {
 
     @Test
     public void emptyScriptsDoNothingAtAll() throws Exception {
-        final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         final RunnableScript firstScript = rt.compile("first", "");
         assertEquals(JNull.NULL, firstScript.run(TestEnv.NO_GLOBALS));
         final RunnableScript secondScript = rt.compile("second", null);
@@ -779,7 +783,7 @@ public class FirstParserTestCase {
 
     @Test
     public void comparingStuff() throws Exception {
-        final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         assertEquals(JBool.TRUE, rt.compile("test", "1<=2").run(TestEnv.NO_GLOBALS));
         assertEquals(JBool.TRUE, rt.compile("test", "2>=0").run(TestEnv.NO_GLOBALS));
         assertEquals(JBool.FALSE, rt.compile("test", "2<0").run(TestEnv.NO_GLOBALS));
@@ -788,13 +792,13 @@ public class FirstParserTestCase {
 
     @Test
     public void stringFormat() throws Exception {
-        final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         assertEquals(TestEnv.env.getBuiltins().string("foo=bar"), rt.compile("test", "'%s=%s'.format('foo', 'bar')").run(TestEnv.NO_GLOBALS));
     }
 
     @Test
     public void stringTemplating() throws Exception {
-        final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         final RunnableScript script = rt.compile("test", """
             a = 1;
             b = 2;
@@ -828,7 +832,7 @@ public class FirstParserTestCase {
     @Test
     public void tryCatching() throws JanitorCompilerException, JanitorRuntimeException {
 
-        final OutputCatchingTestRuntime rt3 = new OutputCatchingTestRuntime();
+        final OutputCatchingTestRuntime rt3 = OutputCatchingTestRuntime.fresh();
         final RunnableScript s3 = rt3.compile("tryCatching3", """
             try {
                 print("tried");
@@ -841,7 +845,7 @@ public class FirstParserTestCase {
         s3.run();
         assertEquals("tried\nalways\n", rt3.getAllOutput());
 
-        final OutputCatchingTestRuntime rt4 = new OutputCatchingTestRuntime();
+        final OutputCatchingTestRuntime rt4 = OutputCatchingTestRuntime.fresh();
         final RunnableScript s4 = rt4.compile("tryCatching4", """
             try {
                 print("tried");
@@ -867,7 +871,7 @@ public class FirstParserTestCase {
             """, rt4.getAllOutput());
 
 
-        final OutputCatchingTestRuntime rt2 = new OutputCatchingTestRuntime();
+        final OutputCatchingTestRuntime rt2 = OutputCatchingTestRuntime.fresh();
         final RunnableScript s2 = rt2.compile("tryCatching2", """
             try { return 4/2; print("ok"); } catch (e) { print("div by zero"); }
             """);
@@ -875,7 +879,7 @@ public class FirstParserTestCase {
         assertEquals("", rt2.getAllOutput());
         assertEquals(TestEnv.env.getBuiltins().integer(2), result2);
 
-        final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         final RunnableScript script = rt.compile("tryCatching", """
             try { return 1/0; print("ok"); } catch (e) { print("div by zero"); }
             """);
@@ -891,7 +895,7 @@ public class FirstParserTestCase {
         assertThrows(JanitorNameException.class, new Executable() {
             @Override
             public void execute() throws Throwable {
-                final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
+                final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
                 // rt.getCompilerSettings().setVerbose(true);
                 final RunnableScript script = rt.compile("illegalAssignment", "1=1");
                 script.run();
@@ -983,7 +987,7 @@ public class FirstParserTestCase {
 
     @Test
     public void indexingLists() throws JanitorCompilerException, JanitorRuntimeException {
-        final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         assertEquals(1L, rt.compile("test", "[1,2,3][0]").run().janitorGetHostValue());
         assertEquals(2L, rt.compile("test", "[1,2,3][1]").run().janitorGetHostValue());
         assertEquals(3L, rt.compile("test", "[1,2,3][2]").run().janitorGetHostValue());
@@ -1078,7 +1082,7 @@ public class FirstParserTestCase {
     @Test void dateDiff() throws JanitorRuntimeException, JanitorCompilerException {
         assertEquals("@3600s\n", getOutput("print(@2022-10-01-12:00:00 - @2022-10-01-11:00:00)"));
 
-        final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         final RunnableScript script = rt.compile("diff", "return @2022-10-01-12:00:00 - @2022-10-01-11:00:00");
         final JanitorObject result = script.run();
 
@@ -1118,7 +1122,7 @@ public class FirstParserTestCase {
 
     @Test
     public void indexAssignmentOnMap() throws JanitorCompilerException, JanitorRuntimeException {
-        final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         // rt.getCompilerSettings().setVerbose(true);
         final RunnableScript script = rt.compile("indexed_assignment", "a = {}; a['foo'] = 'bar'; print(a['foo']);");
         script.run();
@@ -1127,7 +1131,7 @@ public class FirstParserTestCase {
 
     @Test
     public void indexAssignmentOnList() throws JanitorCompilerException, JanitorRuntimeException {
-        final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         // rt.getCompilerSettings().setVerbose(true);
         final RunnableScript script = rt.compile("indexed_assignment", "a = ['baz']; a[0] = 'bar'; print(a[0]);");
         script.run();
@@ -1137,7 +1141,7 @@ public class FirstParserTestCase {
     @Test
     public void localKeywordsProblematic() throws JanitorRuntimeException, JanitorCompilerException {
         // Problem: for (i from 1 to 10) { ... } reserviert sich das gesamte Keyword "from"
-        final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
 
         rt.compile("from_test_1", """
             print(from);
@@ -1192,7 +1196,7 @@ public class FirstParserTestCase {
 
     @Test
     public void partialParsing() throws JanitorControlFlowException, JanitorRuntimeException {
-        final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         final JanitorRepl repl = new JanitorRepl(rt);
         assertEquals(JanitorRepl.PartialParseResult.OK, repl.parse("x = 17;"));
 
@@ -1221,7 +1225,7 @@ public class FirstParserTestCase {
 
     @Test
     public void classProperty() throws JanitorCompilerException, JanitorRuntimeException {
-        final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         final RunnableScript script = rt.compile("class_property", """
             print((17).class);
             print(null.class);
@@ -1233,7 +1237,7 @@ public class FirstParserTestCase {
 
     @Test
     public void npeOnBoundNull() throws JanitorCompilerException, JanitorRuntimeException {
-        final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         final RunnableScript script = rt.compile("npe_on_bound_null", """
             print("hello, world");
             """);
@@ -1242,7 +1246,7 @@ public class FirstParserTestCase {
 
     @Test
     public void invalidStringLiteral() throws JanitorCompilerException, JanitorRuntimeException {
-        final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
 
         final JanitorCompilerException thrown = assertThrows(JanitorCompilerException.class, () -> {
                 rt.compile("invalid_string_literal", "failure = \"foo\\xbar\";");

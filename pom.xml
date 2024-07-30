@@ -38,6 +38,7 @@
         <module>janitor-api</module>
         <module>janitor-lang</module>
         <module>janitor-demo</module>
+        <module>janitor-jsr223</module>
     </modules>
 
 

@@ -6,8 +6,10 @@ import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.calls.JCallArgs;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.errors.runtime.JanitorAssertionException;
+import com.eischet.janitor.api.errors.runtime.JanitorNameException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.i18n.JanitorFormatting;
+import com.eischet.janitor.api.modules.JanitorModule;
 import com.eischet.janitor.api.modules.JanitorModuleRegistration;
 import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.api.scopes.Scope;
@@ -23,6 +25,7 @@ import com.eischet.janitor.json.impl.GsonOutputStream;
 import com.eischet.janitor.json.impl.JsonExportControls;
 import com.eischet.janitor.runtime.DateTimeUtilities;
 import com.eischet.janitor.runtime.JanitorSemantics;
+import com.eischet.janitor.api.modules.ModuleResolver;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonInputStream;
 import com.eischet.janitor.toolbox.json.api.JsonWriter;
@@ -35,7 +38,10 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 /**
@@ -48,6 +54,8 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
     public static final FilterPredicate NUMB = x -> true;
     protected final JanitorDefaultBuiltins builtins;
     private final JanitorFormatting formatting;
+    private final List<JanitorModuleRegistration> moduleRegistrations = new ArrayList<>();
+    private final List<ModuleResolver> resolvers = new ArrayList<>();
 
     private final Scope builtinScope = Scope.createBuiltinScope(this, Location.virtual(ScriptModule.builtin()));
 
@@ -198,4 +206,43 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
     public @NotNull JList parseJsonToList(final String json) throws JsonException {
         return JListClass.parseJson(getBuiltins().list(), json, this);
     }
+
+    @Override
+    public void registerModule(final JanitorModuleRegistration moduleRegistration) {
+        moduleRegistrations.add(moduleRegistration);
+    }
+
+    @Override
+    public @NotNull JanitorModule getModuleByQualifier(final JanitorScriptProcess process, final String name) throws JanitorRuntimeException {
+        for (final JanitorModuleRegistration moduleRegistration : moduleRegistrations) {
+            if (Objects.equals(name, moduleRegistration.getQualifiedName())) {
+                return moduleRegistration.getModuleSupplier().get();
+            }
+        }
+        throw new JanitorNameException(process, "Module not found: " + name);
+    }
+
+
+    /**
+     * Adds a module resolver.
+     * The resolvers will be called in reverse order of addition, so later resolvers can override earlier ones.
+
+     * @param resolver a module resolver for string based module names
+     */
+    @Override
+    public void addModuleResolver(final ModuleResolver resolver) {
+        resolvers.add(0, resolver);
+    }
+
+    @Override
+    public @NotNull JanitorModule getModuleByStringName(final JanitorScriptProcess process, final String name) throws JanitorRuntimeException {
+        for (final ModuleResolver resolver : resolvers) {
+            final JanitorModule module = resolver.resolveModuleByStringName(process, name);
+            if (module != null) {
+                return module;
+            }
+        }
+        throw new JanitorNameException(process, "Module not found: '" + name + "'");
+    }
+
 }

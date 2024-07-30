@@ -7,3 +7,6 @@ behave and at the same time simplifies the API significantly.
 Some shuffling around of functionality is required to make this happen.
 
 The "Toolbox" contains some leftover code that is not actually used here, but by the original mother app. Remove.
+
+Some chained .getEnviroment().getFoo().getBar() calls should be untangled. Those are left over from some
+refactorings.

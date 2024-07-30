@@ -9,28 +9,26 @@
         <version>0.9.3</version>
     </parent>
 
-    <artifactId>janitor-demo</artifactId>
+    <artifactId>janitor-jsr223</artifactId>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <!-- DISABLE deployment of this pom -->
-        <maven.deploy.skip>true</maven.deploy.skip>
+
+        <auto-service.version>1.1.1</auto-service.version>
     </properties>
 
     <dependencies>
         <dependency>
+            <groupId>com.google.auto.service</groupId>
+            <artifactId>auto-service-annotations</artifactId>
+            <version>${auto-service.version}</version>
+        </dependency>
+        <dependency>
             <groupId>com.eischet.janitor</groupId>
             <artifactId>janitor-lang</artifactId>
             <version>${project.parent.version}</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-nop -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
-            <version>${dep.slf4j}</version>
-            <scope>test</scope>
         </dependency>
         <!-- JUnit 5 for unit testing -->
         <dependency>
@@ -39,28 +37,24 @@
             <version>5.10.3</version>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
 
-    <!-- TODO: properly package this
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>3.2.0</version>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
                 <configuration>
-                    <archive>
-                        <manifest>
-                            <addClasspath>true</addClasspath>
-                            <classpathPrefix>lib/</classpathPrefix>
-                            <mainClass>com.eischet.janitor.demo.Main</mainClass>
-                        </manifest>
-                    </archive>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>com.google.auto.service</groupId>
+                            <artifactId>auto-service</artifactId>
+                            <version>${auto-service.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
         </plugins>
     </build>
-    -->
 
 </project>

@@ -41,7 +41,7 @@ public class SimpleExpressionTestCase {
         final JanitorParser.ScriptContext script = JanitorScript.parseScript(expressionSource);
         final ScriptModule module = ScriptModule.unnamed(expressionSource);
         final Script scriptObject = JanitorCompiler.build(ENV, module, script, null);
-        final OutputCatchingTestRuntime runtime = new OutputCatchingTestRuntime();
+        final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
 
         final Location root = Location.at(module, 0, 0, 0, 0);
 

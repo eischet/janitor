@@ -44,11 +44,6 @@ public class ExtensionMethodsTestCase {
             // not needed for this test
             return JNull.NULL;
         }
-
-        @Override
-        public void warn(final String warning) {
-            // not needed for this test
-        }
     };
 
 

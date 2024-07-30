@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class StringClassTestCase {
 
     private void testStringMethod(final String script, final Object expectedResult) throws JanitorCompilerException, JanitorRuntimeException {
-        final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         final RunnableScript runnableScript = rt.compile("test", script);
         final @NotNull JanitorObject result = runnableScript.run();
         final Object actualResult = result.janitorGetHostValue();
@@ -29,7 +29,7 @@ public class StringClassTestCase {
     }
 
     private void testStringMethod(final String script, final byte[] expectedResult) throws JanitorCompilerException, JanitorRuntimeException {
-        final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         final RunnableScript runnableScript = rt.compile("test", script);
         final @NotNull JanitorObject result = runnableScript.run();
         final Object actualResult = result.janitorGetHostValue();

@@ -51,7 +51,7 @@ public class ImportClause extends Statement {
         // Load qualified modules:
         if (qname != null) {
             if (qname.getParts().size() == 1) {
-                final JanitorModule m = runningScript.getRuntime().getModuleByQualifier(runningScript, qname.getParts().get(0));
+                final JanitorModule m = runningScript.getEnvironment().getModuleByQualifier(runningScript, qname.getParts().get(0));
                 if (alias == null) {
                     runningScript.getMainScope().bind(runningScript, qname.getParts().get(0), m);
                 } else {
@@ -62,7 +62,7 @@ public class ImportClause extends Statement {
         }
         // Load string-based modules (implementation specific):
         if (module != null) {
-            final JanitorModule m = runningScript.getRuntime().getModuleByStringName(runningScript, module);
+            final JanitorModule m = runningScript.getEnvironment().getModuleByStringName(runningScript, module);
             runningScript.getMainScope().bind(runningScript, alias.getText(), m);
             return;
         }

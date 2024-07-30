@@ -2,7 +2,6 @@ package com.eischet.janitor;
 
 import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.env.JanitorDefaultEnvironment;
-import com.eischet.janitor.runtime.BaseRuntime;
 import com.eischet.janitor.runtime.JanitorFormattingGerman;
 import com.eischet.janitor.runtime.modules.CollectionsModule;
 
@@ -20,6 +19,6 @@ public class TestEnv {
 
     static {
         // LATER: move these to a saner place!
-        BaseRuntime.addDefaultModule(CollectionsModule.REGISTRATION);
+        env.registerModule(CollectionsModule.REGISTRATION);
     }
 }

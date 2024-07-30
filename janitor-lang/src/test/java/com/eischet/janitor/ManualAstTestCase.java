@@ -46,8 +46,9 @@ public class ManualAstTestCase {
 
             @Override
             public @NotNull JanitorObject run() throws JanitorRuntimeException {
-                return null; // ??? müsste das nicht implemtiert sein??
+                return null; // why is this even here?
             }
+
 
             @Override
             public void warn(String warning) {
@@ -71,7 +72,7 @@ public class ManualAstTestCase {
 
     @Test
     public void manualAstWithPrint() throws JanitorRuntimeException {
-        final OutputCatchingTestRuntime runtime = new OutputCatchingTestRuntime();
+        final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
         final ExpressionList expressionList = new ExpressionList(null);
         expressionList.addExpression(new VariableLookupExpression(null, "x"));
         //final IR.Statement.PrintStatement printStatement = new IR.Statement.PrintStatement(null, expressionList);
@@ -96,7 +97,7 @@ public class ManualAstTestCase {
 
     @Test
     public void manualAstAddLiteralsAndPrint() throws JanitorRuntimeException {
-        final OutputCatchingTestRuntime runtime = new OutputCatchingTestRuntime();
+        final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
         final Addition addition = new Addition(null,
             new VariableLookupExpression(null, "a"),
             new IntegerLiteral(null,  runtime.getEnvironment().getBuiltins().integer(4)));
@@ -119,7 +120,7 @@ public class ManualAstTestCase {
 
     @Test
     public void manualAstAddVarsAndPrint() throws JanitorRuntimeException {
-        final OutputCatchingTestRuntime runtime = new OutputCatchingTestRuntime();
+        final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
         final Addition addition = new Addition(null,
             new VariableLookupExpression(null, "a"),
             new VariableLookupExpression(null, "b"));

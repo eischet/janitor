@@ -312,6 +312,27 @@ public class Scope implements JanitorObject {
     }
 
     /**
+     * Unbind a variable from this scope.
+     * This is here to the JSR223 implementation and is not usually used.
+     * The best strategy to remove a variable from a scope is not to bind it in the first place.
+     * The second-best strategy is to throw the scope away and create a new one.
+     * Attempts to unbind a variable that is not present are silently ignored.
+     * @param variableName the name to unbind
+     */
+    public JanitorObject unbind(final String variableName) {
+        final JanitorObject existing = variables.remove(variableName);
+        if (existing != null) {
+            existing.janitorLeaveScope();
+        }
+        return existing;
+    }
+
+    public void unbindAll() {
+        variables.values().forEach(JanitorObject::janitorLeaveScope);
+        variables.clear();
+    }
+
+    /**
      * Bind a variable in this scope.
      *
      * @param variableName the variable name
@@ -389,6 +410,11 @@ public class Scope implements JanitorObject {
     public Scope bind(final String variableName, final boolean variable) {
         return bind(variableName, JBool.of(variable));
     }
+
+    public Scope bind(final String variableName, final JanitorAware variable) {
+        return bind(variableName, variable.asJanitorObject());
+    }
+
 
     /**
      * Get a list of variables defined in the scope.

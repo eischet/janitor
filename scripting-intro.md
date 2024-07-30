@@ -82,7 +82,7 @@ public class SimplestEmbeddingTestCase {
 
     @Test
     public void simplestTestPossible() throws JanitorRuntimeException, JanitorCompilerException {
-        final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         final JanitorScript script = rt.compile("main", "print('Hello, ' + person + '!');");
         script.run(globals -> globals.bind("person", "JD"));
         assertEquals("Hello, JD!\n", rt.getAllOutput());
@@ -90,7 +90,7 @@ public class SimplestEmbeddingTestCase {
 
     @Test
     public void simpleExpressionTest() throws JanitorRuntimeException, JanitorCompilerException {
-        final OutputCatchingTestRuntime rt = new OutputCatchingTestRuntime();
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         final JanitorScript script = rt.compile("main", "3 * x + 1");
         final JanitorObject result = script.run(globals -> globals.bind("x", 2));
         assertEquals(7L, result.janitorGetHostValue());

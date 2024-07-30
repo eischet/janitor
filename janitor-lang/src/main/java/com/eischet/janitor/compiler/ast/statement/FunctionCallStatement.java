@@ -100,7 +100,7 @@ public class FunctionCallStatement extends Statement implements Expression {
                 runningScript.trace(() -> "function call result: " + result);
 
                 if (result == null) {
-                    runningScript.getRuntime().warn("expected result != null from call of " + functionName + "(" + args + ")");
+                    runningScript.warn("expected result != null from call of " + functionName + "(" + args + ")");
                 }
 
                 // LATER: hier nochmal genau prüfen, wo/wann wir auspacken müssen!
