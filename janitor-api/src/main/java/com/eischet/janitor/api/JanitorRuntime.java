@@ -38,8 +38,15 @@ public interface JanitorRuntime {
     }
 
 
-
-    void warn(String warning);
+    /**
+     * Log a warning message.
+     * How (and if) this message is displayed is up to a runtime or environment implementation.
+     * The default implementation just forwards to the environment.
+     * @param warning a warning message
+     */
+    default void warn(String warning) {
+        getEnvironment().warn(warning);
+    }
 
     @NotNull JanitorFormatting getFormatting();
 

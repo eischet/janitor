@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
+@SuppressWarnings("UnusedReturnValue") // these are builder methods, stupid IDE
 public interface JsonOutputStream {
 
     boolean isOmitting(final Object object);
@@ -34,53 +35,53 @@ public interface JsonOutputStream {
     JsonOutputStream pair(final String name, String value) throws JsonException;
 
 
-
-    static void writeOptionalBooleanKeyValue(@NotNull final JsonOutputStream producer, final @Nullable Boolean value, final @NotNull String key) throws JsonException {
+    default JsonOutputStream writeOptionalBooleanKeyValue(final @Nullable Boolean value, final @NotNull String key) throws JsonException {
         if (value != null) {
-            producer.key(key).value(value);
+            this.key(key).value(value);
         }
+        return this;
     }
 
-    static void writeOptionalStringKeyValue(@NotNull final JsonOutputStream producer, final @Nullable String value, final @NotNull String key) throws JsonException {
+    default JsonOutputStream writeOptionalStringKeyValue(final @Nullable String value, final @NotNull String key) throws JsonException {
         if (value != null) {
-            producer.key(key).value(value);
+            this.key(key).value(value);
         }
+        return this;
     }
 
-    static void writeOptionalNumberKeyValue(@NotNull final JsonOutputStream producer, final @Nullable Number value, final @NotNull String key) throws JsonException {
+    default JsonOutputStream writeOptionalNumberKeyValue(final @Nullable Number value, final @NotNull String key) throws JsonException {
         if (value != null) {
-            producer.key(key).value(value);
+            this.key(key).value(value);
         }
+        return this;
     }
 
 
-    static void writeOptional(@NotNull JsonOutputStream producer, @Nullable JsonExportable object, final @NotNull String key) throws JsonException {
+    default JsonOutputStream writeOptional(@Nullable JsonExportable object, final @NotNull String key) throws JsonException {
         if (object != null && !object.isDefaultOrEmpty()) {
-            producer.key(key);
-            object.writeJson(producer);
+            this.key(key);
+            object.writeJson(this);
         }
+        return this;
     }
 
-    static void writeOptionalList(@NotNull JsonOutputStream producer, @Nullable List<? extends JsonExportable> list, @NotNull String key) throws JsonException {
+    default JsonOutputStream writeOptionalList(@Nullable List<? extends JsonExportable> list, @NotNull String key) throws JsonException {
         if (list != null && !list.isEmpty()) {
-            producer.key(key);
-            producer.beginArray();
+            this.key(key).beginArray();
             for (final JsonExportable item : list) {
-                item.writeJson(producer);
+                item.writeJson(this);
             }
-            producer.endArray();
+            this.endArray();
         }
+        return this;
     }
 
-    static void writeOptionalMappedKeyValue(final @NotNull JsonOutputStream producer, final @Nullable JsonExportable.JsonOutputMapped value, final @NotNull String key) throws JsonException {
+    default JsonOutputStream writeOptionalMappedKeyValue(final @Nullable JsonExportable.JsonOutputMapped value, final @NotNull String key) throws JsonException {
         if (value != null && !value.isOmittedInJson()) {
-            producer.key(key);
-            value.writeAsJsonValue(producer);
+            this.key(key);
+            value.writeAsJsonValue(this);
         }
+        return this;
     }
-
-
-
-
 
 }

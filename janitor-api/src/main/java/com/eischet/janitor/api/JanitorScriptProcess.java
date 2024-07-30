@@ -77,6 +77,12 @@ public interface JanitorScriptProcess {
         return getEnvironment().getBuiltins();
     }
 
+    /**
+     * Run script code (i.e. code that can throw JanitorRuntimeException).
+     *
+     * @param title
+     * @param call
+     */
     default void protect(final String title, ProtectedCall call) {
         getRuntime().protect(title, call);
     }
