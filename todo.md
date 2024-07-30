@@ -10,3 +10,7 @@ The "Toolbox" contains some leftover code that is not actually used here, but by
 
 Some chained .getEnviroment().getFoo().getBar() calls should be untangled. Those are left over from some
 refactorings.
+
+# Later
+
+Write a C# version: https://tomassetti.me/getting-started-with-antlr-in-csharp/

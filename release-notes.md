@@ -1,4 +1,4 @@
-# 0.9.3, 2024-08-xx (work in progress)
+# 0.9.3, 2024-07-30
 
 New JSR223 implementation. See Jsr223TestCase for a simple example.
 Contexts are not implemented yet, but bindings should work reasonably well.
