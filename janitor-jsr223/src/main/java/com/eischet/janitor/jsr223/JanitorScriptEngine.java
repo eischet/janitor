@@ -4,6 +4,7 @@ import com.eischet.janitor.api.JanitorRuntime;
 import com.eischet.janitor.api.RunnableScript;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
+import com.eischet.janitor.api.scopes.ResultAndScope;
 import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.types.JanitorObject;
 import org.jetbrains.annotations.NotNull;
@@ -32,20 +33,31 @@ public class JanitorScriptEngine implements ScriptEngine {
             final JanitorRuntime runtime = factory.getRuntime();
             final RunnableScript compiled = runtime.compile("eval", script);
 
-            final Scope globalScope = factory.getGlobalScope();
-            Scope runtimeScope = globalScope;
+            Scope runtimeScope = null;
             if (bindings != null) {
                 if (bindings instanceof JanitorBindings janitorBindings) {
-                    runtimeScope = Scope.createFreshModuleScope(globalScope, janitorBindings.getScope());
+                    runtimeScope = janitorBindings.getScope();
                 } else {
                     throw new RuntimeException("unsupported bindings, should be JanitorBindings but was " + bindings.getClass());
                 }
             }
-            if (context != null) {
-                // TODO: use context
+            if (runtimeScope == null) {
+                runtimeScope = factory.getGlobalScope();
             }
-            final @NotNull JanitorObject result = compiled.runInScope(g -> {}, runtimeScope);
-            return result;
+            if (context != null) {
+                // TODO: use context, whatever that means technically ...
+            }
+            final @NotNull ResultAndScope resultAndScope = compiled.runInScopeAndKeepGlobals(runtimeScope);
+            // System.out.println("scope after run: " + resultAndScope.getScope().dir());
+
+            if (resultAndScope.getScope() != runtimeScope) {
+                throw new RuntimeException("unexpected scope change");
+            }
+
+            // TODO: store the scope somewhere?
+            return resultAndScope.getVariable();
+            // final @NotNull JanitorObject result = compiled.runInScope(g -> {}, runtimeScope);
+            // return result;
         } catch (JanitorCompilerException | JanitorRuntimeException e) {
             throw new ScriptException(e);
         }

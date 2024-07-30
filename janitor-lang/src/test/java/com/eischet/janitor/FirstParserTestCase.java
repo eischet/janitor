@@ -860,7 +860,6 @@ public class FirstParserTestCase {
         assertEquals("""
             tried
             failed JanitorArithmeticException: Traceback (most recent call last):
-              Module 'tryCatching4'
               Module 'tryCatching4', line 1, column 4
                 try {
               Module 'tryCatching4', line 3, column 8

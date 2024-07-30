@@ -14,9 +14,13 @@ public class RunningScriptProcess extends AbstractScriptProcess {
 
     private final Script script;
 
-    public RunningScriptProcess(final JanitorRuntime runtime, final Scope globalScope, final Script script) {
-        super(runtime, globalScope);
+    public RunningScriptProcess(final JanitorRuntime runtime, final Scope parentScope, final Script script, final boolean wrapScope) {
+        super(runtime, wrapScope ? Scope.createMainScope(parentScope) : parentScope);
         this.script = script;
+    }
+
+    public RunningScriptProcess(final JanitorRuntime runtime, final Scope globalScope, final Script script) {
+        this(runtime, globalScope, script, false);
     }
 
     @Override

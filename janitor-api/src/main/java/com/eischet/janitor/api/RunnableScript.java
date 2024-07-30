@@ -67,4 +67,11 @@ public interface RunnableScript {
      */
     @Nullable Exception getCompilerException();
 
+    /**
+     * Experimental method for JSR223, because that needs a way of retrieving stuff from the original scope.
+     * @param parentScope  the scope to run in
+     * @return result and scope
+     * @throws JanitorRuntimeException
+     */
+    @NotNull ResultAndScope runInScopeAndKeepGlobals(Scope parentScope) throws JanitorRuntimeException;
 }

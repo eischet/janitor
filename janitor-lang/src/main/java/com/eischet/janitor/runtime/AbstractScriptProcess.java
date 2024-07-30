@@ -27,7 +27,6 @@ public abstract class AbstractScriptProcess implements JanitorScriptProcess {
     private static final Logger log = LoggerFactory.getLogger(AbstractScriptProcess.class);
 
     private final JanitorRuntime runtime;
-    private final Scope globalScope;
     private final Scope mainScope;
     private Scope currentScope;
     private List<Scope> closureScopes = new LinkedList<>();
@@ -37,12 +36,11 @@ public abstract class AbstractScriptProcess implements JanitorScriptProcess {
     /**
      * Constructor.
      * @param runtime the runtime to work with
-     * @param globalScope the global scope to start with
+     * @param mainScope the script scope to start with
      */
-    public AbstractScriptProcess(final JanitorRuntime runtime, final Scope globalScope) {
+    public AbstractScriptProcess(final JanitorRuntime runtime, final Scope mainScope) {
         this.runtime = runtime;
-        this.globalScope = globalScope;
-        this.mainScope = Scope.createMainScope(globalScope); // new Scope(null, globalScope, null);
+        this.mainScope = mainScope;
         this.currentScope = mainScope;
     }
 
