@@ -2,6 +2,7 @@ package com.eischet.janitor.api.types.wrapped;
 
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorNameException;
+import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.api.types.JanitorObject;
 import org.jetbrains.annotations.NotNull;
@@ -37,7 +38,7 @@ public class JanitorWrapper<T> implements JanitorObject {
     }
 
     @Override
-    public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess runningScript, final @NotNull String name, final boolean required) throws JanitorNameException {
+    public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess runningScript, final @NotNull String name, final boolean required) throws JanitorRuntimeException {
         final JanitorObject attribute = dispatcher.dispatch(this, runningScript, name);
         if (attribute != null) {
             return attribute;

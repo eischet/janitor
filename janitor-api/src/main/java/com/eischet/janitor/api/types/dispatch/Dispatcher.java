@@ -1,6 +1,7 @@
 package com.eischet.janitor.api.types.dispatch;
 
 import com.eischet.janitor.api.JanitorScriptProcess;
+import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.JanitorObject;
 
 /**
@@ -17,7 +18,7 @@ public interface Dispatcher<T extends JanitorObject> {
      * @param name the name of the method to call
      * @return the result of the method call
      */
-    JanitorObject dispatch(final T instance, final JanitorScriptProcess process, final String name);
+    JanitorObject dispatch(final T instance, final JanitorScriptProcess process, final String name) throws JanitorRuntimeException;
 
     /**
      * Creates a combined dispatcher from a "parent" and a "child", or "superclass" and "subclass" if you prefer.

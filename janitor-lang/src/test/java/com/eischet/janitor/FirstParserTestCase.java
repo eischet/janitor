@@ -445,7 +445,7 @@ public class FirstParserTestCase {
         for (final String moduleName : List.of("foo", "bar", "baz")) {
             rt.getEnvironment().registerModule(new JanitorModuleRegistration(moduleName, () -> new JanitorModule() {
                 @Override
-                public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess runningScript, final @NotNull String name, final boolean required) throws JanitorNameException {
+                public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess runningScript, final @NotNull String name, final boolean required) throws JanitorRuntimeException {
                     if ("name".equals(name)) {
                         return TestEnv.env.getBuiltins().string(moduleName);
                     }
@@ -503,7 +503,7 @@ public class FirstParserTestCase {
                 if ("dummy".equals(name)) {
                     return new JanitorModule() {
                         @Override
-                        public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess runningScript, final @NotNull String name, final boolean required) throws JanitorNameException {
+                        public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess runningScript, final @NotNull String name, final boolean required) throws JanitorRuntimeException {
                             if ("name".equals(name)) {
                                 return TestEnv.env.getBuiltins().string("dummy");
                             }
@@ -1285,7 +1285,7 @@ public class FirstParserTestCase {
 
 
         @Override
-        public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess runningScript, final @NotNull String name, final boolean required) throws JanitorNameException {
+        public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess runningScript, final @NotNull String name, final boolean required) throws JanitorRuntimeException {
             if (name.equals("from")) {
                 System.out.println("someone asked for property 'from'!");
                 return TestEnv.env.getBuiltins().string("foo");

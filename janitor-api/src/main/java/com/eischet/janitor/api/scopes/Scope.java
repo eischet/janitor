@@ -4,6 +4,7 @@ package com.eischet.janitor.api.scopes;
 import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorNameException;
+import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.JCallable;
 import com.eischet.janitor.api.types.*;
 import com.eischet.janitor.api.types.builtin.JBool;
@@ -119,7 +120,7 @@ public class Scope implements JanitorObject {
     public static JanitorObject getOptionalMethod(final JanitorObject obj, JanitorScriptProcess runningScript, String methodName) {
         try {
             return obj.janitorGetAttribute(runningScript, methodName, false);
-        } catch (JanitorNameException e) {
+        } catch (JanitorRuntimeException e) {
             runningScript.warn("contract violation: getOptionalMethod threw NameError for " + methodName);
             return JNull.NULL;
         }

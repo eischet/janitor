@@ -85,7 +85,7 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
     }
 
     @Override
-    public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess runningScript, final @NotNull String name, final boolean required) throws JanitorNameException {
+    public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess runningScript, final @NotNull String name, final boolean required) throws JanitorRuntimeException {
         @Nullable final JanitorObject attr = super.janitorGetAttribute(runningScript, name, required);
         if (attr != null) {
             return attr;

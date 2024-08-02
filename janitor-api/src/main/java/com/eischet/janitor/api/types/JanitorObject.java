@@ -3,6 +3,7 @@ package com.eischet.janitor.api.types;
 
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorNameException;
+import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.builtin.JString;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -121,9 +122,14 @@ public interface JanitorObject {
      * @param required whether the attribute is required to exist
      * @return the attribute, or null if it does not exist and is not required
      * @throws JanitorNameException if the attribute does not exist but is required
+     * @throws JanitorRuntimeException if any runtime errors occur when converting the attribute
+     *
+     * <p>Changed in 0.9.5: This method used to throw JanitorNameException only, but converting values might throw
+     * other exceptions, e.g. when a dispatch table tries to convert a list of Java objects into Janitor objects
+     * and fails.</p>
      */
     @Nullable
-    default JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess runningScript, final @NotNull String name, final boolean required) throws JanitorNameException {
+    default JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess runningScript, final @NotNull String name, final boolean required) throws JanitorRuntimeException {
         // Try delegating the lookup to a wrapped object:
         final @Nullable JanitorObject innerConstant = janitorUnpack();
         if (innerConstant != this && innerConstant != null) {
