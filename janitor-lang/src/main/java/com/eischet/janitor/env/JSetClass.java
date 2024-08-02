@@ -19,17 +19,17 @@ public class JSetClass {
 
     public static JBool __add(final JanitorWrapper<Set<JanitorObject>> _self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         final JSet self = ((JSet) _self);
-        return JBool.map(self.add(arguments.require(1).get(0)));
+        return JBool.of(self.add(arguments.require(1).get(0)));
     }
 
     public static JBool __remove(final JanitorWrapper<Set<JanitorObject>> _self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         final JSet self = ((JSet) _self);
-        return JBool.map(self.remove(arguments.require(1).get(0)));
+        return JBool.of(self.remove(arguments.require(1).get(0)));
     }
 
     public static JBool __contains(final JanitorWrapper<Set<JanitorObject>> _self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         final JSet self = ((JSet) _self);
-        return JBool.map(self.contains(arguments.require(1).get(0)));
+        return JBool.of(self.contains(arguments.require(1).get(0)));
     }
 
     public static JList __toList(final JanitorWrapper<Set<JanitorObject>> _self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
@@ -47,7 +47,7 @@ public class JSetClass {
     public static JBool __isEmpty(final JanitorWrapper<Set<JanitorObject>> _self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         final JSet self = ((JSet) _self);
         arguments.require(0);
-        return JBool.map(self.janitorGetHostValue().isEmpty());
+        return JBool.of(self.janitorGetHostValue().isEmpty());
     }
 
 }

@@ -100,7 +100,7 @@ public class JMapClass {
     }
 
     public static JanitorObject __isEmpty(JanitorWrapper<Map<JanitorObject, JanitorObject>> mapJanitorWrapper, JanitorScriptProcess scriptProcess, JCallArgs jCallArgs) {
-        return JBool.map(mapJanitorWrapper.janitorGetHostValue().isEmpty());
+        return JBool.of(mapJanitorWrapper.janitorGetHostValue().isEmpty());
     }
 
     public static JanitorObject __keys(JanitorWrapper<Map<JanitorObject, JanitorObject>> mapJanitorWrapper, JanitorScriptProcess scriptProcess, JCallArgs jCallArgs) {

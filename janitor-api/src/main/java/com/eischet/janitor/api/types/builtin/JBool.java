@@ -70,22 +70,16 @@ public enum JBool implements JConstant, JsonExportablePrimitive {
     }
 
     /**
-     * Map a java boolean to a JBool.
-     * @param value the value
-     * @return the JBool
-     * TODO: this is the same as "of" and should be removed
-     */
-    public static JBool map(final boolean value) {
-        return value ? TRUE : FALSE;
-    }
-
-    /**
      * Map a nullable java Boolean to a JBool. Null yields FALSE.
      * @param value the value
      * @return the JBool
      */
     public static JBool of(final Boolean value) {
         return value == Boolean.TRUE ? TRUE : FALSE;
+    }
+
+    public static JanitorObject nullableBooleanOf(final Boolean value) {
+        return value == null ? JNull.NULL : of(value);
     }
 
     @Override

@@ -31,7 +31,7 @@ public enum ComparisonResult {
      * @return TRUE when appropriate, FALSE otherwise
      */
     public JBool isGreaterThan() {
-        return JBool.map(this == GREATER);
+        return JBool.of(this == GREATER);
     }
 
     /**
@@ -39,7 +39,7 @@ public enum ComparisonResult {
      * @return TRUE when appropriate, FALSE otherwise
      */
     public JBool isLessThan() {
-        return JBool.map(this == LESS);
+        return JBool.of(this == LESS);
     }
 
     /**
@@ -47,7 +47,7 @@ public enum ComparisonResult {
      * @return TRUE when appropriate, FALSE otherwise
      */
     public JBool isEquals() {
-        return JBool.map(this == EQUALS);
+        return JBool.of(this == EQUALS);
     }
 
     /**
@@ -55,7 +55,7 @@ public enum ComparisonResult {
      * @return TRUE when appropriate, FALSE otherwise
      */
     public JBool isLessThanOrEquals() {
-        return JBool.map(this != GREATER);
+        return JBool.of(this != GREATER);
     }
 
     /**
@@ -63,7 +63,7 @@ public enum ComparisonResult {
      * @return TRUE when appropriate, FALSE otherwise
      */
     public JBool isGreaterThanOrEquals() {
-        return JBool.map(this != LESS);
+        return JBool.of(this != LESS);
     }
 
 }

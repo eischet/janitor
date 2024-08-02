@@ -172,15 +172,15 @@ public class JStringClass {
 
     public static JanitorObject __empty(final JanitorWrapper<String> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);
-        return JBool.map(self.janitorGetHostValue().isEmpty());
+        return JBool.of(self.janitorGetHostValue().isEmpty());
     }
 
     public static JBool __contains(final JanitorWrapper<String> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
-        return JBool.map(self.janitorGetHostValue().contains(arguments.getString(0).janitorGetHostValue()));
+        return JBool.of(self.janitorGetHostValue().contains(arguments.getString(0).janitorGetHostValue()));
     }
 
     public static JBool __containsIgnoreCase(final JanitorWrapper<String> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
-        return JBool.map(self.janitorGetHostValue().toLowerCase(Locale.GERMANY)
+        return JBool.of(self.janitorGetHostValue().toLowerCase(Locale.GERMANY)
             .contains(arguments.getString(0).janitorGetHostValue().toLowerCase(Locale.GERMANY)));
     }
 
@@ -199,7 +199,7 @@ public class JStringClass {
             return JBool.FALSE;
         } else {
             final String string = self.janitorGetHostValue();
-            return JBool.map(string != null && string.endsWith(with.janitorToString()));
+            return JBool.of(string != null && string.endsWith(with.janitorToString()));
         }
     }
 
@@ -209,13 +209,13 @@ public class JStringClass {
     public static JBool __startsWithNumbers(final JanitorWrapper<String> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);
         final String string = self.janitorGetHostValue();
-        return JBool.map(string != null && NUMBERS_AT_THE_START.matcher(string).matches());
+        return JBool.of(string != null && NUMBERS_AT_THE_START.matcher(string).matches());
     }
 
     public static JBool __isNumeric(final JanitorWrapper<String> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);
         final String string = self.janitorGetHostValue();
-        return JBool.map(string != null && NUMBERS_ONLY.matcher(string).matches());
+        return JBool.of(string != null && NUMBERS_ONLY.matcher(string).matches());
     }
 
     public static JBool __startsWith(final JanitorWrapper<String> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
@@ -224,7 +224,7 @@ public class JStringClass {
             return JBool.FALSE;
         } else {
             final String string = self.janitorGetHostValue();
-            return JBool.map(string != null && string.startsWith(with.janitorGetHostValue()));
+            return JBool.of(string != null && string.startsWith(with.janitorGetHostValue()));
         }
     }
 

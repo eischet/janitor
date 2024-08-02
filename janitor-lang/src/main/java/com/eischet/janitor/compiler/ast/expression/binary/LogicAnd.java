@@ -38,6 +38,6 @@ public class LogicAnd extends AstNode implements Expression {
             return JBool.FALSE;
         }
         final JanitorObject rightValue = right.evaluate(runningScript).janitorUnpack();
-        return JBool.map(JanitorSemantics.isTruthy(rightValue));
+        return JBool.of(JanitorSemantics.isTruthy(rightValue));
     }
 }

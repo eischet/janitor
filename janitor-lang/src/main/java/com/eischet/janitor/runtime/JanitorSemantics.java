@@ -57,7 +57,7 @@ public class JanitorSemantics {
      * @throws JanitorRuntimeException if something goes wrong
      */
     public static @NotNull JanitorObject logicNot(final JanitorObject parameter) throws JanitorRuntimeException {
-        return JBool.map(!isTruthy(parameter));
+        return JBool.of(!isTruthy(parameter));
     }
 
     /**
@@ -87,7 +87,7 @@ public class JanitorSemantics {
      * @return TRUE if the values are equals, or FALSE if not.
      */
     public static @NotNull JBool areEquals(final JanitorObject leftValue, final JanitorObject rightValue) {
-        return JBool.map(leftValue == rightValue
+        return JBool.of(leftValue == rightValue
                          || leftValue.janitorGetHostValue() == rightValue.janitorGetHostValue()
                          || Objects.equals(leftValue.janitorGetHostValue(), rightValue.janitorGetHostValue()));
     }
@@ -300,7 +300,7 @@ public class JanitorSemantics {
             return wc.matches((String) leftValue.janitorGetHostValue()) ? JBool.TRUE : JBool.FALSE;
         }
         if (leftValue instanceof JString str && rightValue instanceof JRegex regex) {
-            return JBool.map(regex.janitorGetHostValue().matcher(str.janitorGetHostValue()).matches());
+            return JBool.of(regex.janitorGetHostValue().matcher(str.janitorGetHostValue()).matches());
         }
         throw new JanitorTypeException(process, "matches (~): invalid left " + leftValue + " / right " + rightValue + ", both should be strings");
     }
@@ -324,7 +324,7 @@ public class JanitorSemantics {
             return wc.matches((String) leftValue.janitorGetHostValue()) ? JBool.FALSE : JBool.TRUE;
         }
         if (leftValue instanceof JString str && rightValue instanceof JRegex regex) {
-            return JBool.map(!regex.janitorGetHostValue().matcher(str.janitorGetHostValue()).matches());
+            return JBool.of(!regex.janitorGetHostValue().matcher(str.janitorGetHostValue()).matches());
         }
         throw new JanitorTypeException(process, "matches (~): invalid left " + leftValue + " / right " + rightValue + ", both should be strings");
     }

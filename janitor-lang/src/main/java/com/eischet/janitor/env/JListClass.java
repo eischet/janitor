@@ -124,7 +124,7 @@ public class JListClass {
 
     public static JBool __isEmpty(final JanitorWrapper<List<JanitorObject>> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);
-        return JBool.map(self.janitorGetHostValue().isEmpty());
+        return JBool.of(self.janitorGetHostValue().isEmpty());
     }
 
     public static JInt __size(final JanitorWrapper<List<JanitorObject>> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {

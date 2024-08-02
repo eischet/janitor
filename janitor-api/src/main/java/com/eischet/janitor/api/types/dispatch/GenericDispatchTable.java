@@ -8,6 +8,8 @@ import com.eischet.janitor.api.calls.TemporaryAssignable;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.*;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -114,12 +116,24 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
 
     /**
      * Adds a read-only boolean property.
+     * This variant maps false to null! If you want to preserve null values for scripts, use addNullableBooleanProperty instead!
      *
      * @param name   property name
      * @param getter property getter
      */
     public void addBooleanProperty(final String name, final Function<T, Boolean> getter) {
         map.put(name, (instance, runningScript) -> JBool.of(getter.apply(instance)));
+    }
+
+    /**
+     * Adds a read-only boolean property.
+     * This variant allows scripts to see true, false and null, while the simpler method maps false to null!
+     *
+     * @param name   property name
+     * @param getter property getter
+     */
+    public void addNullableBooleanProperty(final String name, Function<T, Boolean> getter) {
+        map.put(name, (instance, runningScript) -> JBool.nullableBooleanOf(getter.apply(instance)));
     }
 
     /**
@@ -131,6 +145,34 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
     public void addBooleanProperty(final String name, final Function<T, Boolean> getter, final BiConsumer<T, Boolean> setter) {
         map.put(name, (instance, runningScript) -> new TemporaryAssignable(JBool.of(getter.apply(instance)), value -> setter.accept(instance, JBool.require(runningScript, value).janitorIsTrue())));
     }
+
+    /**
+     * Adds a read-write boolean property.
+     * This variant allows scripts to see and supply true, false and null, while the simpler method maps false to null!
+     * Any other values are mapped to true/false according to their built-in "truthiness".
+     *
+     * @param name property name
+     * @param getter property getter
+     * @param setter property setter
+     */
+    public void addNullableBooleanProperty(final String name, final Function<T, Boolean> getter, final BiConsumer<T, Boolean> setter) {
+        map.put(name, (instance, runningScript) -> new TemporaryAssignable(JBool.nullableBooleanOf(getter.apply(instance)), value -> setter.accept(instance, toNullableBoolean(value))));
+    }
+
+    /**
+     * Special case for setting Boolean (not boolean!) fields.
+     * Janitor's NULL is mapped to null, while everyhing else is mapped according to its regular "truthiness", which
+     * implies that true maps to true and false to false.
+     * @param value the value to map
+     * @return the mapped value, null, TRUE or FALSE
+     */
+    private @Nullable Boolean toNullableBoolean(final @NotNull JanitorObject value) {
+        if (value == JNull.NULL) {
+            return null;
+        }
+        return value.janitorIsTrue();
+    }
+
 
     /**
      * Adds a read-only string property.
