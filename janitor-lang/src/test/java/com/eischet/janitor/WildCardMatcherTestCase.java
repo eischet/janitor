@@ -15,8 +15,10 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/**
+ * Tests for the wild card matcher, which is the ~ operator in the Janitor language.
+ */
 public class WildCardMatcherTestCase {
-
 
     @Test
     public void testSingle() {
@@ -49,20 +51,4 @@ public class WildCardMatcherTestCase {
         assertFalse(wcm.matches("BazFooBar"));
     }
 
-
-    String replaceConsecutiveNumbers(String input) {
-        // In the input string, replace all consecutive numbers with "X", except for the first two digits. Do nothing for numbers prefixed with "SYD-".
-        return input.replaceAll("(?<!SYD-)(\\d+)\\d{4}", "XX$1");
-    }
-    /*
-
-
-    // Write a regeular expression that replaces numbers with "X" that are not prefixed with "SYD-", keeping the first four digits
-    String repl(String s) {
-        return replaceNumbers.matcher(s).replaceAll("X");
-    }
-
-
-    Pattern replaceNumbers = Pattern.compile("(?<!SYD-)\\d+");
-*/
 }

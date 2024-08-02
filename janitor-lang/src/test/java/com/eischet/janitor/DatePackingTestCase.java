@@ -11,6 +11,11 @@ import java.time.temporal.ChronoUnit;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+/**
+ * Janitor-lang uses longs to pack dates and date-times, which needs testing.
+ * I'm pretty sure that later versions will remove the "date packing" feature, but that's how things work right now.
+ * One huge advantage of this is that it's very easy to compare dates and date-times, and that they take very little RAM space.
+ */
 public class DatePackingTestCase {
 
     private static final LocalDateTime BORN_TIME = LocalDateTime.of(1976, 1, 10, 13, 30, 0);

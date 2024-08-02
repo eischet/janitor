@@ -4,6 +4,7 @@ import com.eischet.janitor.api.RunnableScript;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.JanitorObject;
+import com.eischet.janitor.api.types.builtin.JBool;
 import com.eischet.janitor.runtime.OutputCatchingTestRuntime;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
@@ -150,5 +151,41 @@ public class StringClassTestCase {
         // Check how Python does it (and these snippets should be valid python code, too, anyways!). Do it like Python.
 
     }
+
+    @Test
+    public void wildcards() throws JanitorCompilerException, JanitorRuntimeException {
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
+        assertEquals(Boolean.TRUE, rt.compile("test", "'foo' ~ 'f*'").run().janitorGetHostValue());
+        assertEquals(Boolean.FALSE, rt.compile("test", "'bar' ~ 'f*'").run().janitorGetHostValue());
+    }
+
+    @Test
+    public void regexes() throws JanitorCompilerException, JanitorRuntimeException {
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
+        assertEquals(Boolean.TRUE, rt.compile("test", "'foo' ~ re/foo/").run().janitorGetHostValue());
+        assertEquals(Boolean.TRUE, rt.compile("test", "'foo' ~ re/f../").run().janitorGetHostValue());
+        assertEquals(Boolean.FALSE, rt.compile("test", "'foo' ~ re/\\d+/").run().janitorGetHostValue());
+        assertEquals(Boolean.TRUE, rt.compile("test", "'12345' ~ re/\\d+/").run().janitorGetHostValue());
+        assertEquals(Boolean.FALSE, rt.compile("test", "'12345' !~ re/\\d+/").run().janitorGetHostValue());
+
+        assertEquals("245005", rt.compile("test", "re/[^1-9]+([0-9]+).*/.extract('SW245005-POS04')").run().janitorGetHostValue());
+
+
+
+
+        assertEquals(JBool.TRUE, rt.compile("test", " 'foo/bar' ~ re/foo.bar/").run());
+        assertEquals(JBool.FALSE, rt.compile("test", " 'foo/bar' !~ re/foo.bar/").run());
+
+        assertEquals(JBool.TRUE, rt.compile("test", " 'foo/bar' ~ re/foo\\/bar/").run());
+        assertEquals(JBool.FALSE, rt.compile("test", " 'foo/bar' !~ re/foo\\/bar/").run());
+
+
+        final RunnableScript phoneMatcher = rt.compile("test", "re/\\+(9[976]\\d|8[987530]\\d|6[987]\\d|5[90]\\d|42\\d|3[875]\\d|" +
+                                                               "2[98654321]\\d|9[8543210]|8[6421]|6[6543210]|5[87654321]|" +
+                                                               "4[987654310]|3[9643210]|2[70]|7|1)\\d{1,14}$/.extract(text)");
+
+
+    }
+
 
 }

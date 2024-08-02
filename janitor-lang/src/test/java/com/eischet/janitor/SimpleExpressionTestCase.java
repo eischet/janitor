@@ -9,7 +9,6 @@ import com.eischet.janitor.api.types.builtin.JBool;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.compiler.JanitorCompiler;
 import com.eischet.janitor.compiler.ast.statement.Script;
-import com.eischet.janitor.env.JanitorDefaultEnvironment;
 import com.eischet.janitor.lang.JanitorParser;
 import com.eischet.janitor.runtime.*;
 import org.junit.jupiter.api.Test;
@@ -22,13 +21,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class SimpleExpressionTestCase {
 
-    private static final JanitorDefaultEnvironment ENV = new JanitorDefaultEnvironment(new JanitorFormattingGerman()) {
-        @Override
-        public void warn(final String message) {
-            log.warn("{}", message);
-        }
-    };
-
     private static final Logger log = LoggerFactory.getLogger(SimpleExpressionTestCase.class);
 
     private JanitorObject eval(final String expressionSource) throws JanitorCompilerException, JanitorRuntimeException {
@@ -37,10 +29,10 @@ public class SimpleExpressionTestCase {
     }
 
     private JanitorObject eval(final String expressionSource, final Consumer<Scope> prepareGlobals) throws JanitorCompilerException, JanitorRuntimeException {
-        log.info("parsing: " + expressionSource + "\n");
+        // log.info("parsing: " + expressionSource + "\n");
         final JanitorParser.ScriptContext script = JanitorScript.parseScript(expressionSource);
         final ScriptModule module = ScriptModule.unnamed(expressionSource);
-        final Script scriptObject = JanitorCompiler.build(ENV, module, script, null);
+        final Script scriptObject = JanitorCompiler.build(TestEnv.env, module, script, null);
         final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
 
         final Location root = Location.at(module, 0, 0, 0, 0);
@@ -53,19 +45,19 @@ public class SimpleExpressionTestCase {
 
 
     @Test
-    public void testCS() throws JanitorCompilerException, JanitorRuntimeException {
+    public void testSimpleExpressions() throws JanitorCompilerException, JanitorRuntimeException {
 
 
         assertEquals(TestEnv.env.getBuiltins().integer(17), eval("17"));
-        assertEquals(ENV.getBuiltins().string("hello"), eval("\"hello\""));
+        assertEquals(TestEnv.env.getBuiltins().string("hello"), eval("\"hello\""));
 
-        assertEquals(ENV.getBuiltins().string("hello"), eval("'hello'"));
+        assertEquals(TestEnv.env.getBuiltins().string("hello"), eval("'hello'"));
         assertEquals(TestEnv.env.getBuiltins().integer(-7), eval("-7"));
         // syntax error: eval("+9");
         assertEquals(TestEnv.env.getBuiltins().integer(21), eval("17 + 4"));
         assertEquals(TestEnv.env.getBuiltins().integer(22), eval("(17+4)+1"));
         assertEquals(TestEnv.env.getBuiltins().integer(6), eval("1+2+3"));
-        assertEquals(ENV.getBuiltins().string("stefan"), eval("currentUser", globals -> globals.bind("currentUser", ENV.getBuiltins().string("stefan"))));
+        assertEquals(TestEnv.env.getBuiltins().string("stefan"), eval("currentUser", globals -> globals.bind("currentUser", TestEnv.env.getBuiltins().string("stefan"))));
 
         assertEquals(JBool.TRUE, eval("i < 17", globals -> {
             globals.bind("i", 10);
@@ -160,8 +152,8 @@ public class SimpleExpressionTestCase {
 
     @Test
     public void ternary() throws JanitorCompilerException, JanitorRuntimeException {
-        assertEquals(ENV.getBuiltins().string("bar"), eval("2 > 1 ? 'bar' : 'foo'"));
-        assertEquals(ENV.getBuiltins().string("foo"), eval("2 < 1 ? 'bar' : 'foo'"));
+        assertEquals(TestEnv.env.getBuiltins().string("bar"), eval("2 > 1 ? 'bar' : 'foo'"));
+        assertEquals(TestEnv.env.getBuiltins().string("foo"), eval("2 < 1 ? 'bar' : 'foo'"));
         assertEquals(JBool.TRUE, eval("null or true"));
         assertEquals(TestEnv.env.getBuiltins().integer(9), eval("( null or true ) ? 9 : 'foo' "));
     }
@@ -194,12 +186,12 @@ public class SimpleExpressionTestCase {
 
         assertEquals("nix",
             eval("if USR_SC ~ 'Z*_20*' then 'Achtung!|Markt geschlossen!' else 'nix'",
-                g -> g.bind("USR_SC", ENV.getBuiltins().string("245005"))).janitorGetHostValue().toString()
+                g -> g.bind("USR_SC", TestEnv.env.getBuiltins().string("245005"))).janitorGetHostValue().toString()
         );
 
         assertEquals("Achtung!|Markt geschlossen!",
             eval("if USR_SC ~ 'Z*_20*' then 'Achtung!|Markt geschlossen!' else 'nix'",
-                g -> g.bind("USR_SC", ENV.getBuiltins().string("Z12345_20191122"))).janitorGetHostValue().toString()
+                g -> g.bind("USR_SC", TestEnv.env.getBuiltins().string("Z12345_20191122"))).janitorGetHostValue().toString()
         );
 
         assertEquals(JBool.TRUE,
