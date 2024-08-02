@@ -19,33 +19,6 @@ import java.util.Map;
 
 public class JMapClass {
 
-    /*
-    void foo() {
-        // TODO: move all these to a proper dispatch table
-        methods.put("get", JNativeMethod.of(arguments -> get(arguments.require(1).get(0))));
-        methods.put("__get__", JNativeMethod.of(arguments -> getIndexed(arguments.require(1).get(0))));
-        methods.put("put", JNativeMethod.ofVoid(arguments -> put(arguments.require(2).get(0), arguments.get(1))));
-        methods.put("size", JNativeMethod.of(arguments -> {
-            arguments.require(0);
-            return builtins.integer(map.size());
-        }));
-        methods.put("isEmpty", JNativeMethod.of(arguments -> {
-            arguments.require(0);
-            return JBool.map(map.isEmpty());
-        }));
-        methods.put("keys", JNativeMethod.of(arguments -> {
-            arguments.require(0);
-            return builtins.list(map.keySet().stream());
-        }));
-        methods.put("values", JNativeMethod.of(arguments -> {
-            arguments.require(0);
-            return builtins.list(map.values().stream());
-        }));
-
-
-    }
-*/
-
     /**
      * Script method: Convert the map to JSON, which is useful for calling JSON-based APIs from scripts.
      *
