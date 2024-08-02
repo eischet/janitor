@@ -35,21 +35,21 @@ public interface JsonOutputStream {
     JsonOutputStream pair(final String name, String value) throws JsonException;
 
 
-    default JsonOutputStream writeOptionalBooleanKeyValue(final @Nullable Boolean value, final @NotNull String key) throws JsonException {
+    default JsonOutputStream optional(final @NotNull String key, final @Nullable Boolean value) throws JsonException {
         if (value != null) {
             this.key(key).value(value);
         }
         return this;
     }
 
-    default JsonOutputStream writeOptionalStringKeyValue(final @Nullable String value, final @NotNull String key) throws JsonException {
+    default JsonOutputStream optional(final @NotNull String key, final @Nullable String value) throws JsonException {
         if (value != null) {
             this.key(key).value(value);
         }
         return this;
     }
 
-    default JsonOutputStream writeOptionalNumberKeyValue(final @Nullable Number value, final @NotNull String key) throws JsonException {
+    default JsonOutputStream optional(final @NotNull String key, final @Nullable Number value) throws JsonException {
         if (value != null) {
             this.key(key).value(value);
         }
@@ -57,7 +57,7 @@ public interface JsonOutputStream {
     }
 
 
-    default JsonOutputStream writeOptional(@Nullable JsonExportable object, final @NotNull String key) throws JsonException {
+    default JsonOutputStream optional(final @NotNull String key, @Nullable JsonExportable object) throws JsonException {
         if (object != null && !object.isDefaultOrEmpty()) {
             this.key(key);
             object.writeJson(this);
@@ -65,7 +65,7 @@ public interface JsonOutputStream {
         return this;
     }
 
-    default JsonOutputStream writeOptionalList(@Nullable List<? extends JsonExportable> list, @NotNull String key) throws JsonException {
+    default JsonOutputStream optional(@NotNull String key, @Nullable List<? extends JsonExportable> list) throws JsonException {
         if (list != null && !list.isEmpty()) {
             this.key(key).beginArray();
             for (final JsonExportable item : list) {
@@ -76,7 +76,7 @@ public interface JsonOutputStream {
         return this;
     }
 
-    default JsonOutputStream writeOptionalMappedKeyValue(final @Nullable JsonExportable.JsonOutputMapped value, final @NotNull String key) throws JsonException {
+    default JsonOutputStream optional(final @NotNull String key, final @Nullable JsonExportable.JsonOutputMapped value) throws JsonException {
         if (value != null && !value.isOmittedInJson()) {
             this.key(key);
             value.writeAsJsonValue(this);
