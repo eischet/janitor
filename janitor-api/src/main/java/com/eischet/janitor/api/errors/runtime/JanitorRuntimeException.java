@@ -113,8 +113,8 @@ public abstract class JanitorRuntimeException extends JanitorException implement
         }
         final String errorClass = cls == null ? "unknown error" : cls.getSimpleName();
         out.append("\n");
-        if (errorClass.startsWith("CS")) {
-            out.append(errorClass.substring(2));
+        if (errorClass.startsWith("Janitor")) {
+            out.append(errorClass.substring(7));
         } else {
             out.append(errorClass);
         }
