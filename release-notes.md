@@ -1,9 +1,11 @@
-# 0.9.3, TBD
+# 0.9.3, 2024-08-02
 
 Fixed some design mistakes with JsonOutputStream; a number of helper methods for writing optional values have
 had their signature changes to key, value instead of the surprising value, key, and all have been renamed to "optional".
 
 Enable mapping true|false|null for Java Boolean fields in dispatch tables.
+
+Added some tests.
 
 
 # 0.9.3, 2024-07-30
