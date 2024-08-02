@@ -1,3 +1,11 @@
+# 0.9.3, TBD
+
+Fixed some design mistakes with JsonOutputStream; a number of helper methods for writing optional values have
+had their signature changes to key, value instead of the surprising value, key, and all have been renamed to "optional".
+
+Enable mapping true|false|null for Java Boolean fields in dispatch tables.
+
+
 # 0.9.3, 2024-07-30
 
 New JSR223 implementation. See Jsr223TestCase for a simple example.
