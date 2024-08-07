@@ -110,10 +110,6 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
         return formatting;
     }
 
-    @Override
-    public void addModule(final @NotNull JanitorModuleRegistration registration) {
-
-    }
 
     @Override
     public @Nullable JanitorObject nativeToScript(final @Nullable Object o) {
@@ -208,9 +204,10 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
     }
 
     @Override
-    public void registerModule(final JanitorModuleRegistration moduleRegistration) {
-        moduleRegistrations.add(moduleRegistration);
+    public void addModule(final @NotNull JanitorModuleRegistration registration) {
+        moduleRegistrations.add(registration);
     }
+
 
     @Override
     public @NotNull JanitorModule getModuleByQualifier(final JanitorScriptProcess process, final String name) throws JanitorRuntimeException {

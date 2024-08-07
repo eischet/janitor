@@ -45,6 +45,16 @@ public interface JanitorEnvironment extends JanitorUserEnvironment, JanitorImple
     void addModule(final @NotNull JanitorModuleRegistration registration);
 
     /**
+     * Register a module resolver, making it available to script code.
+     * Resolvers can be used to load modules dynamically, e.g. from a database or whatever suits the use case.
+     * This applies to the import syntax that uses strings: import "module-name" as foo;
+     *
+     * @param resolver a module resolver
+     */
+    void addModuleResolver(final ModuleResolver resolver);
+
+
+    /**
      * Convert a native object to a script object.
      * @param obj the object to convert
      * @return the converted object
@@ -94,16 +104,9 @@ public interface JanitorEnvironment extends JanitorUserEnvironment, JanitorImple
     @NotNull
     JList parseJsonToList(final String json) throws JsonException;
 
-    /**
-     * Register a module, making it available to script code.
-     * @param moduleRegistration a module registration, containing of a name for the module and a pointer to it.
-     */
-    void registerModule(final JanitorModuleRegistration moduleRegistration);
-
     @NotNull
     JanitorModule getModuleByQualifier(final JanitorScriptProcess process, String name) throws JanitorRuntimeException;
 
     @NotNull JanitorModule getModuleByStringName(final JanitorScriptProcess process, String name) throws JanitorRuntimeException;
 
-    void addModuleResolver(final ModuleResolver resolver);
 }
