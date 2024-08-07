@@ -19,6 +19,6 @@ public class TestEnv {
 
     static {
         // LATER: move these to a saner place!
-        env.registerModule(CollectionsModule.REGISTRATION);
+        env.addModule(CollectionsModule.REGISTRATION);
     }
 }

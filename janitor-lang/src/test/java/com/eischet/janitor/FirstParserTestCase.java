@@ -443,7 +443,7 @@ public class FirstParserTestCase {
 
         final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         for (final String moduleName : List.of("foo", "bar", "baz")) {
-            rt.getEnvironment().registerModule(new JanitorModuleRegistration(moduleName, () -> new JanitorModule() {
+            rt.getEnvironment().addModule(new JanitorModuleRegistration(moduleName, () -> new JanitorModule() {
                 @Override
                 public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess runningScript, final @NotNull String name, final boolean required) throws JanitorRuntimeException {
                     if ("name".equals(name)) {
