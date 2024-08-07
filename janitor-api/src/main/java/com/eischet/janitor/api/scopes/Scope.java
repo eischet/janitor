@@ -3,7 +3,6 @@ package com.eischet.janitor.api.scopes;
 
 import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.JanitorScriptProcess;
-import com.eischet.janitor.api.errors.runtime.JanitorNameException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.JCallable;
 import com.eischet.janitor.api.types.*;
@@ -14,7 +13,10 @@ import com.eischet.janitor.api.util.ShortStringInterner;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * A scope is the basic building block of how the interpreter operates.
@@ -434,19 +436,15 @@ public class Scope implements JanitorObject {
      * @return a JMap of variable names and their values
      */
     public JMap toMap() {
-        return null;
-        // TODO: needed to comment out due moving dispatch tables into builtins; delete this or make it work again.
-        /*
-        final JMap dump = new JMap();
+        final JMap dump = env.getBuiltins().map();
         if (moduleScope != null) {
             dump.putAll(moduleScope.toMap());
         } else if (parent != null) {
             dump.putAll(parent.toMap());
         }
-        variables.forEach((key, value) -> dump.put(JString.of(key), value));
+        variables.forEach((key, value) -> dump.put(env.getBuiltins().string(key), value));
         return dump;
 
-         */
     }
 
     @Override
