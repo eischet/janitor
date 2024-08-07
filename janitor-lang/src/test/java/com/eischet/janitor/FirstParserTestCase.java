@@ -416,7 +416,7 @@ public class FirstParserTestCase {
     @Test
     public void modulesTest() throws JanitorCompilerException, JanitorRuntimeException {
         final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
-        rt.getEnvironment().registerModule(new JanitorModuleRegistration("foo", FooModule::new));
+        rt.getEnvironment().addModule(new JanitorModuleRegistration("foo", FooModule::new));
 
         final RunnableScript s = rt.compile("test", """
             import foo;

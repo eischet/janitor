@@ -1,4 +1,10 @@
-# 0.9.3, 2024-08-02
+# 0.9.5, 2024-08-xx
+
+Merged addModule/registerModule in the Environment interface, of which one was only an empty stub.
+Small fixes for Scopes.
+
+
+# 0.9.4, 2024-08-02
 
 Fixed some design mistakes with JsonOutputStream; a number of helper methods for writing optional values have
 had their signature changes to key, value instead of the surprising value, key, and all have been renamed to "optional".

@@ -17,7 +17,7 @@ public class OutputCatchingTestRuntime extends BaseRuntime {
                 System.err.println(message);
             }
         };
-        ENV.registerModule(CollectionsModule.REGISTRATION);
+        ENV.addModule(CollectionsModule.REGISTRATION);
         return new OutputCatchingTestRuntime(ENV);
     }
 
