@@ -6,9 +6,7 @@ import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.scopes.ScriptModule;
 import com.eischet.janitor.api.types.JanitorObject;
-import com.eischet.janitor.compiler.ast.expression.Expression;
 import com.eischet.janitor.compiler.ast.expression.ExpressionList;
-import com.eischet.janitor.compiler.ast.expression.Identifier;
 import com.eischet.janitor.compiler.ast.expression.VariableLookupExpression;
 import com.eischet.janitor.compiler.ast.expression.binary.Addition;
 import com.eischet.janitor.compiler.ast.expression.literal.IntegerLiteral;
@@ -126,10 +124,6 @@ public class ManualAstTestCase {
             new VariableLookupExpression(null, "b"));
         final ExpressionList expressionList = new ExpressionList(null);
         expressionList.addExpression(addition);
-        // kein Keyword mehr: final IR.Statement.PrintStatement printStatement = new IR.Statement.PrintStatement(null, expressionList);
-        // final IR.Script script = new IR.Script(null, Lists.immutable.of(printStatement), null);
-        final Expression print = new Identifier(null, "print");
-
         final FunctionCallStatement printCall = new FunctionCallStatement(null, "print", null, expressionList);
         final Script script = new Script(null, List.of(printCall), null);
 

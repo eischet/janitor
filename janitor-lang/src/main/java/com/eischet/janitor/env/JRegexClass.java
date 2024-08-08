@@ -6,7 +6,6 @@ import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.JList;
 import com.eischet.janitor.api.types.builtin.JNull;
-import com.eischet.janitor.api.types.builtin.JRegex;
 import com.eischet.janitor.api.types.builtin.JString;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 

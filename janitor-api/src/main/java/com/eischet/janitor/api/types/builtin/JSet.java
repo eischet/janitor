@@ -15,7 +15,7 @@ import java.util.Set;
  * This is one of the built-in types that Janitor provides automatically.
  * There's currently no syntax to define a set directly, though.
  */
-public class JSet extends JanitorWrapper<Set<JanitorObject>> implements JanitorObject, JIterable {
+public class JSet extends JanitorWrapper<Set<JanitorObject>> implements JIterable {
 
     private JSet(final Dispatcher<JanitorWrapper<Set<JanitorObject>>> dispatcher, final Set<JanitorObject> set) {
         super(dispatcher, set);

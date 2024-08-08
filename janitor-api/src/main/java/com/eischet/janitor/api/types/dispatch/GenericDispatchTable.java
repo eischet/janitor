@@ -283,6 +283,7 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
      * @param instance the object to dispatch the call to
      * @return the result of the lookup
      */
+    @SuppressWarnings("unchecked")
     public JanitorObject dispatch(final JanitorScriptProcess process, final String name, final boolean required, final JanitorWrapper<? extends T> instance) throws JanitorRuntimeException {
         final AttributeLookupHandler<T> handler = map.get(name);
         if (handler != null) {

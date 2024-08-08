@@ -1,7 +1,6 @@
 package com.eischet.janitor.api.types.wrapped;
 
 import com.eischet.janitor.api.JanitorScriptProcess;
-import com.eischet.janitor.api.errors.runtime.JanitorNameException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.api.types.JanitorObject;
@@ -32,6 +31,7 @@ public class JanitorWrapper<T> implements JanitorObject {
         this.wrapped = wrapped;
     }
 
+    @SuppressWarnings("unchecked")
     public <X extends JanitorWrapper<T>> JanitorWrapper(final @NotNull X dispatcher, final @NotNull T wrapped, final @NotNull Class<X> cls) {
         this.dispatcher = (Dispatcher<JanitorWrapper<T>>) dispatcher;
         this.wrapped = wrapped;

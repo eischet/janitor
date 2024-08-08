@@ -24,7 +24,7 @@ import java.util.function.Consumer;
  * A map object, representing a mutable map of Janitor objects.
  * This is one of the built-in types that Janitor provides automatically.
  */
-public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> implements JanitorObject, JIterable, JsonWriter, JsonExportableObject {
+public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> implements JIterable, JsonWriter, JsonExportableObject {
 
     private final JanitorBuiltins builtins;
 

@@ -2,7 +2,6 @@ package com.eischet.janitor;
 
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
-import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.scopes.ScriptModule;
 import com.eischet.janitor.api.types.builtin.JBool;
@@ -12,16 +11,11 @@ import com.eischet.janitor.compiler.ast.statement.Script;
 import com.eischet.janitor.lang.JanitorParser;
 import com.eischet.janitor.runtime.*;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class SimpleExpressionTestCase {
-
-    private static final Logger log = LoggerFactory.getLogger(SimpleExpressionTestCase.class);
 
     private JanitorObject eval(final String expressionSource) throws JanitorCompilerException, JanitorRuntimeException {
         return eval(expressionSource, globals -> {
@@ -34,8 +28,6 @@ public class SimpleExpressionTestCase {
         final ScriptModule module = ScriptModule.unnamed(expressionSource);
         final Script scriptObject = JanitorCompiler.build(TestEnv.env, module, script, null);
         final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
-
-        final Location root = Location.at(module, 0, 0, 0, 0);
 
         final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), module); // new Scope(root, null, null);
         prepareGlobals.accept(globalScope);

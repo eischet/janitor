@@ -426,9 +426,7 @@ public class FirstParserTestCase {
         assertEquals("17\n", rt.getAllOutput());
 
         assertThrows(JanitorRuntimeException.class, () -> rt.compile("test", "import bar;").run(), "Module not found: bar");
-        // rt.compile("test", "import foo; y = foo.z;").run();
-        // warum geht das nicht??? --> geht mittlerweile, puh :-)
-        // TODO: why not?
+
         assertThrows(JanitorRuntimeException.class, () -> rt.compile("test", "import foo; y = foo.z;").run());
 
         assertEquals(17L, rt.compile("test", "import foo; y = foo.x; y;").run().janitorGetHostValue());
@@ -849,6 +847,7 @@ public class FirstParserTestCase {
             try { return 1/0; print("ok"); } catch (e) { print("div by zero"); }
             """);
         final JanitorObject result = script.run();
+        assertEquals(JNull.NULL, result);
         assertEquals("div by zero\n", rt.getAllOutput());
 
     }

@@ -17,7 +17,7 @@ import java.util.stream.Stream;
  * A list object, representing a mutable list of Janitor objects.
  * This is one of the built-in types that Janitor provides automatically.
  */
-public class JList extends JanitorWrapper<List<JanitorObject>> implements JanitorObject, JIterable, Iterable<JanitorObject>, JsonExportableList {
+public class JList extends JanitorWrapper<List<JanitorObject>> implements JIterable, Iterable<JanitorObject>, JsonExportableList {
 
     private JList(final Dispatcher<JanitorWrapper<List<JanitorObject>>> dispatcher, final List<JanitorObject> list) {
         super(dispatcher, list);
