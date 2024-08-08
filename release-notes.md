@@ -1,3 +1,10 @@
+# 0.9.6, work in progress
+
+Added a number of unit tests.
+Converted JString into a composite instead of a wrapper.
+Durations can now be added and subtracted.
+
+
 # 0.9.5, 2024-08-xx
 
 Merged addModule/registerModule in the Environment interface, of which one was only an empty stub.

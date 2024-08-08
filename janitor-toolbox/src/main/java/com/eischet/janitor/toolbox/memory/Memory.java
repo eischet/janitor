@@ -26,6 +26,15 @@ public class Memory<T> {
         facts.add(new Fact<>(value, now + msecTerm));
     }
 
+    public boolean contains(T value) {
+        return stream().anyMatch(it -> Objects.equals(it, value));
+    }
+
+    public int size() {
+        stream();
+        return facts.size();
+    }
+
     public Stream<T> stream() {
         final long now = now();
         facts.removeIf(fact -> fact.getTimestamp() < now);

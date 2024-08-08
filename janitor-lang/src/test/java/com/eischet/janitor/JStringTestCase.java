@@ -5,6 +5,9 @@ import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.JBool;
+import com.eischet.janitor.api.types.builtin.JInt;
+import com.eischet.janitor.api.types.builtin.JMap;
+import com.eischet.janitor.api.types.builtin.JString;
 import com.eischet.janitor.runtime.OutputCatchingTestRuntime;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
@@ -12,14 +15,14 @@ import org.junit.jupiter.api.Test;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test common string operations and methods.
  */
-public class StringClassTestCase {
+public class JStringTestCase {
 
     private void testStringMethod(final String script, final Object expectedResult) throws JanitorCompilerException, JanitorRuntimeException {
         final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
@@ -42,6 +45,43 @@ public class StringClassTestCase {
         // assertArrayEquals(expectedResult, (byte[]) actualResult, script);
     }
 
+    @Test
+    void basics() throws JanitorCompilerException, JanitorRuntimeException {
+        OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
+        @NotNull JString string = rt.getEnvironment().getBuiltins().string("foobar");
+        assertEquals("foobar", string.janitorGetHostValue());
+        assertEquals("foobar", string.janitorToString());
+        assertEquals("foobar", string.toString());
+
+        @NotNull JMap map = rt.getEnvironment().getBuiltins().map();
+        @NotNull JInt oneTo = rt.getEnvironment().getBuiltins().integer(1);
+        map.put(string, oneTo);
+        JanitorObject oneFro = map.get(string);
+        assertEquals(oneFro, oneTo);
+        assertSame(oneFro, oneTo);
+
+        assertEquals(1, map.keySet().size());
+        assertSame(string, map.keySet().stream().findFirst().orElse(null));
+
+        @NotNull JanitorObject map2raw = rt.compile("newmap", "{'foobar':1}").run();
+        assertInstanceOf(JMap.class, map2raw);
+        JMap map2 = (JMap) map2raw;
+
+        assertFalse(map2.isEmpty());
+        assertFalse(map2.keySet().isEmpty());
+        assertFalse(map2.janitorGetHostValue().isEmpty());
+
+        Map<JanitorObject, JanitorObject> unpacked = map2.janitorGetHostValue();
+        System.out.println(unpacked);
+
+        JanitorObject mapGet = unpacked.get(string);
+        System.out.println(mapGet);
+
+
+        assertEquals(map.get(string), map2.get(string));
+
+
+    }
 
     @Test
     void testStringMethods() throws JanitorCompilerException, JanitorRuntimeException {

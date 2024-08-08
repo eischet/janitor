@@ -38,6 +38,23 @@ public class JDuration extends JanitorComposed<JDuration> implements JConstant, 
         return unit.unit.getDuration().toSeconds() * amount;
     }
 
+    public long toMinutes() {
+        return unit.unit.getDuration().toMinutes() * amount;
+    }
+
+    public long toHours() {
+        return unit.unit.getDuration().toHours() * amount;
+    }
+
+    public long toDays() {
+        return unit.unit.getDuration().toDays() * amount;
+    }
+
+    public long toWeeks() {
+        return toSeconds() / 604800;
+    }
+
+
     @Override
     public int compareTo(@NotNull final JDuration o) {
         return Long.compare(this.toSeconds(), o.toSeconds());
@@ -171,6 +188,14 @@ public class JDuration extends JanitorComposed<JDuration> implements JConstant, 
         };
     }
 
+    public static JDuration add(final JanitorScriptProcess process, final JDuration left, final JDuration right) {
+        return process.getBuiltins().duration(left.toSeconds() + right.toSeconds(), JDurationKind.SECONDS);
+    }
+
+    public static JDuration subtract(final JanitorScriptProcess process, final JDuration left, final JDuration right) {
+        return process.getBuiltins().duration(left.toSeconds() - right.toSeconds(), JDurationKind.SECONDS);
+    }
+
     /**
      * Subtract a duration from a datetime.
      * @param dateTime the datetime
@@ -196,6 +221,14 @@ public class JDuration extends JanitorComposed<JDuration> implements JConstant, 
 
     public static JDuration newInstance(final Dispatcher<JDuration> dispatcher, final long amount, final JDurationKind unit) {
         return new JDuration(dispatcher, amount, unit);
+    }
+
+    public static JDuration multiply(JanitorScriptProcess process, JDuration duration, Double number) {
+        return process.getBuiltins().duration((long) (((double) duration.toSeconds()) * number), JDurationKind.SECONDS);
+    }
+
+    public static JDuration divide(JanitorScriptProcess process, JDuration duration, Double number) {
+        return process.getBuiltins().duration((long) (((double) duration.toSeconds()) / number), JDurationKind.SECONDS);
     }
 
     /**

@@ -1,17 +1,15 @@
 package com.eischet.janitor.api.types.builtin;
 
-import com.eischet.janitor.api.types.JConstant;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 import com.eischet.janitor.toolbox.json.api.JsonException;
-import com.eischet.janitor.toolbox.json.api.JsonExportablePrimitive;
 import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * A float object, representing a floating-point number.
  */
-public class JFloat extends JanitorWrapper<Double> implements JConstant, JsonExportablePrimitive {
+public class JFloat extends JanitorWrapper<Double> implements JNumber {
 
     private JFloat(final Dispatcher<JanitorWrapper<Double>> dispatcher, final Double wrapped) {
         super(dispatcher, wrapped);
@@ -44,10 +42,16 @@ public class JFloat extends JanitorWrapper<Double> implements JConstant, JsonExp
     /**
      * Get the value of the number as a double.
      * @return the value
-     * TODO: this is kind of redudant, and should be removed
+     * TODO: this is kind of redundant, and should be removed
      */
+    @Override
     public double toDouble() {
         return wrapped;
+    }
+
+    @Override
+    public long toLong() {
+        return wrapped.longValue();
     }
 
 

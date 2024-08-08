@@ -17,7 +17,7 @@ import java.util.Objects;
  * An integer object, representing a 64-bit signed integer.
  * This is one of the built-in types that Janitor provides automatically.
  */
-public class JInt extends JanitorWrapper<Long> implements JConstant, JsonExportablePrimitive {
+public class JInt extends JanitorWrapper<Long> implements JNumber {
 
     public JInt(final Dispatcher<JanitorWrapper<Long>> dispatcher, final Long wrapped) {
         super(dispatcher, wrapped);
@@ -109,4 +109,13 @@ public class JInt extends JanitorWrapper<Long> implements JConstant, JsonExporta
         return new JInt(dispatcher, value);
     }
 
+    @Override
+    public double toDouble() {
+        return (double) wrapped;
+    }
+
+    @Override
+    public long toLong() {
+        return wrapped;
+    }
 }

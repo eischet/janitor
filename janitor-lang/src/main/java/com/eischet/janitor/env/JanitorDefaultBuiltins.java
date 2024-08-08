@@ -28,7 +28,7 @@ public class JanitorDefaultBuiltins implements JanitorBuiltins {
     protected final RegularDispatchTable<JanitorObject> baseDispatcher = new RegularDispatchTable<>();
 
     protected final JanitorWrapperDispatchTable<Map<JanitorObject, JanitorObject>> mapDispatcher = new JanitorWrapperDispatchTable<>();
-    protected final JanitorWrapperDispatchTable<String> stringDispatcher = new JanitorWrapperDispatchTable<>(baseDispatcher, it -> it);
+    protected final RegularDispatchTable<JString> stringDispatcher = new RegularDispatchTable<>(baseDispatcher, it -> it);
 
     // TODO: figure out why I cannot write Dispatcher<JMap> here. I keep forgetting the subleties of the Java generics system...
     // I'm sure it's something with blah super foo extends lalala that everybody but me knows about. ;-)
@@ -336,7 +336,7 @@ public class JanitorDefaultBuiltins implements JanitorBuiltins {
             return mapDispatcher;
         }
 
-        public JanitorWrapperDispatchTable<String> getStringDispatcher() {
+        public RegularDispatchTable<JString> getStringDispatcher() {
             return stringDispatcher;
         }
 

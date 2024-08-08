@@ -54,7 +54,7 @@ public abstract class BinaryOperation extends AstNode implements Expression {
             runningScript.trace(() -> "  result = " + result);
             return result;
         } catch (RuntimeException e) {
-            throw new JanitorArgumentException(runningScript, String.format("runtime error in binary operation: left=%s=>%s, right=%s=>%s", left, leftObject, right, rightObject));
+            throw new JanitorArgumentException(runningScript, String.format("runtime error in binary operation: left=%s=>%s, right=%s=>%s", left, leftObject, right, rightObject), e);
         }
     }
 

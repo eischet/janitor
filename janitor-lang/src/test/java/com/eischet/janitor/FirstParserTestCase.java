@@ -106,7 +106,7 @@ public class FirstParserTestCase {
     }
 
     private JanitorObject evaluate(final String expressionSource, final Consumer<Scope> prepareGlobals) throws JanitorCompilerException, JanitorRuntimeException {
-        log.info("parsing: " + expressionSource + "\n");
+        log.info("evaluating: " + expressionSource + "\n");
         final JanitorParser.ScriptContext script = JanitorScript.parseScript(expressionSource);
         final ScriptModule module = ScriptModule.unnamed(expressionSource);
         final Script scriptObject = JanitorCompiler.build(TestEnv.env, module, script, expressionSource);

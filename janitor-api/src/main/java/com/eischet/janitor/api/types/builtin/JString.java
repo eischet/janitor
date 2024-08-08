@@ -2,8 +2,8 @@ package com.eischet.janitor.api.types.builtin;
 
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
+import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
-import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 import com.eischet.janitor.api.util.strings.WildCardMatcher;
 import com.eischet.janitor.api.types.JConstant;
 import com.eischet.janitor.api.types.JanitorObject;
@@ -13,17 +13,20 @@ import com.eischet.janitor.toolbox.json.api.JsonExportablePrimitive;
 import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Objects;
+
 /**
  * A string object, representing a string of characters.
  * This is one of the built-in types that Janitor provides automatically.
  */
-public class JString extends JanitorWrapper<String> implements JConstant, JsonExportablePrimitive {
-
+public class JString extends JanitorComposed<JString> implements JConstant, JsonExportablePrimitive {
 
     /**
      * String class name.
      */
     public static final String CLASS_NAME = "string";
+
+    private final @NotNull String wrapped;
 
 
     @Override
@@ -55,8 +58,9 @@ public class JString extends JanitorWrapper<String> implements JConstant, JsonEx
      * @param dispatcher method/attribute dispatch table
      * @param string     the string
      */
-    protected JString(final Dispatcher<JanitorWrapper<String>> dispatcher, final String string) {
-        super(dispatcher, string != null && !string.isEmpty() ? ShortStringInterner.maybeIntern(string) : "");
+    protected JString(final Dispatcher<JString> dispatcher, final String string) {
+        super(dispatcher);
+        this.wrapped = string != null && !string.isEmpty() ? ShortStringInterner.maybeIntern(string) : "";
     }
 
     /**
@@ -117,8 +121,20 @@ public class JString extends JanitorWrapper<String> implements JConstant, JsonEx
         throw new JanitorArgumentException(scriptProcess, "Expected a string value, but got " + value.janitorClassName() + " instead.");
     }
 
-    public static JString newInstance(final Dispatcher<JanitorWrapper<String>> dispatcher, final String value) {
+    public static JString newInstance(final Dispatcher<JString> dispatcher, final String value) {
         return new JString(dispatcher, value);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        final JString jString = (JString) o;
+        return Objects.equals(wrapped, jString.wrapped);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(wrapped);
+    }
 }
