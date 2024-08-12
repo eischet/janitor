@@ -149,7 +149,7 @@ public class JNativeMethod implements JCallable, JanitorObject {
 
     @Override
     public @NotNull String janitorClassName() {
-        return "function";
+        return "Function";
     }
 
     @Override

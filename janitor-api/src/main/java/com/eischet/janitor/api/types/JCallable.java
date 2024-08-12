@@ -66,7 +66,7 @@ public interface JCallable {
 
         @Override
         public @NotNull String janitorClassName() {
-            return "function";
+            return "Function";
         }
 
     }

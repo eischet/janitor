@@ -51,7 +51,7 @@ public class ScriptFunction extends AstNode implements Expression, JanitorObject
 
     @Override
     public @NotNull String janitorClassName() {
-        return "function";
+        return "Function";
     }
 
     /**

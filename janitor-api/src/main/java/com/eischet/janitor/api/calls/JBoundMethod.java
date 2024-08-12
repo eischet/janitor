@@ -35,13 +35,13 @@ public class JBoundMethod<T> implements JCallable, JanitorObject {
     }
 
     @Override
-    public JanitorObject call(final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
-        return worker.call(object, runningScript, arguments);
+    public JanitorObject call(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+        return worker.call(object, process, arguments);
     }
 
     @Override
     public @NotNull String janitorClassName() {
-        return "function";
+        return "Function";
     }
 
     /**
