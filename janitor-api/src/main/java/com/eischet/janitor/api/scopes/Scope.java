@@ -9,7 +9,6 @@ import com.eischet.janitor.api.types.*;
 import com.eischet.janitor.api.types.builtin.JBool;
 import com.eischet.janitor.api.types.builtin.JMap;
 import com.eischet.janitor.api.types.builtin.JNull;
-import com.eischet.janitor.api.util.ShortStringInterner;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -294,7 +293,7 @@ public class Scope implements JanitorObject {
      * @return this scope (for chained, builder-style calls)
      */
     public Scope bind(final JanitorScriptProcess process, final String variableName, final JanitorObject variable) {
-        final String name = ShortStringInterner.maybeIntern(variableName);
+        final String name = process.getBuiltins().intern(variableName);
         process.trace(() -> "binding in" + (sealed ? " SEALED" : "") + " scope " + this + ": " + name + " = " + variable);
         //log.debug("binding in scope {}: {} = {}", this.getLocation(), name, variable);
         if (sealed) {
@@ -349,8 +348,7 @@ public class Scope implements JanitorObject {
         //   process.warn("tried to rebind '%s' as %s in sealed scope %s".formatted(name, variable, this));
         // }
 
-        final String name = ShortStringInterner.maybeIntern(variableName);
-        variables.put(name, Objects.requireNonNullElse(variable, JNull.NULL));
+        variables.put(variableName, Objects.requireNonNullElse(variable, JNull.NULL));
         return this;
     }
 
@@ -366,7 +364,7 @@ public class Scope implements JanitorObject {
         // if (sealed) {
         // log.warn("tried to rebind '{}' as {} in sealed scope {}", function, function, this);
         // }
-        variables.put(ShortStringInterner.maybeIntern(functionName), function.asObject(functionName));
+        variables.put(functionName, function.asObject(functionName));
         return this;
     }
 

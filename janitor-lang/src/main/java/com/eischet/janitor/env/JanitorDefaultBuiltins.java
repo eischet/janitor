@@ -7,6 +7,7 @@ import com.eischet.janitor.api.types.builtin.*;
 import com.eischet.janitor.api.types.dispatch.RegularDispatchTable;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapperDispatchTable;
+import com.eischet.janitor.compiler.JanitorAntlrCompiler;
 import com.eischet.janitor.runtime.DateTimeUtilities;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -24,6 +25,11 @@ import static com.eischet.janitor.api.types.builtin.JDateTime.DATE_FORMAT_LONG;
 import static com.eischet.janitor.api.types.builtin.JDateTime.DATE_FORMAT_SHORT;
 
 public class JanitorDefaultBuiltins implements JanitorBuiltins {
+
+    /**
+     * String interning: maximum length for automatically interned strings.
+     */
+    private static final int MAX_INTERNED_LENGTH = 10;
 
     protected final RegularDispatchTable<JanitorObject> baseDispatcher = new RegularDispatchTable<>();
 
@@ -52,7 +58,7 @@ public class JanitorDefaultBuiltins implements JanitorBuiltins {
     public JanitorDefaultBuiltins() {
         baseDispatcher.addStringProperty("class", JanitorObject::janitorClassName);
 
-        emptyString = JString.newInstance(stringDispatcher, "");
+        emptyString = JString.newInstance(stringDispatcher, "", it -> it); // cannot pass this::intern here in a constructor, and "" is already interned anyway
         zero = JInt.newInstance(intDispatcher, 0);
 
         // OLD: addStringMethod("length", JStringClass::__length);
@@ -80,7 +86,7 @@ public class JanitorDefaultBuiltins implements JanitorBuiltins {
         stringDispatcher.addMethod("toInt", JStringClass::__toInt);
         stringDispatcher.addMethod("toFloat", JStringClass::__toFloat);
         stringDispatcher.addMethod("get", JStringClass::__get);
-        stringDispatcher.addMethod("__get__", JStringClass::__get); // das lassen wir auch so: keine Zuweisung per Index an String-Teile, die sind ja immutable
+        stringDispatcher.addMethod(JanitorAntlrCompiler.INDEXED_GET_METHOD, JStringClass::__get); // das lassen wir auch so: keine Zuweisung per Index an String-Teile, die sind ja immutable
         stringDispatcher.addMethod("isNumeric", JStringClass::__isNumeric);
         stringDispatcher.addMethod("startsWithNumbers", JStringClass::__startsWithNumbers);
         stringDispatcher.addMethod("parseDate", JStringClass::__parseDate);
@@ -93,7 +99,7 @@ public class JanitorDefaultBuiltins implements JanitorBuiltins {
         mapDispatcher.addMethod("toJson", JMapClass::__toJson);
         mapDispatcher.addMethod("parseJson", JMapClass::__parseJson);
         mapDispatcher.addMethod("get", JMapClass::__get);
-        mapDispatcher.addMethod("__get__", JMapClass::__getIndexed);
+        mapDispatcher.addMethod(JanitorAntlrCompiler.INDEXED_GET_METHOD, JMapClass::__getIndexed);
         mapDispatcher.addMethod("put", JMapClass::__put);
         mapDispatcher.addMethod("size", JMapClass::__size);
         mapDispatcher.addMethod("isEmpty", JMapClass::__isEmpty);
@@ -115,7 +121,7 @@ public class JanitorDefaultBuiltins implements JanitorBuiltins {
         listDispatcher.addMethod("put", JListClass::__put);
         listDispatcher.addMethod("add", JListClass::__add);
         listDispatcher.addMethod("get", JListClass::__get);
-        listDispatcher.addMethod("__get__", JListClass::__getSliced);
+        listDispatcher.addMethod(JanitorAntlrCompiler.INDEXED_GET_METHOD, JListClass::__getSliced);
 
         setDispatcher.addMethod("add", JSetClass::__add);
         setDispatcher.addMethod("remove", JSetClass::__remove);
@@ -172,12 +178,12 @@ public class JanitorDefaultBuiltins implements JanitorBuiltins {
 
     @Override
     public @NotNull JString string(final @Nullable String value) {
-        return JString.newInstance(stringDispatcher, value == null ? "" : value);
+        return JString.newInstance(stringDispatcher, value == null ? "" : value, this::intern);
     }
 
     @Override
     public @NotNull JanitorObject nullableString(final @Nullable String value) {
-        return value == null ? JNull.NULL : JString.newInstance(stringDispatcher, value);
+        return value == null ? JNull.NULL : JString.newInstance(stringDispatcher, value, this::intern);
     }
 
     @Override
@@ -475,7 +481,7 @@ public class JanitorDefaultBuiltins implements JanitorBuiltins {
      * @return the date
      */
     @Override
-    public JDate date(final long year, final long month, final long day) {
+    public @NotNull JDate date(final long year, final long month, final long day) {
         return date(LocalDate.of((int) year, (int) month, (int) day));
     }
 
@@ -487,7 +493,7 @@ public class JanitorDefaultBuiltins implements JanitorBuiltins {
      * @return the date
      */
     @Override
-    public JanitorObject parseNullableDate(final JanitorScriptProcess process, final String string, final String format) {
+    public @NotNull JanitorObject parseNullableDate(final JanitorScriptProcess process, final String string, final String format) {
         try {
             final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
             final LocalDate d = LocalDate.parse(string, formatter);
@@ -495,6 +501,24 @@ public class JanitorDefaultBuiltins implements JanitorBuiltins {
         } catch (DateTimeParseException e) {
             process.warn("error parsing date '%s' with format '%s': %s".formatted(string, format, e.getMessage()));
             return JNull.NULL;
+        }
+    }
+
+    /**
+     * Interns a string if it is short enough.
+     * @param string the string to intern
+     * @return the interned string, and/or the original string if it is too long
+     */
+    @Override
+    public @Nullable String intern(@Nullable String string) {
+        if (string != null) {
+            if (string.length() <= MAX_INTERNED_LENGTH) {
+                return string.intern();
+            } else {
+                return string;
+            }
+        } else {
+            return null;
         }
     }
 

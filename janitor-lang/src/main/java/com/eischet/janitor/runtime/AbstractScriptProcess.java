@@ -28,8 +28,8 @@ public abstract class AbstractScriptProcess implements JanitorScriptProcess {
 
     private final JanitorRuntime runtime;
     private final Scope mainScope;
+    private final List<Scope> closureScopes = new LinkedList<>();
     private Scope currentScope;
-    private List<Scope> closureScopes = new LinkedList<>();
 
     private JanitorObject scriptResult = JNull.NULL;
 

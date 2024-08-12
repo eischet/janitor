@@ -7,13 +7,13 @@ import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.api.util.strings.WildCardMatcher;
 import com.eischet.janitor.api.types.JConstant;
 import com.eischet.janitor.api.types.JanitorObject;
-import com.eischet.janitor.api.util.ShortStringInterner;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonExportablePrimitive;
 import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
+import java.util.function.Function;
 
 /**
  * A string object, representing a string of characters.
@@ -58,9 +58,9 @@ public class JString extends JanitorComposed<JString> implements JConstant, Json
      * @param dispatcher method/attribute dispatch table
      * @param string     the string
      */
-    protected JString(final Dispatcher<JString> dispatcher, final String string) {
+    protected JString(final Dispatcher<JString> dispatcher, final String string, final Function<String, String> interner) {
         super(dispatcher);
-        this.wrapped = string != null && !string.isEmpty() ? ShortStringInterner.maybeIntern(string) : "";
+        this.wrapped =  string != null && !string.isEmpty() ? interner.apply(string) : "";
     }
 
     /**
@@ -121,8 +121,8 @@ public class JString extends JanitorComposed<JString> implements JConstant, Json
         throw new JanitorArgumentException(scriptProcess, "Expected a string value, but got " + value.janitorClassName() + " instead.");
     }
 
-    public static JString newInstance(final Dispatcher<JString> dispatcher, final String value) {
-        return new JString(dispatcher, value);
+    public static JString newInstance(final Dispatcher<JString> dispatcher, final String value, final Function<String, String> interner) {
+        return new JString(dispatcher, value, interner);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.eischet.janitor.compiler;
 
+import com.eischet.janitor.api.JanitorBuiltins;
 import com.eischet.janitor.api.JanitorCompilerSettings;
 import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.scopes.Location;
@@ -49,6 +50,7 @@ import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements JanitorCompiler {
 
     private static final Logger log = LoggerFactory.getLogger(JanitorAntlrCompiler.class);
+    public static final String INDEXED_GET_METHOD = "__get__";
 
     private static final BooleanLiteral LITERAL_TRUE = new BooleanLiteral(null, JBool.TRUE);
     private static final BooleanLiteral LITERAL_FALSE = new BooleanLiteral(null, JBool.FALSE);
@@ -57,6 +59,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
     private final boolean verbose;
     private final String source;
     private final JanitorEnvironment env;
+    private final JanitorBuiltins builtinTypes;
 
 
     public JanitorAntlrCompiler(final JanitorEnvironment env, final ScriptModule module, final JanitorCompilerSettings options, final String source) {
@@ -65,6 +68,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
         this.options = options;
         this.verbose = options.isVerbose();
         this.source = source;
+        this.builtinTypes = env.getBuiltins();
     }
 
     public static JString parseLiteral(final JanitorEnvironment env, final @NotNull String literal) {
@@ -132,16 +136,6 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
         return visit(ctx.blockStatement());
     }
 
-    /*
-    @Override
-    public IR.Statement.PrintStatement visitPrintStatement(final JanitorParser.PrintStatementContext ctx) {
-        // log.info("visitPrintStatement");
-        final JanitorParser.ArgumentsContext argList = ctx.arguments();
-        return new IR.Statement.PrintStatement(location(ctx.start), argList == null ? null : visitArguments(argList));
-    }
-
-     */
-
     @Override
     public AstNode visitReturnStatement(final JanitorParser.ReturnStatementContext ctx) {
         return new ReturnStatement(location(ctx.start, ctx.stop), ctx.expression() == null ? null : (Expression) visit(ctx.expression()));
@@ -181,12 +175,12 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
         // System.out.println("visitIdentifier: " + text + ", TO = " + ctx.TO() + ", FROM = " + ctx.FROM());
         // Sonderlogik für Keywords, die auch Identifier sein können, z.B. from und to: die müssen hier separat abgearbeitet werden!
         // Komischerweise scheint man das hier aber nicht zu brauchen, weil...?
-        return new Identifier(location(ctx.start, ctx.stop), ctx.getText());
+        return new Identifier(location(ctx.start, ctx.stop), builtinTypes.intern(ctx.getText()));
     }
 
     @Override
     public Identifier visitValidIdentifier(final JanitorParser.ValidIdentifierContext ctx) {
-        return new Identifier(location(ctx.start, ctx.stop), ctx.getText());
+        return new Identifier(location(ctx.start, ctx.stop), builtinTypes.intern(ctx.getText()));
     }
 
     @Override
@@ -262,13 +256,10 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
         return new StringLiteral(location(ctx.start, ctx.stop), parseLiteral(env, text.substring(3, text.length() - 3)));
     }
 
-
-
     @Override
     public IfStatement visitIfStatement(final JanitorParser.IfStatementContext ctx) {
         if (verbose) log.info("visitIfStatement");
         return visitIfStatementDef(ctx.ifStatementDef());
-
     }
 
 
@@ -306,7 +297,6 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
     public Ast visitThrowStatement(final JanitorParser.ThrowStatementContext ctx) {
         return super.visitThrowStatement(ctx); // LATER: throw
     }
-
 
     @Override
     public IfStatement visitIfStatementDef(final JanitorParser.IfStatementDefContext ctx) {
@@ -404,12 +394,6 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
             case JanitorLexer.MATCH_NOT -> new MatchesNotGlob(location(ctx.start, ctx.stop), left, right);
             default -> throw new RuntimeException("unimplemented binary operation: " + ctx.getText() + " (" + ctx.bop.getText() + ")");
         };
-    }
-
-    private Location location(final Token start, final Token stop) {
-        return Location.at(module, start.getLine(), start.getCharPositionInLine(),
-            stop == null ? start.getLine() : stop.getLine(),
-            stop == null ? start.getCharPositionInLine() : stop.getCharPositionInLine());
     }
 
     @Override
@@ -616,7 +600,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
         final JanitorParser.ExpressionContext index = ctx.expression(1);
         return new FunctionCallStatement(
             location(ctx.start, ctx.stop),
-            "__get__",
+            INDEXED_GET_METHOD,
             (Expression) visit(ctx.expression(0)),
             new ExpressionList(location(index.start, index.stop)).addExpression((Expression) visit(index))
         );
@@ -645,7 +629,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
     public Ast visitIndexExpressionFullRange(final JanitorParser.IndexExpressionFullRangeContext ctx) {
         return new FunctionCallStatement(
             location(ctx.start, ctx.stop),
-            "__get__",
+            INDEXED_GET_METHOD,
             (Expression) visit(ctx.expression()),
             new ExpressionList(location(ctx.start, ctx.stop))
                 .addExpression(NullLiteral.NULL)
@@ -661,7 +645,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
         if (head == null && tail == null) {
             return new FunctionCallStatement(
                 location(start, stop),
-                "__get__",
+                INDEXED_GET_METHOD,
                 (Expression) visit(main),
                 new ExpressionList(location(start, stop))
                     .addExpression(NullLiteral.NULL)
@@ -670,7 +654,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
         } else if (tail == null) {
             return new FunctionCallStatement(
                 location(start, stop),
-                "__get__",
+                INDEXED_GET_METHOD,
                 (Expression) visit(main),
                 new ExpressionList(location(head.start, head.stop))
                     .addExpression((Expression) visit(head))
@@ -679,7 +663,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
         } else if (head == null) {
             return new FunctionCallStatement(
                 location(start, stop),
-                "__get__",
+                INDEXED_GET_METHOD,
                 (Expression) visit(main),
                 new ExpressionList(location(tail.start, tail.stop))
                     .addExpression(NullLiteral.NULL)
@@ -688,7 +672,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
         } else {
             return new FunctionCallStatement(
                 location(start, stop),
-                "__get__",
+                INDEXED_GET_METHOD,
                 (Expression) visit(main),
                 new ExpressionList(location(head.start, head.stop))
                     .addExpression((Expression) visit(head))
@@ -697,6 +681,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
         }
 
     }
+
 
     @Override
     public Expression visitCallExpression(final JanitorParser.CallExpressionContext ctx) {
@@ -720,6 +705,8 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
             //log.error("*** invalid call expression {}", ctx.getText());
             //System.out.println("    visitCallExpression: " + null + ", TO = " + ctx.TO() + ", FROM = " + ctx.FROM());
         }
+
+        identifierText = env.getBuiltins().intern(identifierText);
 
         final JanitorParser.FunctionCallContext functionCallContext = ctx.functionCall();
         final JanitorParser.ExpressionContext expr = ctx.expression();
@@ -932,6 +919,11 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
         }
     }
 
+    private Location location(final Token start, final Token stop) {
+        return Location.at(module, start.getLine(), start.getCharPositionInLine(),
+                stop == null ? start.getLine() : stop.getLine(),
+                stop == null ? start.getCharPositionInLine() : stop.getCharPositionInLine());
+    }
 
 
 }

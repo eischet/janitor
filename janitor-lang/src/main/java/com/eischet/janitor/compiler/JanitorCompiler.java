@@ -9,7 +9,6 @@ import org.antlr.v4.runtime.RuleContext;
 
 /**
  * Helper Interface for building a script from a parse tree.
- * TODO: I'd rather have this in the Environment class instead of here, but didn't dare to refactor all the stuff.
  */
 public interface JanitorCompiler {
 

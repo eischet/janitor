@@ -1,6 +1,8 @@
 # Maven target folder
 target/
-# IntelliJ Idea Project files
+# IntelliJ Idea Project files, MacOS junk
 .idea/
 janitor.iml
 .DS_Store
+janitor-lang/janitor-lang.iml
+

@@ -10,7 +10,6 @@ import com.eischet.janitor.api.types.JCallable;
 import com.eischet.janitor.api.types.JConstant;
 import com.eischet.janitor.api.types.builtin.JNull;
 import com.eischet.janitor.api.types.JanitorObject;
-import com.eischet.janitor.api.util.ShortStringInterner;
 import com.eischet.janitor.compiler.ast.expression.Expression;
 import com.eischet.janitor.compiler.ast.expression.ExpressionList;
 
@@ -42,7 +41,7 @@ public class FunctionLookup extends Statement implements Expression {
      */
     public FunctionLookup(final Location location, final String functionName, final Expression onExpression, final ExpressionList expressionList, final boolean guarded) {
         super(location);
-        this.functionName = ShortStringInterner.maybeIntern(functionName);
+        this.functionName = functionName;
         this.onExpression = onExpression;
         this.expressionList = expressionList;
         this.guarded = guarded;

@@ -112,7 +112,17 @@ public interface JanitorBuiltins {
 
     @NotNull JanitorObject nullableDate(@Nullable LocalDate date);
 
-    JDate date(long year, long month, long day);
+    @NotNull JDate date(long year, long month, long day);
 
-    JanitorObject parseNullableDate(JanitorScriptProcess process, String string, String format);
+    @NotNull JanitorObject parseNullableDate(JanitorScriptProcess process, String string, String format);
+
+    /**
+     * RAM saver: intern a string.
+     * Janitor uses Strings in lots of places, and an environment can choose to intern these strings
+     * to save space.
+     * @param string a string
+     * @return the string, possible interned
+     */
+    @Nullable String intern(final @Nullable String string);
+
 }
