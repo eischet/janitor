@@ -53,7 +53,7 @@
 
         <!-- dependency versions -->
         <dep.jetbrains-annotations>24.1.0</dep.jetbrains-annotations>
-        <dep.slf4j>2.0.13</dep.slf4j>
+        <dep.slf4j>2.0.16</dep.slf4j>
 
         <!-- enable deployment of project pom, or else no one will be able to use the child poms due to missing links back up here... -->
         <maven.deploy.skip>false</maven.deploy.skip>
