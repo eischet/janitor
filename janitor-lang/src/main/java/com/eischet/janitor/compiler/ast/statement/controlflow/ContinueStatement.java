@@ -27,8 +27,8 @@ public class ContinueStatement extends Statement {
     }
 
     @Override
-    public void execute(final JanitorScriptProcess runningScript) throws Continue {
-        runningScript.setCurrentLocation(getLocation());
+    public void execute(final JanitorScriptProcess process) throws Continue {
+        process.setCurrentLocation(getLocation());
         throw CONTINUE;
     }
 

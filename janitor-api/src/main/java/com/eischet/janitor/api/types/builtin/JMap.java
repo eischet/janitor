@@ -195,16 +195,16 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
     /**
      * Try to assign all fields of this map to a target object.
      *
-     * @param rs     the script process
+     * @param process     the script process
      * @param target the target object
      * @throws JanitorNameException if any of the fields could not be assigned
      *                              <p>
      *                                                           TODO: this used to be helpful when Janitor was in a very early stage, but should probably be avoided now
      */
-    public void applyTo(final JanitorScriptProcess rs, final JanitorObject target) throws JanitorNameException {
+    public void applyTo(final JanitorScriptProcess process, final JanitorObject target) throws JanitorNameException {
         final Set<JanitorObject> notAssignable = new HashSet<>();
         wrapped.forEach((key, value) -> {
-            @Nullable final JanitorObject prop = Scope.getOptionalMethod(target, rs, key.janitorToString());
+            @Nullable final JanitorObject prop = Scope.getOptionalMethod(target, process, key.janitorToString());
             if (prop instanceof JAssignable assignableProperty) {
                 try {
                     if (!assignableProperty.assign(value)) {
@@ -212,16 +212,16 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
                     }
                 } catch (JanitorRuntimeException assignmentError) {
                     // TODO: check if this is really OK
-                    rs.warn("error assigning to object %s property %s for key %s, value %s -> %s".formatted(target, prop, key, value, assignmentError));
+                    process.warn("error assigning to object %s property %s for key %s, value %s -> %s".formatted(target, prop, key, value, assignmentError));
                     notAssignable.add(key);
                 }
             } else {
-                rs.warn("cannot assign to object %s property %s for key %s, value %s".formatted(target, prop, key, value));
+                process.warn("cannot assign to object %s property %s for key %s, value %s".formatted(target, prop, key, value));
                 notAssignable.add(key);
             }
         });
         if (!notAssignable.isEmpty()) {
-            throw new JanitorNameException(rs, "assigned invalid object properties: " + notAssignable);
+            throw new JanitorNameException(process, "assigned invalid object properties: " + notAssignable);
         }
     }
 
@@ -235,16 +235,16 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
      * Extract a string from the map by key and pass the associated value to the consumer.
      * Do nothing but emit a warning if there's no such key/value.
      *
-     * @param running  script
+     * @param process  script
      * @param key      the key
      * @param consumer the consumer of the value
      */
-    public void extractString(final JanitorScriptProcess running, final String key, final Consumer<String> consumer) {
+    public void extractString(final JanitorScriptProcess process, final String key, final Consumer<String> consumer) {
         final JanitorObject value = wrapped.get(builtins.nullableString(key));
         if (value instanceof JString str) {
             consumer.accept(str.janitorGetHostValue());
         } else if (value != null) {
-            running.warn(String.format("extractString for key=%s found %s [%s] where a string was expected", key, value, value.getClass()));
+            process.warn(String.format("extractString for key=%s found %s [%s] where a string was expected", key, value, value.getClass()));
         }
     }
 

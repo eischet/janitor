@@ -35,26 +35,26 @@ public abstract class BinaryOperation extends AstNode implements Expression {
 
 
     @Override
-    public JanitorObject evaluate(final JanitorScriptProcess runningScript) throws JanitorRuntimeException {
-        runningScript.setCurrentLocation(getLocation());
-        final JanitorObject leftObject = left.evaluate(runningScript);
-        final JanitorObject rightObject = right.evaluate(runningScript);
-        runningScript.trace(() -> "evaluating " + this + " with left = " + left + " -> " + leftObject + ", right = " + right + " -> " + rightObject);
+    public JanitorObject evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException {
+        process.setCurrentLocation(getLocation());
+        final JanitorObject leftObject = left.evaluate(process);
+        final JanitorObject rightObject = right.evaluate(process);
+        process.trace(() -> "evaluating " + this + " with left = " + left + " -> " + leftObject + ", right = " + right + " -> " + rightObject);
         if (leftObject == null || rightObject == null) {
-            throw new JanitorArgumentException(runningScript, String.format("null value in binary operation: left=%s=>%s, right=%s=>%s", left, leftObject, right, rightObject));
+            throw new JanitorArgumentException(process, String.format("null value in binary operation: left=%s=>%s, right=%s=>%s", left, leftObject, right, rightObject));
         }
         try {
             final JanitorObject leftValue = leftObject.janitorUnpack();
             final JanitorObject rightValue = rightObject.janitorUnpack();
-            runningScript.trace(() -> "  left = " + leftValue + ", right = "+ rightValue);
+            process.trace(() -> "  left = " + leftValue + ", right = "+ rightValue);
             if (leftValue == null || rightValue == null) {
-                throw new JanitorArgumentException(runningScript, String.format("null value in binary operation: left=%s=>%s, right=%s=>%s", left, leftObject, right, rightObject));
+                throw new JanitorArgumentException(process, String.format("null value in binary operation: left=%s=>%s, right=%s=>%s", left, leftObject, right, rightObject));
             }
-            final JanitorObject result = functor.perform(runningScript, leftValue, rightValue).janitorUnpack();
-            runningScript.trace(() -> "  result = " + result);
+            final JanitorObject result = functor.perform(process, leftValue, rightValue).janitorUnpack();
+            process.trace(() -> "  result = " + result);
             return result;
         } catch (RuntimeException e) {
-            throw new JanitorArgumentException(runningScript, String.format("runtime error in binary operation: left=%s=>%s, right=%s=>%s", left, leftObject, right, rightObject), e);
+            throw new JanitorArgumentException(process, String.format("runtime error in binary operation: left=%s=>%s, right=%s=>%s", left, leftObject, right, rightObject), e);
         }
     }
 

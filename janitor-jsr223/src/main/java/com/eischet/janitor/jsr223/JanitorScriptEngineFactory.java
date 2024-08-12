@@ -108,7 +108,7 @@ public class JanitorScriptEngineFactory implements ScriptEngineFactory {
     public JanitorRuntime getRuntime() {
         return new BaseRuntime(environment) {
             @Override
-            public JanitorObject print(final JanitorScriptProcess rs, final JCallArgs args) {
+            public JanitorObject print(final JanitorScriptProcess process, final JCallArgs args) {
                 System.out.println(args.getList().stream().map(JanitorObject::janitorToString).collect(Collectors.joining(" ")));
                 return JNull.NULL;
             }

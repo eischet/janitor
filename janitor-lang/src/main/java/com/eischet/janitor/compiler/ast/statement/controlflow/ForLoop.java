@@ -35,27 +35,27 @@ public class ForLoop extends Statement {
     }
 
     @Override
-    public void execute(final JanitorScriptProcess runningScript) throws JanitorRuntimeException, JanitorControlFlowException {
+    public void execute(final JanitorScriptProcess process) throws JanitorRuntimeException, JanitorControlFlowException {
         try {
-            runningScript.setCurrentLocation(getLocation());
-            final JanitorObject range = expression.evaluate(runningScript).janitorUnpack();
+            process.setCurrentLocation(getLocation());
+            final JanitorObject range = expression.evaluate(process).janitorUnpack();
             if (range instanceof JIterable iterableRange) {
                 final Iterator<? extends JanitorObject> iterator = iterableRange.getIterator();
                 while (iterator.hasNext()) {
                     try {
-                        runningScript.enterBlock(getLocation());
+                        process.enterBlock(getLocation());
                         final JanitorObject next = iterator.next().janitorUnpack();
-                        runningScript.getCurrentScope().bind(runningScript, loopVar, next);
+                        process.getCurrentScope().bind(process, loopVar, next);
                         try {
-                            block.execute(runningScript);
+                            block.execute(process);
                         } catch (ContinueStatement.Continue ignored) {
                         }
                     } finally {
-                        runningScript.exitBlock();
+                        process.exitBlock();
                     }
                 }
             } else {
-                throw new JanitorArgumentException(runningScript, "invalid range: " + range + "is not iterable");
+                throw new JanitorArgumentException(process, "invalid range: " + range + "is not iterable");
             }
         } catch (BreakStatement.Break ignored) {
         }

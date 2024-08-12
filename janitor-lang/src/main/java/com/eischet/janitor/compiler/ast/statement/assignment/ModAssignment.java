@@ -22,7 +22,7 @@ public class ModAssignment extends Assignment {
     }
 
     @Override
-    protected JanitorObject produce(final Expression left, final Expression right, final JanitorScriptProcess runningScript) throws JanitorRuntimeException {
-        return JanitorSemantics.modulo(runningScript, left.evaluate(runningScript), right.evaluate(runningScript).janitorUnpack());
+    protected JanitorObject produce(final Expression left, final Expression right, final JanitorScriptProcess process) throws JanitorRuntimeException {
+        return JanitorSemantics.modulo(process, left.evaluate(process), right.evaluate(process).janitorUnpack());
     }
 }

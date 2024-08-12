@@ -32,16 +32,16 @@ public class IfStatement extends Statement {
     }
 
     @Override
-    public void execute(final JanitorScriptProcess runningScript) throws JanitorRuntimeException, JanitorControlFlowException {
-        runningScript.setCurrentLocation(getLocation());
-        final JanitorObject conditionValue = condition.evaluate(runningScript);
+    public void execute(final JanitorScriptProcess process) throws JanitorRuntimeException, JanitorControlFlowException {
+        process.setCurrentLocation(getLocation());
+        final JanitorObject conditionValue = condition.evaluate(process);
         if (conditionValue == null) {
-            runningScript.trace(() -> "if condition evaluated to null: " + condition);
+            process.trace(() -> "if condition evaluated to null: " + condition);
         }
         if (JanitorSemantics.isTruthy(conditionValue.janitorUnpack())) {
-            block.execute(runningScript);
+            block.execute(process);
         } else if (elseBlock != null) {
-            elseBlock.execute(runningScript);
+            elseBlock.execute(process);
         }
     }
 }

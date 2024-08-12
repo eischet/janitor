@@ -66,11 +66,11 @@ public class ScriptFunction extends AstNode implements Expression, JanitorObject
     }
 
     @Override
-    public JanitorObject evaluate(final JanitorScriptProcess runningScript) throws JanitorRuntimeException {
+    public JanitorObject evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException {
         if (log.isDebugEnabled()) {
-            log.debug("**** eval called on script function: " + name + " in scope with dir: {}", runningScript.getCurrentScope().dir());
+            log.debug("**** eval called on script function: " + name + " in scope with dir: {}", process.getCurrentScope().dir());
         }
-        this.closureScope = runningScript.getCurrentScope().hold();
+        this.closureScope = process.getCurrentScope().hold();
         // A function initially evaluates "to itself", so it can later be called, because this class here
         // implements both Expression and JCallable. This is a (small) design decision, not a hard requirement.
         return this;

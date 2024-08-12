@@ -27,8 +27,8 @@ public class BreakStatement extends Statement {
     }
 
     @Override
-    public void execute(final JanitorScriptProcess runningScript) throws Break {
-        runningScript.setCurrentLocation(getLocation());
+    public void execute(final JanitorScriptProcess process) throws Break {
+        process.setCurrentLocation(getLocation());
         throw BREAK;
     }
 

@@ -17,34 +17,34 @@ import java.util.Set;
  */
 public class JSetClass {
 
-    public static JBool __add(final JanitorWrapper<Set<JanitorObject>> _self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static JBool __add(final JanitorWrapper<Set<JanitorObject>> _self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         final JSet self = ((JSet) _self);
         return JBool.of(self.add(arguments.require(1).get(0)));
     }
 
-    public static JBool __remove(final JanitorWrapper<Set<JanitorObject>> _self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static JBool __remove(final JanitorWrapper<Set<JanitorObject>> _self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         final JSet self = ((JSet) _self);
         return JBool.of(self.remove(arguments.require(1).get(0)));
     }
 
-    public static JBool __contains(final JanitorWrapper<Set<JanitorObject>> _self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static JBool __contains(final JanitorWrapper<Set<JanitorObject>> _self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         final JSet self = ((JSet) _self);
         return JBool.of(self.contains(arguments.require(1).get(0)));
     }
 
-    public static JList __toList(final JanitorWrapper<Set<JanitorObject>> _self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static JList __toList(final JanitorWrapper<Set<JanitorObject>> _self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         final JSet self = ((JSet) _self);
         arguments.require(0);
-        return runningScript.getEnvironment().getBuiltins().list(self.janitorGetHostValue().stream());
+        return process.getEnvironment().getBuiltins().list(self.janitorGetHostValue().stream());
     }
 
-    public static JInt __size(final JanitorWrapper<Set<JanitorObject>> _self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static JInt __size(final JanitorWrapper<Set<JanitorObject>> _self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         final JSet self = ((JSet) _self);
         arguments.require(0);
-        return runningScript.getEnvironment().getBuiltins().integer(self.size());
+        return process.getEnvironment().getBuiltins().integer(self.size());
     }
 
-    public static JBool __isEmpty(final JanitorWrapper<Set<JanitorObject>> _self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static JBool __isEmpty(final JanitorWrapper<Set<JanitorObject>> _self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         final JSet self = ((JSet) _self);
         arguments.require(0);
         return JBool.of(self.janitorGetHostValue().isEmpty());

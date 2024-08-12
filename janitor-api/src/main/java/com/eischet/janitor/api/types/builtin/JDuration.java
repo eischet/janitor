@@ -171,7 +171,6 @@ public class JDuration extends JanitorComposed<JDuration> implements JConstant, 
      * @param date the date
      * @param duration the duration
      * @return the new date or datetime
-     * TODO wouldn't it be much simpler to add(date, -duration) here?
      */
     public static JanitorObject subtract(final JanitorScriptProcess process, final JDate date, final JDuration duration) {
         if (duration.getUnit() == null || duration.getAmount() == 0) {
@@ -201,7 +200,6 @@ public class JDuration extends JanitorComposed<JDuration> implements JConstant, 
      * @param dateTime the datetime
      * @param duration the duration
      * @return the new datetime
-     * TODO wouldn't it be much simpler to add(datetime, -duration) here?
      */
     public static JanitorObject subtract(final JanitorScriptProcess process, final JDateTime dateTime, final JDuration duration) {
         if (duration.getUnit() == null || duration.getAmount() == 0) {

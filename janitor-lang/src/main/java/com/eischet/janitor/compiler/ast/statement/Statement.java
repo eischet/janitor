@@ -20,11 +20,11 @@ public abstract class Statement extends AstNode {
 
     /**
      * Execute this statement.
-     * @param runningScript the script process
+     * @param process the script process
      * @throws JanitorRuntimeException if something goes wrong
      * @throws JanitorControlFlowException on control flow events, which are currently implemented as exceptions
      */
-    public abstract void execute(final JanitorScriptProcess runningScript) throws JanitorRuntimeException, JanitorControlFlowException;
+    public abstract void execute(final JanitorScriptProcess process) throws JanitorRuntimeException, JanitorControlFlowException;
 
 
 

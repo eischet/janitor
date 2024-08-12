@@ -27,10 +27,10 @@ public class ImportStatement extends Statement {
     }
 
     @Override
-    public void execute(final JanitorScriptProcess runningScript) throws JanitorRuntimeException, JanitorControlFlowException {
-        runningScript.setCurrentLocation(getLocation());
+    public void execute(final JanitorScriptProcess process) throws JanitorRuntimeException, JanitorControlFlowException {
+        process.setCurrentLocation(getLocation());
         for (final ImportClause clause : clauses) {
-            clause.execute(runningScript);
+            clause.execute(process);
         }
     }
 }

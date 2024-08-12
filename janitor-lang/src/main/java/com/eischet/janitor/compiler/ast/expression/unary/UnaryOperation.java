@@ -27,10 +27,10 @@ public abstract class UnaryOperation extends AstNode implements Expression {
     }
 
     @Override
-    public JanitorObject evaluate(final JanitorScriptProcess runningScript) throws JanitorRuntimeException {
-        final JanitorObject variable = parameter.evaluate(runningScript).janitorUnpack();
-        runningScript.setCurrentLocation(getLocation());
-        return functor.perform(runningScript, variable);
+    public JanitorObject evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException {
+        final JanitorObject variable = parameter.evaluate(process).janitorUnpack();
+        process.setCurrentLocation(getLocation());
+        return functor.perform(process, variable);
     }
 
 }

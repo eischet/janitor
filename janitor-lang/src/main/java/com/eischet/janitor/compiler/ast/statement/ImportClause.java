@@ -47,26 +47,26 @@ public class ImportClause extends Statement {
     }
 
     @Override
-    public void execute(final JanitorScriptProcess runningScript) throws JanitorRuntimeException, JanitorControlFlowException {
+    public void execute(final JanitorScriptProcess process) throws JanitorRuntimeException, JanitorControlFlowException {
         // Load qualified modules:
         if (qname != null) {
             if (qname.getParts().size() == 1) {
-                final JanitorModule m = runningScript.getEnvironment().getModuleByQualifier(runningScript, qname.getParts().get(0));
+                final JanitorModule m = process.getEnvironment().getModuleByQualifier(process, qname.getParts().get(0));
                 if (alias == null) {
-                    runningScript.getMainScope().bind(runningScript, qname.getParts().get(0), m);
+                    process.getMainScope().bind(process, qname.getParts().get(0), m);
                 } else {
-                    runningScript.getMainScope().bind(runningScript, alias.getText(), m);
+                    process.getMainScope().bind(process, alias.getText(), m);
                 }
                 return;
             }
         }
         // Load string-based modules (implementation specific):
         if (module != null) {
-            final JanitorModule m = runningScript.getEnvironment().getModuleByStringName(runningScript, module);
-            runningScript.getMainScope().bind(runningScript, alias.getText(), m);
+            final JanitorModule m = process.getEnvironment().getModuleByStringName(process, module);
+            process.getMainScope().bind(process, alias.getText(), m);
             return;
         }
-        throw new JanitorNotImplementedException(runningScript, "invalid import clause: either a qualified name or a module name string is required");
+        throw new JanitorNotImplementedException(process, "invalid import clause: either a qualified name or a module name string is required");
     }
 
 }

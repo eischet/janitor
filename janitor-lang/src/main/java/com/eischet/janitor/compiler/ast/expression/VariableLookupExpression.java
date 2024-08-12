@@ -23,9 +23,9 @@ public class VariableLookupExpression extends AstNode implements Expression {
     }
 
     @Override
-    public JanitorObject evaluate(final JanitorScriptProcess runningScript) {
-        runningScript.setCurrentLocation(getLocation());
-        return runningScript.lookup(variableName).janitorUnpack();
+    public JanitorObject evaluate(final JanitorScriptProcess process) {
+        process.setCurrentLocation(getLocation());
+        return process.lookup(variableName).janitorUnpack();
     }
 
 }

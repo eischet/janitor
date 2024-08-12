@@ -22,7 +22,7 @@ public class PrefixDecrement extends PrefixOperator {
     }
 
     @Override
-    protected JanitorObject operate(final JanitorScriptProcess runningScript, final JanitorObject currentValue) throws JanitorRuntimeException {
-        return JanitorSemantics.decrement(runningScript, currentValue);
+    protected JanitorObject operate(final JanitorScriptProcess process, final JanitorObject currentValue) throws JanitorRuntimeException {
+        return JanitorSemantics.decrement(process, currentValue);
     }
 }

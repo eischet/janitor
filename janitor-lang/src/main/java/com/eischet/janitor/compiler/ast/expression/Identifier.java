@@ -37,11 +37,11 @@ public class Identifier extends AstNode implements Expression {
 
 
     @Override
-    public JanitorObject evaluate(final JanitorScriptProcess runningScript) throws JanitorNameException {
-        runningScript.setCurrentLocation(getLocation());
-        final JanitorObject v = runningScript.lookup(text);
+    public JanitorObject evaluate(final JanitorScriptProcess process) throws JanitorNameException {
+        process.setCurrentLocation(getLocation());
+        final JanitorObject v = process.lookup(text);
         if (v == null) {
-            throw new JanitorNameException(runningScript, String.format("name '%s' is not defined", text));
+            throw new JanitorNameException(process, String.format("name '%s' is not defined", text));
         } else {
             return v;
         }

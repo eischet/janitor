@@ -134,9 +134,9 @@ public class JanitorScript implements RunnableScript {
     public @NotNull JanitorObject run(final @NotNull Consumer<Scope> prepareGlobals) throws JanitorRuntimeException {
         final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), module); // new Scope(Location.at(module, 0, 0), BUILTIN_SCOPE, null);
         prepareGlobals.accept(globalScope);
-        final RunningScriptProcess runningScript = new RunningScriptProcess(runtime, globalScope, scriptObject);
+        final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, scriptObject);
         try {
-            return runningScript.run();
+            return process.run();
         } finally {
             globalScope.janitorLeaveScope();
         }
@@ -146,8 +146,8 @@ public class JanitorScript implements RunnableScript {
     public @NotNull JanitorObject runInScope(final @NotNull Consumer<Scope> prepareGlobals, final Scope parentScope) throws JanitorRuntimeException {
         final Scope globalScope = Scope.createMainScope(parentScope); // GlobalScope(module); // new Scope(Location.at(module, 0, 0), parentScope, null);
         prepareGlobals.accept(globalScope);
-        final RunningScriptProcess runningScript = new RunningScriptProcess(runtime, globalScope, scriptObject);
-        return runningScript.run();
+        final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, scriptObject);
+        return process.run();
     }
 
 
@@ -155,14 +155,14 @@ public class JanitorScript implements RunnableScript {
     public @NotNull ResultAndScope runAndKeepGlobals(final @NotNull Consumer<Scope> prepareGlobals) throws JanitorRuntimeException {
         final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), module); // new Scope(Location.at(module, 0, 0), BUILTIN_SCOPE, null);
         prepareGlobals.accept(globalScope);
-        final RunningScriptProcess runningScript = new RunningScriptProcess(runtime, globalScope, scriptObject);
-        return new ResultAndScope(runningScript.getMainScope(), runningScript.run());
+        final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, scriptObject);
+        return new ResultAndScope(process.getMainScope(), process.run());
     }
 
     @Override
     public @NotNull ResultAndScope runInScopeAndKeepGlobals(final Scope parentScope) throws JanitorRuntimeException {
-        final RunningScriptProcess runningScript = new RunningScriptProcess(runtime, parentScope, scriptObject, false);
-        return new ResultAndScope(runningScript.getMainScope(), runningScript.run());
+        final RunningScriptProcess process = new RunningScriptProcess(runtime, parentScope, scriptObject, false);
+        return new ResultAndScope(process.getMainScope(), process.run());
     }
 
 

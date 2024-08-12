@@ -28,7 +28,7 @@ public class OutputCatchingTestRuntime extends BaseRuntime {
     }
 
     @Override
-    public JanitorObject print(final JanitorScriptProcess rs, final JCallArgs args) {
+    public JanitorObject print(final JanitorScriptProcess process, final JCallArgs args) {
         int sz = args.size();
         for (int i = 0; i < sz; i++) {
             final JanitorObject argument = args.get(i);

@@ -24,15 +24,15 @@ public class IfThenElse extends TernaryOperation {
     }
 
     @Override
-    public JanitorObject evaluate(final JanitorScriptProcess runningScript) throws JanitorRuntimeException {
-        runningScript.setCurrentLocation(getLocation());
-        if (JanitorSemantics.isTruthy(a.evaluate(runningScript).janitorUnpack())) {
-            return b.evaluate(runningScript).janitorUnpack();
+    public JanitorObject evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException {
+        process.setCurrentLocation(getLocation());
+        if (JanitorSemantics.isTruthy(a.evaluate(process).janitorUnpack())) {
+            return b.evaluate(process).janitorUnpack();
         } else {
             if (c == null) {
                 return JNull.NULL;
             }
-            return c.evaluate(runningScript).janitorUnpack();
+            return c.evaluate(process).janitorUnpack();
         }
     }
 }

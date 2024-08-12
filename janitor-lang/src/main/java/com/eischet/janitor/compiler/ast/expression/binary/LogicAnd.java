@@ -31,13 +31,13 @@ public class LogicAnd extends AstNode implements Expression {
     }
 
     @Override
-    public JanitorObject evaluate(final JanitorScriptProcess runningScript) throws JanitorRuntimeException {
-        runningScript.setCurrentLocation(getLocation());
-        final JanitorObject leftValue = left.evaluate(runningScript).janitorUnpack();
+    public JanitorObject evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException {
+        process.setCurrentLocation(getLocation());
+        final JanitorObject leftValue = left.evaluate(process).janitorUnpack();
         if (!JanitorSemantics.isTruthy(leftValue)) {
             return JBool.FALSE;
         }
-        final JanitorObject rightValue = right.evaluate(runningScript).janitorUnpack();
+        final JanitorObject rightValue = right.evaluate(process).janitorUnpack();
         return JBool.of(JanitorSemantics.isTruthy(rightValue));
     }
 }

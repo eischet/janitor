@@ -49,22 +49,22 @@ public class FunctionLookup extends Statement implements Expression {
     }
 
     @Override
-    public void execute(final JanitorScriptProcess runningScript) throws JanitorRuntimeException, JanitorControlFlowException {
-        evaluate(runningScript); // just pass it on
+    public void execute(final JanitorScriptProcess process) throws JanitorRuntimeException, JanitorControlFlowException {
+        evaluate(process); // just pass it on
     }
 
     @Override
-    public JanitorObject evaluate(final JanitorScriptProcess runningScript) throws JanitorRuntimeException {
-        runningScript.setCurrentLocation(getLocation());
+    public JanitorObject evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException {
+        process.setCurrentLocation(getLocation());
         JanitorObject function = null;
         if (onExpression != null) {
-            runningScript.trace(() -> "looking up function from expression " + onExpression);
-            final JanitorObject object = onExpression.evaluate(runningScript);
+            process.trace(() -> "looking up function from expression " + onExpression);
+            final JanitorObject object = onExpression.evaluate(process);
             if (object == null) {
-                runningScript.trace(() -> "object is null!");
+                process.trace(() -> "object is null!");
             } else {
-                runningScript.trace(() -> "object = " + object + " [" + object.getClass().getSimpleName() + "], functionName=" + functionName);
-                function = object.janitorGetAttribute(runningScript, functionName, false);
+                process.trace(() -> "object = " + object + " [" + object.getClass().getSimpleName() + "], functionName=" + functionName);
+                function = object.janitorGetAttribute(process, functionName, false);
             }
 
             // LATER: auch Listen-Properties etc. berücksichtigen!
@@ -73,7 +73,7 @@ public class FunctionLookup extends Statement implements Expression {
                 final Object v = cp.getValue();
                 // System.err.println("looked up calc prop: " + v + " for " + functionName + " on " + onExpression);
                 if (v instanceof JanitorObject nestedObject) {
-                    function = nestedObject.janitorGetAttribute(runningScript, functionName, false);
+                    function = nestedObject.janitorGetAttribute(process, functionName, false);
                     // System.err.println("function from calc pop: " + function);
                 }
             }
@@ -82,46 +82,46 @@ public class FunctionLookup extends Statement implements Expression {
                 if (guarded) {
                     return JNull.NULL;
                 }
-                throw new JanitorNameException(runningScript, "function/method not found: " + functionName + "; on: " + object + "[" + simpleClassNameOf(object) + "] --> " + function);
+                throw new JanitorNameException(process, "function/method not found: " + functionName + "; on: " + object + "[" + simpleClassNameOf(object) + "] --> " + function);
             }
 
 
         } else if (functionName != null) {
-            runningScript.trace(() -> "looking up function '" + functionName + "' from scopes");
-            function = runningScript.lookup(functionName);
+            process.trace(() -> "looking up function '" + functionName + "' from scopes");
+            function = process.lookup(functionName);
         }
 
         if (expressionList == null && function instanceof JConstant) {
-            runningScript.trace(() -> "the 'function' is a constant and there's no expr. list --> returning it");
+            process.trace(() -> "the 'function' is a constant and there's no expr. list --> returning it");
             return function;
         }
         if (expressionList == null && function != null) { // war: instanceof MangedObject, mal gucken ob das noch funktioniert...
-            runningScript.trace(() -> "the 'function' is a managed object and there's no expr. list --> returning it");
+            process.trace(() -> "the 'function' is a managed object and there's no expr. list --> returning it");
             return function;
         }
 
         final JanitorObject finalFunction = function;
-        runningScript.trace(() -> "2 trying to call function: " + finalFunction);
+        process.trace(() -> "2 trying to call function: " + finalFunction);
 
 
         final List<JanitorObject> finishedArgs;
         if (expressionList != null) {
             final List<JanitorObject> args = new ArrayList<>(expressionList.length());
             for (int i = 0; i < expressionList.length(); i++) {
-                args.add(expressionList.get(i).evaluate(runningScript));
+                args.add(expressionList.get(i).evaluate(process));
             }
             finishedArgs = args;
         } else {
             finishedArgs = Collections.emptyList();
         }
-        runningScript.trace(() -> "args: " + finishedArgs);
+        process.trace(() -> "args: " + finishedArgs);
 
         //for (int i = 0; i < expressionList.length(); i++) {
         //    argumentList.bind("#"+i, expressionList.get(i).evaluate(runningScript));
         //}
         if (function instanceof JCallable) {
             final JanitorObject finalFunction1 = function;
-            runningScript.trace(() -> "function LOOKUP: returning the function " + finalFunction1);
+            process.trace(() -> "function LOOKUP: returning the function " + finalFunction1);
             return function;
             //final Variable result = ((Callable) function).call(runningScript, finishedArgs);
             //runningScript.trace(() -> "function call result: " + result);
@@ -130,11 +130,11 @@ public class FunctionLookup extends Statement implements Expression {
 
         if (function != null) {
             final JanitorObject finalFunction2 = function;
-            runningScript.trace(() -> "function LOOKUP: returning the variable " + finalFunction2);
+            process.trace(() -> "function LOOKUP: returning the variable " + finalFunction2);
             return function;
         }
 
-        throw new JanitorNameException(runningScript, "invalid callable: " + functionName + " (name: " + functionName + ")");
+        throw new JanitorNameException(process, "invalid callable: " + functionName + " (name: " + functionName + ")");
     }
 
 }

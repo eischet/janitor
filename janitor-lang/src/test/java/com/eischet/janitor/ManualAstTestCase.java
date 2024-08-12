@@ -82,8 +82,8 @@ public class ManualAstTestCase {
         final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), null); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
         globalScope.bind("x", runtime.getEnvironment().getBuiltins().integer(17));
 
-        final RunningScriptProcess runningScript = new RunningScriptProcess(runtime, globalScope, script);
-        runningScript.run();
+        final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, script);
+        process.run();
         assertEquals("17\n", runtime.getAllOutput());
 
         runtime.resetOutput();
@@ -110,8 +110,8 @@ public class ManualAstTestCase {
 
         final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), null); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
         globalScope.bind("a", runtime.getEnvironment().getBuiltins().integer(17));
-        final RunningScriptProcess runningScript = new RunningScriptProcess(runtime, globalScope, script);
-        runningScript.run();
+        final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, script);
+        process.run();
         assertEquals("21\n", runtime.getAllOutput());
     }
 
@@ -130,8 +130,8 @@ public class ManualAstTestCase {
         final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), null); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
         globalScope.bind("a", runtime.getEnvironment().getBuiltins().integer(17));
         globalScope.bind("b", runtime.getEnvironment().getBuiltins().integer(4));
-        final RunningScriptProcess runningScript = new RunningScriptProcess(runtime, globalScope, script);
-        runningScript.run();
+        final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, script);
+        process.run();
         assertEquals("21\n", runtime.getAllOutput());
     }
 

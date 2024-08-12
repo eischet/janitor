@@ -59,8 +59,8 @@ public class FirstParserTestCase {
 
         final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), module); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
         globalScope.bind("x", 17);
-        final RunningScriptProcess runningScript = new RunningScriptProcess(runtime, globalScope, scriptObject);
-        runningScript.run();
+        final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, scriptObject);
+        process.run();
         assertEquals("hello, world\n", runtime.getAllOutput());
     }
 
@@ -74,8 +74,8 @@ public class FirstParserTestCase {
 
         final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), module); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
         globalScope.bind("x", 17);
-        final RunningScriptProcess runningScript = new RunningScriptProcess(runtime, globalScope, scriptObject);
-        runningScript.run();
+        final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, scriptObject);
+        process.run();
         assertEquals("high\n", runtime.getAllOutput());
 
         runtime.resetOutput();
@@ -100,8 +100,8 @@ public class FirstParserTestCase {
 
         final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), module); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
         prepareGlobals.accept(globalScope);
-        final RunningScriptProcess runningScript = new RunningScriptProcess(runtime, globalScope, scriptObject);
-        runningScript.run();
+        final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, scriptObject);
+        process.run();
         return runtime.getAllOutput();
     }
 
@@ -114,8 +114,8 @@ public class FirstParserTestCase {
 
         final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), module); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
         prepareGlobals.accept(globalScope);
-        final RunningScriptProcess runningScript = new RunningScriptProcess(runtime, globalScope, scriptObject);
-        return runningScript.run();
+        final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, scriptObject);
+        return process.run();
     }
 
     @Test
@@ -1355,8 +1355,8 @@ public class FirstParserTestCase {
         runtime.setTraceListener(System.out::println);
 
         final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), module); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
-        final RunningScriptProcess runningScript = new RunningScriptProcess(runtime, globalScope, scriptObject);
-        runningScript.run();
+        final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, scriptObject);
+        process.run();
     }
 
 

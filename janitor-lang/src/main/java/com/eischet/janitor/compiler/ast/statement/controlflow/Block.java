@@ -37,19 +37,19 @@ public class Block extends Statement {
     }
 
     @Override
-    public void execute(final JanitorScriptProcess runningScript) throws JanitorRuntimeException, JanitorControlFlowException {
+    public void execute(final JanitorScriptProcess process) throws JanitorRuntimeException, JanitorControlFlowException {
         try {
-            runningScript.setCurrentLocation(getLocation());
+            process.setCurrentLocation(getLocation());
             if (getLocation() != null) {
-                runningScript.enterBlock(null);
+                process.enterBlock(null);
             }
-            runningScript.trace(() -> "executing " + getStatements().size() + " statements...");
+            process.trace(() -> "executing " + getStatements().size() + " statements...");
             for (final Statement statement : getStatements()) {
-                runningScript.trace(() -> "executing: " + statement);
-                statement.execute(runningScript);
+                process.trace(() -> "executing: " + statement);
+                statement.execute(process);
             }
         } finally {
-            runningScript.exitBlock();
+            process.exitBlock();
         }
     }
 }

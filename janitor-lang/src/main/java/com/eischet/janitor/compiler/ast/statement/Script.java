@@ -48,11 +48,11 @@ public class Script extends Statement {
     }
 
     @Override
-    public void execute(final JanitorScriptProcess runningScript) throws JanitorRuntimeException, JanitorControlFlowException {
-        runningScript.trace(() -> "executing " + getStatements().size() + " statements at top level...");
+    public void execute(final JanitorScriptProcess process) throws JanitorRuntimeException, JanitorControlFlowException {
+        process.trace(() -> "executing " + getStatements().size() + " statements at top level...");
         for (final Statement statement : getStatements()) {
-            runningScript.trace(() -> "executing: " + statement);
-            statement.execute(runningScript);
+            process.trace(() -> "executing: " + statement);
+            statement.execute(process);
         }
     }
 }

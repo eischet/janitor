@@ -23,8 +23,8 @@ public class PrefixIncrement extends PrefixOperator {
     }
 
     @Override
-    protected JanitorObject operate(final JanitorScriptProcess runningScript, final JanitorObject currentValue) throws JanitorRuntimeException {
-        return JanitorSemantics.increment(runningScript, currentValue);
+    protected JanitorObject operate(final JanitorScriptProcess process, final JanitorObject currentValue) throws JanitorRuntimeException {
+        return JanitorSemantics.increment(process, currentValue);
     }
 
 

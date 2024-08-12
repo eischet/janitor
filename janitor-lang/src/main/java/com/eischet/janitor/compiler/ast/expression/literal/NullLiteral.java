@@ -19,7 +19,7 @@ public class NullLiteral extends Literal {
     }
 
     @Override
-    public JanitorObject evaluate(final JanitorScriptProcess runningScript) {
+    public JanitorObject evaluate(final JanitorScriptProcess process) {
         return JNull.NULL;
     }
 

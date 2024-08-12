@@ -19,7 +19,7 @@ public class TodayLiteral extends Literal {
     }
 
     @Override
-    public JanitorObject evaluate(final JanitorScriptProcess runningScript) throws JanitorRuntimeException {
-        return runningScript.getBuiltins().today();
+    public JanitorObject evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException {
+        return process.getBuiltins().today();
     }
 }

@@ -29,15 +29,15 @@ public class DoWhileLoop extends Statement {
     }
 
     @Override
-    public void execute(final JanitorScriptProcess runningScript) throws JanitorRuntimeException, JanitorControlFlowException {
+    public void execute(final JanitorScriptProcess process) throws JanitorRuntimeException, JanitorControlFlowException {
         try {
-            runningScript.setCurrentLocation(getLocation());
+            process.setCurrentLocation(getLocation());
             do {
                 try {
-                    block.execute(runningScript);
+                    block.execute(process);
                 } catch (ContinueStatement.Continue ignored) {
                 }
-            } while (JanitorSemantics.isTruthy(expression.evaluate(runningScript).janitorUnpack()));
+            } while (JanitorSemantics.isTruthy(expression.evaluate(process).janitorUnpack()));
         } catch (BreakStatement.Break ignored) {
         }
     }

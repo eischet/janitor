@@ -21,8 +21,8 @@ public class RegularAssignment extends Assignment {
     }
 
     @Override
-    protected JanitorObject produce(final Expression left, final Expression right, final JanitorScriptProcess runningScript) throws JanitorRuntimeException {
-        return right.evaluate(runningScript).janitorUnpack();
+    protected JanitorObject produce(final Expression left, final Expression right, final JanitorScriptProcess process) throws JanitorRuntimeException {
+        return right.evaluate(process).janitorUnpack();
     }
 
 }

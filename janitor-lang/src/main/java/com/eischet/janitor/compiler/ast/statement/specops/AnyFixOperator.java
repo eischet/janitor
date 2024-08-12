@@ -32,21 +32,21 @@ public abstract class AnyFixOperator extends Statement implements Expression {
     }
 
     @Override
-    public JanitorObject evaluate(final JanitorScriptProcess runningScript) throws JanitorRuntimeException {
-        runningScript.setCurrentLocation(getLocation());
-        runningScript.trace(() -> this + " : expr=" + expr);
+    public JanitorObject evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException {
+        process.setCurrentLocation(getLocation());
+        process.trace(() -> this + " : expr=" + expr);
         if (expr instanceof Identifier) {
             final String id = ((Identifier) expr).getText();
-            final ResultAndScope scoped = runningScript.lookupScopedVar(id);
+            final ResultAndScope scoped = process.lookupScopedVar(id);
             if (scoped == null) {
-                throw new JanitorArgumentException(runningScript, "variable not bound: {}. cannot apply " + this + " to it.");
+                throw new JanitorArgumentException(process, "variable not bound: {}. cannot apply " + this + " to it.");
             }
             final JanitorObject currentValue = scoped.getVariable().janitorUnpack(); // oder das?? final Variable currentValue = expr.evaluate(runningScript);
-            final JanitorObject newValue = operate(runningScript, currentValue);
-            scoped.getScope().bind(runningScript, id, newValue);  // vorher falsch: runningScript.getCurrentScope().bind(id, newValue);
+            final JanitorObject newValue = operate(process, currentValue);
+            scoped.getScope().bind(process, id, newValue);  // vorher falsch: runningScript.getCurrentScope().bind(id, newValue);
             return pick(currentValue, newValue);
         } else {
-            throw new JanitorArgumentException(runningScript, "cannot apply " + this + " to " + expr);
+            throw new JanitorArgumentException(process, "cannot apply " + this + " to " + expr);
         }
     }
 
@@ -63,17 +63,17 @@ public abstract class AnyFixOperator extends Statement implements Expression {
     /**
      * Apply the operator.
      *
-     * @param runningScript script
+     * @param process script
      * @param currentValue  current value
      * @return new value
      * @throws JanitorRuntimeException on errors
      */
-    protected abstract JanitorObject operate(final JanitorScriptProcess runningScript, final JanitorObject currentValue) throws JanitorRuntimeException;
+    protected abstract JanitorObject operate(final JanitorScriptProcess process, final JanitorObject currentValue) throws JanitorRuntimeException;
 
     @Override
-    public void execute(final JanitorScriptProcess runningScript) throws JanitorRuntimeException, JanitorControlFlowException {
-        runningScript.setCurrentLocation(getLocation());
-        evaluate(runningScript); // just pass it on
+    public void execute(final JanitorScriptProcess process) throws JanitorRuntimeException, JanitorControlFlowException {
+        process.setCurrentLocation(getLocation());
+        evaluate(process); // just pass it on
     }
 
 }

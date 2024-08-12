@@ -31,8 +31,8 @@ public class SimpleExpressionTestCase {
 
         final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), module); // new Scope(root, null, null);
         prepareGlobals.accept(globalScope);
-        final RunningScriptProcess runningScript = new RunningScriptProcess(runtime, globalScope, scriptObject);
-        return runningScript.run();
+        final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, scriptObject);
+        return process.run();
     }
 
 

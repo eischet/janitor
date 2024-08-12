@@ -30,26 +30,26 @@ public class PostfixIncrement extends Statement implements Expression {
     }
 
     @Override
-    public JanitorObject evaluate(final JanitorScriptProcess runningScript) throws JanitorRuntimeException {
-        runningScript.setCurrentLocation(getLocation());
-        runningScript.trace(() -> "postfix increment: expr=" + expr);
+    public JanitorObject evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException {
+        process.setCurrentLocation(getLocation());
+        process.trace(() -> "postfix increment: expr=" + expr);
         if (expr instanceof Identifier) {
             final String id = ((Identifier) expr).getText();
-            final ResultAndScope scoped = runningScript.lookupScopedVar(id);
+            final ResultAndScope scoped = process.lookupScopedVar(id);
             if (scoped == null) {
-                throw new JanitorArgumentException(runningScript, "variable not bound: '" + id + "'. cannot apply postfix++ to it.");
+                throw new JanitorArgumentException(process, "variable not bound: '" + id + "'. cannot apply postfix++ to it.");
             }
             final JanitorObject currentValue = scoped.getVariable(); // oder das?? final Variable currentValue = expr.evaluate(runningScript);
-            final JanitorObject newValue = JanitorSemantics.increment(runningScript, currentValue);
-            scoped.getScope().bind(runningScript, id, newValue);  // vorher falsch: runningScript.getCurrentScope().bind(id, newValue);
+            final JanitorObject newValue = JanitorSemantics.increment(process, currentValue);
+            scoped.getScope().bind(process, id, newValue);  // vorher falsch: runningScript.getCurrentScope().bind(id, newValue);
             return currentValue;
         } else {
-            throw new JanitorArgumentException(runningScript, "cannot apply postfix++ to " + expr);
+            throw new JanitorArgumentException(process, "cannot apply postfix++ to " + expr);
         }
     }
 
     @Override
-    public void execute(final JanitorScriptProcess runningScript) throws JanitorRuntimeException, JanitorControlFlowException {
-        evaluate(runningScript); // just pass it on
+    public void execute(final JanitorScriptProcess process) throws JanitorRuntimeException, JanitorControlFlowException {
+        evaluate(process); // just pass it on
     }
 }

@@ -39,10 +39,10 @@ public class MapLiteral extends Literal {
     }
 
     @Override
-    public JMap evaluate(final JanitorScriptProcess runningScript) throws JanitorRuntimeException {
-        final JMap map = runningScript.getEnvironment().getBuiltins().map();
+    public JMap evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException {
+        final JMap map = process.getEnvironment().getBuiltins().map();
         for (final Preset preset : presets) {
-            map.put(preset.key.evaluate(runningScript).janitorUnpack(), preset.value.evaluate(runningScript).janitorUnpack());
+            map.put(preset.key.evaluate(process).janitorUnpack(), preset.value.evaluate(process).janitorUnpack());
         }
         return map;
     }

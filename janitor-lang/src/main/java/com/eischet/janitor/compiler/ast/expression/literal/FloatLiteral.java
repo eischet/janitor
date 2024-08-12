@@ -28,7 +28,7 @@ public class FloatLiteral extends Literal {
     }
 
     @Override
-    public JanitorObject evaluate(final JanitorScriptProcess runningScript) throws JanitorRuntimeException {
+    public JanitorObject evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException {
         return variableFloat;
     }
 }

@@ -50,57 +50,57 @@ public class FunctionCallStatement extends Statement implements Expression {
     }
 
     @Override
-    public void execute(final JanitorScriptProcess runningScript) throws JanitorRuntimeException, JanitorControlFlowException {
-        runningScript.trace(() -> "execute via evaluate in " + this);
-        evaluate(runningScript); // just pass it on
+    public void execute(final JanitorScriptProcess process) throws JanitorRuntimeException, JanitorControlFlowException {
+        process.trace(() -> "execute via evaluate in " + this);
+        evaluate(process); // just pass it on
     }
 
     @Override
-    public JanitorObject evaluate(final JanitorScriptProcess runningScript) throws JanitorRuntimeException {
-        runningScript.trace(() -> "evaluating " + this);
-        runningScript.setCurrentLocation(getLocation());
+    public JanitorObject evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException {
+        process.trace(() -> "evaluating " + this);
+        process.setCurrentLocation(getLocation());
         JanitorObject function = null;
         if (onExpression != null) {
-            runningScript.trace(() -> "looking up function from expression");
+            process.trace(() -> "looking up function from expression");
 
-            final JanitorObject object = onExpression.evaluate(runningScript);
-            runningScript.trace(() -> "object = " + object);
+            final JanitorObject object = onExpression.evaluate(process);
+            process.trace(() -> "object = " + object);
 
 
-            function = object.janitorGetAttribute(runningScript, functionName, true);
+            function = object.janitorGetAttribute(process, functionName, true);
 
         } else if (functionName != null) {
-            runningScript.trace(() -> "looking up function '" + functionName + "' from scopes");
-            function = runningScript.lookup(functionName);
+            process.trace(() -> "looking up function '" + functionName + "' from scopes");
+            function = process.lookup(functionName);
 
         }
         final JanitorObject finalFunction = function;
-        runningScript.trace(() -> "1 trying to call function: " + finalFunction);
+        process.trace(() -> "1 trying to call function: " + finalFunction);
 
 
         final List<JanitorObject> finishedArgs;
         if (expressionList != null) {
             final List<JanitorObject> args = new ArrayList<>(expressionList.length());
             for (int i = 0; i < expressionList.length(); i++) {
-                args.add(expressionList.get(i).evaluate(runningScript).janitorUnpack());
+                args.add(expressionList.get(i).evaluate(process).janitorUnpack());
             }
             finishedArgs = args;
         } else {
             finishedArgs = Collections.emptyList();
         }
-        runningScript.trace(() -> "args: " + finishedArgs);
-        final JCallArgs args = new JCallArgs(functionName, runningScript, finishedArgs);
+        process.trace(() -> "args: " + finishedArgs);
+        final JCallArgs args = new JCallArgs(functionName, process, finishedArgs);
 
         //for (int i = 0; i < expressionList.length(); i++) {
-        //    argumentList.bind("#"+i, expressionList.get(i).evaluate(runningScript));
+        //    argumentList.bind("#"+i, expressionList.get(i).evaluate(process));
         //}
         if (function instanceof JCallable) {
             try {
-                final JanitorObject result = ((JCallable) function).call(runningScript, args);
-                runningScript.trace(() -> "function call result: " + result);
+                final JanitorObject result = ((JCallable) function).call(process, args);
+                process.trace(() -> "function call result: " + result);
 
                 if (result == null) {
-                    runningScript.warn("expected result != null from call of " + functionName + "(" + args + ")");
+                    process.warn("expected result != null from call of " + functionName + "(" + args + ")");
                 }
 
                 // LATER: hier nochmal genau prüfen, wo/wann wir auspacken müssen!
@@ -109,10 +109,10 @@ public class FunctionCallStatement extends Statement implements Expression {
                 }
                 return result.janitorUnpack();
             } catch (RuntimeException e) {
-                throw new JanitorNativeException(runningScript, "function call failed for " + functionName + "(" + args + ")", e);
+                throw new JanitorNativeException(process, "function call failed for " + functionName + "(" + args + ")", e);
             }
         }
-        throw new JanitorNameException(runningScript, "invalid callable: " + functionName + " (name: " + functionName + "): " + function + " [" +
+        throw new JanitorNameException(process, "invalid callable: " + functionName + " (name: " + functionName + "): " + function + " [" +
             simpleClassNameOf(function) + "]");
     }
 

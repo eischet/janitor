@@ -82,7 +82,7 @@ public class Demo {
         }
 
         @Override
-        public JanitorObject print(final JanitorScriptProcess rs, final JCallArgs args) {
+        public JanitorObject print(final JanitorScriptProcess process, final JCallArgs args) {
             for (final JanitorObject janitorObject : args.getList()) {
                 System.out.print(janitorObject.janitorToString());
             }

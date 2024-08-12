@@ -51,11 +51,11 @@ public class ReturnStatement extends Statement {
     }
 
     @Override
-    public void execute(final JanitorScriptProcess runningScript) throws JanitorRuntimeException, Return {
-        runningScript.setCurrentLocation(getLocation());
+    public void execute(final JanitorScriptProcess process) throws JanitorRuntimeException, Return {
+        process.setCurrentLocation(getLocation());
         if (expression != null) {
-            final JanitorObject returnValue = expression.evaluate(runningScript).janitorUnpack();
-            runningScript.trace(() -> "return value: " + returnValue);
+            final JanitorObject returnValue = expression.evaluate(process).janitorUnpack();
+            process.trace(() -> "return value: " + returnValue);
             throw new Return(returnValue);
         } else {
             throw RETURN_NOTHING;

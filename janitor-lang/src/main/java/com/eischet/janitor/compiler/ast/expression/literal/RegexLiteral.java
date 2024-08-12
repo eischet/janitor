@@ -25,7 +25,7 @@ public class RegexLiteral extends Literal {
     }
 
     @Override
-    public JanitorObject evaluate(final JanitorScriptProcess runningScript) throws JanitorRuntimeException {
-        return runningScript.getEnvironment().getBuiltins().regex(pattern);
+    public JanitorObject evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException {
+        return process.getEnvironment().getBuiltins().regex(pattern);
     }
 }

@@ -27,15 +27,15 @@ public class ListLiteral extends Literal {
     }
 
     @Override
-    public JList evaluate(final JanitorScriptProcess runningScript) throws JanitorRuntimeException {
+    public JList evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException {
         if (elements.isEmpty()) {
-            return runningScript.getEnvironment().getBuiltins().list();
+            return process.getEnvironment().getBuiltins().list();
         } else {
             final List<JanitorObject> evaluatedElements = new ArrayList<>(elements.size());
             for (final Expression element : elements) {
-                evaluatedElements.add(element.evaluate(runningScript).janitorUnpack());
+                evaluatedElements.add(element.evaluate(process).janitorUnpack());
             }
-            return runningScript.getEnvironment().getBuiltins().list(evaluatedElements);
+            return process.getEnvironment().getBuiltins().list(evaluatedElements);
         }
     }
 

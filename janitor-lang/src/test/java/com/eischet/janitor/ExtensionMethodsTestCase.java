@@ -40,7 +40,7 @@ public class ExtensionMethodsTestCase {
      */
     private final BaseRuntime RT = new BaseRuntime(ENV) {
         @Override
-        public JanitorObject print(final JanitorScriptProcess rs, final JCallArgs args) {
+        public JanitorObject print(final JanitorScriptProcess process, final JCallArgs args) {
             // not needed for this test
             return JNull.NULL;
         }

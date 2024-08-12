@@ -11,5 +11,5 @@ import com.eischet.janitor.compiler.ast.Ast;
  * It's the most basic building block of the language, together with statements.
  */
 public interface Expression extends Ast {
-    JanitorObject evaluate(final JanitorScriptProcess runningScript) throws JanitorRuntimeException;
+    JanitorObject evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException;
 }

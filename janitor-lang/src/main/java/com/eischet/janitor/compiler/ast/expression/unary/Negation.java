@@ -28,7 +28,7 @@ public class Negation extends AstNode implements Expression {
 
 
     @Override
-    public JanitorObject evaluate(final JanitorScriptProcess runningScript) throws JanitorRuntimeException {
-        return JanitorSemantics.negate(runningScript, expr.evaluate(runningScript).janitorUnpack());
+    public JanitorObject evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException {
+        return JanitorSemantics.negate(process, expr.evaluate(process).janitorUnpack());
     }
 }

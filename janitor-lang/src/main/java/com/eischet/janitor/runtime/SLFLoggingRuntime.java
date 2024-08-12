@@ -23,7 +23,7 @@ public class SLFLoggingRuntime extends BaseRuntime {
     }
 
     @Override
-    public JanitorObject print(final JanitorScriptProcess rs, final JCallArgs args) {
+    public JanitorObject print(final JanitorScriptProcess process, final JCallArgs args) {
         final StringBuilder output = new StringBuilder();
         final int sz = args.size();
         final int last = sz -1;

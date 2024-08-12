@@ -41,27 +41,27 @@ public class ForRangeLoop extends Statement {
     }
 
     @Override
-    public void execute(final JanitorScriptProcess runningScript) throws JanitorRuntimeException, JanitorControlFlowException {
+    public void execute(final JanitorScriptProcess process) throws JanitorRuntimeException, JanitorControlFlowException {
         try {
-            runningScript.setCurrentLocation(getLocation());
-            final JanitorObject start = from.evaluate(runningScript).janitorUnpack();
-            final JanitorObject end = to.evaluate(runningScript).janitorUnpack();
+            process.setCurrentLocation(getLocation());
+            final JanitorObject start = from.evaluate(process).janitorUnpack();
+            final JanitorObject end = to.evaluate(process).janitorUnpack();
             if (start instanceof JInt startInt && end instanceof JInt endInt) {
                 final long endIntValue = endInt.getValue();
                 for (long i = startInt.getValue(); i <= endIntValue; i++) {
                     try {
-                        runningScript.enterBlock(getLocation());
-                        runningScript.getCurrentScope().bind(runningScript, loopVar, runningScript.getEnvironment().getBuiltins().integer(i));
+                        process.enterBlock(getLocation());
+                        process.getCurrentScope().bind(process, loopVar, process.getEnvironment().getBuiltins().integer(i));
                         try {
-                            block.execute(runningScript);
+                            block.execute(process);
                         } catch (ContinueStatement.Continue ignored) {
                         }
                     } finally {
-                        runningScript.exitBlock();
+                        process.exitBlock();
                     }
                 }
             } else {
-                throw new JanitorArgumentException(runningScript, "invalid range: from " + start + " to " + end + ", expecting integer values for the range!");
+                throw new JanitorArgumentException(process, "invalid range: from " + start + " to " + end + ", expecting integer values for the range!");
             }
         } catch (BreakStatement.Break ignored) {
         }

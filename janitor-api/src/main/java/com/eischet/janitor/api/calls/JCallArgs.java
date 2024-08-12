@@ -117,7 +117,7 @@ public class JCallArgs {
      * @return a list of strings
      * @throws JanitorRuntimeException on runtime errors
      */
-    public List<String> getStringList(final int position) throws JanitorRuntimeException {
+    public List<String> getStringList(int position) throws JanitorRuntimeException {
         final List<String> strings = new ArrayList<>();
         String next = getOptionalStringValue(position, null);
         while (next != null) {

@@ -120,11 +120,11 @@ implements the "int" property, which returns an integer value by truncating the 
 
 ```java
     @Override
-    public @Nullable JanitorObject janitorGetAttribute(final JanitorScriptProcess runningScript, final String name, final boolean required) throws JanitorNameException {
+    public @Nullable JanitorObject janitorGetAttribute(final JanitorScriptProcess process, final String name, final boolean required) throws JanitorNameException {
         if (Objects.equals(name, "int")) {
             return JInt.of((long) number);
         }
-        return JConstant.super.janitorGetAttribute(runningScript, name, required);
+        return JConstant.super.janitorGetAttribute(process, name, required);
     }
 ```
 
@@ -141,9 +141,9 @@ Everything else builds on this simple, string-based dispatch API.
 Finally, let's have a look at how the String class implements its toUpperCase function to see how to implement Java code that can be called by scripts:
 
 ```java
-    public static JString __toUpperCase(final JanitorWrapper<String> self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static JString __toUpperCase(final JanitorWrapper<String> self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0); // no arguments allowed
-        return runningScript.getBuiltins().string(self.janitorGetHostValue().toUpperCase(Locale.ROOT));
+        return process.getBuiltins().string(self.janitorGetHostValue().toUpperCase(Locale.ROOT));
     }
 ```
 

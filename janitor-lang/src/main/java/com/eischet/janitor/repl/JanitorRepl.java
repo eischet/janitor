@@ -126,19 +126,19 @@ public class JanitorRepl {
             final Location loc = Location.startOf(module);
             final Script partialScript = new Script(loc, List.of(compiledStatement), text);
 
-            final RunningScriptProcess runningScript = new RunningScriptProcess(runtime, globalScope, partialScript);
+            final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, partialScript);
 
             try {
-                partialScript.execute(runningScript);
-                final JanitorObject result = runningScript.getScriptResult();
+                partialScript.execute(process);
+                final JanitorObject result = process.getScriptResult();
                 System.out.println("Result: " + result);
             } catch (ReturnStatement.Return ret) {
                 final JanitorObject returnResult = ret.getValue();
                 System.out.println("Return Result: " + returnResult);
             }
             // Catch all the globals defined by this script and stuff them into our global scope, making them available for the next round:
-            globalScope.replEatScope(runningScript.getMainScope());
-            // runningScript.getMainScope().
+            globalScope.replEatScope(process.getMainScope());
+            // process.getMainScope().
 
             // compiledStatement.execute(new RunningScriptProcess(null, null, partialScript);
 

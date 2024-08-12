@@ -32,8 +32,8 @@ public class ExpressionStatement extends Statement {
     }
 
     @Override
-    public void execute(final JanitorScriptProcess runningScript) throws JanitorRuntimeException, JanitorControlFlowException {
-        runningScript.setCurrentLocation(getLocation());
-        runningScript.setScriptResult(expression.evaluate(runningScript).janitorUnpack());
+    public void execute(final JanitorScriptProcess process) throws JanitorRuntimeException, JanitorControlFlowException {
+        process.setCurrentLocation(getLocation());
+        process.setScriptResult(expression.evaluate(process).janitorUnpack());
     }
 }

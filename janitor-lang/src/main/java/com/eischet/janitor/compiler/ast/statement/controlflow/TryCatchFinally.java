@@ -34,30 +34,30 @@ public class TryCatchFinally extends Statement {
     }
 
     @Override
-    public void execute(final JanitorScriptProcess runningScript) throws JanitorRuntimeException, JanitorControlFlowException {
+    public void execute(final JanitorScriptProcess process) throws JanitorRuntimeException, JanitorControlFlowException {
         if (catchBlock != null) {
             try {
-                tryBlock.execute(runningScript);
+                tryBlock.execute(process);
             } catch (JanitorRuntimeException e) {
                 try {
-                    runningScript.enterBlock(null);
-                    runningScript.getCurrentScope().bind(runningScript, catchBind, e);
-                    catchBlock.execute(runningScript);
+                    process.enterBlock(null);
+                    process.getCurrentScope().bind(process, catchBind, e);
+                    catchBlock.execute(process);
                 } finally {
-                    runningScript.exitBlock();
+                    process.exitBlock();
                 }
             }
             if (finallyBlock != null) {
-                finallyBlock.execute(runningScript);
+                finallyBlock.execute(process);
             }
         } else {
             JanitorRuntimeException error = null;
             try {
-                tryBlock.execute(runningScript);
+                tryBlock.execute(process);
             } catch (JanitorRuntimeException e) {
                 error = e;
             }
-            finallyBlock.execute(runningScript);
+            finallyBlock.execute(process);
             if (error != null) {
                 throw error;
             }
