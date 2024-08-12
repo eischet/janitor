@@ -14,21 +14,21 @@ public interface JanitorFormatting {
      * @param hostValue the date time value
      * @return the formatted string
      */
-    String asTimeString(LocalDateTime hostValue);
+    String asTimeString(final LocalDateTime hostValue);
 
     /**
      * Formats a date time value as a string.
      * @param hostValue the date time value
      * @return the formatted string
      */
-    String formatDateTime(LocalDateTime hostValue);
+    String formatDateTime(final LocalDateTime hostValue);
 
     /**
      * Formats a date time value as a string.
      * @param hostValue the date time value
      * @return the formatted string
      */
-    String formatDateTime(ZonedDateTime hostValue);
+    String formatDateTime(final ZonedDateTime hostValue);
 
     /**
      * Formates a date time value as a string, without seconds.

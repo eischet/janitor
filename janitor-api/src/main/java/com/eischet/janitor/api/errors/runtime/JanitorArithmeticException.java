@@ -7,6 +7,7 @@ import com.eischet.janitor.api.JanitorScriptProcess;
  * For example, division by zero.
  */
 public class JanitorArithmeticException extends JanitorRuntimeException {
+
     /**
      * Constructs a new JanitorArithmeticException.
      * @param process the running script

@@ -481,19 +481,19 @@ public class JanitorDefaultBuiltins implements JanitorBuiltins {
 
     /**
      * Parse a date from a string.
-     * @param runningScript the running script
+     * @param process the running script
      * @param string the string
      * @param format the format
      * @return the date
      */
     @Override
-    public JanitorObject parseNullableDate(final JanitorScriptProcess runningScript, final String string, final String format) {
+    public JanitorObject parseNullableDate(final JanitorScriptProcess process, final String string, final String format) {
         try {
             final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
             final LocalDate d = LocalDate.parse(string, formatter);
             return date(d);
         } catch (DateTimeParseException e) {
-            runningScript.warn("error parsing date '%s' with format '%s': %s".formatted(string, format, e.getMessage()));
+            process.warn("error parsing date '%s' with format '%s': %s".formatted(string, format, e.getMessage()));
             return JNull.NULL;
         }
     }

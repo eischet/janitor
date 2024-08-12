@@ -7,6 +7,7 @@ import com.eischet.janitor.api.JanitorScriptProcess;
  * Janitor has a built-in assert() function, which will produce this exception when the assertion fails.
  */
 public class JanitorAssertionException extends JanitorRuntimeException {
+
     /**
      * Constructs a new JanitorAssertionException.
      * @param process the running script

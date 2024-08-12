@@ -443,11 +443,11 @@ public class FirstParserTestCase {
         for (final String moduleName : List.of("foo", "bar", "baz")) {
             rt.getEnvironment().addModule(new JanitorModuleRegistration(moduleName, () -> new JanitorModule() {
                 @Override
-                public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess runningScript, final @NotNull String name, final boolean required) throws JanitorRuntimeException {
+                public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess process, final @NotNull String name, final boolean required) throws JanitorRuntimeException {
                     if ("name".equals(name)) {
                         return TestEnv.env.getBuiltins().string(moduleName);
                     }
-                    return JanitorModule.super.janitorGetAttribute(runningScript, name, required);
+                    return JanitorModule.super.janitorGetAttribute(process, name, required);
                 }
             }));
         }
@@ -501,11 +501,11 @@ public class FirstParserTestCase {
                 if ("dummy".equals(name)) {
                     return new JanitorModule() {
                         @Override
-                        public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess runningScript, final @NotNull String name, final boolean required) throws JanitorRuntimeException {
+                        public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess process, final @NotNull String name, final boolean required) throws JanitorRuntimeException {
                             if ("name".equals(name)) {
                                 return TestEnv.env.getBuiltins().string("dummy");
                             }
-                            return JanitorModule.super.janitorGetAttribute(runningScript, name, required);
+                            return JanitorModule.super.janitorGetAttribute(process, name, required);
                         }
                     };
                 }
@@ -1270,7 +1270,7 @@ public class FirstParserTestCase {
     public static class FooModule extends JanitorNativeModule {
 
         @Override
-        public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess runningScript, final @NotNull String name, final boolean required) throws JanitorNameException {
+        public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess process, final @NotNull String name, final boolean required) throws JanitorNameException {
             if ("x".equals(name)) {
                 return TestEnv.env.getBuiltins().integer(17);
             } else {
@@ -1284,7 +1284,7 @@ public class FirstParserTestCase {
 
 
         @Override
-        public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess runningScript, final @NotNull String name, final boolean required) throws JanitorRuntimeException {
+        public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess process, final @NotNull String name, final boolean required) throws JanitorRuntimeException {
             if (name.equals("from")) {
                 System.out.println("someone asked for property 'from'!");
                 return TestEnv.env.getBuiltins().string("foo");
@@ -1293,7 +1293,7 @@ public class FirstParserTestCase {
                 System.out.println("someone asked for property 'to'!");
                 return TestEnv.env.getBuiltins().string("bar");
             }
-            return JanitorObject.super.janitorGetAttribute(runningScript, name, required);
+            return JanitorObject.super.janitorGetAttribute(process, name, required);
         }
     }
 

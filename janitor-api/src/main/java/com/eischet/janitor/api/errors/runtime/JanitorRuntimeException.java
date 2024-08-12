@@ -10,7 +10,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 
 /**
  * A runtime exception that is thrown by the Janitor interpreter.
@@ -58,28 +57,15 @@ public abstract class JanitorRuntimeException extends JanitorException implement
     }
 
 
-    /**
-     * From the list of lines, retrieve the line at the given index.
-     * @param lines the list of lines
-     * @param line the index of the line to retrieve
-     * @return null on any errors, or else the line at the given index
-     */
-    public static String getLine(final List<String> lines, int line) {
-        if (line > lines.size() || line < 1 || lines.isEmpty()) {
-            return null;
-        }
-        return lines.get(line - 1);
-    }
-
     @Override
-    public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess runningScript, final @NotNull String name, final boolean required) throws JanitorRuntimeException {
+    public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess process, final @NotNull String name, final boolean required) throws JanitorRuntimeException {
         if ("message".equals(name)) {
-            return runningScript.getEnvironment().getBuiltins().nullableString(getMessage());
+            return process.getEnvironment().getBuiltins().nullableString(getMessage());
         }
         if ("type".equals(name)) {
-            return runningScript.getEnvironment().getBuiltins().string(getClass().getSimpleName());
+            return process.getEnvironment().getBuiltins().string(getClass().getSimpleName());
         }
-        return JanitorObject.super.janitorGetAttribute(runningScript, name, required);
+        return JanitorObject.super.janitorGetAttribute(process, name, required);
     }
 
     /**

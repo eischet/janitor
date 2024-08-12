@@ -114,5 +114,5 @@ public interface JanitorBuiltins {
 
     JDate date(long year, long month, long day);
 
-    JanitorObject parseNullableDate(JanitorScriptProcess runningScript, String string, String format);
+    JanitorObject parseNullableDate(JanitorScriptProcess process, String string, String format);
 }

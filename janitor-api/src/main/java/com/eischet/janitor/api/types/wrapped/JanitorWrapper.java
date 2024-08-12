@@ -38,12 +38,12 @@ public class JanitorWrapper<T> implements JanitorObject {
     }
 
     @Override
-    public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess runningScript, final @NotNull String name, final boolean required) throws JanitorRuntimeException {
-        final JanitorObject attribute = dispatcher.dispatch(this, runningScript, name);
+    public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess process, final @NotNull String name, final boolean required) throws JanitorRuntimeException {
+        final JanitorObject attribute = dispatcher.dispatch(this, process, name);
         if (attribute != null) {
             return attribute;
         }
-        return JanitorObject.super.janitorGetAttribute(runningScript, name, required);
+        return JanitorObject.super.janitorGetAttribute(process, name, required);
     }
 
     @Override

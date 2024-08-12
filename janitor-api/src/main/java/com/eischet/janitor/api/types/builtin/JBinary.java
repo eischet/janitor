@@ -9,7 +9,7 @@ import java.util.Arrays;
 
 /**
  * A binary object, like a byte array.
- * This is one of the built-in types that Janitor provides automatically.
+ * This is one of the built-in types that Janitor provides out of the box.
  */
 public class JBinary extends JanitorWrapper<byte[]> implements JConstant {
 

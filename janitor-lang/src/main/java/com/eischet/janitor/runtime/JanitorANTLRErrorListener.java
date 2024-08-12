@@ -1,6 +1,6 @@
 package com.eischet.janitor.runtime;
 
-import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
+import com.eischet.janitor.api.scopes.ScriptModule;
 import org.antlr.v4.runtime.ANTLRErrorListener;
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.RecognitionException;
@@ -39,7 +39,7 @@ class JanitorANTLRErrorListener implements ANTLRErrorListener {
         }
 
         final String improvedMessage = improveAntlrMessage(msg);
-        final String errorLine = JanitorRuntimeException.getLine(lines, line);
+        final String errorLine = ScriptModule.getLine(lines, line);
         if (errorLine != null && !errorLine.isBlank()) {
             issues.add("line %s:%s --> %s \n    %s".formatted(line, charPositionInLine, improvedMessage, errorLine));
         } else {

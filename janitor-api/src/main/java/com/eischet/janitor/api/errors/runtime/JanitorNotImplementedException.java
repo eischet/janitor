@@ -8,10 +8,10 @@ import com.eischet.janitor.api.JanitorScriptProcess;
 public class JanitorNotImplementedException extends JanitorRuntimeException {
     /**
      * Constructs a new JanitorNotImplementedException.
-     * @param runningScript the running script
-     * @param s the detail message
+     * @param process the running script
+     * @param message the detail message
      */
-    public JanitorNotImplementedException(final JanitorScriptProcess runningScript, final String s) {
-        super(runningScript, s, JanitorNotImplementedException.class);
+    public JanitorNotImplementedException(final JanitorScriptProcess process, final String message) {
+        super(process, message, JanitorNotImplementedException.class);
     }
 }

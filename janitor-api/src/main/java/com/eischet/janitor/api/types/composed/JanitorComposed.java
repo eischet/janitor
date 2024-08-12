@@ -32,14 +32,14 @@ public abstract class JanitorComposed<T extends JanitorComposed<T>> implements J
     }
 
     @Override
-    public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess runningScript, final @NotNull String name, final boolean required) throws JanitorRuntimeException {
+    public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess process, final @NotNull String name, final boolean required) throws JanitorRuntimeException {
         // We cannot dispatch(this), but we can dispatch self(), which will always work - but javac is not
         // aware of this. Looks funny, but works.
-        final JanitorObject attribute = dispatcher.dispatch(self(), runningScript, name);
+        final JanitorObject attribute = dispatcher.dispatch(self(), process, name);
         if (attribute != null) {
             return attribute;
         }
-        return JanitorObject.super.janitorGetAttribute(runningScript, name, required);
+        return JanitorObject.super.janitorGetAttribute(process, name, required);
     }
 
     @SuppressWarnings("unchecked")

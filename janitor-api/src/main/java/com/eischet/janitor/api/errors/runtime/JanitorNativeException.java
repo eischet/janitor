@@ -8,11 +8,11 @@ import com.eischet.janitor.api.JanitorScriptProcess;
 public class JanitorNativeException extends JanitorRuntimeException {
     /**
      * Constructs a new JanitorNativeException.
-     * @param rs the running script
-     * @param s the detail message
-     * @param e the cause
+     * @param process the running script
+     * @param message the detail message
+     * @param cause the cause
      */
-    public JanitorNativeException(final JanitorScriptProcess rs, final String s, final Throwable e) {
-        super(rs, s, e, JanitorNativeException.class);
+    public JanitorNativeException(final JanitorScriptProcess process, final String message, final Throwable cause) {
+        super(process, message, cause, JanitorNativeException.class);
     }
 }

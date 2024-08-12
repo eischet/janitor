@@ -21,7 +21,7 @@ public class TemporaryAssignable implements JAssignable, JanitorObject {
      * @param value our value
      * @param setter code to call when someone assigns to us
      */
-    public TemporaryAssignable(JanitorObject value, final RuntimeConsumer<JanitorObject> setter) {
+    public TemporaryAssignable(final JanitorObject value, final RuntimeConsumer<JanitorObject> setter) {
         this.value = value;
         this.setter = setter;
     }
@@ -43,7 +43,7 @@ public class TemporaryAssignable implements JAssignable, JanitorObject {
      * @throws JanitorRuntimeException on runtime errors
      */
     @Override
-    public boolean assign(JanitorObject value) throws JanitorRuntimeException {
+    public boolean assign(final JanitorObject value) throws JanitorRuntimeException {
         this.setter.accept(value);
         return true;
     }

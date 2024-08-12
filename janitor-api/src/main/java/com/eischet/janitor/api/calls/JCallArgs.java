@@ -22,18 +22,18 @@ public class JCallArgs {
 
     private final @Nullable List<JanitorObject> args;
     private final String functionName;
-    private final @NotNull JanitorScriptProcess runningScript;
+    private final @NotNull JanitorScriptProcess process;
 
     /**
      * Create a new call arguments object.
      *
      * @param functionName  the name of the function being called.
-     * @param runningScript the script that is running.
+     * @param process the script that is running.
      * @param args          the arguments to the function.
      */
-    public JCallArgs(final String functionName, final @NotNull JanitorScriptProcess runningScript, final @Nullable List<JanitorObject> args) {
+    public JCallArgs(final String functionName, final @NotNull JanitorScriptProcess process, final @Nullable List<JanitorObject> args) {
         this.functionName = functionName;
-        this.runningScript = runningScript;
+        this.process = process;
         this.args = args;
     }
 
@@ -41,11 +41,11 @@ public class JCallArgs {
      * Create an empty call arguments object.
      *
      * @param functionName  the name of the function being called.
-     * @param runningScript the script that is running.
+     * @param process the script that is running.
      * @return the empty call arguments object.
      */
-    public static JCallArgs empty(final String functionName, final JanitorScriptProcess runningScript) {
-        return new JCallArgs(functionName, runningScript, null);
+    public static JCallArgs empty(final String functionName, final JanitorScriptProcess process) {
+        return new JCallArgs(functionName, process, null);
     }
 
     /**
@@ -76,7 +76,7 @@ public class JCallArgs {
      */
     public JCallArgs require(final int minSize, final int maxSize) throws JanitorRuntimeException {
         if (size() < minSize || size() > maxSize) {
-            throw new JanitorArgumentException(runningScript, "%s: requires between %s and %s arguments, but got: %s".formatted(functionName, minSize, maxSize, args));
+            throw new JanitorArgumentException(process, "%s: requires between %s and %s arguments, but got: %s".formatted(functionName, minSize, maxSize, args));
         }
         return this;
     }
@@ -90,7 +90,7 @@ public class JCallArgs {
      */
     public JCallArgs require(final int size) throws JanitorRuntimeException {
         if (size() != size) {
-            throw new JanitorArgumentException(runningScript, "%s: requires exactly %s arguments, but got: %s".formatted(functionName, size, args));
+            throw new JanitorArgumentException(process, "%s: requires exactly %s arguments, but got: %s".formatted(functionName, size, args));
         }
         return this;
     }
@@ -117,7 +117,7 @@ public class JCallArgs {
      * @return a list of strings
      * @throws JanitorRuntimeException on runtime errors
      */
-    public List<String> getStringList(int position) throws JanitorRuntimeException {
+    public List<String> getStringList(final int position) throws JanitorRuntimeException {
         final List<String> strings = new ArrayList<>();
         String next = getOptionalStringValue(position, null);
         while (next != null) {
@@ -139,7 +139,7 @@ public class JCallArgs {
         if (arg instanceof JString jstr) {
             return jstr.janitorGetHostValue();
         }
-        throw new JanitorArgumentException(runningScript, "%s: argument %s must be a string value, but the caller provided: %s".formatted(functionName, i, args));
+        throw new JanitorArgumentException(process, "%s: argument %s must be a string value, but the caller provided: %s".formatted(functionName, i, args));
     }
 
     /**
@@ -154,7 +154,7 @@ public class JCallArgs {
         if (arg instanceof JBool jbool) {
             return jbool.janitorIsTrue();
         }
-        throw new JanitorArgumentException(runningScript, "%s: argument %s must be a boolean value, but the caller provided: %s".formatted(functionName, i, args));
+        throw new JanitorArgumentException(process, "%s: argument %s must be a boolean value, but the caller provided: %s".formatted(functionName, i, args));
     }
 
     /**
@@ -192,10 +192,10 @@ public class JCallArgs {
             try {
                 return cls.cast(obj);
             } catch (ClassCastException e) {
-                throw new JanitorNativeException(runningScript, "%s: error casting required argument #%s to type %s".formatted(functionName, position, cls.getSimpleName()), e);
+                throw new JanitorNativeException(process, "%s: error casting required argument #%s to type %s".formatted(functionName, position, cls.getSimpleName()), e);
             }
         } else {
-            throw new JanitorArgumentException(runningScript, "%s: argument #%s is required to be of type %s, but it is of type %s".formatted(functionName, position, cls.getSimpleName(), ObjectUtilities.simpleClassNameOf(obj)));
+            throw new JanitorArgumentException(process, "%s: argument #%s is required to be of type %s, but it is of type %s".formatted(functionName, position, cls.getSimpleName(), ObjectUtilities.simpleClassNameOf(obj)));
         }
     }
 
@@ -214,10 +214,10 @@ public class JCallArgs {
             try {
                 return cls.cast(obj);
             } catch (ClassCastException e) {
-                throw new JanitorNativeException(runningScript, "%s: error casting required argument #%s to type %s".formatted(functionName, position, cls.getSimpleName()), e);
+                throw new JanitorNativeException(process, "%s: error casting required argument #%s to type %s".formatted(functionName, position, cls.getSimpleName()), e);
             }
         } else {
-            throw new JanitorArgumentException(runningScript, "%s: argument #%s is required to be of type %s, but it is of type %s".formatted(functionName, position, cls.getSimpleName(), ObjectUtilities.simpleClassNameOf(obj)));
+            throw new JanitorArgumentException(process, "%s: argument #%s is required to be of type %s, but it is of type %s".formatted(functionName, position, cls.getSimpleName(), ObjectUtilities.simpleClassNameOf(obj)));
         }
     }
 
@@ -231,7 +231,7 @@ public class JCallArgs {
     public JFloat getFloat(final int i) throws JanitorRuntimeException {
         final JFloat floatValue = get(i).janitorCoerce(JFloat.class);
         if (floatValue == null) {
-            throw new JanitorArgumentException(runningScript, "%s: argument %s must be a float value, but the caller provided: %s".formatted(functionName, i, args));
+            throw new JanitorArgumentException(process, "%s: argument %s must be a float value, but the caller provided: %s".formatted(functionName, i, args));
         }
         return floatValue;
     }
@@ -246,7 +246,7 @@ public class JCallArgs {
     public JInt getInt(final int i) throws JanitorRuntimeException {
         final JInt intValue = get(i).janitorCoerce(JInt.class);
         if (intValue == null) {
-            throw new JanitorArgumentException(runningScript, "%s: argument %s must be an integer value, but the caller provided: %s".formatted(functionName, i, args));
+            throw new JanitorArgumentException(process, "%s: argument %s must be an integer value, but the caller provided: %s".formatted(functionName, i, args));
         }
         return intValue;
     }
@@ -261,7 +261,7 @@ public class JCallArgs {
     public JString getString(final int i) throws JanitorRuntimeException {
         final JString stringValue = get(i).janitorCoerce(JString.class);
         if (stringValue == null) {
-            throw new JanitorArgumentException(runningScript, "%s: argument %s must be a string value, but the caller provided: %s".formatted(functionName, i, args));
+            throw new JanitorArgumentException(process, "%s: argument %s must be a string value, but the caller provided: %s".formatted(functionName, i, args));
         }
         return stringValue;
     }
@@ -276,7 +276,7 @@ public class JCallArgs {
 
     @Override
     public String toString() {
-        return "CSCallArgs{" +
+        return "JCallArgs{" +
                "args=" + args +
                ", functionName='" + functionName + '\'' +
                '}';

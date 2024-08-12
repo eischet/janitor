@@ -10,5 +10,5 @@ import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
  */
 public interface JConstructor<T extends JanitorObject> extends JCallable {
     @Override
-    T call(final JanitorScriptProcess runningScript, JCallArgs arguments) throws JanitorRuntimeException;
+    T call(final JanitorScriptProcess process, JCallArgs arguments) throws JanitorRuntimeException;
 }

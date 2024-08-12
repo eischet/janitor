@@ -14,17 +14,17 @@ public class CollectionsModule extends JanitorNativeModule {
     public static final JanitorModuleRegistration REGISTRATION = new JanitorModuleRegistration("collections", CollectionsModule::new);
 
     @Override
-    public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess runningScript, final @NotNull String name, final boolean required) throws JanitorNameException {
+    public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess process, final @NotNull String name, final boolean required) throws JanitorNameException {
         if ("set".equals(name)) {
-            return JNativeMethod.of(arguments -> runningScript.getEnvironment().getBuiltins().set(arguments.getList().stream()));
+            return JNativeMethod.of(arguments -> process.getEnvironment().getBuiltins().set(arguments.getList().stream()));
         }
         if ("list".equals(name)) {
-            return JNativeMethod.of(arguments -> runningScript.getEnvironment().getBuiltins().list(arguments.getList()));
+            return JNativeMethod.of(arguments -> process.getEnvironment().getBuiltins().list(arguments.getList()));
         }
         if ("map".equals(name)) {
             return JNativeMethod.of(arguments -> {
                 arguments.require(0);
-                return runningScript.getEnvironment().getBuiltins().map();
+                return process.getEnvironment().getBuiltins().map();
             });
         }
         return null;

@@ -85,13 +85,13 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
     }
 
     @Override
-    public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess runningScript, final @NotNull String name, final boolean required) throws JanitorRuntimeException {
-        @Nullable final JanitorObject attr = super.janitorGetAttribute(runningScript, name, required);
+    public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess process, final @NotNull String name, final boolean required) throws JanitorRuntimeException {
+        @Nullable final JanitorObject attr = super.janitorGetAttribute(process, name, required);
         if (attr != null) {
             return attr;
         }
         // this is very important for cases where the map is supposed to be used as an implicit object and for map.key access within scripts: return the map key by name
-        @NotNull final JString nameAsString = runningScript.getEnvironment().getBuiltins().string(name);
+        @NotNull final JString nameAsString = process.getEnvironment().getBuiltins().string(name);
         return wrapped.get(nameAsString);
     }
 

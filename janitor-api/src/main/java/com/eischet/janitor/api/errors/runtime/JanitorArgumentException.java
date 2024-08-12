@@ -8,11 +8,11 @@ import com.eischet.janitor.api.JanitorScriptProcess;
 public class JanitorArgumentException extends JanitorRuntimeException {
     /**
      * Constructs a new JanitorArgumentException.
-     * @param runningScript the running script
+     * @param process the running script
      * @param message the detail message
      */
-    public JanitorArgumentException(final JanitorScriptProcess runningScript, final String message) {
-        super(runningScript, message, JanitorArgumentException.class);
+    public JanitorArgumentException(final JanitorScriptProcess process, final String message) {
+        super(process, message, JanitorArgumentException.class);
     }
 
     /**

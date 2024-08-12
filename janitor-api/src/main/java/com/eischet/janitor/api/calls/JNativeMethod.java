@@ -21,20 +21,20 @@ public class JNativeMethod implements JCallable, JanitorObject {
      * @see NativeCallArgsOnlyVoid
      */
     @FunctionalInterface
-    public
-    interface NativeCall {
-        JanitorObject execute(JanitorScriptProcess runningScript, JCallArgs arguments) throws Exception;
+    public interface NativeCall {
+        JanitorObject execute(final JanitorScriptProcess process, final JCallArgs arguments) throws Exception;
     }
 
     /**
      * A functional interface for a native call, which your app will implement.
      * This variant does not use the running script, so use this when access to other Janitor code is not required.
+     *
      * @see NativeCall
      * @see NativeCallArgsOnlyVoid
      */
     @FunctionalInterface
     public interface NativeCallArgsOnly {
-        JanitorObject execute(JCallArgs arguments) throws Exception;
+        JanitorObject execute(final JCallArgs arguments) throws Exception;
     }
 
     /**
@@ -45,7 +45,7 @@ public class JNativeMethod implements JCallable, JanitorObject {
      */
     @FunctionalInterface
     public interface NativeCallArgsOnlyVoid {
-        void execute(JCallArgs arguments) throws Exception;
+        void execute(final JCallArgs arguments) throws Exception;
     }
 
 
@@ -58,7 +58,7 @@ public class JNativeMethod implements JCallable, JanitorObject {
      */
     public JNativeMethod(final NativeCallArgsOnly nativeCall) {
         this.name = null;
-        this.nativeCall = (rs, args) -> nativeCall.execute(args);
+        this.nativeCall = (process, args) -> nativeCall.execute(args);
     }
 
     /**
@@ -67,7 +67,7 @@ public class JNativeMethod implements JCallable, JanitorObject {
      */
     public JNativeMethod(final String name, final NativeCallArgsOnly nativeCall) {
         this.name = name;
-        this.nativeCall = (rs, args) -> nativeCall.execute(args);
+        this.nativeCall = (process, args) -> nativeCall.execute(args);
     }
 
     /**
@@ -125,15 +125,15 @@ public class JNativeMethod implements JCallable, JanitorObject {
      * Call the method.
      * The interpreter will do this for you, don't call this yourself.
      *
-     * @param runningScript the script that is running.
+     * @param process the script that is running.
      * @param arguments the arguments to pass to the method.
      * @return the result of the method's execution.
      * @throws JanitorRuntimeException when runtime errors occur
      */
     @Override
-    public JanitorObject call(final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
+    public JanitorObject call(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         try {
-            final JanitorObject res = nativeCall.execute(runningScript, arguments);
+            final JanitorObject res = nativeCall.execute(process, arguments);
             if (res != null) {
                 return res;
             }
@@ -142,7 +142,7 @@ public class JNativeMethod implements JCallable, JanitorObject {
             if (e instanceof JanitorRuntimeException rte) {
                 throw rte;
             } else {
-                throw new JanitorNativeException(runningScript, "%s: error calling native code".formatted(arguments.getFunctionName()), e);
+                throw new JanitorNativeException(process, "%s: error calling native code".formatted(arguments.getFunctionName()), e);
             }
         }
     }

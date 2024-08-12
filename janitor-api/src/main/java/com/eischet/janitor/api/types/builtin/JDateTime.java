@@ -88,16 +88,16 @@ public class JDateTime extends JanitorComposed<JDateTime> implements JConstant {
 
     /**
      * Require a datetime value.
-     * @param runningScript the running script
+     * @param process the running script
      * @param value the value to check
      * @return the value, if it's a datetime
      * @throws JanitorArgumentException if the value is not a datetime
      */
-    public static JDateTime require(final JanitorScriptProcess runningScript, final JanitorObject value) throws JanitorArgumentException {
+    public static JDateTime require(final JanitorScriptProcess process, final JanitorObject value) throws JanitorArgumentException {
         if (value instanceof JDateTime ok) {
             return ok;
         }
-        throw new JanitorArgumentException(runningScript, "Expected a datetime value, but got " + value.janitorClassName() + " instead.");
+        throw new JanitorArgumentException(process, "Expected a datetime value, but got " + value.janitorClassName() + " instead.");
     }
 
     @Override
@@ -135,18 +135,18 @@ public class JDateTime extends JanitorComposed<JDateTime> implements JConstant {
 
     /**
      * Parse a date and time from a string.
-     * @param runningScript the running script
+     * @param process the running script
      * @param string the string to parse
      * @param format the format to parse the string with
      * @return the date and time, or NULL if the input is invalid
      */
-    public static JanitorObject parse(final JanitorScriptProcess runningScript, final String string, final String format) {
+    public static JanitorObject parse(final JanitorScriptProcess process, final String string, final String format) {
         try {
             final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
             final LocalDateTime d = LocalDateTime.parse(string, formatter);
-            return runningScript.getBuiltins().dateTime(d);
+            return process.getBuiltins().dateTime(d);
         } catch (DateTimeParseException e) {
-            runningScript.warn(String.format("error parsing date '%s' with format '%s': %s", string, format, e.getMessage()));
+            process.warn(String.format("error parsing date '%s' with format '%s': %s", string, format, e.getMessage()));
             return JNull.NULL;
         }
     }

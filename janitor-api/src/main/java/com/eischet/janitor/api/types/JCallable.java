@@ -16,12 +16,12 @@ public interface JCallable {
     /**
      * Call this callable. The interpreter will invoke this, not you.
      *
-     * @param runningScript the running script
+     * @param process the running script
      * @param arguments the arguments to pass to the callable
      * @return the result of the call
      * @throws JanitorRuntimeException if the call failed spectacularly
      */
-    JanitorObject call(final JanitorScriptProcess runningScript, JCallArgs arguments) throws JanitorRuntimeException;
+    JanitorObject call(final JanitorScriptProcess process, JCallArgs arguments) throws JanitorRuntimeException;
 
     /**
      * Wrap this callable in a JanitorObject.
@@ -60,8 +60,8 @@ public interface JCallable {
         }
 
         @Override
-        public JanitorObject call(final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
-            return callable.call(runningScript, arguments);
+        public JanitorObject call(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+            return callable.call(process, arguments);
         }
 
         @Override

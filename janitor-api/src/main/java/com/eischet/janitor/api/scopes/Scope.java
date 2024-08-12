@@ -114,16 +114,16 @@ public class Scope implements JanitorObject {
      * Lookup a method/variable within the scope.
      *
      * @param obj           the object
-     * @param runningScript the running script
+     * @param process       the running script
      * @param methodName    the method name
      * @return the method or null
      */
     @Nullable
-    public static JanitorObject getOptionalMethod(final JanitorObject obj, JanitorScriptProcess runningScript, String methodName) {
+    public static JanitorObject getOptionalMethod(final JanitorObject obj, JanitorScriptProcess process, String methodName) {
         try {
-            return obj.janitorGetAttribute(runningScript, methodName, false);
+            return obj.janitorGetAttribute(process, methodName, false);
         } catch (JanitorRuntimeException e) {
-            runningScript.warn("contract violation: getOptionalMethod threw NameError for " + methodName);
+            process.warn("contract violation: getOptionalMethod threw NameError for " + methodName);
             return JNull.NULL;
         }
     }
@@ -199,13 +199,13 @@ public class Scope implements JanitorObject {
      * Look up a variable in this scope's implicit object or in its variables.
      * No other scope (parent, module) is consulted. The implicit object takes precedence.
      *
-     * @param runningScript the running script
+     * @param process       the running script
      * @param variableName  the variable name
      * @return the variable or null
      */
-    public JanitorObject lookupLocally(final JanitorScriptProcess runningScript, final String variableName) {
+    public JanitorObject lookupLocally(final JanitorScriptProcess process, final String variableName) {
         if (implicitObject != null) {
-            final JanitorObject impVar = getOptionalMethod(implicitObject, runningScript, variableName);
+            final JanitorObject impVar = getOptionalMethod(implicitObject, process, variableName);
             // log.info("implicit local lookup: <{} {}>.{} --> {}", implicitObject.getClass().getSimpleName(), implicitObject, variableName, impVar);
             if (impVar != JNull.NULL) {
                 return impVar;
@@ -239,14 +239,14 @@ public class Scope implements JanitorObject {
     /**
      * Look up a variable in this scope or a parent of this scope.
      *
-     * @param runningScript the running script
+     * @param process the running script
      * @param variableName  the variable name
      * @param closureScopes the closure scopes
      * @return the variable or null
      */
-    public JanitorObject lookup(final JanitorScriptProcess runningScript, final String variableName, @Nullable final List<Scope> closureScopes) {
+    public JanitorObject lookup(final JanitorScriptProcess process, final String variableName, @Nullable final List<Scope> closureScopes) {
         if (implicitObject != null) {
-            final JanitorObject impVar = getOptionalMethod(implicitObject, runningScript, variableName);
+            final JanitorObject impVar = getOptionalMethod(implicitObject, process, variableName);
             // log.debug("implicit lookup: <{} {}>.{} --> {}", implicitObject.getClass().getSimpleName(), implicitObject, variableName, impVar);
             if (impVar != null) {
                 return impVar;
@@ -260,7 +260,7 @@ public class Scope implements JanitorObject {
         if (closureScopes != null) {
             // System.err.println("looking for " + variableName + " in " + this + " with closures " + closureScopes);
             for (final Scope closureScope : closureScopes) {
-                final JanitorObject closureVar = closureScope.lookupLocally(runningScript, variableName);
+                final JanitorObject closureVar = closureScope.lookupLocally(process, variableName);
                 if (closureVar != null) {
                     // System.err.println("found " + variableName + " in " + closureScope + ": " + closureVar);
                     return closureVar;
@@ -271,7 +271,7 @@ public class Scope implements JanitorObject {
 
         if (moduleScope != null) {
             // log.debug("diverting lookup of {} to module scope {}!", variableName, moduleScope);
-            final JanitorObject v = moduleScope.lookup(runningScript, variableName, /* closureScopes = */ null);
+            final JanitorObject v = moduleScope.lookup(process, variableName, /* closureScopes = */ null);
             if (v != null) {
                 return v;
             }
@@ -281,24 +281,24 @@ public class Scope implements JanitorObject {
             // Das aber abzuklemmen macht alle Mailimporte des BV kaputt, daher hier wieder erlaubt.
         }
         // für debugging des o.g. Sachverhalts: log.info("failed lookup: {} in scope {} -> trying parent {}",  this, variableName, parent);
-        return parent == null ? null : parent.lookup(runningScript, variableName, closureScopes);
+        return parent == null ? null : parent.lookup(process, variableName, closureScopes);
         // });
     }
 
     /**
      * Bind a variable in this scope.
      *
-     * @param runningScript the running script
+     * @param process the running script
      * @param variableName  the variable name
      * @param variable      the variable
      * @return this scope (for chained, builder-style calls)
      */
-    public Scope bind(final JanitorScriptProcess runningScript, final String variableName, final JanitorObject variable) {
+    public Scope bind(final JanitorScriptProcess process, final String variableName, final JanitorObject variable) {
         final String name = ShortStringInterner.maybeIntern(variableName);
-        runningScript.trace(() -> "binding in" + (sealed ? " SEALED" : "") + " scope " + this + ": " + name + " = " + variable);
+        process.trace(() -> "binding in" + (sealed ? " SEALED" : "") + " scope " + this + ": " + name + " = " + variable);
         //log.debug("binding in scope {}: {} = {}", this.getLocation(), name, variable);
         if (sealed) {
-            runningScript.warn("tried to rebind '%s' as %s in sealed scope %s".formatted(name, variable, this));
+            process.warn("tried to rebind '%s' as %s in sealed scope %s".formatted(name, variable, this));
         }
         if (variable == null) {
             // ist kein Fehler mehr: log.debug("tried to bind null as {} in scope {}", variableName, this);
@@ -306,7 +306,7 @@ public class Scope implements JanitorObject {
         } else {
             final JanitorObject existing = variables.get(name);
             if (existing != null) {
-                runningScript.trace(() -> "replacing existing value " + name + " = " + existing + " with " + variable);
+                process.trace(() -> "replacing existing value " + name + " = " + existing + " with " + variable);
                 existing.janitorLeaveScope();
             }
             variables.put(name, variable);
@@ -343,13 +343,13 @@ public class Scope implements JanitorObject {
      * @return this scope (for chained, builder-style calls)
      */
     public Scope bind(final String variableName, final JanitorObject variable) {
-        // runningScript.trace(() -> "binding in" + (sealed ? " SEALED" : "") + " scope " + this + ": " + variableName + " = " + variable);
-        //log.debug("binding in scope {}: {} = {}", this.getLocation(), variableName, variable);
+        // process.trace(() -> "binding in" + (sealed ? " SEALED" : "") + " scope " + this + ": " + variableName + " = " + variable);
+        // log.debug("binding in scope {}: {} = {}", this.getLocation(), variableName, variable);
         // if (sealed) {
-        // runningScript.warn("tried to rebind '%s' as %s in sealed scope %s".formatted(name, variable, this));
+        //   process.warn("tried to rebind '%s' as %s in sealed scope %s".formatted(name, variable, this));
         // }
+
         final String name = ShortStringInterner.maybeIntern(variableName);
-        // ist kein Fehler mehr: log.debug("tried to bind null as {} in scope {}", variableName, this);
         variables.put(name, Objects.requireNonNullElse(variable, JNull.NULL));
         return this;
     }

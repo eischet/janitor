@@ -82,35 +82,35 @@ public class ScriptFunction extends AstNode implements Expression, JanitorObject
     }
 
     @Override
-    public JanitorObject call(final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
+    public JanitorObject call(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         try {
             arguments.require(parameterNames.size());
             try {
                 if (moduleScope != null) {
-                    runningScript.pushModuleScope(moduleScope);
+                    process.pushModuleScope(moduleScope);
                 }
                 if (getLocation() != null) {
-                    runningScript.enterBlock(getLocation().nested(name));
+                    process.enterBlock(getLocation().nested(name));
                 } else {
-                    runningScript.enterBlock(null); // anonyme Blöcke NICHT in den Stacktrace packen
+                    process.enterBlock(null); // anonyme Blöcke NICHT in den Stacktrace packen
                 }
-                runningScript.pushClosureScope(closureScope);
+                process.pushClosureScope(closureScope);
                 for (int i = 0; i < parameterNames.size(); i++) {
-                    runningScript.getCurrentScope().bind(runningScript, parameterNames.get(i), arguments.get(i).janitorUnpack());
+                    process.getCurrentScope().bind(process, parameterNames.get(i), arguments.get(i).janitorUnpack());
                 }
-                block.execute(runningScript);
+                block.execute(process);
             } finally {
-                runningScript.popClosureScope(closureScope);
-                runningScript.exitBlock();
+                process.popClosureScope(closureScope);
+                process.exitBlock();
                 if (moduleScope != null) {
-                    runningScript.popModuleScope(moduleScope);
+                    process.popModuleScope(moduleScope);
                 }
             }
         } catch (ReturnStatement.Return e) {
-            runningScript.trace(() -> "Function returned " + e.getValue());
+            process.trace(() -> "Function returned " + e.getValue());
             return e.getValue().janitorUnpack();
         } catch (JanitorControlFlowException e) {
-            throw new JanitorInternalException(runningScript, "invalid control flow exception within function call", e);
+            throw new JanitorInternalException(process, "invalid control flow exception within function call", e);
         }
         return JNull.NULL;
     }

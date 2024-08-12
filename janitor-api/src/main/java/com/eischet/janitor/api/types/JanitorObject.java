@@ -117,7 +117,7 @@ public interface JanitorObject {
     /**
      * Retrieve an attribute of an object, e.h. a method or a property.
      * <p>Intended Users: scripting runtime.</p>
-     * @param runningScript a running script processed
+     * @param process a running script processed
      * @param name the name of the attribute
      * @param required whether the attribute is required to exist
      * @return the attribute, or null if it does not exist and is not required
@@ -129,16 +129,16 @@ public interface JanitorObject {
      * and fails.</p>
      */
     @Nullable
-    default JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess runningScript, final @NotNull String name, final boolean required) throws JanitorRuntimeException {
+    default JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess process, final @NotNull String name, final boolean required) throws JanitorRuntimeException {
         // Try delegating the lookup to a wrapped object:
         final @Nullable JanitorObject innerConstant = janitorUnpack();
         if (innerConstant != this && innerConstant != null) {
-            return innerConstant.janitorGetAttribute(runningScript, name, required);
+            return innerConstant.janitorGetAttribute(process, name, required);
         }
         // Handle the class attribute here, previously called _type (which should be removed from older scripts which use it).
         // LATER get rid of "_type", used in a few legacy scripts
         if ("_type".equals(name) || "class".equals(name)) {
-            return runningScript.getEnvironment().getBuiltins().string(janitorClassName());
+            return process.getEnvironment().getBuiltins().string(janitorClassName());
         }
         if (required) {
             final Object hv = janitorGetHostValue();
@@ -151,7 +151,7 @@ public interface JanitorObject {
                 stringRep = toString();
             }
 
-            throw new JanitorNameException(runningScript, "invalid method '%s' on %s (%s->%s)".formatted(name, stringRep, this.getClass(), ht));
+            throw new JanitorNameException(process, "invalid method '%s' on %s (%s->%s)".formatted(name, stringRep, this.getClass(), ht));
         } else {
             return null;
         }

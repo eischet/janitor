@@ -155,16 +155,16 @@ public class JDate extends JanitorComposed<JDate> implements JConstant {
 
     /**
      * Require a date value.
-     * @param runningScript the running script
+     * @param process the running script
      * @param value the value to check
      * @return the value, if it's a date
      * @throws JanitorArgumentException if the value is not a date
      */
-    public static JDate require(final JanitorScriptProcess runningScript, final JanitorObject value) throws JanitorArgumentException {
+    public static JDate require(final JanitorScriptProcess process, final JanitorObject value) throws JanitorArgumentException {
         if (value instanceof JDate ok) {
             return ok;
         }
-        throw new JanitorArgumentException(runningScript, "Expected a date value, but got " + value.janitorClassName() + " instead.");
+        throw new JanitorArgumentException(process, "Expected a date value, but got " + value.janitorClassName() + " instead.");
     }
 
 }

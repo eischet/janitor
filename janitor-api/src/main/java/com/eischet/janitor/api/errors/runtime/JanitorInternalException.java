@@ -8,11 +8,11 @@ import com.eischet.janitor.api.JanitorScriptProcess;
 public class JanitorInternalException extends JanitorRuntimeException {
     /**
      * Constructs a new JanitorInternalException.
-     * @param runningScript the running script
-     * @param s the detail message
-     * @param e the cause
+     * @param process the running script
+     * @param message the detail message
+     * @param cause the cause
      */
-    public JanitorInternalException(final JanitorScriptProcess runningScript, final String s, final JanitorControlFlowException e) {
-        super(runningScript, s, e, JanitorInternalException.class);
+    public JanitorInternalException(final JanitorScriptProcess process, final String message, final JanitorControlFlowException cause) {
+        super(process, message, cause, JanitorInternalException.class);
     }
 }
