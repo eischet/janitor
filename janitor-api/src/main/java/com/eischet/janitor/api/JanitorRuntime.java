@@ -16,7 +16,7 @@ public interface JanitorRuntime {
 
     RunnableScript compile(String moduleName, String source) throws JanitorCompilerException;
     RunnableScript checkCompile(String moduleName, String source) throws JanitorCompilerException;
-    JanitorObject print(JanitorScriptProcess rs, JCallArgs args);
+    JanitorObject print(JanitorScriptProcess process, JCallArgs args);
 
 
     void trace(Supplier<String> traceMessageSupplier);

@@ -6,6 +6,7 @@ import com.eischet.janitor.api.calls.JUnboundMethod;
 import com.eischet.janitor.api.calls.JVoidMethod;
 import com.eischet.janitor.api.calls.TemporaryAssignable;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
+import com.eischet.janitor.api.types.JConstructor;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.*;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
@@ -26,9 +27,9 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
         JanitorObject delegate(final T instance, final JanitorScriptProcess process, final String name) throws JanitorRuntimeException;
     }
 
-
     private final Map<String, AttributeLookupHandler<T>> map = new HashMap<>();
     private final Delegate<T> parentLookupHandler;
+    private JConstructor<T> constructor;
 
     public GenericDispatchTable() {
         parentLookupHandler = null;
@@ -36,6 +37,14 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
 
     public <P extends JanitorObject> GenericDispatchTable(final Dispatcher<P> parent, final Function<T, P> caster) {
         parentLookupHandler = (instance, process, name) -> parent.dispatch(caster.apply(instance), process, name);
+    }
+
+    public JConstructor<T> getConstructor() {
+        return constructor;
+    }
+
+    public void setConstructor(JConstructor<T> constructor) {
+        this.constructor = constructor;
     }
 
     /**

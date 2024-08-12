@@ -10,5 +10,5 @@ import com.eischet.janitor.api.types.JanitorObject;
  */
 @FunctionalInterface
 public interface JUnboundMethod<T> {
-    JanitorObject call(final T self, final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException;
+    JanitorObject call(final T self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException;
 }

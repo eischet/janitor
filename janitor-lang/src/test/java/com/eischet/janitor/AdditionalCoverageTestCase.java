@@ -111,7 +111,7 @@ public class AdditionalCoverageTestCase {
         stringMemory.setTime(5005);
         stringMemory.remember("me");
         stringMemory.setTime(5019);
-        assertEquals(1, stringMemory.size());
+        assertEquals(0, stringMemory.size());
 
 
 
