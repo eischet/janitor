@@ -2,6 +2,7 @@ package com.eischet.janitor.api.types.wrapped;
 
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
+import com.eischet.janitor.api.types.JanitorTypedObject;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.api.types.JanitorObject;
 import org.jetbrains.annotations.NotNull;
@@ -16,7 +17,7 @@ import java.util.Objects;
  * You need to supply a dispatcher that will handle attribute lookups on the wrapped object.
  * @param <T> the type of the wrapped object
  */
-public class JanitorWrapper<T> implements JanitorObject {
+public class JanitorWrapper<T> implements JanitorTypedObject<T> {
 
     protected final Dispatcher<JanitorWrapper<T>> dispatcher;
     protected @NotNull T wrapped;
@@ -43,7 +44,7 @@ public class JanitorWrapper<T> implements JanitorObject {
         if (attribute != null) {
             return attribute;
         }
-        return JanitorObject.super.janitorGetAttribute(process, name, required);
+        return JanitorTypedObject.super.janitorGetAttribute(process, name, required);
     }
 
     @Override

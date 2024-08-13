@@ -5,6 +5,10 @@ import com.eischet.janitor.api.errors.runtime.JanitorNameException;
 import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.compiler.ast.AstNode;
+import com.eischet.janitor.toolbox.json.api.JsonException;
+import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
+
+import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
 /**
  * Identifier, e.g. a variable name or a function name.
@@ -45,6 +49,15 @@ public class Identifier extends AstNode implements Expression {
         } else {
             return v;
         }
+    }
+
+    @Override
+    public void writeJson(JsonOutputStream producer) throws JsonException {
+        producer.beginObject()
+                .optional("type", simpleClassNameOf(this))
+                .optional("text", text)
+                .endObject();
+
     }
 
 }

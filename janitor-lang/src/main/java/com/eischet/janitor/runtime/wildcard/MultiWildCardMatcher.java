@@ -1,4 +1,6 @@
-package com.eischet.janitor.api.util.strings;
+package com.eischet.janitor.runtime.wildcard;
+
+import com.eischet.janitor.api.util.WildCardMatcher;
 
 import java.util.Collection;
 import java.util.List;

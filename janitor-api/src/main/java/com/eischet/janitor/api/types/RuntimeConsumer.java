@@ -1,4 +1,4 @@
-package com.eischet.janitor.api.calls;
+package com.eischet.janitor.api.types;
 
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 

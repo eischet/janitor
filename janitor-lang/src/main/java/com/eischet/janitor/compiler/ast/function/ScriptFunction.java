@@ -1,30 +1,35 @@
 package com.eischet.janitor.compiler.ast.function;
 
 import com.eischet.janitor.api.JanitorScriptProcess;
-import com.eischet.janitor.api.calls.JCallArgs;
+import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.errors.runtime.JanitorControlFlowException;
 import com.eischet.janitor.api.errors.runtime.JanitorInternalException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.api.scopes.Scope;
-import com.eischet.janitor.api.types.JCallable;
+import com.eischet.janitor.api.types.functions.JCallable;
 import com.eischet.janitor.api.types.builtin.JNull;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.compiler.ast.AstNode;
 import com.eischet.janitor.compiler.ast.expression.Expression;
 import com.eischet.janitor.compiler.ast.statement.controlflow.Block;
 import com.eischet.janitor.compiler.ast.statement.controlflow.ReturnStatement;
+import com.eischet.janitor.toolbox.json.api.JsonException;
+import com.eischet.janitor.toolbox.json.api.JsonExportableObject;
+import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
+import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
+
 /**
  * Script function.
  * This implements both functions and lambdas, so these are essentially the same thing internally.
  */
-public class ScriptFunction extends AstNode implements Expression, JanitorObject, JCallable {
+public class ScriptFunction extends AstNode implements Expression, JanitorObject, JCallable, JsonExportableObject {
 
     private static final Logger log = LoggerFactory.getLogger(ScriptFunction.class);
 
@@ -113,6 +118,21 @@ public class ScriptFunction extends AstNode implements Expression, JanitorObject
             throw new JanitorInternalException(process, "invalid control flow exception within function call", e);
         }
         return JNull.NULL;
+    }
+
+    @Override
+    public void writeJson(JsonOutputStream producer) throws JsonException {
+        producer.beginObject()
+                .optional("type", simpleClassNameOf(this))
+                .optional("name", name)
+                .optional("block", block);
+        producer.key("parameterNames").beginArray();
+        for (String parameterName : parameterNames) {
+            producer.value(parameterName);
+        }
+        producer.endArray();
+        producer.endObject();
+        // TODO: output the two scopes, too?!
     }
 
 }

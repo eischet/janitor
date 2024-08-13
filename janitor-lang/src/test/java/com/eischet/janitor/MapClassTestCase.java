@@ -1,8 +1,8 @@
 package com.eischet.janitor;
 
-import com.eischet.janitor.api.JanitorBuiltins;
+import com.eischet.janitor.api.types.BuiltinTypes;
 import com.eischet.janitor.api.RunnableScript;
-import com.eischet.janitor.api.calls.RuntimeConsumer;
+import com.eischet.janitor.api.types.RuntimeConsumer;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.builtin.JMap;
@@ -27,7 +27,7 @@ public class MapClassTestCase {
     @Test
     public void mapTests() throws JsonException, JanitorRuntimeException {
         final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
-        final @NotNull JanitorBuiltins bt = rt.getEnvironment().getBuiltins(); // alias builtin types
+        final @NotNull BuiltinTypes bt = rt.getEnvironment().getBuiltinTypes(); // alias builtin types
 
         final JMap empty = rt.getEnvironment().parseJsonToMap("{}");
         assertEquals(0, empty.size(), "empty maps have size 0");

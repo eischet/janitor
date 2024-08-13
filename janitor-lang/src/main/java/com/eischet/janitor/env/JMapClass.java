@@ -2,7 +2,7 @@ package com.eischet.janitor.env;
 
 import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.JanitorScriptProcess;
-import com.eischet.janitor.api.calls.JCallArgs;
+import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
@@ -31,7 +31,7 @@ public class JMapClass {
     public static JString __toJson(final JanitorWrapper<Map<JanitorObject, JanitorObject>> self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         try {
             arguments.require(0);
-            return process.getEnvironment().getBuiltins().string(((JMap) self).exportToJson(process.getEnvironment()));
+            return process.getEnvironment().getBuiltinTypes().string(((JMap) self).exportToJson(process.getEnvironment()));
         } catch (JsonException e) {
             throw new JanitorNativeException(process, "error exporting json", e);
         }
@@ -69,7 +69,7 @@ public class JMapClass {
     }
 
     public static JanitorObject __size(JanitorWrapper<Map<JanitorObject, JanitorObject>> mapJanitorWrapper, JanitorScriptProcess process, JCallArgs jCallArgs) {
-        return process.getEnvironment().getBuiltins().integer(mapJanitorWrapper.janitorGetHostValue().size());
+        return process.getEnvironment().getBuiltinTypes().integer(mapJanitorWrapper.janitorGetHostValue().size());
     }
 
     public static JanitorObject __isEmpty(JanitorWrapper<Map<JanitorObject, JanitorObject>> mapJanitorWrapper, JanitorScriptProcess process, JCallArgs jCallArgs) {
@@ -77,11 +77,11 @@ public class JMapClass {
     }
 
     public static JanitorObject __keys(JanitorWrapper<Map<JanitorObject, JanitorObject>> mapJanitorWrapper, JanitorScriptProcess process, JCallArgs jCallArgs) {
-        return process.getEnvironment().getBuiltins().list(mapJanitorWrapper.janitorGetHostValue().keySet().stream());
+        return process.getEnvironment().getBuiltinTypes().list(mapJanitorWrapper.janitorGetHostValue().keySet().stream());
     }
 
     public static JanitorObject __values(JanitorWrapper<Map<JanitorObject, JanitorObject>> mapJanitorWrapper, JanitorScriptProcess process, JCallArgs jCallArgs) {
-        return process.getEnvironment().getBuiltins().list(mapJanitorWrapper.janitorGetHostValue().values().stream());
+        return process.getEnvironment().getBuiltinTypes().list(mapJanitorWrapper.janitorGetHostValue().values().stream());
     }
 
     /**
@@ -114,7 +114,7 @@ public class JMapClass {
             if (reader.peek() == JsonTokenType.END_OBJECT) {
                 break;
             }
-            self.put(env.getBuiltins().nullableString(reader.nextKey()), JCollection.parseJsonValue(reader, env));
+            self.put(env.getBuiltinTypes().nullableString(reader.nextKey()), JCollection.parseJsonValue(reader, env));
         }
         reader.endObject();
         return self;

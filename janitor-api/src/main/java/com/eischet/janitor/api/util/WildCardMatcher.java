@@ -1,4 +1,4 @@
-package com.eischet.janitor.api.util.strings;
+package com.eischet.janitor.api.util;
 
 /**
  * A functional interface for matching strings against a wildcard pattern ("*" is for as much text as needed).

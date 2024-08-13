@@ -6,12 +6,15 @@ import com.eischet.janitor.api.errors.runtime.JanitorNameException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.api.types.dispatch.FlatProperty;
-import com.eischet.janitor.api.types.JCallable;
+import com.eischet.janitor.api.types.functions.JCallable;
 import com.eischet.janitor.api.types.JConstant;
 import com.eischet.janitor.api.types.builtin.JNull;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.compiler.ast.expression.Expression;
 import com.eischet.janitor.compiler.ast.expression.ExpressionList;
+import com.eischet.janitor.toolbox.json.api.JsonException;
+import com.eischet.janitor.toolbox.json.api.JsonExportableObject;
+import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,11 +27,12 @@ import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
  * This implements both foo.bar() and foo?.bar(), where the latter is called "guarded" in the constructor.
  * The guarded variant does not perform the call in case the function is not found or the onExpression evaluates to NULL.
  */
-public class FunctionLookup extends Statement implements Expression {
+public class FunctionLookup extends Statement implements Expression, JsonExportableObject {
     private final String functionName;
     private final Expression onExpression;
     private final ExpressionList expressionList;
     private final boolean guarded;
+
 
     /**
      * Constructor.
@@ -134,6 +138,17 @@ public class FunctionLookup extends Statement implements Expression {
         }
 
         throw new JanitorNameException(process, "invalid callable: " + functionName + " (name: " + functionName + ")");
+    }
+
+    @Override
+    public void writeJson(JsonOutputStream producer) throws JsonException {
+        producer.beginObject()
+                .optional("type", simpleClassNameOf(this))
+                .optional("name", functionName)
+                .optional("expression", onExpression)
+                .optional("expressionList", expressionList)
+                .optional("guarded", guarded)
+                .endObject();
     }
 
 }

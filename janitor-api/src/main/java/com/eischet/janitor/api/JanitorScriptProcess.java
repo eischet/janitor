@@ -1,6 +1,7 @@
 package com.eischet.janitor.api;
 
-import com.eischet.janitor.api.calls.JCallArgs;
+import com.eischet.janitor.api.types.BuiltinTypes;
+import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.i18n.JanitorFormatting;
@@ -11,6 +12,7 @@ import com.eischet.janitor.api.types.builtin.JFloat;
 import com.eischet.janitor.api.types.builtin.JString;
 import com.eischet.janitor.api.types.JanitorObject;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.function.Supplier;
@@ -23,9 +25,22 @@ import java.util.function.Supplier;
  */
 public interface JanitorScriptProcess {
 
+    /**
+     * Emit a warning.
+     * <p>
+     * What this does depends on the implementation. Typically, this should log a message
+     * with the warning level.
+     * </p>
+     *
+     * @param warning the warning
+     */
     void warn(final String warning);
 
-    String getSource();
+    /**
+     * Retrieve the source code, if available, of the currently running script's main module.
+     * @return source code
+     */
+    @Nullable String getSource();
 
     Scope getMainScope();
 
@@ -74,8 +89,8 @@ public interface JanitorScriptProcess {
     }
 
     @NotNull
-    default JanitorBuiltins getBuiltins() {
-        return getEnvironment().getBuiltins();
+    default BuiltinTypes getBuiltins() {
+        return getEnvironment().getBuiltinTypes();
     }
 
     @NotNull
@@ -86,8 +101,9 @@ public interface JanitorScriptProcess {
     /**
      * Run script code without throwing a script runtime exception on errors.
      * The environment may report an exception, but it may not throw.
+     *
      * @param title a name for the protected code block, shown in an exception report
-     * @param call the code to execute
+     * @param call  the code to execute
      */
     default void protect(final String title, ProtectedCall call) {
         getRuntime().protect(title, call);

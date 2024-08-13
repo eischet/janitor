@@ -1,7 +1,7 @@
 package com.eischet.janitor.jsr223;
 
 import com.eischet.janitor.api.*;
-import com.eischet.janitor.api.calls.JCallArgs;
+import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.scopes.ScriptModule;
 import com.eischet.janitor.api.types.JanitorObject;

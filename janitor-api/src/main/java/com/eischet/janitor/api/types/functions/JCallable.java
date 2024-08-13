@@ -1,8 +1,8 @@
-package com.eischet.janitor.api.types;
+package com.eischet.janitor.api.types.functions;
 
 import com.eischet.janitor.api.JanitorScriptProcess;
-import com.eischet.janitor.api.calls.JCallArgs;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
+import com.eischet.janitor.api.types.JanitorObject;
 import org.jetbrains.annotations.NotNull;
 
 /**

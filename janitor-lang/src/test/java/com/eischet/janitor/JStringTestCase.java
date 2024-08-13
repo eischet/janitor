@@ -48,13 +48,13 @@ public class JStringTestCase {
     @Test
     void basics() throws JanitorCompilerException, JanitorRuntimeException {
         OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
-        @NotNull JString string = rt.getEnvironment().getBuiltins().string("foobar");
+        @NotNull JString string = rt.getEnvironment().getBuiltinTypes().string("foobar");
         assertEquals("foobar", string.janitorGetHostValue());
         assertEquals("foobar", string.janitorToString());
         assertEquals("foobar", string.toString());
 
-        @NotNull JMap map = rt.getEnvironment().getBuiltins().map();
-        @NotNull JInt oneTo = rt.getEnvironment().getBuiltins().integer(1);
+        @NotNull JMap map = rt.getEnvironment().getBuiltinTypes().map();
+        @NotNull JInt oneTo = rt.getEnvironment().getBuiltinTypes().integer(1);
         map.put(string, oneTo);
         JanitorObject oneFro = map.get(string);
         assertEquals(oneFro, oneTo);

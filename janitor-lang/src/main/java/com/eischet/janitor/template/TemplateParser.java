@@ -3,11 +3,11 @@ package com.eischet.janitor.template;
 import com.eischet.janitor.api.JanitorRuntime;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.RunnableScript;
-import com.eischet.janitor.api.calls.JCallArgs;
+import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
-import com.eischet.janitor.api.types.JCallable;
+import com.eischet.janitor.api.types.functions.JCallable;
 import com.eischet.janitor.api.types.builtin.JNull;
 import com.eischet.janitor.api.types.builtin.JString;
 import com.eischet.janitor.api.types.JanitorObject;
@@ -154,7 +154,7 @@ public class TemplateParser {
                         }
                     }, process.getCurrentScope()
             );
-            return runtime.getEnvironment().getBuiltins().string(stringWriter.toString());
+            return runtime.getEnvironment().getBuiltinTypes().string(stringWriter.toString());
         } catch (JanitorCompilerException e) {
             throw new JanitorArgumentException(process, "invalid template", e);
         }

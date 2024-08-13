@@ -6,9 +6,13 @@ import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.api.types.builtin.JList;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.compiler.ast.expression.Expression;
+import com.eischet.janitor.toolbox.json.api.JsonException;
+import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
 /**
  * List literal.
@@ -29,14 +33,26 @@ public class ListLiteral extends Literal {
     @Override
     public JList evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException {
         if (elements.isEmpty()) {
-            return process.getEnvironment().getBuiltins().list();
+            return process.getEnvironment().getBuiltinTypes().list();
         } else {
             final List<JanitorObject> evaluatedElements = new ArrayList<>(elements.size());
             for (final Expression element : elements) {
                 evaluatedElements.add(element.evaluate(process).janitorUnpack());
             }
-            return process.getEnvironment().getBuiltins().list(evaluatedElements);
+            return process.getEnvironment().getBuiltinTypes().list(evaluatedElements);
         }
     }
 
+    @Override
+    public void writeJson(JsonOutputStream producer) throws JsonException {
+        producer.beginObject().optional("type", simpleClassNameOf(this));
+        producer.key("elements");
+        producer.beginArray();
+        for (Expression element : elements) {
+            element.writeJson(producer);
+        }
+        producer.endArray();
+        producer.endObject();
+
+    }
 }

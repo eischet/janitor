@@ -3,7 +3,7 @@ package com.eischet.janitor.runtime;
 
 import com.eischet.janitor.api.JanitorRuntime;
 import com.eischet.janitor.api.JanitorScriptProcess;
-import com.eischet.janitor.api.calls.JCallArgs;
+import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.Location;
@@ -204,7 +204,7 @@ public abstract class AbstractScriptProcess implements JanitorScriptProcess {
             return alreadyMatches;
         }
         if (value instanceof Number num) {
-            return getEnvironment().getBuiltins().floatingPoint(num.doubleValue());
+            return getEnvironment().getBuiltinTypes().floatingPoint(num.doubleValue());
         }
         throw new JanitorArgumentException(this, "Expected float instead of " + value);
     }

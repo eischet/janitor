@@ -4,7 +4,7 @@ import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
-import com.eischet.janitor.api.util.strings.WildCardMatcher;
+import com.eischet.janitor.api.util.WildCardMatcher;
 import com.eischet.janitor.api.types.JConstant;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.toolbox.json.api.JsonException;
@@ -19,7 +19,7 @@ import java.util.function.Function;
  * A string object, representing a string of characters.
  * This is one of the built-in types that Janitor provides automatically.
  */
-public class JString extends JanitorComposed<JString> implements JConstant, JsonExportablePrimitive {
+public class JString extends JanitorComposed<JString> implements JConstant, JsonExportablePrimitive, JStringBase {
 
     /**
      * String class name.

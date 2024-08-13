@@ -8,13 +8,18 @@ import com.eischet.janitor.api.types.builtin.JNull;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.compiler.ast.expression.Expression;
 import com.eischet.janitor.compiler.ast.statement.Statement;
+import com.eischet.janitor.toolbox.json.api.JsonException;
+import com.eischet.janitor.toolbox.json.api.JsonExportableObject;
+import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
 
 import java.io.Serial;
+
+import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
 /**
  * Return statement, for returning from a function.
  */
-public class ReturnStatement extends Statement {
+public class ReturnStatement extends Statement implements JsonExportableObject {
 
     /**
      * Return control flow exception.
@@ -60,6 +65,14 @@ public class ReturnStatement extends Statement {
         } else {
             throw RETURN_NOTHING;
         }
+    }
+
+    @Override
+    public void writeJson(JsonOutputStream producer) throws JsonException {
+        producer.beginObject()
+                .optional("type", simpleClassNameOf(this))
+                .optional("expression", expression)
+                .endObject();
     }
 
 }

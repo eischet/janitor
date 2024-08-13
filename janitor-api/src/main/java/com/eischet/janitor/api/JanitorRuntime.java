@@ -1,6 +1,7 @@
 package com.eischet.janitor.api;
 
-import com.eischet.janitor.api.calls.JCallArgs;
+import com.eischet.janitor.api.types.BuiltinTypes;
+import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.types.JanitorObject;
 import org.jetbrains.annotations.NotNull;
@@ -23,6 +24,10 @@ public interface JanitorRuntime {
 
     default JanitorCompilerSettings getCompilerSettings() {
         return JanitorCompilerSettings.DEFAUlTS;
+    }
+
+    default BuiltinTypes getBuiltinTypes() {
+        return getEnvironment().getBuiltinTypes();
     }
 
 

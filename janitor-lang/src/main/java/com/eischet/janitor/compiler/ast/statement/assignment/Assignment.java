@@ -11,6 +11,9 @@ import com.eischet.janitor.runtime.JanitorSemantics;
 import com.eischet.janitor.compiler.ast.expression.Expression;
 import com.eischet.janitor.compiler.ast.expression.Identifier;
 import com.eischet.janitor.compiler.ast.statement.Statement;
+import com.eischet.janitor.toolbox.json.api.JsonException;
+import com.eischet.janitor.toolbox.json.api.JsonExportableObject;
+import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
 
 import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
@@ -18,7 +21,7 @@ import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
  * Any assignment: left operator right.
  * Concrete subclasses will implement the actual assignment operation.
  */
-public abstract class Assignment extends Statement {
+public abstract class Assignment extends Statement implements JsonExportableObject {
     private final Expression left;
     private final Expression right;
 
@@ -94,5 +97,14 @@ public abstract class Assignment extends Statement {
     }
 
     protected abstract JanitorObject produce(final Expression left, final Expression right, final JanitorScriptProcess process) throws JanitorRuntimeException;
+
+    @Override
+    public void writeJson(JsonOutputStream producer) throws JsonException {
+        producer.beginObject()
+                .optional("type", simpleClassNameOf(this))
+                .optional("left", left)
+                .optional("right", right)
+                .endObject();
+    }
 
 }

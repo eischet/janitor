@@ -4,7 +4,8 @@ package com.eischet.janitor.api.scopes;
 import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
-import com.eischet.janitor.api.types.JCallable;
+import com.eischet.janitor.api.types.composed.JanitorAware;
+import com.eischet.janitor.api.types.functions.JCallable;
 import com.eischet.janitor.api.types.*;
 import com.eischet.janitor.api.types.builtin.JBool;
 import com.eischet.janitor.api.types.builtin.JMap;
@@ -329,6 +330,9 @@ public class Scope implements JanitorObject {
         return existing;
     }
 
+    /**
+     * Remove all variables from this scope.
+     */
     public void unbindAll() {
         variables.values().forEach(JanitorObject::janitorLeaveScope);
         variables.clear();
@@ -376,7 +380,7 @@ public class Scope implements JanitorObject {
      * @return this scope (for chained, builder-style calls)
      */
     public Scope bind(final String variableName, final String variable) {
-        return bind(variableName, env.getBuiltins().string(variable));
+        return bind(variableName, env.getBuiltinTypes().string(variable));
     }
 
     /**
@@ -387,7 +391,7 @@ public class Scope implements JanitorObject {
      * @return this scope (for chained, builder-style calls)
      */
     public Scope bind(final String variableName, final long variable) {
-        return bind(variableName, env.getBuiltins().integer(variable));
+        return bind(variableName, env.getBuiltinTypes().integer(variable));
     }
 
     /**
@@ -398,7 +402,7 @@ public class Scope implements JanitorObject {
      * @return this scope (for chained, builder-style calls)
      */
     public Scope bind(final String variableName, final int variable) {
-        return bind(variableName, env.getBuiltins().integer(variable));
+        return bind(variableName, env.getBuiltinTypes().integer(variable));
     }
 
     /**
@@ -412,6 +416,14 @@ public class Scope implements JanitorObject {
         return bind(variableName, JBool.of(variable));
     }
 
+    /**
+     * Bind a variable in this scope.
+     * This variable is not a Janitor Object, but it is able to return its own equivalent Janitor Object.
+     *
+     * @param variableName the name to bind
+     * @param variable the variable
+     * @return this scope (for chanied, builder-style calls)
+     */
     public Scope bind(final String variableName, final JanitorAware variable) {
         return bind(variableName, variable.asJanitorObject());
     }
@@ -434,13 +446,13 @@ public class Scope implements JanitorObject {
      * @return a JMap of variable names and their values
      */
     public JMap toMap() {
-        final JMap dump = env.getBuiltins().map();
+        final JMap dump = env.getBuiltinTypes().map();
         if (moduleScope != null) {
             dump.putAll(moduleScope.toMap());
         } else if (parent != null) {
             dump.putAll(parent.toMap());
         }
-        variables.forEach((key, value) -> dump.put(env.getBuiltins().string(key), value));
+        variables.forEach((key, value) -> dump.put(env.getBuiltinTypes().string(key), value));
         return dump;
 
     }

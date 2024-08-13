@@ -4,6 +4,11 @@ import com.eischet.janitor.api.types.builtin.JBool;
 
 /**
  * Possible Results of comparison operations.
+ * <p>
+ * Most programming languages represent these as -1, 0, +1 in a number of places, but I find
+ * code involving comparisons easier to read with explicitly defined ComparisonResult enum constants.
+ * </p>
+ * @see java.util.Comparator
  */
 public enum ComparisonResult {
 
@@ -15,6 +20,7 @@ public enum ComparisonResult {
      * Adapts a Java comparison result to a {@link ComparisonResult}.
      * @param javaComparisonScore the result of a comparison operation
      * @return the adapted result
+     * @see java.util.Comparator
      */
     public static ComparisonResult adaptJava(final int javaComparisonScore) {
         if (javaComparisonScore < 0) {

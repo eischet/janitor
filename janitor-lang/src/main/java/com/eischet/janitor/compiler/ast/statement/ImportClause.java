@@ -8,12 +8,17 @@ import com.eischet.janitor.api.modules.JanitorModule;
 import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.compiler.ast.expression.Identifier;
 import com.eischet.janitor.compiler.ast.expression.QualifiedName;
+import com.eischet.janitor.toolbox.json.api.JsonException;
+import com.eischet.janitor.toolbox.json.api.JsonExportableObject;
+import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
+
+import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
 /**
  * Import clauses, which are part of import statements minus the import keyword: import foo; import bar as baz; import "custom" as stuff;.
  * @see ImportStatement
  */
-public class ImportClause extends Statement {
+public class ImportClause extends Statement implements JsonExportableObject {
     private final String module;
     private final Identifier alias;
     private final QualifiedName qname;
@@ -69,4 +74,14 @@ public class ImportClause extends Statement {
         throw new JanitorNotImplementedException(process, "invalid import clause: either a qualified name or a module name string is required");
     }
 
+    @Override
+    public void writeJson(JsonOutputStream producer) throws JsonException {
+        producer.beginObject()
+                .optional("type", simpleClassNameOf(this))
+                .optional("module", module)
+                .optional("alias", alias)
+                .optional("qname", qname)
+                .endObject();
+
+    }
 }

@@ -1,11 +1,15 @@
 package com.eischet.janitor.compiler.ast.expression.literal;
 
-import com.eischet.janitor.api.JanitorBuiltins;
+import com.eischet.janitor.api.types.BuiltinTypes;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.api.types.builtin.JDuration;
 import com.eischet.janitor.api.types.JanitorObject;
+import com.eischet.janitor.toolbox.json.api.JsonException;
+import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
 import org.jetbrains.annotations.Nullable;
+
+import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
 /**
  * Duration literal.
@@ -18,7 +22,7 @@ public class DurationLiteral extends Literal {
      * @param location where
      * @param duration what
      */
-    public DurationLiteral(final Location location, final String duration, final JanitorBuiltins builtins) {
+    public DurationLiteral(final Location location, final String duration, final BuiltinTypes builtins) {
         super(location);
         this.duration = parse(duration, builtins);
     }
@@ -33,7 +37,7 @@ public class DurationLiteral extends Literal {
      * @param text a string
      * @return a duraction, of null when not valid
      */
-    public static @Nullable JDuration parse(final String text, final JanitorBuiltins builtins) {
+    public static @Nullable JDuration parse(final String text, final BuiltinTypes builtins) {
         for (final JDuration.JDurationKind value : JDuration.JDurationKind.values()) {
             if (text.endsWith(value.tag)) {
                 return builtins.duration(Long.parseLong(text.substring(0, text.length() - value.tag.length())), value);
@@ -43,4 +47,11 @@ public class DurationLiteral extends Literal {
     }
 
 
+    @Override
+    public void writeJson(JsonOutputStream producer) throws JsonException {
+        producer.beginObject()
+                .optional("type", simpleClassNameOf(this))
+                .optional("value", duration.janitorToString())
+                .endObject();
+    }
 }

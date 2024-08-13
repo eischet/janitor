@@ -40,16 +40,16 @@ public class SimpleExpressionTestCase {
     public void testSimpleExpressions() throws JanitorCompilerException, JanitorRuntimeException {
 
 
-        assertEquals(TestEnv.env.getBuiltins().integer(17), eval("17"));
-        assertEquals(TestEnv.env.getBuiltins().string("hello"), eval("\"hello\""));
+        assertEquals(TestEnv.env.getBuiltinTypes().integer(17), eval("17"));
+        assertEquals(TestEnv.env.getBuiltinTypes().string("hello"), eval("\"hello\""));
 
-        assertEquals(TestEnv.env.getBuiltins().string("hello"), eval("'hello'"));
-        assertEquals(TestEnv.env.getBuiltins().integer(-7), eval("-7"));
+        assertEquals(TestEnv.env.getBuiltinTypes().string("hello"), eval("'hello'"));
+        assertEquals(TestEnv.env.getBuiltinTypes().integer(-7), eval("-7"));
         // syntax error: eval("+9");
-        assertEquals(TestEnv.env.getBuiltins().integer(21), eval("17 + 4"));
-        assertEquals(TestEnv.env.getBuiltins().integer(22), eval("(17+4)+1"));
-        assertEquals(TestEnv.env.getBuiltins().integer(6), eval("1+2+3"));
-        assertEquals(TestEnv.env.getBuiltins().string("stefan"), eval("currentUser", globals -> globals.bind("currentUser", TestEnv.env.getBuiltins().string("stefan"))));
+        assertEquals(TestEnv.env.getBuiltinTypes().integer(21), eval("17 + 4"));
+        assertEquals(TestEnv.env.getBuiltinTypes().integer(22), eval("(17+4)+1"));
+        assertEquals(TestEnv.env.getBuiltinTypes().integer(6), eval("1+2+3"));
+        assertEquals(TestEnv.env.getBuiltinTypes().string("stefan"), eval("currentUser", globals -> globals.bind("currentUser", TestEnv.env.getBuiltinTypes().string("stefan"))));
 
         assertEquals(JBool.TRUE, eval("i < 17", globals -> {
             globals.bind("i", 10);
@@ -75,10 +75,10 @@ public class SimpleExpressionTestCase {
         assertEquals(JBool.TRUE, eval("22 == 2 * (10 + 1)"));
 
         assertEquals(JBool.TRUE, eval("22 == 2 * (i + 1)", globals -> {
-            globals.bind("i", TestEnv.env.getBuiltins().integer(10));
+            globals.bind("i", TestEnv.env.getBuiltinTypes().integer(10));
         }));
         assertEquals(JBool.TRUE, eval("22 <= 2 * (i + 1)", globals -> {
-            globals.bind("i", TestEnv.env.getBuiltins().integer(10));
+            globals.bind("i", TestEnv.env.getBuiltinTypes().integer(10));
         }));
 
         assertEquals(JBool.TRUE, eval("true"));
@@ -87,7 +87,7 @@ public class SimpleExpressionTestCase {
         assertEquals(JBool.TRUE, eval("not false"));
         assertEquals(JBool.FALSE, eval("not true"));
 
-        var TEN = TestEnv.env.getBuiltins().integer(10);
+        var TEN = TestEnv.env.getBuiltinTypes().integer(10);
 
         assertEquals(JBool.FALSE, eval("i < 11 and i > 22", globals -> {
             globals.bind("i", TEN);
@@ -144,10 +144,10 @@ public class SimpleExpressionTestCase {
 
     @Test
     public void ternary() throws JanitorCompilerException, JanitorRuntimeException {
-        assertEquals(TestEnv.env.getBuiltins().string("bar"), eval("2 > 1 ? 'bar' : 'foo'"));
-        assertEquals(TestEnv.env.getBuiltins().string("foo"), eval("2 < 1 ? 'bar' : 'foo'"));
+        assertEquals(TestEnv.env.getBuiltinTypes().string("bar"), eval("2 > 1 ? 'bar' : 'foo'"));
+        assertEquals(TestEnv.env.getBuiltinTypes().string("foo"), eval("2 < 1 ? 'bar' : 'foo'"));
         assertEquals(JBool.TRUE, eval("null or true"));
-        assertEquals(TestEnv.env.getBuiltins().integer(9), eval("( null or true ) ? 9 : 'foo' "));
+        assertEquals(TestEnv.env.getBuiltinTypes().integer(9), eval("( null or true ) ? 9 : 'foo' "));
     }
 
 
@@ -178,12 +178,12 @@ public class SimpleExpressionTestCase {
 
         assertEquals("nix",
             eval("if USR_SC ~ 'Z*_20*' then 'Achtung!|Markt geschlossen!' else 'nix'",
-                g -> g.bind("USR_SC", TestEnv.env.getBuiltins().string("245005"))).janitorGetHostValue().toString()
+                g -> g.bind("USR_SC", TestEnv.env.getBuiltinTypes().string("245005"))).janitorGetHostValue().toString()
         );
 
         assertEquals("Achtung!|Markt geschlossen!",
             eval("if USR_SC ~ 'Z*_20*' then 'Achtung!|Markt geschlossen!' else 'nix'",
-                g -> g.bind("USR_SC", TestEnv.env.getBuiltins().string("Z12345_20191122"))).janitorGetHostValue().toString()
+                g -> g.bind("USR_SC", TestEnv.env.getBuiltinTypes().string("Z12345_20191122"))).janitorGetHostValue().toString()
         );
 
         assertEquals(JBool.TRUE,

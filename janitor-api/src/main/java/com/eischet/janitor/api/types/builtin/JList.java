@@ -1,6 +1,6 @@
 package com.eischet.janitor.api.types.builtin;
 
-import com.eischet.janitor.api.calls.TemporaryAssignable;
+import com.eischet.janitor.api.types.TemporaryAssignable;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapperDispatchTable;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapper;

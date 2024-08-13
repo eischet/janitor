@@ -138,7 +138,7 @@ public interface JanitorObject {
         // Handle the class attribute here, previously called _type (which should be removed from older scripts which use it).
         // LATER get rid of "_type", used in a few legacy scripts
         if ("_type".equals(name) || "class".equals(name)) {
-            return process.getEnvironment().getBuiltins().string(janitorClassName());
+            return process.getEnvironment().getBuiltinTypes().string(janitorClassName());
         }
         if (required) {
             final Object hv = janitorGetHostValue();

@@ -6,6 +6,10 @@ import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.compiler.ast.AstNode;
 import com.eischet.janitor.compiler.ast.expression.Expression;
+import com.eischet.janitor.toolbox.json.api.JsonException;
+import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
+
+import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
 /**
  * Unary operation.
@@ -31,6 +35,15 @@ public abstract class UnaryOperation extends AstNode implements Expression {
         final JanitorObject variable = parameter.evaluate(process).janitorUnpack();
         process.setCurrentLocation(getLocation());
         return functor.perform(process, variable);
+    }
+
+    @Override
+    public void writeJson(JsonOutputStream producer) throws JsonException {
+        producer.beginObject()
+                .optional("type", simpleClassNameOf(this))
+                .optional("expression", parameter)
+                .endObject();
+
     }
 
 }

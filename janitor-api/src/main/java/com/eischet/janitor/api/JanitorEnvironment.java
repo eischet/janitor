@@ -6,6 +6,7 @@ import com.eischet.janitor.api.modules.JanitorModule;
 import com.eischet.janitor.api.modules.JanitorModuleRegistration;
 import com.eischet.janitor.api.modules.ModuleResolver;
 import com.eischet.janitor.api.scopes.Scope;
+import com.eischet.janitor.api.types.BuiltinTypes;
 import com.eischet.janitor.api.types.builtin.JList;
 import com.eischet.janitor.api.types.builtin.JMap;
 import com.eischet.janitor.api.types.builtin.JNull;
@@ -16,12 +17,14 @@ import com.eischet.janitor.toolbox.json.api.JsonOutputSupport;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.function.Consumer;
+
 /**
  * The environment in which Janitor scripts run.
  * This is supposed to be provided by the host application, and is used to interact with the Janitor runtime.
  */
 @SuppressWarnings("EmptyMethod")
-public interface JanitorEnvironment extends JanitorUserEnvironment, JanitorImplementationEnvironment, JsonOutputSupport {
+public interface JanitorEnvironment extends JsonOutputSupport {
 
     /**
      * Helper method: return NULL of the parameter is null, like COALESCE() in SQL.
@@ -74,8 +77,25 @@ public interface JanitorEnvironment extends JanitorUserEnvironment, JanitorImple
      * @param name the name of the script
      * @param code the script code
      * @return the filter predicate
+     *
+     * TODO: remove this; it uses a badly thought out binding
      */
+    @Deprecated
     FilterPredicate filterScript(String name, String code);
+
+    /**
+     * Create a filter predicate from a script.
+     * The script will be called on every "test" call of the predicate implementation,
+     * passing the test parameter as "value" (called "t" in Predicate, which is unfortunate because
+     * it makes it hard to talk about).
+     *
+     * @param name the name of the script
+     * @param code the script code
+     * @param globalsProvider a callback to bind more script variables
+     * @return the filter predicate
+     */
+    @NotNull FilterPredicate filterScript(@NotNull String name, @NotNull String code, @Nullable final Consumer<Scope> globalsProvider);
+
 
     /**
      * Emit a warning message.
@@ -89,7 +109,7 @@ public interface JanitorEnvironment extends JanitorUserEnvironment, JanitorImple
      * Access built-in classes like String, Date, etc.
      * @return the built-in classes
      */
-    @NotNull JanitorBuiltins getBuiltins();
+    @NotNull BuiltinTypes getBuiltinTypes();
 
     /**
      * Return the builtin scope, e.g. for adding thing to it.

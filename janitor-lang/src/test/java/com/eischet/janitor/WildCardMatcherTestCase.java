@@ -5,9 +5,9 @@
 package com.eischet.janitor;
 
 
-import com.eischet.janitor.api.util.strings.MultiWildCardMatcher;
-import com.eischet.janitor.api.util.strings.SingleWildCardMatcher;
-import com.eischet.janitor.api.util.strings.WildCardMatcher;
+import com.eischet.janitor.runtime.wildcard.MultiWildCardMatcher;
+import com.eischet.janitor.runtime.wildcard.SingleWildCardMatcher;
+import com.eischet.janitor.api.util.WildCardMatcher;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

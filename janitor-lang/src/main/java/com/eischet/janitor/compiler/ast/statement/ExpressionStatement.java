@@ -5,6 +5,11 @@ import com.eischet.janitor.api.errors.runtime.JanitorControlFlowException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.compiler.ast.expression.Expression;
+import com.eischet.janitor.toolbox.json.api.JsonException;
+import com.eischet.janitor.toolbox.json.api.JsonExportableObject;
+import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
+
+import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
 /**
  * An expression statement.
@@ -16,7 +21,7 @@ import com.eischet.janitor.compiler.ast.expression.Expression;
  * TODO: I'm not sure how this currently relates to the FunctionCallStatement that's used in some places.
  * @see FunctionCallStatement
  */
-public class ExpressionStatement extends Statement {
+public class ExpressionStatement extends Statement implements JsonExportableObject {
 
     private final Expression expression;
 
@@ -35,5 +40,13 @@ public class ExpressionStatement extends Statement {
     public void execute(final JanitorScriptProcess process) throws JanitorRuntimeException, JanitorControlFlowException {
         process.setCurrentLocation(getLocation());
         process.setScriptResult(expression.evaluate(process).janitorUnpack());
+    }
+
+    @Override
+    public void writeJson(JsonOutputStream producer) throws JsonException {
+        producer.beginObject()
+                .optional("type", simpleClassNameOf(this))
+                .optional("expression", expression)
+                .endObject();
     }
 }

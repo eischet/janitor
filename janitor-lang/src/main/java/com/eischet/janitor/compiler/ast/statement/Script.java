@@ -4,6 +4,10 @@ import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorControlFlowException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.Location;
+import com.eischet.janitor.toolbox.json.api.JsonException;
+import com.eischet.janitor.toolbox.json.api.JsonExportableList;
+import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -11,9 +15,9 @@ import java.util.List;
  * The root of all scripting.
  * This is the top-level script, containing all statements.
  */
-public class Script extends Statement {
+public class Script extends Statement implements JsonExportableList {
 
-    private final String source;
+    private final @Nullable String source;
     private final List<Statement> statements;
 
     /**
@@ -23,7 +27,7 @@ public class Script extends Statement {
      * @param statements list of statements
      * @param source     source code
      */
-    public Script(final Location location, final List<Statement> statements, final String source) {
+    public Script(final Location location, final List<Statement> statements, final @Nullable String source) {
         super(location);
         this.statements = statements;
         this.source = source;
@@ -34,7 +38,7 @@ public class Script extends Statement {
      *
      * @return source code
      */
-    public String getSource() {
+    public @Nullable String getSource() {
         return source;
     }
 
@@ -55,4 +59,19 @@ public class Script extends Statement {
             statement.execute(process);
         }
     }
+
+    @Override
+    public boolean isDefaultOrEmpty() {
+        return false;
+    }
+
+    @Override
+    public void writeJson(JsonOutputStream producer) throws JsonException {
+        producer.beginArray();
+        for (Statement statement : statements) {
+            statement.writeJson(producer);
+        }
+        producer.endArray();
+    }
+
 }

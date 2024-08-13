@@ -7,6 +7,10 @@ import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.runtime.JanitorSemantics;
 import com.eischet.janitor.compiler.ast.AstNode;
 import com.eischet.janitor.compiler.ast.expression.Expression;
+import com.eischet.janitor.toolbox.json.api.JsonException;
+import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
+
+import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
 /**
  * Negation of an expression: -.
@@ -31,4 +35,14 @@ public class Negation extends AstNode implements Expression {
     public JanitorObject evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException {
         return JanitorSemantics.negate(process, expr.evaluate(process).janitorUnpack());
     }
+
+    @Override
+    public void writeJson(JsonOutputStream producer) throws JsonException {
+        producer.beginObject()
+                .optional("type", simpleClassNameOf(this))
+                .optional("expression", expr)
+                .endObject();
+
+    }
+
 }

@@ -1,6 +1,6 @@
 package com.eischet.janitor.compiler;
 
-import com.eischet.janitor.api.JanitorBuiltins;
+import com.eischet.janitor.api.types.BuiltinTypes;
 import com.eischet.janitor.api.JanitorCompilerSettings;
 import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.scopes.Location;
@@ -59,7 +59,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
     private final boolean verbose;
     private final String source;
     private final JanitorEnvironment env;
-    private final JanitorBuiltins builtinTypes;
+    private final BuiltinTypes builtinTypes;
 
 
     public JanitorAntlrCompiler(final JanitorEnvironment env, final ScriptModule module, final JanitorCompilerSettings options, final String source) {
@@ -68,11 +68,11 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
         this.options = options;
         this.verbose = options.isVerbose();
         this.source = source;
-        this.builtinTypes = env.getBuiltins();
+        this.builtinTypes = env.getBuiltinTypes();
     }
 
     public static JString parseLiteral(final JanitorEnvironment env, final @NotNull String literal) {
-        return env.getBuiltins().string(unescapeJava(literal));
+        return env.getBuiltinTypes().string(unescapeJava(literal));
     }
 
     public static String unescapeJava(final String literal) {
@@ -186,7 +186,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
     @Override
     public IntegerLiteral visitIntegerLiteral(final JanitorParser.IntegerLiteralContext ctx) {
         if (verbose) log.info("visitIntegerLiteral {}", ctx.getText());
-        return new IntegerLiteral(location(ctx.start, ctx.stop), env.getBuiltins().integer(Long.parseLong(ctx.getText())));
+        return new IntegerLiteral(location(ctx.start, ctx.stop), env.getBuiltinTypes().integer(Long.parseLong(ctx.getText())));
     }
 
     @Override
@@ -201,7 +201,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
         if ("today".equals(text)) {
             return new TodayLiteral(location(ctx.start, ctx.stop));
         }
-        final JanitorObject litConst = env.getBuiltins().nullableDateFromLiteral(text);
+        final JanitorObject litConst = env.getBuiltinTypes().nullableDateFromLiteral(text);
         if (litConst instanceof JDate date) {
             return new DateLiteral(location(ctx.start, ctx.stop), date);
         } else {
@@ -215,7 +215,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
         if ("now".equals(text)) {
             return new NowLiteral(location(ctx.start, ctx.stop));
         }
-        final @NotNull JanitorObject literalValue = env.getBuiltins().nullableDateTimeFromLiteral(text);
+        final @NotNull JanitorObject literalValue = env.getBuiltinTypes().nullableDateTimeFromLiteral(text);
         if (literalValue instanceof JDateTime dt) {
             return new DateTimeLiteral(location(ctx.start, ctx.stop), dt);
         } else {
@@ -226,7 +226,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
     @Override
     public Ast visitDurationLiteral(final JanitorParser.DurationLiteralContext ctx) {
         final String text = ctx.getText().substring(1); // cut @
-        return new DurationLiteral(location(ctx.start, ctx.stop), text, env.getBuiltins());
+        return new DurationLiteral(location(ctx.start, ctx.stop), text, env.getBuiltinTypes());
     }
 
 
@@ -706,7 +706,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
             //System.out.println("    visitCallExpression: " + null + ", TO = " + ctx.TO() + ", FROM = " + ctx.FROM());
         }
 
-        identifierText = env.getBuiltins().intern(identifierText);
+        identifierText = env.getBuiltinTypes().intern(identifierText);
 
         final JanitorParser.FunctionCallContext functionCallContext = ctx.functionCall();
         final JanitorParser.ExpressionContext expr = ctx.expression();
@@ -852,7 +852,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
     @Override
     public Ast visitFloatLiteral(final JanitorParser.FloatLiteralContext ctx) {
         if (verbose) log.info("visitFloatLiteral {}", ctx.getText());
-        return new FloatLiteral(location(ctx.start, ctx.stop), Double.parseDouble(ctx.getText()), env.getBuiltins());
+        return new FloatLiteral(location(ctx.start, ctx.stop), Double.parseDouble(ctx.getText()), env.getBuiltinTypes());
     }
 
     @Override
@@ -904,7 +904,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
                 } else if (litIdent != null) {
                     final String text = litIdent.getText();
 
-                    lit = new StringLiteral(location(prop.start, ctx.stop), env.getBuiltins().string(text));
+                    lit = new StringLiteral(location(prop.start, ctx.stop), env.getBuiltinTypes().string(text));
                 }
                 if (lit == null) {
                     throw new RuntimeException("map literal: keys must be single or double quoted strings, instead of: " + prop.getText());

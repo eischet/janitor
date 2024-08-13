@@ -1,11 +1,16 @@
 package com.eischet.janitor.api.scopes;
 
+import com.eischet.janitor.toolbox.json.api.JsonException;
+import com.eischet.janitor.toolbox.json.api.JsonExportableObject;
+import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
 import org.jetbrains.annotations.Nullable;
+
+import java.io.Serializable;
 
 /**
  * The Location represents a position in a script source code.
  */
-public class Location {
+public class Location implements JsonExportableObject {
 
     private final ScriptModule module;
     private final int line;
@@ -170,4 +175,23 @@ public class Location {
         return new Location(module, line, column, endLine, endColumn, name);
     }
 
+    @Override
+    public boolean isDefaultOrEmpty() {
+        return module == null;
+    }
+
+    @Override
+    public void writeJson(JsonOutputStream producer) throws JsonException {
+        producer.beginObject();
+        producer.optional("line", line);
+        producer.optional("column", column);
+        producer.optional("endLine", endLine);
+        producer.optional("endColumn", endColumn);
+        // We can safely assume that a single script only contains ONE module, because we kind of
+        // compile the script from the module source code, from a high level point of view.
+        // Serializing the same module info is, therefor, 100% redundant.
+        // omit: producer.optional("nesting", nesting);
+        // omit: producer.optional("module", module);
+        producer.endObject();
+    }
 }

@@ -18,7 +18,7 @@ public class JDurationTestCase {
     final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
 
     private JDuration make(final long value, final JDuration.JDurationKind kind) {
-        return rt.getEnvironment().getBuiltins().duration(value, kind);
+        return rt.getEnvironment().getBuiltinTypes().duration(value, kind);
     }
 
     private void testDurationMethod(final String script, final Object expectedResult) throws JanitorCompilerException, JanitorRuntimeException {

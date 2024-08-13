@@ -1,6 +1,6 @@
-package com.eischet.janitor.api;
+package com.eischet.janitor.api.types;
 
-import com.eischet.janitor.api.types.*;
+import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.types.builtin.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -15,7 +15,7 @@ import java.util.stream.Stream;
 /**
  * Interface / factory for working with built-in types.
  */
-public interface JanitorBuiltins {
+public interface BuiltinTypes {
 
     /**
      * Return an empty String.

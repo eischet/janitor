@@ -3,6 +3,10 @@ package com.eischet.janitor.compiler.ast.expression.ternary;
 import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.compiler.ast.AstNode;
 import com.eischet.janitor.compiler.ast.expression.Expression;
+import com.eischet.janitor.toolbox.json.api.JsonException;
+import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
+
+import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
 /**
  * Ternary operations.
@@ -28,5 +32,17 @@ public abstract class TernaryOperation extends AstNode implements Expression {
         this.b = b;
         this.c = c;
     }
+
+    @Override
+    public void writeJson(JsonOutputStream producer) throws JsonException {
+        producer.beginObject()
+                .optional("type", simpleClassNameOf(this))
+                .optional("a", a)
+                .optional("b", b)
+                .optional("c", c)
+                .endObject();
+
+    }
+
 
 }

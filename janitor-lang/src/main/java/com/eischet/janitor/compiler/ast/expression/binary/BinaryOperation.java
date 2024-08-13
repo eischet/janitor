@@ -7,6 +7,10 @@ import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.compiler.ast.AstNode;
 import com.eischet.janitor.compiler.ast.expression.Expression;
+import com.eischet.janitor.toolbox.json.api.JsonException;
+import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
+
+import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
 /**
  * Binary operation.
@@ -58,5 +62,13 @@ public abstract class BinaryOperation extends AstNode implements Expression {
         }
     }
 
-
+    @Override
+    public void writeJson(JsonOutputStream producer) throws JsonException {
+        producer.beginObject()
+                .optional("type", simpleClassNameOf(this))
+                .optional("left", left)
+                .optional("right", right)
+                .endObject();
+        // there's no need to emit the functor because the class name of "this" implies it.
+    }
 }

@@ -6,8 +6,12 @@ import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.compiler.ast.AstNode;
+import com.eischet.janitor.toolbox.json.api.JsonException;
+import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
 
 import java.util.List;
+
+import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
 /**
  * Qualified name, i.e. a multi-part identifier: foo.bar.baz.
@@ -17,8 +21,9 @@ public class QualifiedName extends AstNode implements Expression {
 
     /**
      * Constructor.
+     *
      * @param location where
-     * @param parts what
+     * @param parts    what
      */
     public QualifiedName(final Location location, final List<String> parts) {
         super(location);
@@ -27,6 +32,7 @@ public class QualifiedName extends AstNode implements Expression {
 
     /**
      * Get the parts.
+     *
      * @return the parts
      */
     public List<String> getParts() {
@@ -55,4 +61,16 @@ public class QualifiedName extends AstNode implements Expression {
     public String toString() {
         return "QualifiedName " + parts;
     }
+
+    @Override
+    public void writeJson(JsonOutputStream producer) throws JsonException {
+        producer.beginObject().optional("type", simpleClassNameOf(this));
+        producer.key("parts").beginArray();
+        for (String part : parts) {
+            producer.value(part);
+        }
+        producer.endArray();
+        producer.endObject();
+    }
+
 }

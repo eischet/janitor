@@ -10,6 +10,11 @@ import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.compiler.ast.expression.Expression;
 import com.eischet.janitor.compiler.ast.expression.Identifier;
 import com.eischet.janitor.compiler.ast.statement.Statement;
+import com.eischet.janitor.toolbox.json.api.JsonException;
+import com.eischet.janitor.toolbox.json.api.JsonExportableObject;
+import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
+
+import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
 /**
  * Abstract base class for any fix operator (prefix or postfix).
@@ -17,7 +22,7 @@ import com.eischet.janitor.compiler.ast.statement.Statement;
  * These operators are expressions, to, so you can use them in other expressions: foo = bar++.
  * However, you cannot say this in Janitor: foo = bar += 1
  */
-public abstract class AnyFixOperator extends Statement implements Expression {
+public abstract class AnyFixOperator extends Statement implements Expression, JsonExportableObject {
     private final Expression expr;
 
     /**
@@ -74,6 +79,14 @@ public abstract class AnyFixOperator extends Statement implements Expression {
     public void execute(final JanitorScriptProcess process) throws JanitorRuntimeException, JanitorControlFlowException {
         process.setCurrentLocation(getLocation());
         evaluate(process); // just pass it on
+    }
+
+    @Override
+    public void writeJson(JsonOutputStream producer) throws JsonException {
+        producer.beginObject()
+                .optional("type", simpleClassNameOf(this))
+                .optional("expression", expr)
+                .endObject();
     }
 
 }

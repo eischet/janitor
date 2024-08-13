@@ -4,13 +4,18 @@ import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorControlFlowException;
 import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.compiler.ast.statement.Statement;
+import com.eischet.janitor.toolbox.json.api.JsonException;
+import com.eischet.janitor.toolbox.json.api.JsonExportableObject;
+import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
 
 import java.io.Serial;
+
+import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
 /**
  * Break statement, for breaking out of loops.
  */
-public class BreakStatement extends Statement {
+public class BreakStatement extends Statement implements JsonExportableObject {
 
     /**
      * The break control flow exception, singleton instance.
@@ -42,6 +47,13 @@ public class BreakStatement extends Statement {
         private static final long serialVersionUID = 1;
         private Break() {
         }
+    }
+
+    @Override
+    public void writeJson(JsonOutputStream producer) throws JsonException {
+        producer.beginObject()
+                .optional("type", simpleClassNameOf(this))
+                .endObject();
     }
 
 }

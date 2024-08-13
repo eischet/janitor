@@ -3,7 +3,7 @@ package com.eischet.janitor.env;
 import com.eischet.janitor.api.FilterPredicate;
 import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.JanitorScriptProcess;
-import com.eischet.janitor.api.calls.JCallArgs;
+import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.errors.runtime.JanitorAssertionException;
 import com.eischet.janitor.api.errors.runtime.JanitorNameException;
@@ -52,7 +52,7 @@ import java.util.function.Consumer;
 public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
 
     public static final FilterPredicate NUMB = x -> true;
-    protected final JanitorDefaultBuiltins builtins;
+    protected final DefaultBuiltinTypes builtins;
     private final JanitorFormatting formatting;
     private final List<JanitorModuleRegistration> moduleRegistrations = new ArrayList<>();
     private final List<ModuleResolver> resolvers = new ArrayList<>();
@@ -68,7 +68,7 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
 
     public JanitorDefaultEnvironment(JanitorFormatting formatting) {
         this.formatting = formatting;
-        this.builtins = new JanitorDefaultBuiltins();
+        this.builtins = new DefaultBuiltinTypes();
     }
 
     /**
@@ -182,9 +182,23 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
         }
     }
 
+    @Override
+    public @NotNull FilterPredicate filterScript(@NotNull String name, @NotNull String code, Consumer<Scope> globalsProvider) {
+        if (code == null || code.isEmpty() || code.trim().isEmpty()) {
+            return NUMB;
+        }
+        try {
+            return new FilterScript(this, name, code, globalsProvider);
+        } catch (JanitorCompilerException JanitorParserException) {
+            warn("error compiling filter: " + code + ":" + JanitorParserException);
+            // TODO: report an exception -> exception(JanitorParserException);
+            return NUMB;
+        }
+    }
+
     @NotNull
     @Override
-    public JanitorDefaultBuiltins getBuiltins() {
+    public DefaultBuiltinTypes getBuiltinTypes() {
         return builtins;
     }
 
@@ -195,12 +209,12 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
 
     @Override
     public @NotNull JMap parseJsonToMap(final String json) throws JsonException {
-        return JMapClass.parseJson(getBuiltins().map(), json, this);
+        return JMapClass.parseJson(getBuiltinTypes().map(), json, this);
     }
 
     @Override
     public @NotNull JList parseJsonToList(final String json) throws JsonException {
-        return JListClass.parseJson(getBuiltins().list(), json, this);
+        return JListClass.parseJson(getBuiltinTypes().list(), json, this);
     }
 
     @Override

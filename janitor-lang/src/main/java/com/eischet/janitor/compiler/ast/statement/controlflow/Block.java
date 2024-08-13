@@ -5,6 +5,9 @@ import com.eischet.janitor.api.errors.runtime.JanitorControlFlowException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.compiler.ast.statement.Statement;
+import com.eischet.janitor.toolbox.json.api.JsonException;
+import com.eischet.janitor.toolbox.json.api.JsonExportableList;
+import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
 
 import java.util.List;
 
@@ -12,7 +15,7 @@ import java.util.List;
  * Block of statements.
  * That's really just a simple list of other statements, dressed as a statement.
  */
-public class Block extends Statement {
+public class Block extends Statement implements JsonExportableList {
 
     private final List<Statement> statements;
 
@@ -51,5 +54,14 @@ public class Block extends Statement {
         } finally {
             process.exitBlock();
         }
+    }
+
+    @Override
+    public void writeJson(JsonOutputStream producer) throws JsonException {
+        producer.beginArray();
+        for (final Statement statement : getStatements()) {
+            statement.writeJson(producer);
+        }
+        producer.endArray();
     }
 }

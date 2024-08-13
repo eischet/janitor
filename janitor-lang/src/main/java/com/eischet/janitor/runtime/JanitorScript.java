@@ -13,6 +13,9 @@ import com.eischet.janitor.compiler.JanitorCompiler;
 import com.eischet.janitor.compiler.ast.statement.Script;
 import com.eischet.janitor.lang.JanitorLexer;
 import com.eischet.janitor.lang.JanitorParser;
+import com.eischet.janitor.toolbox.json.api.JsonException;
+import com.eischet.janitor.toolbox.json.api.JsonExportableObject;
+import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
 import org.antlr.v4.runtime.*;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -21,8 +24,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class JanitorScript implements RunnableScript {
-
+public class JanitorScript implements RunnableScript, JsonExportableObject {
 
     public static final ANTLRErrorListener LOGGING_LISTENER = new BaseErrorListener() {
         @Override
@@ -171,5 +173,15 @@ public class JanitorScript implements RunnableScript {
     }
 
 
+    @Override
+    public boolean isDefaultOrEmpty() {
+        return false; // never omit the script in JSON
+    }
 
+    @Override
+    public void writeJson(JsonOutputStream producer) throws JsonException {
+        producer.beginObject();
+        producer.optional("script", scriptObject);
+        producer.endObject();
+    }
 }

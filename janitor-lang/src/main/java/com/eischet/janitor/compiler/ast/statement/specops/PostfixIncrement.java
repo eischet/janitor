@@ -11,11 +11,16 @@ import com.eischet.janitor.runtime.JanitorSemantics;
 import com.eischet.janitor.compiler.ast.expression.Expression;
 import com.eischet.janitor.compiler.ast.expression.Identifier;
 import com.eischet.janitor.compiler.ast.statement.Statement;
+import com.eischet.janitor.toolbox.json.api.JsonException;
+import com.eischet.janitor.toolbox.json.api.JsonExportableObject;
+import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
+
+import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
 /**
  * Postfix increment operator: i++;
  */
-public class PostfixIncrement extends Statement implements Expression {
+public class PostfixIncrement extends Statement implements Expression, JsonExportableObject {
     private final Expression expr;
 
     /**
@@ -52,4 +57,13 @@ public class PostfixIncrement extends Statement implements Expression {
     public void execute(final JanitorScriptProcess process) throws JanitorRuntimeException, JanitorControlFlowException {
         evaluate(process); // just pass it on
     }
+
+    @Override
+    public void writeJson(JsonOutputStream producer) throws JsonException {
+        producer.beginObject()
+                .optional("type", simpleClassNameOf(this))
+                .optional("expression", expr)
+                .endObject();
+    }
+
 }

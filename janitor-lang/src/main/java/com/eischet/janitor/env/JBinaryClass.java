@@ -1,7 +1,7 @@
 package com.eischet.janitor.env;
 
 import com.eischet.janitor.api.JanitorScriptProcess;
-import com.eischet.janitor.api.calls.JCallArgs;
+import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
@@ -10,7 +10,6 @@ import com.eischet.janitor.api.types.builtin.JString;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.charset.UnsupportedCharsetException;
 
 public class JBinaryClass {
 
@@ -26,9 +25,9 @@ public class JBinaryClass {
     public static JString __encodeBase64(final JanitorWrapper<byte[]> self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);
         if (self.janitorGetHostValue() == null) {
-            return process.getEnvironment().getBuiltins().emptyString();
+            return process.getEnvironment().getBuiltinTypes().emptyString();
         }
-        return process.getEnvironment().getBuiltins().string(new String(java.util.Base64.getEncoder().encode(self.janitorGetHostValue())));
+        return process.getEnvironment().getBuiltinTypes().string(new String(java.util.Base64.getEncoder().encode(self.janitorGetHostValue())));
     }
 
     /**
@@ -44,7 +43,7 @@ public class JBinaryClass {
     public static JString __toString(final JanitorWrapper<byte[]> self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         String charsetName = arguments.require(0, 1).getOptionalStringValue(0, null);
         try {
-            return process.getEnvironment().getBuiltins().string(self.janitorIsTrue() ? new String(self.janitorGetHostValue(), charsetName == null ? StandardCharsets.UTF_8 : Charset.forName(charsetName)) : null);
+            return process.getEnvironment().getBuiltinTypes().string(self.janitorIsTrue() ? new String(self.janitorGetHostValue(), charsetName == null ? StandardCharsets.UTF_8 : Charset.forName(charsetName)) : null);
         } catch (IllegalArgumentException e) {
             throw new JanitorArgumentException(process, "invalid charset: '" + charsetName + "'", e);
         }
@@ -60,7 +59,7 @@ public class JBinaryClass {
      */
     public static JInt __size(final JanitorWrapper<byte[]> self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);
-        return process.getEnvironment().getBuiltins().integer(self.janitorGetHostValue().length);
+        return process.getEnvironment().getBuiltinTypes().integer(self.janitorGetHostValue().length);
     }
 
 }

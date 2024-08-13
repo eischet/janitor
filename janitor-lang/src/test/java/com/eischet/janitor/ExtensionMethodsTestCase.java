@@ -2,7 +2,7 @@ package com.eischet.janitor;
 
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.RunnableScript;
-import com.eischet.janitor.api.calls.JCallArgs;
+import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.errors.runtime.JanitorNameException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
@@ -58,27 +58,27 @@ public class ExtensionMethodsTestCase {
         final String scriptSource = "'John Dorian'.sayHello();";
         final RunnableScript script = RT.compile("test", scriptSource);
         assertThrows(JanitorNameException.class, script::run); // can't work, because there's no sayHello method on strings!
-        ENV.getBuiltins().internals().getStringDispatcher().addMethod("sayHello", (self, runningScript, arguments) -> ENV.getBuiltins().string("Hello, " + self.janitorGetHostValue()));
+        ENV.getBuiltinTypes().internals().getStringDispatcher().addMethod("sayHello", (self, runningScript, arguments) -> ENV.getBuiltinTypes().string("Hello, " + self.janitorGetHostValue()));
         assertEquals("Hello, John Dorian", script.run().janitorGetHostValue()); // works, because now the method exists!
 
         // add a property to the string class
         final String scriptSource2 = "return ('cbaa23' + 'thx1138').numberOfDigits * 2;";
         final RunnableScript script2 = RT.compile("test", scriptSource2);
         assertThrows(JanitorNameException.class, script2::run); // can't work, because there's no such property
-        ENV.getBuiltins().internals().getStringDispatcher().addLongProperty("numberOfDigits", (self) -> self.janitorGetHostValue().codePoints().filter(Character::isDigit).count());
+        ENV.getBuiltinTypes().internals().getStringDispatcher().addLongProperty("numberOfDigits", (self) -> self.janitorGetHostValue().codePoints().filter(Character::isDigit).count());
         assertEquals(12L, script2.run().janitorGetHostValue()); // now it works
 
         // add a method to the int class
         final String scriptSource3 = "return '12345'.numberOfDigits.times2;";
         final RunnableScript script3 = RT.compile("test", scriptSource3);
         assertThrows(JanitorNameException.class, script3::run); // can't work, because there's no such property
-        ENV.getBuiltins().internals().getIntDispatcher().addLongProperty("times2", (self) -> self.janitorGetHostValue() * 2);
+        ENV.getBuiltinTypes().internals().getIntDispatcher().addLongProperty("times2", (self) -> self.janitorGetHostValue() * 2);
         assertEquals(10L, script3.run().janitorGetHostValue()); // now there it is
 
 
         // Finally, add a property to all built-in classes. Your own classes can opt in to this, too, by accessing the baseDispatcher
         // explicitly when creating your own dispatch table, or by calling into the baseDispatcher at runtime.
-        ENV.getBuiltins().internals().getBaseDispatcher().addStringProperty("omega", self -> "Ω");
+        ENV.getBuiltinTypes().internals().getBaseDispatcher().addStringProperty("omega", self -> "Ω");
         final String scriptSource4 = "return (17).omega;"; // parens are necessary here, because 17.omega would (fail to) parse as float
         final RunnableScript script4 = RT.compile("test", scriptSource4);
         assertEquals("Ω", script4.run().janitorGetHostValue());

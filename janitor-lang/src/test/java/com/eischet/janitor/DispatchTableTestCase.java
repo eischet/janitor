@@ -1,7 +1,7 @@
 package com.eischet.janitor;
 
 import com.eischet.janitor.api.RunnableScript;
-import com.eischet.janitor.api.calls.RuntimeConsumer;
+import com.eischet.janitor.api.types.RuntimeConsumer;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.composed.JanitorComposed;

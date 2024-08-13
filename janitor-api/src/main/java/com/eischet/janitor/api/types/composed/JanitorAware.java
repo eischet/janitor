@@ -1,4 +1,6 @@
-package com.eischet.janitor.api.types;
+package com.eischet.janitor.api.types.composed;
+
+import com.eischet.janitor.api.types.JanitorObject;
 
 /**
  * Interface for objects that can be converted to a JanitorObject.

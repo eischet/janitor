@@ -15,13 +15,13 @@ public abstract class JCollection {
 
     public static JanitorObject parseJsonValue(JsonInputStream reader, final JanitorEnvironment env) throws JsonException {
         return switch (reader.peek()) {
-            case BEGIN_ARRAY ->  JListClass.parseJson(env.getBuiltins().list(), reader, env);
+            case BEGIN_ARRAY ->  JListClass.parseJson(env.getBuiltinTypes().list(), reader, env);
             case END_ARRAY -> throw new JsonException("Unexpected end of array at " + reader.getPath());
-            case BEGIN_OBJECT -> JMapClass.parseJson(env.getBuiltins().map(), reader, env);
+            case BEGIN_OBJECT -> JMapClass.parseJson(env.getBuiltinTypes().map(), reader, env);
             case END_OBJECT -> throw new JsonException("Unexpected end of object at " + reader.getPath());
             case NAME -> throw new JsonException("Unexpected name array at " + reader.getPath());
-            case STRING -> env.getBuiltins().nullableString(reader.nextString());
-            case NUMBER -> env.getBuiltins().floatingPoint(reader.nextDouble());
+            case STRING -> env.getBuiltinTypes().nullableString(reader.nextString());
+            case NUMBER -> env.getBuiltinTypes().floatingPoint(reader.nextDouble());
             case BOOLEAN -> JBool.of(reader.nextBoolean());
             case NULL -> {
                 reader.nextNullObject();

@@ -11,4 +11,5 @@ public class LogicalNot extends UnaryOperation {
     public LogicalNot(final Location location, final Expression parameter) {
         super(location, parameter, (parameter1, parameter12) -> JanitorSemantics.logicNot(parameter12));
     }
+
 }

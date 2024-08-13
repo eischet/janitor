@@ -1,7 +1,7 @@
 package com.eischet.janitor.env;
 
 import com.eischet.janitor.api.JanitorScriptProcess;
-import com.eischet.janitor.api.calls.JCallArgs;
+import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 import com.eischet.janitor.api.types.*;
@@ -35,13 +35,13 @@ public class JSetClass {
     public static JList __toList(final JanitorWrapper<Set<JanitorObject>> _self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         final JSet self = ((JSet) _self);
         arguments.require(0);
-        return process.getEnvironment().getBuiltins().list(self.janitorGetHostValue().stream());
+        return process.getEnvironment().getBuiltinTypes().list(self.janitorGetHostValue().stream());
     }
 
     public static JInt __size(final JanitorWrapper<Set<JanitorObject>> _self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         final JSet self = ((JSet) _self);
         arguments.require(0);
-        return process.getEnvironment().getBuiltins().integer(self.size());
+        return process.getEnvironment().getBuiltinTypes().integer(self.size());
     }
 
     public static JBool __isEmpty(final JanitorWrapper<Set<JanitorObject>> _self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {

@@ -7,11 +7,16 @@ import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.runtime.JanitorSemantics;
 import com.eischet.janitor.compiler.ast.expression.Expression;
 import com.eischet.janitor.compiler.ast.statement.Statement;
+import com.eischet.janitor.toolbox.json.api.JsonException;
+import com.eischet.janitor.toolbox.json.api.JsonExportableObject;
+import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
+
+import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
 /**
  * Do-while loop.
  */
-public class DoWhileLoop extends Statement {
+public class DoWhileLoop extends Statement implements JsonExportableObject {
 
     private final Block block;
     private final Expression expression;
@@ -41,4 +46,14 @@ public class DoWhileLoop extends Statement {
         } catch (BreakStatement.Break ignored) {
         }
     }
+
+    @Override
+    public void writeJson(JsonOutputStream producer) throws JsonException {
+        producer.beginObject()
+                .optional("type", simpleClassNameOf(this))
+                .optional("block", block)
+                .optional("expression", expression)
+                .endObject();
+    }
+
 }

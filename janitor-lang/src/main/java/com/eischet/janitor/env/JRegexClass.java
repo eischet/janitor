@@ -1,7 +1,7 @@
 package com.eischet.janitor.env;
 
 import com.eischet.janitor.api.JanitorScriptProcess;
-import com.eischet.janitor.api.calls.JCallArgs;
+import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.JList;
@@ -19,7 +19,7 @@ public class JRegexClass {
         final JString str = arguments.getString(0);
         final Matcher matcher = self.janitorGetHostValue().matcher(str.janitorGetHostValue());
         if (matcher.find()) {
-            return process.getEnvironment().getBuiltins().string(matcher.group(1));
+            return process.getEnvironment().getBuiltinTypes().string(matcher.group(1));
         } else {
             return JNull.NULL;
         }
@@ -27,11 +27,11 @@ public class JRegexClass {
 
     public static JanitorObject extractAll(final JanitorWrapper<Pattern> self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(1);
-        final JList list = process.getEnvironment().getBuiltins().list();
+        final JList list = process.getEnvironment().getBuiltinTypes().list();
         final JString str = arguments.getString(0);
         final Matcher matcher = self.janitorGetHostValue().matcher(str.janitorGetHostValue());
         while (matcher.find()) {
-            list.add(process.getEnvironment().getBuiltins().string(matcher.group(1)));
+            list.add(process.getEnvironment().getBuiltinTypes().string(matcher.group(1)));
         }
         return list;
     }
@@ -41,7 +41,7 @@ public class JRegexClass {
         final JString string = arguments.getString(0);
         final JString with = arguments.getString(1);
         final Matcher matcher = self.janitorGetHostValue().matcher(string.janitorGetHostValue());
-        return process.getEnvironment().getBuiltins().string(matcher.replaceFirst(with.janitorToString()));
+        return process.getEnvironment().getBuiltinTypes().string(matcher.replaceFirst(with.janitorToString()));
     }
 
     public static JanitorObject replaceAll(final JanitorWrapper<Pattern> self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
@@ -49,16 +49,16 @@ public class JRegexClass {
         final JString string = arguments.getString(0);
         final JString with = arguments.getString(1);
         final Matcher matcher = self.janitorGetHostValue().matcher(string.janitorGetHostValue());
-        return process.getEnvironment().getBuiltins().string(matcher.replaceAll(with.janitorToString()));
+        return process.getEnvironment().getBuiltinTypes().string(matcher.replaceAll(with.janitorToString()));
     }
 
     public static JanitorObject split(final JanitorWrapper<Pattern> self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(1);
-        final JList list = process.getEnvironment().getBuiltins().list();
+        final JList list = process.getEnvironment().getBuiltinTypes().list();
         final JString str = arguments.getString(0);
         final String[] parts = str.janitorGetHostValue().split(self.janitorGetHostValue().pattern());
         for (final String part : parts) {
-            list.add(process.getEnvironment().getBuiltins().string(part));
+            list.add(process.getEnvironment().getBuiltinTypes().string(part));
         }
         return list;
     }

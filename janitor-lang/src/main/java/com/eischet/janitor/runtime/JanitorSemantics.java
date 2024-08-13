@@ -1,6 +1,6 @@
 package com.eischet.janitor.runtime;
 
-import com.eischet.janitor.api.JanitorBuiltins;
+import com.eischet.janitor.api.types.BuiltinTypes;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorArithmeticException;
 import com.eischet.janitor.api.errors.runtime.JanitorNotImplementedException;
@@ -10,7 +10,7 @@ import com.eischet.janitor.api.types.JAssignable;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.*;
 import com.eischet.janitor.api.util.ObjectUtilities;
-import com.eischet.janitor.api.util.strings.SingleWildCardMatcher;
+import com.eischet.janitor.runtime.wildcard.SingleWildCardMatcher;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -113,9 +113,9 @@ public class JanitorSemantics {
      */
     public static @NotNull JanitorObject negate(JanitorScriptProcess process, final JanitorObject currentValue) throws JanitorRuntimeException {
         if (currentValue instanceof JInt v) {
-            return process.getEnvironment().getBuiltins().integer(-v.getValue());
+            return process.getEnvironment().getBuiltinTypes().integer(-v.getValue());
         } else if (currentValue instanceof JFloat f) {
-            return process.getEnvironment().getBuiltins().floatingPoint(-f.getValue());
+            return process.getEnvironment().getBuiltinTypes().floatingPoint(-f.getValue());
         } else {
             throw new JanitorNotImplementedException(process, "we can only negate numbers");
         }
@@ -153,13 +153,13 @@ public class JanitorSemantics {
     ) throws JanitorRuntimeException {
         try {
             if (leftValue instanceof JInt leftInteger && rightValue instanceof JInt rightInteger) {
-                return process.getEnvironment().getBuiltins().integer(intOp.apply(process, leftInteger.getValue(), rightInteger.getValue()));
+                return process.getEnvironment().getBuiltinTypes().integer(intOp.apply(process, leftInteger.getValue(), rightInteger.getValue()));
             } else if (leftValue instanceof JFloat leftFloat && rightValue instanceof JFloat rightFloat) {
-                return process.getEnvironment().getBuiltins().floatingPoint(floatOp.apply(process, leftFloat.getValue(), rightFloat.getValue()));
+                return process.getEnvironment().getBuiltinTypes().floatingPoint(floatOp.apply(process, leftFloat.getValue(), rightFloat.getValue()));
             } else if (leftValue instanceof JInt leftInteger && rightValue instanceof JFloat rightFloat) {
-                return process.getEnvironment().getBuiltins().floatingPoint(floatOp.apply(process, leftInteger.getAsDouble(), rightFloat.getValue()));
+                return process.getEnvironment().getBuiltinTypes().floatingPoint(floatOp.apply(process, leftInteger.getAsDouble(), rightFloat.getValue()));
             } else if (leftValue instanceof JFloat leftFloat && rightValue instanceof JInt rightInteger) {
-                return process.getEnvironment().getBuiltins().floatingPoint(floatOp.apply(process, leftFloat.getValue(), rightInteger.getAsDouble()));
+                return process.getEnvironment().getBuiltinTypes().floatingPoint(floatOp.apply(process, leftFloat.getValue(), rightInteger.getAsDouble()));
             } else if (dateOp != null && leftValue instanceof JDateTime leftDate && rightValue instanceof JDateTime rightDate) {
                 return dateTimeDateTimeOp.apply(process, leftDate, rightDate);
             } else if (dateOp != null && leftValue instanceof JDate leftDate && rightValue instanceof JDate rightDate) {
@@ -197,9 +197,9 @@ public class JanitorSemantics {
      */
     public static @NotNull JanitorObject multiply(JanitorScriptProcess process, final JanitorObject leftValue, final JanitorObject rightValue) throws JanitorRuntimeException {
         if (leftValue instanceof JString leftString && rightValue instanceof JInt rightInt) {
-            return process.getEnvironment().getBuiltins().string(repeat(leftString.janitorGetHostValue(), rightInt.getValue()));
+            return process.getEnvironment().getBuiltinTypes().string(repeat(leftString.janitorGetHostValue(), rightInt.getValue()));
         } else if (leftValue instanceof JInt leftInt && rightValue instanceof JString rightString) {
-            return process.getEnvironment().getBuiltins().string(repeat(rightString.janitorGetHostValue(), leftInt.getValue()));
+            return process.getEnvironment().getBuiltinTypes().string(repeat(rightString.janitorGetHostValue(), leftInt.getValue()));
         }
         return numericOperation(process,
                 "multiply",
@@ -282,8 +282,8 @@ public class JanitorSemantics {
                 (p, a, b) -> a - b,
                 JDuration::subtract,
                 JDuration::subtract,
-                (proc, jDate, jDate2) -> durationBetween(process.getEnvironment().getBuiltins(), jDate, jDate2),
-                (proc, jDateTime, jDateTime2) -> durationBetween(process.getEnvironment().getBuiltins(), jDateTime, jDateTime2),
+                (proc, jDate, jDate2) -> durationBetween(process.getEnvironment().getBuiltinTypes(), jDate, jDate2),
+                (proc, jDateTime, jDateTime2) -> durationBetween(process.getEnvironment().getBuiltinTypes(), jDateTime, jDateTime2),
                 JDuration::subtract,
                 null, false
         );
@@ -430,7 +430,7 @@ public class JanitorSemantics {
      */
     public static @NotNull JanitorObject add(JanitorScriptProcess process, final JanitorObject leftValue, final JanitorObject rightValue) throws JanitorRuntimeException {
         if (leftValue instanceof JString || rightValue instanceof JString) {
-            return process.getEnvironment().getBuiltins().string(leftValue.janitorGetHostValue() + String.valueOf(rightValue.janitorGetHostValue()));
+            return process.getEnvironment().getBuiltinTypes().string(leftValue.janitorGetHostValue() + String.valueOf(rightValue.janitorGetHostValue()));
         }
         return numericOperation(process,
                 "add",
@@ -460,7 +460,7 @@ public class JanitorSemantics {
      */
     public static @NotNull JanitorObject increment(JanitorScriptProcess process, final JanitorObject currentValue) throws JanitorRuntimeException {
         if (currentValue instanceof JInt currentInteger) {
-            return process.getEnvironment().getBuiltins().integer(currentInteger.getValue() + 1);
+            return process.getEnvironment().getBuiltinTypes().integer(currentInteger.getValue() + 1);
         } else {
             throw new JanitorNotImplementedException(process, "we can only increment numbers at the moment");
         }
@@ -476,7 +476,7 @@ public class JanitorSemantics {
      */
     public static @NotNull JanitorObject decrement(JanitorScriptProcess process, final JanitorObject currentValue) throws JanitorRuntimeException {
         if (currentValue instanceof JInt currentInteger) {
-            return process.getEnvironment().getBuiltins().integer(currentInteger.getValue() - 1);
+            return process.getEnvironment().getBuiltinTypes().integer(currentInteger.getValue() - 1);
         } else {
             throw new JanitorNotImplementedException(process, "we can only decrement numbers at the moment");
         }
@@ -541,7 +541,7 @@ public class JanitorSemantics {
      * @param right the right date
      * @return the duration between the two dates
      */
-    public static JDuration durationBetween(final JanitorBuiltins builtins, final JDate left, final JDate right) {
+    public static JDuration durationBetween(final BuiltinTypes builtins, final JDate left, final JDate right) {
         return builtins.duration(Duration.between(right.janitorGetHostValue().atStartOfDay(), left.janitorGetHostValue().atStartOfDay()).toDays(), JDuration.JDurationKind.DAYS);
     }
 
@@ -553,7 +553,7 @@ public class JanitorSemantics {
      * @param right the right date
      * @return the duration between the two dates
      */
-    public static JDuration durationBetween(final JanitorBuiltins builtins, final JDateTime left, final JDateTime right) {
+    public static JDuration durationBetween(final BuiltinTypes builtins, final JDateTime left, final JDateTime right) {
         return builtins.duration(Duration.between(right.janitorGetHostValue(), left.janitorGetHostValue()).toSeconds(), JDuration.JDurationKind.SECONDS);
     }
 

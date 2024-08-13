@@ -9,13 +9,18 @@ import com.eischet.janitor.api.types.JIterable;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.compiler.ast.expression.Expression;
 import com.eischet.janitor.compiler.ast.statement.Statement;
+import com.eischet.janitor.toolbox.json.api.JsonException;
+import com.eischet.janitor.toolbox.json.api.JsonExportableObject;
+import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
 
 import java.util.Iterator;
+
+import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
 /**
  * For loop: for (i in iterable) { ... }.
  */
-public class ForLoop extends Statement {
+public class ForLoop extends Statement implements JsonExportableObject {
     private final String loopVar;
     private final Expression expression;
     private final Block block;
@@ -59,6 +64,16 @@ public class ForLoop extends Statement {
             }
         } catch (BreakStatement.Break ignored) {
         }
+    }
+
+    @Override
+    public void writeJson(JsonOutputStream producer) throws JsonException {
+        producer.beginObject()
+                .optional("type", simpleClassNameOf(this))
+                .optional("loopVar", loopVar)
+                .optional("expression", expression)
+                .optional("block", block)
+                .endObject();
     }
 
 }

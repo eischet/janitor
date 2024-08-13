@@ -1,8 +1,6 @@
-package com.eischet.janitor.api.calls;
+package com.eischet.janitor.api.types;
 
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
-import com.eischet.janitor.api.types.JAssignable;
-import com.eischet.janitor.api.types.JanitorObject;
 import org.jetbrains.annotations.NotNull;
 
 /**

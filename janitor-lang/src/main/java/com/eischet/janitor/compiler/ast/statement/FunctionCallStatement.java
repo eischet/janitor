@@ -1,17 +1,20 @@
 package com.eischet.janitor.compiler.ast.statement;
 
 import com.eischet.janitor.api.JanitorScriptProcess;
-import com.eischet.janitor.api.calls.JCallArgs;
+import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.errors.runtime.JanitorControlFlowException;
 import com.eischet.janitor.api.errors.runtime.JanitorNameException;
 import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.api.types.JAssignable;
-import com.eischet.janitor.api.types.JCallable;
+import com.eischet.janitor.api.types.functions.JCallable;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.compiler.ast.expression.Expression;
 import com.eischet.janitor.compiler.ast.expression.ExpressionList;
+import com.eischet.janitor.toolbox.json.api.JsonException;
+import com.eischet.janitor.toolbox.json.api.JsonExportableObject;
+import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,7 +28,7 @@ import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
  * Wraps a function call expression.
  * @see ExpressionStatement
  */
-public class FunctionCallStatement extends Statement implements Expression {
+public class FunctionCallStatement extends Statement implements Expression, JsonExportableObject {
     private final String functionName;
     private final Expression onExpression;
     private final ExpressionList expressionList;
@@ -116,4 +119,13 @@ public class FunctionCallStatement extends Statement implements Expression {
             simpleClassNameOf(function) + "]");
     }
 
+    @Override
+    public void writeJson(JsonOutputStream producer) throws JsonException {
+        producer.beginObject()
+                .optional("type", simpleClassNameOf(this))
+                .optional("name", functionName)
+                .optional("expression", onExpression)
+                .optional("expressionList", expressionList)
+                .endObject();
+    }
 }

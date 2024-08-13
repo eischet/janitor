@@ -1,9 +1,9 @@
 package com.eischet.janitor.api.types.builtin;
 
-import com.eischet.janitor.api.JanitorBuiltins;
+import com.eischet.janitor.api.types.BuiltinTypes;
 import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.JanitorScriptProcess;
-import com.eischet.janitor.api.calls.TemporaryAssignable;
+import com.eischet.janitor.api.types.TemporaryAssignable;
 import com.eischet.janitor.api.errors.runtime.JanitorNameException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.Scope;
@@ -26,12 +26,12 @@ import java.util.function.Consumer;
  */
 public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> implements JIterable, JsonWriter, JsonExportableObject {
 
-    private final JanitorBuiltins builtins;
+    private final BuiltinTypes builtins;
 
     /**
      * Create a new JMap.
      */
-    private JMap(final Dispatcher<JanitorWrapper<Map<JanitorObject, JanitorObject>>> dispatch, JanitorBuiltins builtins) {
+    private JMap(final Dispatcher<JanitorWrapper<Map<JanitorObject, JanitorObject>>> dispatch, BuiltinTypes builtins) {
         super(dispatch, new HashMap<>());
         this.builtins = builtins;
     }
@@ -91,7 +91,7 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
             return attr;
         }
         // this is very important for cases where the map is supposed to be used as an implicit object and for map.key access within scripts: return the map key by name
-        @NotNull final JString nameAsString = process.getEnvironment().getBuiltins().string(name);
+        @NotNull final JString nameAsString = process.getEnvironment().getBuiltinTypes().string(name);
         return wrapped.get(nameAsString);
     }
 
@@ -298,7 +298,7 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
         producer.endObject();
     }
 
-    public static JMap newInstance(final JanitorWrapperDispatchTable<Map<JanitorObject, JanitorObject>> dispatch, JanitorBuiltins builtins) {
+    public static JMap newInstance(final JanitorWrapperDispatchTable<Map<JanitorObject, JanitorObject>> dispatch, BuiltinTypes builtins) {
         return new JMap(dispatch, builtins);
     }
 

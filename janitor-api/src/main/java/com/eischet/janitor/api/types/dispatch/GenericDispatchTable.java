@@ -1,12 +1,12 @@
 package com.eischet.janitor.api.types.dispatch;
 
 import com.eischet.janitor.api.JanitorScriptProcess;
-import com.eischet.janitor.api.calls.JBoundMethod;
-import com.eischet.janitor.api.calls.JUnboundMethod;
-import com.eischet.janitor.api.calls.JVoidMethod;
-import com.eischet.janitor.api.calls.TemporaryAssignable;
+import com.eischet.janitor.api.types.functions.JBoundMethod;
+import com.eischet.janitor.api.types.functions.JUnboundMethod;
+import com.eischet.janitor.api.types.functions.JVoidMethod;
+import com.eischet.janitor.api.types.TemporaryAssignable;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
-import com.eischet.janitor.api.types.JConstructor;
+import com.eischet.janitor.api.types.functions.JConstructor;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.*;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
@@ -84,7 +84,7 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
      * @param setter property setter
      */
     public void addIntegerProperty(final String name, final Function<T, Integer> getter, final BiConsumer<T, Integer> setter) {
-        map.put(name, (instance, process) -> new TemporaryAssignable(process.getEnvironment().getBuiltins().integer(getter.apply(instance)), value -> setter.accept(instance, JInt.requireInt(process, value).janitorGetHostValue().intValue())));
+        map.put(name, (instance, process) -> new TemporaryAssignable(process.getEnvironment().getBuiltinTypes().integer(getter.apply(instance)), value -> setter.accept(instance, JInt.requireInt(process, value).janitorGetHostValue().intValue())));
     }
 
     /**
@@ -93,7 +93,7 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
      * @param getter property getter
      */
     public void addLongProperty(final String name, final Function<T, Long> getter) {
-        map.put(name, (instance, process) -> process.getEnvironment().getBuiltins().integer(getter.apply(instance)));
+        map.put(name, (instance, process) -> process.getEnvironment().getBuiltinTypes().integer(getter.apply(instance)));
     }
 
     /**
@@ -103,7 +103,7 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
      * @param setter property setter
      */
     public void addLongProperty(final String name, final Function<T, Long> getter, final BiConsumer<T, Long> setter) {
-        map.put(name, (instance, process) -> new TemporaryAssignable(process.getEnvironment().getBuiltins().integer(getter.apply(instance)), value -> setter.accept(instance, JInt.requireInt(process, value).janitorGetHostValue())));
+        map.put(name, (instance, process) -> new TemporaryAssignable(process.getEnvironment().getBuiltinTypes().integer(getter.apply(instance)), value -> setter.accept(instance, JInt.requireInt(process, value).janitorGetHostValue())));
     }
 
     /**
@@ -112,7 +112,7 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
      * @param getter property getter
      */
     public void addDoubleProperty(final String name, final Function<T, Double> getter, final BiConsumer<T, Double> setter) {
-        map.put(name, (instance, process) -> new TemporaryAssignable(process.getEnvironment().getBuiltins().floatingPoint(getter.apply(instance)), value -> setter.accept(instance, process.requireFloat(value).janitorGetHostValue())));
+        map.put(name, (instance, process) -> new TemporaryAssignable(process.getEnvironment().getBuiltinTypes().floatingPoint(getter.apply(instance)), value -> setter.accept(instance, process.requireFloat(value).janitorGetHostValue())));
     }
 
     /**

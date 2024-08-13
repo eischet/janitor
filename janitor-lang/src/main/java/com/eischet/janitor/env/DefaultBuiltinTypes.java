@@ -1,6 +1,6 @@
 package com.eischet.janitor.env;
 
-import com.eischet.janitor.api.JanitorBuiltins;
+import com.eischet.janitor.api.types.BuiltinTypes;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.*;
@@ -24,7 +24,7 @@ import static com.eischet.janitor.api.types.builtin.JDate.DATE_FORMAT;
 import static com.eischet.janitor.api.types.builtin.JDateTime.DATE_FORMAT_LONG;
 import static com.eischet.janitor.api.types.builtin.JDateTime.DATE_FORMAT_SHORT;
 
-public class JanitorDefaultBuiltins implements JanitorBuiltins {
+public class DefaultBuiltinTypes implements BuiltinTypes {
 
     /**
      * String interning: maximum length for automatically interned strings.
@@ -55,7 +55,7 @@ public class JanitorDefaultBuiltins implements JanitorBuiltins {
     private final JString emptyString;
     private final JInt zero;
 
-    public JanitorDefaultBuiltins() {
+    public DefaultBuiltinTypes() {
         baseDispatcher.addStringProperty("class", JanitorObject::janitorClassName);
 
         emptyString = JString.newInstance(stringDispatcher, "", it -> it); // cannot pass this::intern here in a constructor, and "" is already interned anyway
@@ -328,7 +328,7 @@ public class JanitorDefaultBuiltins implements JanitorBuiltins {
 
     /**
      * Internals class for JanitorDefaultBuiltins.
-     * <p>Use an instance of this class, obtained via {@link JanitorDefaultBuiltins#internals()}, to access the internal dispatch tables.
+     * <p>Use an instance of this class, obtained via {@link DefaultBuiltinTypes#internals()}, to access the internal dispatch tables.
      * This is useful for extending the scripting runtime.</p>
      * <p>This class is separate from the JanitorDefaultBuiltins class only to avoid polluting its public API.</p>
      */

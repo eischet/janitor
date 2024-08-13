@@ -9,11 +9,16 @@ import com.eischet.janitor.api.types.builtin.JInt;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.compiler.ast.expression.Expression;
 import com.eischet.janitor.compiler.ast.statement.Statement;
+import com.eischet.janitor.toolbox.json.api.JsonException;
+import com.eischet.janitor.toolbox.json.api.JsonExportableObject;
+import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
+
+import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
 /**
  * For-range loop: for (i from start to end) { ... }.
  */
-public class ForRangeLoop extends Statement {
+public class ForRangeLoop extends Statement implements JsonExportableObject {
     private final String loopVar;
     private final Block block;
     private final Expression from;
@@ -51,7 +56,7 @@ public class ForRangeLoop extends Statement {
                 for (long i = startInt.getValue(); i <= endIntValue; i++) {
                     try {
                         process.enterBlock(getLocation());
-                        process.getCurrentScope().bind(process, loopVar, process.getEnvironment().getBuiltins().integer(i));
+                        process.getCurrentScope().bind(process, loopVar, process.getEnvironment().getBuiltinTypes().integer(i));
                         try {
                             block.execute(process);
                         } catch (ContinueStatement.Continue ignored) {
@@ -65,6 +70,17 @@ public class ForRangeLoop extends Statement {
             }
         } catch (BreakStatement.Break ignored) {
         }
+    }
+
+    @Override
+    public void writeJson(JsonOutputStream producer) throws JsonException {
+        producer.beginObject()
+                .optional("type", simpleClassNameOf(this))
+                .optional("var", loopVar)
+                .optional("from", from)
+                .optional("to", to)
+                .optional("block", block)
+                .endObject();
     }
 
 }
