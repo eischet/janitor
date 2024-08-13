@@ -57,7 +57,7 @@ public class Demo {
             // Better don't make them modifiable, because modifications will stick!
             setupBuiltinScope(globals -> {
                 // put a "version" string into the global scope
-                globals.bind("version", "0.9.5");
+                globals.bind("version", "0.9.6");
                 // place an "exit()" function in the global scope.
                 // note that I wouldn't want to use System.exit() in a real world use case,
                 // but for the demo I guess it's fine.
