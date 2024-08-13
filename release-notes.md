@@ -1,11 +1,13 @@
-# 0.9.6, work in progress
+# 0.9.6, 2024-08-13
 
 Added a number of unit tests.
 Converted JString into a composite instead of a wrapper.
 Durations can now be added and subtracted.
+The AST can now be written to JSON.
+Lots of names, signatures, comments cleaned up.
 
 
-# 0.9.5, 2024-08-xx
+# 0.9.5, 2024-08-07
 
 Merged addModule/registerModule in the Environment interface, of which one was only an empty stub.
 Small fixes for Scopes.
