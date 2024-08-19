@@ -1,0 +1,29 @@
+{
+  "name": "janitor-vsc",
+  "displayName": "janitor-vsc",
+  "description": "Janitor language support",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.92.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [{
+      "id": "janitor",
+      "aliases": ["Janitor", "janitor"],
+      "extensions": [".janitor"],
+      "configuration": "./language-configuration.json",
+      "icon": {
+        "light": "./images/janitor.svg",
+        "dark": "./images/janitor.svg"
+      }
+    }],
+    "grammars": [{
+      "language": "janitor",
+      "scopeName": "source.janitor",
+      "path": "./syntaxes/janitor.tmLanguage.json"
+    }]
+  }
+}

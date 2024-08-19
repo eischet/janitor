@@ -2,6 +2,7 @@
 
 Janitor is an embedded scripting and expression language for (Java) applications.
 
+![foo](logos/janitor64.png)
 
 ## Main Goals
 
