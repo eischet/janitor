@@ -9,13 +9,13 @@
         </g>
     </defs>
 
-    <circle cx="256" cy="256" r="256" fill="#000000"/>
+    <circle cx="256" cy="256" r="256" fill="#646591"/>
     <circle cx="256" cy="256" r="204" fill="#f0f0f0"/>
     <!--
     <rect x="32" width="448" y="250" height="24" fill="#888888"/>
     <rect x="250" width="24" y="32" height="448" fill="#888888"/>
     -->
     <g transform="translate(90,300)">
-        <use xlink:href="#heart" class="outline " fill="red" x="128" y="128" transform="rotate(225,150,121)"/>
+        <use xlink:href="#heart" class="outline " fill="#a00035" x="128" y="128" transform="rotate(225,150,122)"/>
     </g>
 </svg>

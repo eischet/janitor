@@ -1321,7 +1321,7 @@ public class FirstParserTestCase {
     }
 
     @Test public void deadlock() throws Exception {
-        final String scriptSource = """
+        final @Language("Janitor")String scriptSource = """
         print('hallo');
         x = 17;
         print(x);
