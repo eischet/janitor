@@ -8,6 +8,7 @@ import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.builtin.JMap;
 import com.eischet.janitor.runtime.OutputCatchingTestRuntime;
 import com.eischet.janitor.toolbox.json.api.JsonException;
+import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
@@ -19,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class MapClassTestCase {
 
     /**
-     * Excercise some basic map operations
+     * Exercise some basic map operations
      *
      * @throws JsonException           on errors
      * @throws JanitorRuntimeException on errors
@@ -37,7 +38,7 @@ public class MapClassTestCase {
 
         assertEquals(empty, bt.map(), "empty maps should be equal");
 
-        final String JSON_SOURCE = "{\"a\": 1, \"b\": 2, \"c\": 3}";
+        @Language("JSON") final String JSON_SOURCE = "{\"a\": 1, \"b\": 2, \"c\": 3}";
 
         final JMap map = rt.getEnvironment().parseJsonToMap(JSON_SOURCE);
         // I'd prefer having bt.integer(1..4), but that's not how JSON works.
@@ -51,7 +52,7 @@ public class MapClassTestCase {
         /*
          * simplify script execution for the rest of the test.
          */
-        final RuntimeConsumer<String> play = (script) -> {
+        final RuntimeConsumer<String> play = (@Language("Janitor") var script) -> {
             try {
                 final RunnableScript runnableScript = rt.compile("test", script);
                 runnableScript.run(g -> g.bind("map", map).bind("empty", empty));

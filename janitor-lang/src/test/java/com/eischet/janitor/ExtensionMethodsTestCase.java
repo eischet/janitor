@@ -11,6 +11,7 @@ import com.eischet.janitor.api.types.builtin.JNull;
 import com.eischet.janitor.env.JanitorDefaultEnvironment;
 import com.eischet.janitor.runtime.BaseRuntime;
 import com.eischet.janitor.runtime.JanitorFormattingGerman;
+import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -55,21 +56,21 @@ public class ExtensionMethodsTestCase {
     @Test
     public void testExtensionMethods() throws JanitorRuntimeException, JanitorCompilerException {
         // add a method to the string class
-        final String scriptSource = "'John Dorian'.sayHello();";
+        final @Language("Janitor") String scriptSource = "'John Dorian'.sayHello();";
         final RunnableScript script = RT.compile("test", scriptSource);
         assertThrows(JanitorNameException.class, script::run); // can't work, because there's no sayHello method on strings!
         ENV.getBuiltinTypes().internals().getStringDispatcher().addMethod("sayHello", (self, runningScript, arguments) -> ENV.getBuiltinTypes().string("Hello, " + self.janitorGetHostValue()));
         assertEquals("Hello, John Dorian", script.run().janitorGetHostValue()); // works, because now the method exists!
 
         // add a property to the string class
-        final String scriptSource2 = "return ('cbaa23' + 'thx1138').numberOfDigits * 2;";
+        final @Language("Janitor") String scriptSource2 = "return ('cbaa23' + 'thx1138').numberOfDigits * 2;";
         final RunnableScript script2 = RT.compile("test", scriptSource2);
         assertThrows(JanitorNameException.class, script2::run); // can't work, because there's no such property
         ENV.getBuiltinTypes().internals().getStringDispatcher().addLongProperty("numberOfDigits", (self) -> self.janitorGetHostValue().codePoints().filter(Character::isDigit).count());
         assertEquals(12L, script2.run().janitorGetHostValue()); // now it works
 
         // add a method to the int class
-        final String scriptSource3 = "return '12345'.numberOfDigits.times2;";
+        final @Language("Janitor") String scriptSource3 = "return '12345'.numberOfDigits.times2;";
         final RunnableScript script3 = RT.compile("test", scriptSource3);
         assertThrows(JanitorNameException.class, script3::run); // can't work, because there's no such property
         ENV.getBuiltinTypes().internals().getIntDispatcher().addLongProperty("times2", (self) -> self.janitorGetHostValue() * 2);
@@ -79,19 +80,19 @@ public class ExtensionMethodsTestCase {
         // Finally, add a property to all built-in classes. Your own classes can opt in to this, too, by accessing the baseDispatcher
         // explicitly when creating your own dispatch table, or by calling into the baseDispatcher at runtime.
         ENV.getBuiltinTypes().internals().getBaseDispatcher().addStringProperty("omega", self -> "Ω");
-        final String scriptSource4 = "return (17).omega;"; // parens are necessary here, because 17.omega would (fail to) parse as float
+        final @Language("Janitor") String scriptSource4 = "return (17).omega;"; // parens are necessary here, because 17.omega would (fail to) parse as float
         final RunnableScript script4 = RT.compile("test", scriptSource4);
         assertEquals("Ω", script4.run().janitorGetHostValue());
 
         // Yes, dates have the new attribute, too.
-        final String scriptSource5 = "return @today.omega;";
+        final @Language("Janitor") String scriptSource5 = "return @today.omega;";
         final RunnableScript script5 = RT.compile("test", scriptSource5);
         assertEquals("Ω", script5.run().janitorGetHostValue());
 
         // Extending built-in classes couldn't be easier, IMHO. The signature (self, runningScript, arguments) is a bit cumbersome to remember, though.
         // Workaround: when your IDE suggests to write "new JUnboundMethod...", autocomplete this and have a normal signature to look at. Then,
         // write your code, and finally let your IDE collapse everything to be written like above, if you prefer. That works fine in IntelliJ IDEA.
-        // Properties are easier to write; just keep in mind that the method names in the Dispatch Table refer to Java "Long", "Int" etc, not to
+        // Properties are easier to write; just keep in mind that the method names in the Dispatch Table refer to Java "Long", "Int" etc., not to
         // scripting types, then the mental model should be clear.
     }
 

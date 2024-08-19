@@ -7,6 +7,7 @@ import com.eischet.janitor.api.errors.runtime.JanitorTypeException;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.JDuration;
 import com.eischet.janitor.runtime.OutputCatchingTestRuntime;
+import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
@@ -21,7 +22,7 @@ public class JDurationTestCase {
         return rt.getEnvironment().getBuiltinTypes().duration(value, kind);
     }
 
-    private void testDurationMethod(final String script, final Object expectedResult) throws JanitorCompilerException, JanitorRuntimeException {
+    private void testDurationMethod(final @Language("Janitor") String script, final Object expectedResult) throws JanitorCompilerException, JanitorRuntimeException {
         final RunnableScript runnableScript = rt.compile("test", script);
         final @NotNull JanitorObject result = runnableScript.run();
         final Object actualResult = result.janitorGetHostValue();
@@ -104,7 +105,7 @@ public class JDurationTestCase {
     }
 
     @Test
-    public void testInvalidOperations() throws JanitorRuntimeException, JanitorCompilerException {
+    public void testInvalidOperations() {
         assertThrows(JanitorTypeException.class, () -> testDurationMethod("@12h * @12h", null));
         assertThrows(JanitorTypeException.class, () -> testDurationMethod("@12h / @12h", null));
         assertThrows(JanitorTypeException.class, () -> testDurationMethod("@today / @12h", null));

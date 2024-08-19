@@ -9,6 +9,7 @@ import com.eischet.janitor.api.types.builtin.JInt;
 import com.eischet.janitor.api.types.builtin.JMap;
 import com.eischet.janitor.api.types.builtin.JString;
 import com.eischet.janitor.runtime.OutputCatchingTestRuntime;
+import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
@@ -24,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 public class JStringTestCase {
 
-    private void testStringMethod(final String script, final Object expectedResult) throws JanitorCompilerException, JanitorRuntimeException {
+    private void testStringMethod(@Language("Janitor") final String script, final Object expectedResult) throws JanitorCompilerException, JanitorRuntimeException {
         final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         final RunnableScript runnableScript = rt.compile("test", script);
         final @NotNull JanitorObject result = runnableScript.run();

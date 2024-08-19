@@ -24,6 +24,7 @@ import com.eischet.janitor.compiler.ast.statement.Script;
 import com.eischet.janitor.lang.JanitorParser;
 import com.eischet.janitor.repl.JanitorRepl;
 import com.eischet.janitor.runtime.*;
+import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Test;
@@ -86,12 +87,12 @@ public class FirstParserTestCase {
         assertEquals("low\n", runtime.getAllOutput());
     }
 
-    private String getOutput(final String scriptSource) throws JanitorCompilerException, JanitorRuntimeException {
+    private String getOutput(final @Language("Janitor") String scriptSource) throws JanitorCompilerException, JanitorRuntimeException {
         return getOutput(scriptSource, g -> {
         });
     }
 
-    private String getOutput(final String scriptSource, final Consumer<Scope> prepareGlobals) throws JanitorCompilerException, JanitorRuntimeException {
+    private String getOutput(final @Language("Janitor") String scriptSource, final Consumer<Scope> prepareGlobals) throws JanitorCompilerException, JanitorRuntimeException {
         log.info("parsing: " + scriptSource + "\n");
         final JanitorParser.ScriptContext script = JanitorScript.parseScript(scriptSource);
         final ScriptModule module = ScriptModule.unnamed(scriptSource);
@@ -105,7 +106,7 @@ public class FirstParserTestCase {
         return runtime.getAllOutput();
     }
 
-    private JanitorObject evaluate(final String expressionSource, final Consumer<Scope> prepareGlobals) throws JanitorCompilerException, JanitorRuntimeException {
+    private JanitorObject evaluate(final @Language("Janitor") String expressionSource, final Consumer<Scope> prepareGlobals) throws JanitorCompilerException, JanitorRuntimeException {
         log.info("evaluating: " + expressionSource + "\n");
         final JanitorParser.ScriptContext script = JanitorScript.parseScript(expressionSource);
         final ScriptModule module = ScriptModule.unnamed(expressionSource);
@@ -134,7 +135,7 @@ public class FirstParserTestCase {
 
     @Test
     public void ifElseIfElse() throws JanitorCompilerException, JanitorRuntimeException {
-        final String script = """
+        final @Language("Janitor") String script = """
             if (x>10) {
                 print("high");
             } else if (x>5) {
@@ -330,7 +331,7 @@ public class FirstParserTestCase {
 
     @Test
     public void fib() throws JanitorCompilerException, JanitorRuntimeException {
-        final String FIB = """
+        final @Language("Janitor") String FIB = """
             function fib(n) {
                 if (n <= 1) {
                     return n;
@@ -579,7 +580,7 @@ public class FirstParserTestCase {
         final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         rt.compile("foo", "if (true) { } else { }").run(TestEnv.NO_GLOBALS);
         final Object map = rt.compile("bar", "return {};").run(TestEnv.NO_GLOBALS);
-        assertTrue(map instanceof JMap);
+        assertInstanceOf(JMap.class, map);
     }
 
     @Test
@@ -587,7 +588,7 @@ public class FirstParserTestCase {
         final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         final Object map = rt.compile("bar", "return {};").run(TestEnv.NO_GLOBALS);
         log.info("empty map: " + map);
-        assertTrue(map instanceof JMap);
+        assertInstanceOf(JMap.class, map);
 
         final JanitorObject foo = rt.compile("foo", "return {'id': 17, 'sc': 'dumbo'};").run(TestEnv.NO_GLOBALS);
         log.info("foo map: " + foo);
@@ -639,7 +640,7 @@ public class FirstParserTestCase {
     }
 
     @Test
-    public void parseLiteral() throws Exception {
+    public void parseLiteral() {
         assertEquals("foo", JanitorAntlrCompiler.parseLiteral(TestEnv.env, "foo").janitorGetHostValue());
         assertEquals("foo\\bar", JanitorAntlrCompiler.parseLiteral(TestEnv.env, "foo\\\\bar").janitorGetHostValue());
         assertEquals("\"", JanitorAntlrCompiler.parseLiteral(TestEnv.env, "\\\"").janitorGetHostValue());
@@ -1211,7 +1212,7 @@ public class FirstParserTestCase {
     }
 
     @Test
-    public void invalidStringLiteral() throws JanitorCompilerException, JanitorRuntimeException {
+    public void invalidStringLiteral() {
         final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
 
         final JanitorCompilerException thrown = assertThrows(JanitorCompilerException.class, () -> {

@@ -7,6 +7,7 @@ import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.ResultAndScope;
 import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.types.JanitorObject;
+import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -28,7 +29,7 @@ public class JanitorScriptEngine implements ScriptEngine {
         this.bindings = createBindings();
     }
 
-    private JanitorObject runScript(final String script, final @Nullable ScriptContext context, final @Nullable Bindings bindings) throws ScriptException {
+    private JanitorObject runScript(@Language("Janitor") final String script, final @Nullable ScriptContext context, final @Nullable Bindings bindings) throws ScriptException {
         try {
             final JanitorRuntime runtime = factory.getRuntime();
             final RunnableScript compiled = runtime.compile("eval", script);
@@ -64,7 +65,7 @@ public class JanitorScriptEngine implements ScriptEngine {
     }
 
     @Override
-    public Object eval(final String script, final ScriptContext context) throws ScriptException {
+    public Object eval(@Language("Janitor") final String script, final ScriptContext context) throws ScriptException {
         return runScript(script, context, null);
     }
 
@@ -89,7 +90,7 @@ public class JanitorScriptEngine implements ScriptEngine {
     }
 
     @Override
-    public Object eval(final String script, final Bindings bindings) throws ScriptException {
+    public Object eval(final @Language("Janitor") String script, final Bindings bindings) throws ScriptException {
         return runScript(script, null, bindings);
     }
 
@@ -152,7 +153,7 @@ public class JanitorScriptEngine implements ScriptEngine {
 
 
     @Override
-    public Object eval(final String script) throws ScriptException {
+    public Object eval(@Language("Janitor") final String script) throws ScriptException {
         return runScript(script, null, null);
     }
 

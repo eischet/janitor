@@ -10,6 +10,7 @@ import com.eischet.janitor.compiler.JanitorCompiler;
 import com.eischet.janitor.compiler.ast.statement.Script;
 import com.eischet.janitor.lang.JanitorParser;
 import com.eischet.janitor.runtime.*;
+import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import java.util.function.Consumer;
 
@@ -17,12 +18,12 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class SimpleExpressionTestCase {
 
-    private JanitorObject eval(final String expressionSource) throws JanitorCompilerException, JanitorRuntimeException {
+    private JanitorObject eval(final @Language("Janitor")  String expressionSource) throws JanitorCompilerException, JanitorRuntimeException {
         return eval(expressionSource, globals -> {
         });
     }
 
-    private JanitorObject eval(final String expressionSource, final Consumer<Scope> prepareGlobals) throws JanitorCompilerException, JanitorRuntimeException {
+    private JanitorObject eval(final @Language("Janitor") String expressionSource, final Consumer<Scope> prepareGlobals) throws JanitorCompilerException, JanitorRuntimeException {
         // log.info("parsing: " + expressionSource + "\n");
         final JanitorParser.ScriptContext script = JanitorScript.parseScript(expressionSource);
         final ScriptModule module = ScriptModule.unnamed(expressionSource);

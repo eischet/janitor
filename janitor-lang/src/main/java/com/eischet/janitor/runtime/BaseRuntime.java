@@ -4,6 +4,7 @@ package com.eischet.janitor.runtime;
 import com.eischet.janitor.api.*;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
+import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Consumer;
@@ -36,7 +37,7 @@ public abstract class BaseRuntime implements JanitorRuntime {
     }
 
     @Override
-    public RunnableScript compile(String moduleName, String source) throws JanitorCompilerException {
+    public RunnableScript compile(String moduleName, @Language("Janitor") String source) throws JanitorCompilerException {
         try {
             return new JanitorScript(this, moduleName, source == null ? "" : source);
         } catch (RuntimeException e) {
@@ -45,7 +46,7 @@ public abstract class BaseRuntime implements JanitorRuntime {
     }
 
     @Override
-    public RunnableScript checkCompile(String moduleName, String source) throws JanitorCompilerException {
+    public RunnableScript checkCompile(String moduleName, @Language("Janitor") String source) throws JanitorCompilerException {
         try {
             return new JanitorScript(this, moduleName, source == null ? "" : source, true);
         } catch (RuntimeException e) {

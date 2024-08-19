@@ -1,3 +1,9 @@
+# 0.9.7, work in progress
+
+Added basic syntax highlighters for ACE, TextMate and VS Code.
+Add a logo.
+
+
 # 0.9.6, 2024-08-13
 
 Added a number of unit tests.

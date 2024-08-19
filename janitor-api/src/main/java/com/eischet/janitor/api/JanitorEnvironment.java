@@ -14,6 +14,7 @@ import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonInputStream;
 import com.eischet.janitor.toolbox.json.api.JsonOutputSupport;
+import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -69,7 +70,7 @@ public interface JanitorEnvironment extends JsonOutputSupport {
      * @param json some JSON code
      * @return a JSON input stream
      */
-    JsonInputStream getLenientJsonConsumer(final String json);
+    JsonInputStream getLenientJsonConsumer(final @Language("JSON") String json);
 
 
     /**
@@ -81,7 +82,7 @@ public interface JanitorEnvironment extends JsonOutputSupport {
      * TODO: remove this; it uses a badly thought out binding
      */
     @Deprecated
-    FilterPredicate filterScript(String name, String code);
+    FilterPredicate filterScript(String name, @Language("Janitor") String code);
 
     /**
      * Create a filter predicate from a script.
@@ -94,7 +95,7 @@ public interface JanitorEnvironment extends JsonOutputSupport {
      * @param globalsProvider a callback to bind more script variables
      * @return the filter predicate
      */
-    @NotNull FilterPredicate filterScript(@NotNull String name, @NotNull String code, @Nullable final Consumer<Scope> globalsProvider);
+    @NotNull FilterPredicate filterScript(@NotNull String name, @NotNull @Language("Janitor") String code, @Nullable final Consumer<Scope> globalsProvider);
 
 
     /**
@@ -119,10 +120,10 @@ public interface JanitorEnvironment extends JsonOutputSupport {
 
 
     @NotNull
-    JMap parseJsonToMap(final String json) throws JsonException;
+    JMap parseJsonToMap(@Language("JSON") final String json) throws JsonException;
 
     @NotNull
-    JList parseJsonToList(final String json) throws JsonException;
+    JList parseJsonToList(@Language("JSON") final String json) throws JsonException;
 
     @NotNull
     JanitorModule getModuleByQualifier(final JanitorScriptProcess process, String name) throws JanitorRuntimeException;
