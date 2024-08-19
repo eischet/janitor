@@ -1,0 +1,92 @@
+{
+	"scopeName": "source.janitor",
+	"fileTypes": [
+		"janitor"
+	],
+	"name": "Janitor",
+	"patterns": [
+		{
+			"name": "comment.block.janitor",
+			"begin": "/\\*",
+			"end": "\\*/"
+		},
+		{
+			"name": "comment.line.double-slash.janitor",
+			"match": "//.*$"
+		},
+
+			{
+				"name": "string.quoted.triple.janitor",
+				"begin": "'''",
+				"end": "'''",
+				"patterns": [
+					{
+						"match": "''|[^']"
+					}
+				]
+			},
+			{
+				"name": "string.quoted.triple.janitor",
+				"begin": "\"\"\"",
+				"end": "\"\"\"",
+				"patterns": [
+					{
+						"match": "\"\"|[^\"]"
+					}
+				]
+			},
+			{
+				"name": "string.quoted.double.janitor",
+				"begin": "\"",
+				"end": "\"",
+				"patterns": [
+					{
+						"match": "\\\\[\"\\\\nrt]|[^\"\\\\]"
+					}
+				]
+			},
+			{
+				"name": "string.quoted.single.janitor",
+				"begin": "'",
+				"end": "'",
+				"patterns": [
+					{
+						"match": "\\\\[\"\\\\nrt]|[^\"\\\\]"
+					}
+				]
+			},
+		{
+			"name": "keyword.control.janitor",
+			"match": "\\b(break|catch|continue|function|do|else|finally|for|if|then|import|return|throw|try|while|true|false|null|from|to|in)\\b"
+		},
+		{
+			"name": "constant.numeric.janitor",
+			"match": "\\b(0[xX][0-9a-fA-F]+|0[bB][01]+|0[oO]?[0-7]+|\\d+([eE][+-]?\\d+)?|\\d*\\.\\d+([eE][+-]?\\d+)?|@\\d{4}-\\d{2}-\\d{2}|@\\d{4}-\\d{2}-\\d{2}-\\d{2}:\\d{2})\\b"
+		},
+		{
+			"name": "constant.language.boolean.janitor",
+			"match": "\\b(true|false|null)\\b"
+		},
+		{
+			"name": "constant.language.duration.janitor",
+			"match": "@\\d+[y|mo|w|d|h|mi|s]"
+		},
+		{
+			"name": "constant.language.datetime.janitor",
+			"match": "@(today|now)"
+		},
+		{
+			"name": "variable.other.janitor",
+			"match": "\\b[a-zA-Z_][a-zA-Z0-9_]*\\b"
+		},
+		{
+			"name": "keyword.operator.janitor",
+			"match": "(\\+\\+|--|\\+|-|\\*|/|%|==|!=|<>|<=|>=|<|>|&&|\\|\\||!|=|\\+=|-=|\\*=|/=|%=|->|\\?|:|\\.|\\?|\\.|#|~|!~|and|or|not)"
+		},
+		{
+			"name": "punctuation.definition.janitor",
+			"match": "[{}()\\[\\];,]"
+		}
+
+	]
+}
