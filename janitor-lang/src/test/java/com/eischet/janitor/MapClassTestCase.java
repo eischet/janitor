@@ -52,7 +52,7 @@ public class MapClassTestCase {
         /*
          * simplify script execution for the rest of the test.
          */
-        final RuntimeConsumer<String> play = (@Language("Janitor") var script) -> {
+        final TestEnv.ScriptConsumer play = (@Language("Janitor") var script) -> {
             try {
                 final RunnableScript runnableScript = rt.compile("test", script);
                 runnableScript.run(g -> g.bind("map", map).bind("empty", empty));

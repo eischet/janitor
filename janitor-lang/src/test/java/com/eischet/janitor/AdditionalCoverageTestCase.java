@@ -1,9 +1,7 @@
 package com.eischet.janitor;
 
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
-import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.runtime.JanitorSemantics;
-import com.eischet.janitor.toolbox.memory.Fact;
 import com.eischet.janitor.toolbox.memory.Memory;
 import com.eischet.janitor.toolbox.strings.StringHelpers;
 import org.junit.jupiter.api.Test;

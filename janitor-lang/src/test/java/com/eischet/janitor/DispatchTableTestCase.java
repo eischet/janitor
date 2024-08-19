@@ -6,17 +6,12 @@ import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.RegularDispatchTable;
 import com.eischet.janitor.runtime.OutputCatchingTestRuntime;
-import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class DispatchTableTestCase {
-
-    interface ScriptConsumer {
-        void accept(@Language("Janitor") String script) throws JanitorRuntimeException;
-    }
 
     /**
      * Java Booleans might be null, and need to be mapped differently than booleans in Janitor.
@@ -32,7 +27,7 @@ public class DispatchTableTestCase {
         /*
          * simplify script execution for the rest of the test.
          */
-        final ScriptConsumer play = (script) -> {
+        final TestEnv.ScriptConsumer play = (script) -> {
             try {
                 final RunnableScript runnableScript = rt.compile("test", script);
                 runnableScript.run(g -> g.bind("obj", so));
