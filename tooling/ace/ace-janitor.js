@@ -33,13 +33,9 @@ ace.define('ace/mode/janitor',
                         token : "string", // single line
                         regex : "['](?:(?:\\\\.)|(?:[^'\\\\]))*?[']"
                     },
-                    {token: "invalid.deprecated", regex: "@Override"}, // für Groovy-Kompat; rausnehmen wenn Groovy raus ist
                     {token: "constant.numeric", regex: "@now|@today|@[0-9]+(?:y|mo|w|d|h|mi|s)|@\\d{4}-\\d\\d-\\d\\d-\\d\\d:\\d\\d(?::\\d\\d)?|@\\d{4}-\\d\\d-\\d\\d"}, // dates!
 
                     {token: "string", regex: '["](?:(?:\\\\.)|(?:[^"\\\\]))*?["]'},
-
-                    // muss NACH string kommen, da das Zeichen in Strings durchaus valide ist!
-                    // kurzfristig AUS für groovy-kompat: {token: "invalid", regex: "@.+"},
 
                     {token: "constant.numeric", regex: "0[xX][0-9a-fA-F]+\\b"},
                     {token: "constant.numeric", regex: "[+-]?\\d+(?:(?:\\.\\d*)?(?:[eE][+-]?\\d+)?)?\\b"},
