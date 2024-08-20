@@ -3,6 +3,7 @@ package com.eischet.janitor.demo;
 import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.RunnableScript;
+import com.eischet.janitor.api.types.builtin.JList;
 import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.types.functions.JCallable;
 import com.eischet.janitor.api.types.builtin.JNull;
@@ -40,7 +41,13 @@ public class Demo {
             final DemoRuntime runtime = new DemoRuntime(env);
             final RunnableScript script = runtime.compile(scriptPath.getFileName().toString(), fullScript);
 
-            script.run();
+            // Allow command line arguments to be passed to the script:
+            final JList scriptArgs = runtime.getBuiltinTypes().list();
+            for (int i = 1; i < args.length; i++) {
+                scriptArgs.add(runtime.getBuiltinTypes().string(args[i]));
+            }
+
+            script.run(g -> g.bind("args", scriptArgs));
         } catch (Exception e) {
 
             e.printStackTrace(System.err);

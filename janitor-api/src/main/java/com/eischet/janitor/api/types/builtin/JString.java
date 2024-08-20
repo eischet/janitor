@@ -137,4 +137,5 @@ public class JString extends JanitorComposed<JString> implements JConstant, Json
     public int hashCode() {
         return Objects.hashCode(wrapped);
     }
+
 }
