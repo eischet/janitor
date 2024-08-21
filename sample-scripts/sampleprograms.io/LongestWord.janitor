@@ -1,0 +1,14 @@
+// https://sampleprograms.io/projects/longest-word/
+
+if (args and args[0]) {
+    words = re/\s/.split(args[0]);
+    longest = "";
+    for (word in words) {
+        if (word.length() > longest.length()) {
+            longest = word;
+        }
+    }
+    print(longest.length());
+} else {
+    print("Usage: please provide a string");
+}

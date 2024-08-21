@@ -28,7 +28,7 @@ Current status:
 - ⭕️ Linear Search
 - ⭕️ Longest Common Subsequence
 - ⭕️ Longest Palindromic Substring
-- ⭕️ Longest Word
+- ✅ Longest Word
 - ⭕️ Maximum Array Rotation
 - ⭕️ Maximum Subarray
 - ⭕️ Merge Sort
@@ -40,7 +40,7 @@ Current status:
 - ✅ Remove All Whitespace
 - ⭕️ Reverse String
 - ⭕️ Roman Numeral
-- ⭕️ Rot13
+- ✅ Rot13
 - ⭕️ Selection Sort
 - ⭕️ Sleep Sort
 - ⭕️ Transpose Matrix

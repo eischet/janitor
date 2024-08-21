@@ -19,7 +19,12 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * Testing Janitor using <a href="">SamplePrograms.io</a>
+ * Testing Janitor using <a href="https://sampleprograms.io/">SamplePrograms.io</a>.
+ *
+ * Why? Because reading sample code is very important to understand how a language works, looks and feels.
+ * But most existing code is currently "buried" in various customer systems, and will not likely ever be available.
+ * So here's some synthetic code that makes Janitor comparable to other languages. You probably wouldn't write
+ * programs like these in reality.
  */
 public class SampleProgramsIOTestCase {
 
@@ -56,6 +61,12 @@ public class SampleProgramsIOTestCase {
         assertEquals("Hello, World!", runScriptAndReturnOutput(file));
     }
 
+    /**
+     * <a href="https://sampleprograms.io/projects/even-odd/">Even Odd test</a>.
+     * @throws JanitorRuntimeException on errors
+     * @throws IOException on errors
+     * @throws JanitorCompilerException on errors
+     */
     @Test
     public void evenOdd() throws JanitorRuntimeException, IOException, JanitorCompilerException {
         final String file = "EvenOdd.janitor";
@@ -120,9 +131,9 @@ public class SampleProgramsIOTestCase {
 
     /**
      * <a href="https://sampleprograms.io/projects/remove-all-whitespace/">Remove all whitespace test</a>.
-     * @throws JanitorRuntimeException
-     * @throws IOException
-     * @throws JanitorCompilerException
+     * @throws JanitorRuntimeException when it feels like it
+     * @throws IOException when it feels like it
+     * @throws JanitorCompilerException seriously, why is this even required for unit tests in 2024?
      */
     @Test
     public void removeAllWhitespace() throws JanitorRuntimeException, IOException, JanitorCompilerException {
@@ -178,6 +189,42 @@ public class SampleProgramsIOTestCase {
         assertEquals(bad, runScriptAndReturnOutput(file, Collections.emptyList()));
         assertEquals(bad, runScriptAndReturnOutput(file, List.of("")));
         assertEquals(bad, runScriptAndReturnOutput(file, List.of("a")));
+    }
+
+    /**
+     * Looking for unbreakable string encryption? Go look elsewhere. ;-)
+     * <a href="https://sampleprograms.io/projects/rot13/">Rot13 test</a>.
+     * @throws Exception on errors
+     */
+    @Test
+    public void rot13() throws Exception {
+        final String file = "Rot13.janitor";
+        final String bad = "Usage: please provide a string to encrypt";
+        // Rot13 Valid Tests
+        assertEquals("gur dhvpx oebja sbk whzcrq bire gur ynml qbt", runScriptAndReturnOutput(file, List.of("the quick brown fox jumped over the lazy dog")));
+        assertEquals("GUR DHVPX OEBJA SBK WHZCRQ BIRE GUR YNML QBT", runScriptAndReturnOutput(file, List.of("THE QUICK BROWN FOX JUMPED OVER THE LAZY DOG")));
+        assertEquals("Gur dhvpx oebja sbk whzcrq. Jnf vg bire gur ynml qbt?", runScriptAndReturnOutput(file, List.of("The quick brown fox jumped. Was it over the lazy dog?")));
+        // Rot13 Invalid Tests
+        assertEquals(bad, runScriptAndReturnOutput(file, List.of("")));
+        assertEquals(bad, runScriptAndReturnOutput(file, Collections.emptyList()));
+    }
+
+    /**
+     * <a href="https://sampleprograms.io/projects/longest-word/">Longest word test</a>.
+     * Finds the longest word in a text and prints its length.
+     * @throws Exception on errors
+     */
+    @Test
+    public void longestWord() throws Exception {
+        final String file = "LongestWord.janitor";
+        final String bad = "Usage: please provide a string";
+        // Longest Word Valid Tests
+        assertEquals("5", runScriptAndReturnOutput(file, List.of("May the force be with you")));
+        assertEquals("29", runScriptAndReturnOutput(file, List.of("Floccinaucinihilipilification")));
+        assertEquals("5", runScriptAndReturnOutput(file, List.of("Hi,\nMy name is Paul!")));
+        // Longest Word Invalid Tests
+        assertEquals(bad, runScriptAndReturnOutput(file, List.of("")));
+        assertEquals(bad, runScriptAndReturnOutput(file, Collections.emptyList()));
     }
 
 }
