@@ -84,4 +84,100 @@ public class SampleProgramsIOTestCase {
         assertEquals("Usage: please provide a string", runScriptAndReturnOutput(file, List.of("")));
     }
 
+    /**
+     * As simple as it gets: <a href="https://sampleprograms.io/projects/baklava/">Baklava pattern test</a>.
+     * @throws JanitorRuntimeException on errors
+     * @throws IOException on errors
+     * @throws JanitorCompilerException on errors
+     */
+    @Test
+    public void baklava() throws JanitorRuntimeException, IOException, JanitorCompilerException {
+        final String expected = """
+                          *
+                         ***
+                        *****
+                       *******
+                      *********
+                     ***********
+                    *************
+                   ***************
+                  *****************
+                 *******************
+                *********************
+                 *******************
+                  *****************
+                   ***************
+                    *************
+                     ***********
+                      *********
+                       *******
+                        *****
+                         ***
+                          *""";
+        //                 ^ The final newline is stripped off by the test runner, so we need to omit it here, too.
+        assertEquals(expected, runScriptAndReturnOutput("Baklava.janitor"));
+    }
+
+    /**
+     * <a href="https://sampleprograms.io/projects/remove-all-whitespace/">Remove all whitespace test</a>.
+     * @throws JanitorRuntimeException
+     * @throws IOException
+     * @throws JanitorCompilerException
+     */
+    @Test
+    public void removeAllWhitespace() throws JanitorRuntimeException, IOException, JanitorCompilerException {
+        final String file = "RemoveAllWhitespace.janitor";
+        final String good = "RemoveAllWhitespace";
+        final String bad = "Usage: please provide a string";
+        // Remove All Whitespace Valid Tests
+        assertEquals(good, runScriptAndReturnOutput(file, List.of("RemoveAllWhitespace")));
+        assertEquals(good, runScriptAndReturnOutput(file, List.of(" RemoveAllWhitespace")));
+        assertEquals(good, runScriptAndReturnOutput(file, List.of("RemoveAllWhitespace ")));
+        assertEquals(good, runScriptAndReturnOutput(file, List.of("Remove All Whitespace")));
+        assertEquals(good, runScriptAndReturnOutput(file, List.of("\tRemove\tAll\tWhitespace\t")));
+        assertEquals(good, runScriptAndReturnOutput(file, List.of("\nRemove\nAll\nWhitespace\n")));
+        assertEquals(good, runScriptAndReturnOutput(file, List.of("\rRemove\rAll\rWhitespace\r")));
+        // Remove All Whitespace Invalid Tests
+        assertEquals(bad, runScriptAndReturnOutput(file, Collections.emptyList()));
+        assertEquals(bad, runScriptAndReturnOutput(file, List.of("")));
+    }
+
+    /**
+     * <a href="https://sampleprograms.io/projects/fibonacci/">Fibonacci number test</a>.
+     * @throws JanitorRuntimeException on errors
+     * @throws IOException on errors
+     * @throws JanitorCompilerException guess when
+     */
+    @Test
+    public void fibonacci() throws JanitorRuntimeException, IOException, JanitorCompilerException {
+        final String file = "Fibonacci.janitor";
+        final String bad = "Usage: please input the count of fibonacci numbers to output";
+        // Fibonacci Valid Tests
+        assertEquals("", runScriptAndReturnOutput(file, List.of("0")));
+        assertEquals("1: 1", runScriptAndReturnOutput(file, List.of("1")));
+        assertEquals("1: 1\n2: 1", runScriptAndReturnOutput(file, List.of("2")));
+        assertEquals("""
+                1: 1
+                2: 1
+                3: 2
+                4: 3
+                5: 5""", runScriptAndReturnOutput(file, List.of("5")));
+        assertEquals("""
+                1: 1
+                2: 1
+                3: 2
+                4: 3
+                5: 5
+                6: 8
+                7: 13
+                8: 21
+                9: 34
+                10: 55""", runScriptAndReturnOutput(file, List.of("10")));
+
+        // Fibonacci Invalid Tests
+        assertEquals(bad, runScriptAndReturnOutput(file, Collections.emptyList()));
+        assertEquals(bad, runScriptAndReturnOutput(file, List.of("")));
+        assertEquals(bad, runScriptAndReturnOutput(file, List.of("a")));
+    }
+
 }

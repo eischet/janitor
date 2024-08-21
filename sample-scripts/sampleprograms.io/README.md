@@ -7,7 +7,7 @@ finished scripts and checks their output.
 
 Current status:
 
-- ⭕️ Baklava
+- ✅️ Baklava
 - ⭕️ Binary Search
 - ⭕️ Bubble Sort
 - ⭕️ Capitalize
@@ -37,7 +37,7 @@ Current status:
 - ⭕️ Prime Number
 - ⭕️ Quick Sort
 - ⭕️ Quine
-- ⭕️ Remove All Whitespace
+- ✅ Remove All Whitespace
 - ⭕️ Reverse String
 - ⭕️ Roman Numeral
 - ⭕️ Rot13

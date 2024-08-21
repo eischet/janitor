@@ -1,0 +1,21 @@
+// https://sampleprograms.io/projects/fibonacci/
+// This is a straight port of the JavaScript implementation at https://sampleprograms.io/projects/fibonacci/javascript/
+
+function fibonacci(num) {
+    n = num;
+    first = 0;
+    second = 1;
+    result = 0;
+    for (i from 1 to n) {
+    	result = first + second;
+    	first = second;
+    	second = result;
+        print(i + ":", first);
+    }
+}
+
+if (args and args[0] and args[0].isNumeric()) {
+    fibonacci(args[0].int());
+} else {
+    print("Usage: please input the count of fibonacci numbers to output");
+}
