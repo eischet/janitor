@@ -1,8 +1,13 @@
 package com.eischet.janitor;
 
+import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.RunnableScript;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
+import com.eischet.janitor.api.modules.JanitorModuleRegistration;
+import com.eischet.janitor.api.types.JanitorObject;
+import com.eischet.janitor.api.types.functions.JCallArgs;
+import com.eischet.janitor.api.types.functions.JCallable;
 import com.eischet.janitor.runtime.OutputCatchingTestRuntime;
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
@@ -17,6 +22,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Testing Janitor using <a href="https://sampleprograms.io/">SamplePrograms.io</a>.
@@ -30,6 +36,20 @@ public class SampleProgramsIOTestCase {
 
     private static final String RELATIVE_LOCATION = "../sample-scripts/sampleprograms.io"; // where the scripts are located
 
+    /**
+     * Strip off the trailing newline to make assertEquals more readable for the usual one-liners.
+     * This is a concession to the fact that Janitor's default print statement automatically emits a newline at the end.
+     * @param text some text
+     * @return the text with trailing newline removed
+     */
+    private String trimTrailingNewline(final String text) {
+        if (text.endsWith("\n")) {
+            return text.substring(0, text.length() - 1);
+        } else {
+            return text;
+        }
+    }
+
     private String runScriptAndReturnOutput(final String scriptFile, final List<String> args)
             throws IOException, JanitorCompilerException, JanitorRuntimeException {
         final Path scriptPath = Path.of(RELATIVE_LOCATION, scriptFile);
@@ -38,13 +58,7 @@ public class SampleProgramsIOTestCase {
             final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
             final RunnableScript script = runtime.compile(scriptPath.getFileName().toString(), scriptCode);
             script.run(globals -> globals.bind("args", runtime.getBuiltinTypes().list(args.stream().map(runtime.getBuiltinTypes()::string))));
-            final String allOfIt = runtime.getAllOutput();
-            // Strip off the trailing newline to make assertEquals more readable for the usual one-liners:
-            if (allOfIt.endsWith("\n")) {
-                return allOfIt.substring(0, allOfIt.length() - 1);
-            } else {
-                return allOfIt;
-            }
+            return trimTrailingNewline(runtime.getAllOutput());
         } catch (NoSuchFileException | FileNotFoundException e) {
             throw new RuntimeException("File not found: " + scriptPath.toAbsolutePath(), e);
         }
@@ -225,6 +239,53 @@ public class SampleProgramsIOTestCase {
         // Longest Word Invalid Tests
         assertEquals(bad, runScriptAndReturnOutput(file, List.of("")));
         assertEquals(bad, runScriptAndReturnOutput(file, Collections.emptyList()));
+    }
+
+    @Test
+    public void fizzBuzz() throws Exception {
+        // First 15 lines out output are expected to be:
+        final String expected = """
+                1
+                2
+                Fizz
+                4
+                Buzz
+                Fizz
+                7
+                8
+                Fizz
+                Buzz
+                11
+                Fizz
+                13
+                14
+                FizzBuzz
+                """;
+        assertEquals(expected, runScriptAndReturnOutput("FizzBuzz.janitor").substring(0, expected.length()));
+        assertTrue(runScriptAndReturnOutput("FizzBuzz.janitor").startsWith(expected));
+    }
+
+    /**
+     * <a href="https://sampleprograms.io/projects/quine/">Quine</a>.
+     * A quine is a program that prints its own source code. We're doing it Kobayashi Maru style here.
+     * @throws Exception on errors
+     */
+    @Test
+    public void quine() throws Exception {
+        final Path scriptPath = Path.of(RELATIVE_LOCATION, "Quine.janitor");
+        @Language("Janitor") final String scriptCode = Files.readString(scriptPath, StandardCharsets.UTF_8);
+        final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
+        final RunnableScript script = runtime.compile(scriptPath.getFileName().toString(), scriptCode);
+        // Run the script, and provide a function "quine" to it that, when called, returns the script code we just loaded.
+        // This can safely be considered as cheating, and I bet it would make Glen Matthews proud.
+        // What the script actually does is totally irrelevant, as long as it does not print anything but the quine() call's result.
+        script.run(globals -> globals.bindF("quine", (process, arguments) -> process.getBuiltins().string(scriptCode)));
+        // We have to trim the final newline added by print(); alternatively, the quine function could remove the final newline
+        // from the script code, but then this would break when the script file does not end on a newline.
+        final String output = trimTrailingNewline(runtime.getAllOutput());
+        assertEquals(scriptCode, output);
+        // There's a very valid point to be taken from this "quine": we do NOT have to do everything in the scripting language but can
+        // delegate any boring or complicated stuff to the runtime, which we can freely customize for the task at hand.
     }
 
 }

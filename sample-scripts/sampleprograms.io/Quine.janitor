@@ -1,0 +1,21 @@
+// A quine, in Janitor. Go figure. ;-)
+
+function foo(bar, baz) {
+    does_not(make, a.difference);
+}
+
+sum = 0;
+for (i from 1 to 1000) {
+    sum += i;
+}
+assert(sum == 500500);
+
+print(quine());
+
+failed = false;
+try {
+    foo(1, 2);
+} catch (err) {
+    failed = true;
+}
+assert(failed);

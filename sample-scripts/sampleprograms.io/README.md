@@ -1,6 +1,6 @@
 # Sample Program Collection
 
-This is a collection of sample programs designed to be (possible) uploaded to https://sampleprograms.io, a fun project comparing different programming languages.
+This is a collection of sample programs designed to be (possibly) uploaded to https://sampleprograms.io, a fun project comparing different programming languages.
 
 See [SampleProgramsIOTestCase.java](../../janitor-lang/src/test/java/com/eischet/janitor/SampleProgramsIOTestCase.java) for a unit test that runs the
 finished scripts and checks their output.
@@ -19,7 +19,7 @@ Current status:
 - ⭕️ Factorial
 - ✅️ Fibonacci
 - ⭕️ File Input Output
-- ⭕️ Fizz Buzz
+- ✅️ Fizz Buzz
 - ⭕️ Fraction Math
 - ✅ Hello World
 - ⭕️ Insertion Sort
@@ -36,7 +36,7 @@ Current status:
 - ⭕️ Palindromic Number
 - ⭕️ Prime Number
 - ⭕️ Quick Sort
-- ⭕️ Quine
+- ✅️ Quine (with cheating)
 - ✅ Remove All Whitespace
 - ⭕️ Reverse String
 - ⭕️ Roman Numeral

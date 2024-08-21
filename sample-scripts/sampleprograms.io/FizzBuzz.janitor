@@ -1,0 +1,32 @@
+// https://sampleprograms.io/projects/fizz-buzz/
+// Write a program that prints the numbers 1 to 100. However, for multiples of three,
+// print "Fizz" instead of the number. Meanwhile, for multiples of five, print "Buzz"
+// instead of the number. For numbers which are multiples of both three and five, print "FizzBuzz"
+
+for (i from 1 to 100) {
+    divisibleBy3 = i % 3 == 0;
+    divisibleBy5 = i % 5 == 0;
+    print(
+        if divisibleBy3 and divisibleBy5 then "FizzBuzz"
+          else if divisibleBy3 then "Fizz"
+          else if divisibleBy5 then "Buzz"
+          else i
+      );
+}
+
+/*
+
+    Here's an alternative version using "traditional" if-then-else:
+
+    for (i from 1 to 100) {
+        if (i % 3 == 0 and i % 5 == 0) {
+            print("FizzBuzz");
+        } else if (i % 3 == 0) {
+            print("Fizz");
+        } else if (i % 5 == 0) {
+            print("Buzz");
+        } else {
+            print(i);
+        }
+    }
+*/
