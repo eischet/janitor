@@ -17,7 +17,7 @@ Current status:
 - ✅️ Duplicate Character Counter
 - ✅️ Even Odd
 - ⭕️ Factorial
-- ⭕️ Fibonacci
+- ✅️ Fibonacci
 - ⭕️ File Input Output
 - ⭕️ Fizz Buzz
 - ⭕️ Fraction Math
