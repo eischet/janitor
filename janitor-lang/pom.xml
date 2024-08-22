@@ -92,7 +92,24 @@
                             <visitor>true</visitor>
                             <sourceDirectory>src/main/antlr4</sourceDirectory>
                             <outputDirectory>target/generated-sources/java</outputDirectory>
-
+                        </configuration>
+                    </execution>
+                    <!-- While we're at it, generate C# code as well, because that needs manual steps
+                         on the C# side... see https://github.com/antlr/antlr4/blob/master/runtime/CSharp/src/README.md -->
+                    <execution>
+                        <id>antlr-csharp</id>
+                        <goals>
+                            <goal>antlr4</goal>
+                        </goals>
+                        <phase>generate-sources</phase>
+                        <configuration>
+                            <listener>true</listener>
+                            <visitor>true</visitor>
+                            <arguments>
+                                <argument>-Dlanguage=CSharp</argument>
+                            </arguments>
+                            <sourceDirectory>src/main/antlr4</sourceDirectory>
+                            <outputDirectory>../janitor-sharp/janitor-lang/antlr</outputDirectory>
                         </configuration>
                     </execution>
 
