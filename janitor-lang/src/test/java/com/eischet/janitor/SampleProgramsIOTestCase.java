@@ -319,4 +319,19 @@ public class SampleProgramsIOTestCase {
         assertEquals("", runScriptAndReturnOutput(file, List.of("")), "Empty Input");
     }
 
+    @Test
+    public void capitalize() throws Exception {
+        final String file = "Capitalize.janitor";
+        final String bad = "Usage: please provide a string";
+        // Capitalize Valid Tests
+        assertEquals("Hello", runScriptAndReturnOutput(file, List.of("hello")), "Sample Input: Lowercase String");
+        assertEquals("Hello", runScriptAndReturnOutput(file, List.of("Hello")), "Sample Input: Uppercase String");
+        assertEquals("Hello world", runScriptAndReturnOutput(file, List.of("hello world")), "Sample Input: Long String");
+        assertEquals("HeLLo World", runScriptAndReturnOutput(file, List.of("heLLo World")), "Sample Input: Mixed Casing");
+        assertEquals("12345", runScriptAndReturnOutput(file, List.of("12345")), "Sample Input: Symbols");
+        // Capitalize Invalid Tests
+        assertEquals(bad, runScriptAndReturnOutput(file, Collections.emptyList()), "No Input");
+        assertEquals(bad, runScriptAndReturnOutput(file, List.of("")), "Empty Input");
+    }
+
 }
