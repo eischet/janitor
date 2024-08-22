@@ -1,7 +1,8 @@
 # 0.9.7, work in progress
 
-Added basic syntax highlighters for ACE, TextMate and VS Code.
-Add a logo.
+Added basic syntax highlighters for ACE, TextMate and VS Code. Added a logo.
+Added several example scripts, some implementing challenges from sampleprograms.io.
+
 
 
 # 0.9.6, 2024-08-13

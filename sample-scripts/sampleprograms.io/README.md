@@ -8,7 +8,7 @@ finished scripts and checks their output.
 Current status:
 
 - ✅️ Baklava
-- ⭕️ Binary Search
+- ✅️ Binary Search
 - ⭕️ Bubble Sort
 - ⭕️ Capitalize
 - ⭕️ Convex Hull

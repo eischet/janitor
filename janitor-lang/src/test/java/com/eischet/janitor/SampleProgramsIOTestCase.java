@@ -1,13 +1,8 @@
 package com.eischet.janitor;
 
-import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.RunnableScript;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
-import com.eischet.janitor.api.modules.JanitorModuleRegistration;
-import com.eischet.janitor.api.types.JanitorObject;
-import com.eischet.janitor.api.types.functions.JCallArgs;
-import com.eischet.janitor.api.types.functions.JCallable;
 import com.eischet.janitor.runtime.OutputCatchingTestRuntime;
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
@@ -267,7 +262,7 @@ public class SampleProgramsIOTestCase {
 
     /**
      * <a href="https://sampleprograms.io/projects/quine/">Quine</a>.
-     * A quine is a program that prints its own source code. We're doing it Kobayashi Maru style here.
+     * A quine is a program that prints its own source code. We're doing it Kobayashi Maru style here. ;-)
      * @throws Exception on errors
      */
     @Test
@@ -284,8 +279,34 @@ public class SampleProgramsIOTestCase {
         // from the script code, but then this would break when the script file does not end on a newline.
         final String output = trimTrailingNewline(runtime.getAllOutput());
         assertEquals(scriptCode, output);
-        // There's a very valid point to be taken from this "quine": we do NOT have to do everything in the scripting language but can
+        // There's a valid point to be taken from this "quine": we do NOT have to do everything in the scripting language but can
         // delegate any boring or complicated stuff to the runtime, which we can freely customize for the task at hand.
     }
 
+    /**
+     * <a href="https://sampleprograms.io/projects/binary-search/">Binary Search</a>.
+     * @throws Exception on errors
+     */
+    @Test
+    public void binarySearch() throws Exception {
+        final String file = "BinarySearch.janitor";
+        final String bad = "Usage: please provide a list of sorted integers (\"1, 4, 5, 11, 12\") and the integer to find (\"11\")";
+        // Binary Search Valid Tests
+        assertEquals("true", runScriptAndReturnOutput(file, List.of("1, 3, 5, 7", "1")), "Sample Input: First True");
+        assertEquals("true", runScriptAndReturnOutput(file, List.of("1, 3, 5, 7", "7")), "Sample Input: Last True");
+        assertEquals("true", runScriptAndReturnOutput(file, List.of("1, 3, 5, 7", "5")), "Sample Input: Middle True");
+        assertEquals("true", runScriptAndReturnOutput(file, List.of("5", "5")), "Sample Input: One True");
+        assertEquals("false", runScriptAndReturnOutput(file, List.of("5", "7")), "Sample Input: One False");
+        assertEquals("false", runScriptAndReturnOutput(file, List.of("1, 3, 5, 6", "7")), "Sample Input: Many False");
+        assertEquals("true", runScriptAndReturnOutput(file, List.of("1, 2, 3, 4, 5, 6, 7", "3")), "Sample Input: Middle True");
+
+
+
+
+        // Binary Search Invalid Tests
+        assertEquals(bad, runScriptAndReturnOutput(file, Collections.emptyList()), "No Input");
+        assertEquals(bad, runScriptAndReturnOutput(file, List.of("1,2,3,4")), "Missing Input: Target");
+        assertEquals(bad, runScriptAndReturnOutput(file, List.of("", "5")), "Missing Input: List");
+        assertEquals(bad, runScriptAndReturnOutput(file, List.of("3,5,1,2", "3")), "Out Of Order Input");
+    }
 }

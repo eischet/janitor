@@ -14,7 +14,16 @@
 			"name": "comment.line.double-slash.janitor",
 			"match": "//.*$"
 		},
-
+		{
+			"name": "string.quoted.regex.janitor",
+			"begin": "re/",
+			"end": "/",
+			"patterns": [
+				{
+					"match": "\\\\[\"\\\\nrt]|[^\"\\\\]"
+				}
+			]
+		},
 			{
 				"name": "string.quoted.triple.janitor",
 				"begin": "'''",
@@ -57,7 +66,7 @@
 			},
 		{
 			"name": "keyword.control.janitor",
-			"match": "\\b(break|catch|continue|function|do|else|finally|for|if|then|import|return|throw|try|while|true|false|null|from|to|in)\\b"
+			"match": "\\b(break|catch|continue|function|do|else|finally|for|if|then|import|return|throw|try|while|true|false|null|from|to|in|not|and|or)\\b"
 		},
 		{
 			"name": "constant.numeric.janitor",
@@ -81,7 +90,7 @@
 		},
 		{
 			"name": "keyword.operator.janitor",
-			"match": "(\\+\\+|--|\\+|-|\\*|/|%|==|!=|<>|<=|>=|<|>|&&|\\|\\||!|=|\\+=|-=|\\*=|/=|%=|->|\\?|:|\\.|\\?|\\.|#|~|!~|and|or|not)"
+			"match": "(\\+\\+|--|\\+|-|\\*|/|%|==|!=|<>|<=|>=|<|>|&&|\\|\\||!|=|\\+=|-=|\\*=|/=|%=|->|\\?|:|\\.|\\?|\\.|#|~|!~)"
 		},
 		{
 			"name": "punctuation.definition.janitor",
