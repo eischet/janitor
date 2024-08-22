@@ -10,7 +10,7 @@ Current status:
 - ✅️ Baklava
 - ✅️ Binary Search
 - ⭕️ Bubble Sort
-- ⭕️ Capitalize
+- ✅️ Capitalize
 - ⭕️ Convex Hull
 - ⭕️ Depth First Search
 - ⭕️ Dijkstra
