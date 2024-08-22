@@ -299,14 +299,24 @@ public class SampleProgramsIOTestCase {
         assertEquals("false", runScriptAndReturnOutput(file, List.of("5", "7")), "Sample Input: One False");
         assertEquals("false", runScriptAndReturnOutput(file, List.of("1, 3, 5, 6", "7")), "Sample Input: Many False");
         assertEquals("true", runScriptAndReturnOutput(file, List.of("1, 2, 3, 4, 5, 6, 7", "3")), "Sample Input: Middle True");
-
-
-
-
         // Binary Search Invalid Tests
         assertEquals(bad, runScriptAndReturnOutput(file, Collections.emptyList()), "No Input");
         assertEquals(bad, runScriptAndReturnOutput(file, List.of("1,2,3,4")), "Missing Input: Target");
         assertEquals(bad, runScriptAndReturnOutput(file, List.of("", "5")), "Missing Input: List");
         assertEquals(bad, runScriptAndReturnOutput(file, List.of("3,5,1,2", "3")), "Out Of Order Input");
     }
+
+    /**
+     * <a href="https://sampleprograms.io/projects/reverse-string/">Reverse String</a>.
+     * @throws Exception on errors
+     */
+    @SuppressWarnings("SpellCheckingInspection") // ynnuf yrev, IntelliJ.
+    @Test
+    public void reverseString() throws Exception {
+        final String file = "ReverseString.janitor";
+        assertEquals("dlroW ,olleH", runScriptAndReturnOutput(file, List.of("Hello, World")), "Ascii String");
+        assertEquals("", runScriptAndReturnOutput(file, Collections.emptyList()), "No Input");
+        assertEquals("", runScriptAndReturnOutput(file, List.of("")), "Empty Input");
+    }
+
 }

@@ -38,10 +38,9 @@ Current status:
 - ⭕️ Quick Sort
 - ✅️ Quine (with cheating)
 - ✅ Remove All Whitespace
-- ⭕️ Reverse String
+- ✅ Reverse String
 - ⭕️ Roman Numeral
 - ✅ Rot13
 - ⭕️ Selection Sort
 - ⭕️ Sleep Sort
 - ⭕️ Transpose Matrix
-

@@ -42,4 +42,3 @@ try {
 }
 
 print(if success == null then 'Usage: please provide a list of sorted integers ("1, 4, 5, 11, 12") and the integer to find ("11")' else success);
-
