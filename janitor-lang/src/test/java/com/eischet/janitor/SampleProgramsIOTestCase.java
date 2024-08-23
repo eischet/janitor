@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Testing Janitor using <a href="https://sampleprograms.io/">SamplePrograms.io</a>.
- *
+ * <p>
  * Why? Because reading sample code is very important to understand how a language works, looks and feels.
  * But most existing code is currently "buried" in various customer systems, and will not likely ever be available.
  * So here's some synthetic code that makes Janitor comparable to other languages. You probably wouldn't write
@@ -34,6 +34,7 @@ public class SampleProgramsIOTestCase {
     /**
      * Strip off the trailing newline to make assertEquals more readable for the usual one-liners.
      * This is a concession to the fact that Janitor's default print statement automatically emits a newline at the end.
+     *
      * @param text some text
      * @return the text with trailing newline removed
      */
@@ -72,8 +73,9 @@ public class SampleProgramsIOTestCase {
 
     /**
      * <a href="https://sampleprograms.io/projects/even-odd/">Even Odd test</a>.
-     * @throws JanitorRuntimeException on errors
-     * @throws IOException on errors
+     *
+     * @throws JanitorRuntimeException  on errors
+     * @throws IOException              on errors
      * @throws JanitorCompilerException on errors
      */
     @Test
@@ -106,8 +108,9 @@ public class SampleProgramsIOTestCase {
 
     /**
      * As simple as it gets: <a href="https://sampleprograms.io/projects/baklava/">Baklava pattern test</a>.
-     * @throws JanitorRuntimeException on errors
-     * @throws IOException on errors
+     *
+     * @throws JanitorRuntimeException  on errors
+     * @throws IOException              on errors
      * @throws JanitorCompilerException on errors
      */
     @Test
@@ -140,8 +143,9 @@ public class SampleProgramsIOTestCase {
 
     /**
      * <a href="https://sampleprograms.io/projects/remove-all-whitespace/">Remove all whitespace test</a>.
-     * @throws JanitorRuntimeException when it feels like it
-     * @throws IOException when it feels like it
+     *
+     * @throws JanitorRuntimeException  when it feels like it
+     * @throws IOException              when it feels like it
      * @throws JanitorCompilerException seriously, why is this even required for unit tests in 2024?
      */
     @Test
@@ -164,8 +168,9 @@ public class SampleProgramsIOTestCase {
 
     /**
      * <a href="https://sampleprograms.io/projects/fibonacci/">Fibonacci number test</a>.
-     * @throws JanitorRuntimeException on errors
-     * @throws IOException on errors
+     *
+     * @throws JanitorRuntimeException  on errors
+     * @throws IOException              on errors
      * @throws JanitorCompilerException guess when
      */
     @Test
@@ -203,6 +208,7 @@ public class SampleProgramsIOTestCase {
     /**
      * Looking for unbreakable string encryption? Go look elsewhere. ;-)
      * <a href="https://sampleprograms.io/projects/rot13/">Rot13 test</a>.
+     *
      * @throws Exception on errors
      */
     @Test
@@ -221,6 +227,7 @@ public class SampleProgramsIOTestCase {
     /**
      * <a href="https://sampleprograms.io/projects/longest-word/">Longest word test</a>.
      * Finds the longest word in a text and prints its length.
+     *
      * @throws Exception on errors
      */
     @Test
@@ -263,6 +270,7 @@ public class SampleProgramsIOTestCase {
     /**
      * <a href="https://sampleprograms.io/projects/quine/">Quine</a>.
      * A quine is a program that prints its own source code. We're doing it Kobayashi Maru style here. ;-)
+     *
      * @throws Exception on errors
      */
     @Test
@@ -285,6 +293,7 @@ public class SampleProgramsIOTestCase {
 
     /**
      * <a href="https://sampleprograms.io/projects/binary-search/">Binary Search</a>.
+     *
      * @throws Exception on errors
      */
     @Test
@@ -308,6 +317,7 @@ public class SampleProgramsIOTestCase {
 
     /**
      * <a href="https://sampleprograms.io/projects/reverse-string/">Reverse String</a>.
+     *
      * @throws Exception on errors
      */
     @SuppressWarnings("SpellCheckingInspection") // ynnuf yrev, IntelliJ.
@@ -332,6 +342,55 @@ public class SampleProgramsIOTestCase {
         // Capitalize Invalid Tests
         assertEquals(bad, runScriptAndReturnOutput(file, Collections.emptyList()), "No Input");
         assertEquals(bad, runScriptAndReturnOutput(file, List.of("")), "Empty Input");
+    }
+
+    /**
+     * <a href="https://sampleprograms.io/projects/palindromic-number/">Palindromic Number</a>.
+     *
+     * @throws Exception on errors
+     */
+    @Test
+    public void palindromicNumber() throws Exception {
+        final String file = "PalindromicNumber.janitor";
+        final String bad = "Usage: please input a non-negative integer";
+        // Palindromic Number Valid Tests
+        assertEquals("true", runScriptAndReturnOutput(file, List.of("7")), "Sample Input: One Digit");
+        assertEquals("true", runScriptAndReturnOutput(file, List.of("2442")), "Sample Input: Even Digits");
+        assertEquals("true", runScriptAndReturnOutput(file, List.of("232")), "Sample Input: Odd Digits");
+        assertEquals("false", runScriptAndReturnOutput(file, List.of("5215")), "Sample Input: Even Digits Not Palindrome");
+        assertEquals("false", runScriptAndReturnOutput(file, List.of("521")), "Sample Input: Odd Digits Not Palindrome");
+        // Palindromic Number Invalid Tests
+        assertEquals(bad, runScriptAndReturnOutput(file, Collections.emptyList()), "No Input");
+        assertEquals(bad, runScriptAndReturnOutput(file, List.of("")), "Empty Input");
+        // I'm not sure why palindromes are restricted to numbers in this context, but we're playing by other people's rules here, so...
+        assertEquals(bad, runScriptAndReturnOutput(file, List.of("a")), "Invalid Input: Not A Number");
+        assertEquals(bad, runScriptAndReturnOutput(file, List.of("-7")), "Invalid Input: Negative Integer");
+        assertEquals(bad, runScriptAndReturnOutput(file, List.of("5.41")), "Invalid Input: Float");
+    }
+
+    /**
+     * <a href="https://sampleprograms.io/projects/factorial/">Factorial</a>.
+     *
+     * @throws Exception on errors
+     */
+    @Test
+    public void factorial() throws Exception {
+        final String file = "Factorial.janitor";
+        final String bad = "Usage: please input a non-negative integer";
+        // Factorial Invalid Tests
+        assertEquals(bad, runScriptAndReturnOutput(file, Collections.emptyList()), "No Input");
+        assertEquals(bad, runScriptAndReturnOutput(file, List.of("")), "Empty Input");
+        assertEquals(bad, runScriptAndReturnOutput(file, List.of("a")), "Invalid Input: Not A Number");
+        assertEquals(bad, runScriptAndReturnOutput(file, List.of("-7")), "Invalid Input: Negative");
+
+        // Factorial Valid Tests
+        assertEquals("1", runScriptAndReturnOutput(file, List.of("0")), "Sample Input: Zero");
+        assertEquals("1", runScriptAndReturnOutput(file, List.of("1")), "Sample Input: One");
+        assertEquals("24", runScriptAndReturnOutput(file, List.of("4")), "Sample Input: Four");
+        assertEquals("40320", runScriptAndReturnOutput(file, List.of("8")), "Sample Input: Eight");
+        assertEquals("3628800", runScriptAndReturnOutput(file, List.of("10")), "Sample Input: Ten");
+
+
     }
 
 }

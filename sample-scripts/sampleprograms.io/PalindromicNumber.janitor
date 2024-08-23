@@ -1,0 +1,23 @@
+/**
+ * Check whether the text is a palindrome.
+ */
+function isPalindrome(text) {
+    if (text.length() == 1) {
+        return true;
+    }
+    for (i from 1 to text.length() / 2) {
+        left = text[i - 1];
+        right = text[-i];
+        if (left != right) {
+            return false;
+        }
+    }
+    return true;
+}
+
+if (args and args[0] and args[0].isNumeric()) {
+    // We're restricting the input to numeric input to match the original challenge, not for "real" reasons.
+    print(isPalindrome(args[0]));
+} else {
+    print("Usage: please input a non-negative integer");
+}

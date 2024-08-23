@@ -40,7 +40,6 @@ import java.util.Objects;
  */
 public class Scope implements JanitorObject {
 
-
     private final @Nullable Scope parent;
     private final Map<String, JanitorObject> variables = new HashMap<>(4);
     private final @Nullable Location location;
@@ -65,7 +64,7 @@ public class Scope implements JanitorObject {
      * @return the global scope
      */
     public static Scope createGlobalScope(final JanitorEnvironment env, final ScriptModule module) {
-        return new Scope(env, Location.at(module, 0, 0, 0, 0), env.getBuiltinScope(), null);
+        return new Scope(env, Location.startOf(module), env.getBuiltinScope(), null);
     }
 
     /**

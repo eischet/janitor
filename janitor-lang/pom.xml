@@ -95,7 +95,10 @@
                         </configuration>
                     </execution>
                     <!-- While we're at it, generate C# code as well, because that needs manual steps
-                         on the C# side... see https://github.com/antlr/antlr4/blob/master/runtime/CSharp/src/README.md -->
+                         on the C# side... see https://github.com/antlr/antlr4/blob/master/runtime/CSharp/src/README.md
+                         Nesting the C# code in the Java project is probably not one of my better ideas, but to get work done
+                         it's a good enough solution for now.
+                     -->
                     <execution>
                         <id>antlr-csharp</id>
                         <goals>
@@ -109,7 +112,7 @@
                                 <argument>-Dlanguage=CSharp</argument>
                             </arguments>
                             <sourceDirectory>src/main/antlr4</sourceDirectory>
-                            <outputDirectory>../janitor-sharp/janitor-lang/antlr</outputDirectory>
+                            <outputDirectory>../janitor-sharp/janitor-grammar/src</outputDirectory>
                         </configuration>
                     </execution>
 

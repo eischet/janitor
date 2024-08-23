@@ -16,7 +16,7 @@ Current status:
 - ⭕️ Dijkstra
 - ✅️ Duplicate Character Counter
 - ✅️ Even Odd
-- ⭕️ Factorial
+- ✅️ Factorial
 - ✅️ Fibonacci
 - ⭕️ File Input Output
 - ✅️ Fizz Buzz
@@ -33,7 +33,7 @@ Current status:
 - ⭕️ Maximum Subarray
 - ⭕️ Merge Sort
 - ⭕️ Minimum Spanning Tree
-- ⭕️ Palindromic Number
+- ✅ Palindromic Number
 - ⭕️ Prime Number
 - ⭕️ Quick Sort
 - ✅️ Quine (with cheating)
