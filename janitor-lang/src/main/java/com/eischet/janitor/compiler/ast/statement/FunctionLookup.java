@@ -67,6 +67,7 @@ public class FunctionLookup extends Statement implements Expression, JsonExporta
             process.trace(() -> "top");
             process.trace(() -> "looking up function from expression " + onExpression);
             final JanitorObject object = onExpression.evaluate(process);
+            process.trace(() -> "back in the function lookup! object: " + object);
             if (object == null) {
                 process.trace(() -> "object is null!");
             } else {
@@ -86,6 +87,7 @@ public class FunctionLookup extends Statement implements Expression, JsonExporta
             }
 
             if (function == null /* || function == CSNull.NULL) */) {
+                process.trace(() -> "function not found; guarded=" + guarded);
                 if (guarded) {
                     return JNull.NULL;
                 }

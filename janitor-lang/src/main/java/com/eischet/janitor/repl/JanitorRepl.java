@@ -1,6 +1,5 @@
 package com.eischet.janitor.repl;
 
-import com.eischet.janitor.api.JanitorCompilerSettings;
 import com.eischet.janitor.api.JanitorRuntime;
 import com.eischet.janitor.api.errors.runtime.JanitorControlFlowException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
@@ -122,7 +121,7 @@ public class JanitorRepl {
             return PartialParseResult.INCOMPLETE;
         }
         final ScriptModule module = new ScriptModule("repl", text);
-        final JanitorAntlrCompiler compiler = new JanitorAntlrCompiler(runtime.getEnvironment(), module, JanitorCompilerSettings.RELAXED, text);
+        final JanitorAntlrCompiler compiler = new JanitorAntlrCompiler(runtime.getEnvironment(), module, false, text);
         final Ast compiledText = compiler.visit(tls);
         System.out.println("Compiled: " + compiledText.toString());
         //final RuleContext parseTree = root.getRuleContext();

@@ -23,9 +23,6 @@ public interface JanitorRuntime {
 
     void trace(Supplier<String> traceMessageSupplier);
 
-    default JanitorCompilerSettings getCompilerSettings() {
-        return JanitorCompilerSettings.DEFAUlTS;
-    }
 
     default BuiltinTypes getBuiltinTypes() {
         return getEnvironment().getBuiltinTypes();

@@ -48,7 +48,7 @@ public abstract class BaseRuntime implements JanitorRuntime {
     @Override
     public RunnableScript checkCompile(String moduleName, @Language("Janitor") String source) throws JanitorCompilerException {
         try {
-            return new JanitorScript(this, moduleName, source == null ? "" : source, true);
+            return new JanitorScript(this, moduleName, source == null ? "" : source, true, false);
         } catch (RuntimeException e) {
             throw new JanitorCompilerException("Compiler Error", e);
         }

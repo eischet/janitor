@@ -59,13 +59,14 @@ public class JanitorScript implements RunnableScript, JsonExportableObject {
     public JanitorScript(final JanitorRuntime runtime,
                          final String moduleName,
                          final String source) throws JanitorCompilerException {
-        this(runtime, moduleName, source, false);
+        this(runtime, moduleName, source, false, false);
     }
 
     public JanitorScript(final JanitorRuntime runtime,
                          final String moduleName,
                          final String source,
-                         final boolean checking) throws JanitorCompilerException {
+                         final boolean checking,
+                         final boolean verbose) throws JanitorCompilerException {
         this.runtime = runtime;
         this.module = new ScriptModule(moduleName, source);
 
@@ -88,11 +89,11 @@ public class JanitorScript implements RunnableScript, JsonExportableObject {
         }
 
         if (!checking) {
-            scriptObject = JanitorCompiler.build(runtime.getEnvironment(), module, script, source, runtime.getCompilerSettings());
+            scriptObject = JanitorCompiler.build(runtime.getEnvironment(), module, script, source, verbose);
         } else {
             Script myScript = null;
             try {
-                myScript = JanitorCompiler.build(runtime.getEnvironment(), module, script, source, runtime.getCompilerSettings());
+                myScript = JanitorCompiler.build(runtime.getEnvironment(), module, script, source, verbose);
             } catch (RuntimeException compilerException) {
                 this.compilerException = compilerException;
                 log.info("compiler check error in script {}", moduleName, compilerException);

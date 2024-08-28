@@ -16,6 +16,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -49,6 +51,7 @@ public class ExtensionMethodsTestCase {
         }
     };
 
+    final AtomicLong runCount = new AtomicLong(0);
 
     /**
      * Test adding methods and properties to built-in classes.
@@ -57,6 +60,9 @@ public class ExtensionMethodsTestCase {
      */
     @Test
     public void testExtensionMethods() throws JanitorRuntimeException, JanitorCompilerException {
+
+        assertEquals(1L, runCount.incrementAndGet());
+
         // add a method to the string class
         final @Language("Janitor") String scriptSource = "'John Dorian'.sayHello();";
         final RunnableScript script = RT.compile("test", scriptSource);
@@ -69,10 +75,11 @@ public class ExtensionMethodsTestCase {
         final RunnableScript script2 = RT.compile("test", scriptSource2);
 
         RT.setTraceListener(message -> System.out.println("TRACE: " + message));
+        assertFalse(ENV.getBuiltinTypes().internals().getStringDispatcher().has("numberOfDigits"));
+
 
         assertThrows(JanitorNameException.class, script2::run); // can't work, because there's no such property
 
-        assertFalse(ENV.getBuiltinTypes().internals().getStringDispatcher().has("numberOfDigits"));
 
         ENV.getBuiltinTypes().internals().getStringDispatcher().addLongProperty("numberOfDigits", (self) -> self.janitorGetHostValue().codePoints().filter(Character::isDigit).count());
         assertEquals(12L, script2.run().janitorGetHostValue()); // now it works

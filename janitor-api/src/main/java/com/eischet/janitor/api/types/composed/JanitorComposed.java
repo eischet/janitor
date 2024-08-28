@@ -45,7 +45,7 @@ public abstract class JanitorComposed<T extends JanitorComposed<T>> implements J
         @Nullable final JanitorObject superValue = JanitorObject.super.janitorGetAttribute(process, name, required);
         if ("numberOfDigits".equals(name)) {
             process.trace(() -> "numberOfDigits lookup yielded from super: " +  superValue + ", required=" + required);
-            //throw new RuntimeException("should be required!");
+            //throw new RuntimeException("should be required! required=" + required);
         }
         return superValue;
     }

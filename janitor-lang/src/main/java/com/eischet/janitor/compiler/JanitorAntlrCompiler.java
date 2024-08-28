@@ -1,7 +1,6 @@
 package com.eischet.janitor.compiler;
 
 import com.eischet.janitor.api.types.BuiltinTypes;
-import com.eischet.janitor.api.JanitorCompilerSettings;
 import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.api.scopes.ScriptModule;
@@ -55,18 +54,16 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
     private static final BooleanLiteral LITERAL_TRUE = new BooleanLiteral(null, JBool.TRUE);
     private static final BooleanLiteral LITERAL_FALSE = new BooleanLiteral(null, JBool.FALSE);
     private final ScriptModule module;
-    private final JanitorCompilerSettings options;
     private final boolean verbose;
     private final String source;
     private final JanitorEnvironment env;
     private final BuiltinTypes builtinTypes;
 
 
-    public JanitorAntlrCompiler(final JanitorEnvironment env, final ScriptModule module, final JanitorCompilerSettings options, final String source) {
+    public JanitorAntlrCompiler(final JanitorEnvironment env, final ScriptModule module, final boolean verbose, final String source) {
         this.env = env;
         this.module = module;
-        this.options = options;
-        this.verbose = options.isVerbose();
+        this.verbose = verbose;
         this.source = source;
         this.builtinTypes = env.getBuiltinTypes();
     }
@@ -735,12 +732,15 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
                 log.info("case 2: call with identifier and expression --> should be a function LOOKUP");
                 log.info("creating function lookup, lookup operator is: dot={}, qdot={}", ctx.DOT(), ctx.QDOT());
             }
+
+            final boolean guarded = ctx.QDOT() != null;
+
             return new FunctionLookup(
                 location(ctx.start, ctx.stop),
                 identifierText,
                 (Expression) visit(expr),
                 null,
-                ctx.QDOT() != null || options.isRelaxNullPointers()
+                guarded
             );
         }
 

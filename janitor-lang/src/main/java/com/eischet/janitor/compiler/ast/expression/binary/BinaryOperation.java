@@ -43,7 +43,8 @@ public abstract class BinaryOperation extends AstNode implements Expression {
         process.setCurrentLocation(getLocation());
         final JanitorObject leftObject = left.evaluate(process);
         final JanitorObject rightObject = right.evaluate(process);
-        process.trace(() -> "evaluating " + this + " with left = " + left + " -> " + leftObject + ", right = " + right + " -> " + rightObject);
+        process.trace(() -> String.format("evaluating %s with left = %s ==> %s [%s] -- right = %s ==> %s [%s]",
+                this, left, leftObject, simpleClassNameOf(leftObject),  right, rightObject, simpleClassNameOf(rightObject)));
         if (leftObject == null || rightObject == null) {
             throw new JanitorArgumentException(process, String.format("null value in binary operation: left=%s=>%s, right=%s=>%s", left, leftObject, right, rightObject));
         }

@@ -38,7 +38,6 @@ public class FilterScript implements FilterPredicate {
     public FilterScript(final JanitorEnvironment env, final String name, final String source) throws JanitorCompilerException {
         this.name = name;
         runtime = new SLFLoggingRuntime(env, log);
-        runtime.getCompilerSettings().setRelaxNullPointers(true);
         script = new JanitorScript(runtime, "filter", source);
         this.globalsProvider = null;
         this.explicitBind = false; // TODO: remove this flag once this constructor has been removed!
@@ -48,7 +47,6 @@ public class FilterScript implements FilterPredicate {
         this.name = name;
         runtime = new SLFLoggingRuntime(env, log);
         this.globalsProvider = globalsProvider;
-        runtime.getCompilerSettings().setRelaxNullPointers(true);
         script = new JanitorScript(runtime, "filter", source);
         explicitBind = true;
     }
