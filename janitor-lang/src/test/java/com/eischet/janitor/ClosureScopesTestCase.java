@@ -11,11 +11,8 @@ public class ClosureScopesTestCase {
 
     @Test
     public void testCaptureArgumentScopes() throws Exception {
-        // TODO: this should work fine, but throws: name 'arg' is not defined
-        // Likely cause: while the outside scope is captured, the arg scope is not
-
         final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
-
+        // old workaround: reassign function argument to get it into the propers scope
         final RunnableScript script = runtime.compile("capturingWorkaround", """
                 function foo(arg) {
                     bar = arg;
@@ -26,8 +23,8 @@ public class ClosureScopesTestCase {
                 """);
         script.run();
         assertEquals("17\n", runtime.getAllOutput());
-
-        // This now works, thanks to Block::executeFunctionCall, which finally improves closure scope handling:
+        // This now works, thanks to Block::executeFunctionCall, which finally improves closure scope handling.
+        // The problem was that arguments are bound into a scope, but the block created yet another additional scope.
         runtime.resetOutput();
         final RunnableScript script2 = runtime.compile("capturing", """
                 function foo(arg) {
@@ -44,10 +41,8 @@ public class ClosureScopesTestCase {
     }
 
     @Test
-    @Disabled // TODO: re-enable this
+    @Disabled // TODO: re-enable this; multiple invocations of function that return functions do not work correctly... clobbered scopes!?
     public void testFreshScopePerInvocation() throws Exception {
-        // TODO: multiple invocations of function that return functions do not work correctly... clobbered scopes!?
-
         final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
         final RunnableScript script = runtime.compile("capturing", """
                 function foo(prefix) {
@@ -61,7 +56,6 @@ public class ClosureScopesTestCase {
                 """);
         script.run();
         assertEquals("ax\nbx\nax\n", runtime.getAllOutput());
-
     }
 
 }
