@@ -56,6 +56,20 @@ public class Block extends Statement implements JsonExportableList {
         }
     }
 
+    /**
+     * Execute the block as part of a function call, which means that the caller manages variables' nesting etc.!
+     *
+     * @param process the current script process
+     * @throws JanitorRuntimeException on errors
+     * @throws JanitorControlFlowException on errors
+     */
+    public void executeFunctionCall(final JanitorScriptProcess process) throws JanitorRuntimeException, JanitorControlFlowException {
+        for (final Statement statement : getStatements()) {
+            statement.execute(process);
+        }
+    }
+
+
     @Override
     public void writeJson(JsonOutputStream producer) throws JsonException {
         producer.beginArray();

@@ -463,7 +463,7 @@ public class Scope implements JanitorObject {
 
     /**
      * Define truthiness for a scope: it is not empty.
-     * This is probably never going the be called by anyone, but I like how this maps to my mental model of scope = object.
+     * This is probably never going to be called by anyone, but I like how this maps to my mental model of scope = object.
      *
      * @return true if not-empty.
      */
@@ -507,14 +507,21 @@ public class Scope implements JanitorObject {
     }
 
     /**
-     * Tell this scope that it has been captured by a closure.
+     * Capture local variables for a closure.
      *
-     * @return this scope
+     * @return a closure scope
      */
     public Scope capture() {
+        return this;
+        /* LATER: can we "capture" the scope in a more intelligent way? (or in a less stupid way, at least?)
+        final Scope myClone = new Scope(env, location, this, moduleScope);
+        myClone.variables.putAll(variables);
+        return myClone;
+         */
+        // return new Scope.captureOf(this);
         // boolean heldByClosure = true;
         // hier muss ggf. noch was getan werden, damit wir einen Scope nicht leer räumen, der noch in Benutzung ist.
-        return this;
+        // ALT: return this;
     }
 
     /**

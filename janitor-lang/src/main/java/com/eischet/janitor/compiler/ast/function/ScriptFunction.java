@@ -60,10 +60,10 @@ public class ScriptFunction extends AstNode implements Expression, JanitorObject
     }
 
     /**
-     * Get the module scope of the function.
+     * Set the module scope of the function.
      * TODO: why is this currently not used, and what would happen if it were?
      *
-     * @param moduleScope
+     * @param moduleScope set the module scope
      */
     public void setModuleScope(final Scope moduleScope) {
         // System.out.println("function " + name + " received module scope " + moduleScope);
@@ -102,8 +102,16 @@ public class ScriptFunction extends AstNode implements Expression, JanitorObject
                 process.pushClosureScope(closureScope);
                 for (int i = 0; i < parameterNames.size(); i++) {
                     process.getCurrentScope().bind(process, parameterNames.get(i), arguments.get(i).janitorUnpack());
+                    /*
+                    if (closureScope != null) {
+                        // Bind this to the closure scope, too, so it can later be referenced.
+                        // Yes, having this here is a sign that the scoping needs more work in general...
+                        closureScope.bind(process, parameterNames.get(i), arguments.get(i).janitorUnpack());
+                    }
+
+                     */
                 }
-                block.execute(process);
+                block.executeFunctionCall(process);
             } finally {
                 process.popClosureScope(closureScope);
                 process.exitBlock();
