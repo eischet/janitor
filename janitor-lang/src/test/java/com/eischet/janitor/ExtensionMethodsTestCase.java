@@ -16,8 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test/demonstrate adding properties and methods to built-in classes.
@@ -72,6 +71,9 @@ public class ExtensionMethodsTestCase {
         RT.setTraceListener(message -> System.out.println("TRACE: " + message));
 
         assertThrows(JanitorNameException.class, script2::run); // can't work, because there's no such property
+
+        assertFalse(ENV.getBuiltinTypes().internals().getStringDispatcher().has("numberOfDigits"));
+
         ENV.getBuiltinTypes().internals().getStringDispatcher().addLongProperty("numberOfDigits", (self) -> self.janitorGetHostValue().codePoints().filter(Character::isDigit).count());
         assertEquals(12L, script2.run().janitorGetHostValue()); // now it works
 
