@@ -30,6 +30,15 @@ import java.util.List;
  */
 public class JanitorRepl {
 
+    // figlet -f small janitor
+    private static final String LOGO = """
+               _           _ _
+              (_)__ _ _ _ (_) |_ ___ _ _
+              | / _` | ' \\| |  _/ _ \\ '_|
+             _/ \\__,_|_||_|_|\\__\\___/_|
+            |__/
+            """;
+
     private final ScriptModule module;
     private final Scope globalScope;
     private final JanitorRuntime runtime;

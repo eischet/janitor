@@ -60,7 +60,11 @@ public class FunctionLookup extends Statement implements Expression, JsonExporta
     public JanitorObject evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException {
         process.setCurrentLocation(getLocation());
         JanitorObject function = null;
+
+        process.trace(() -> String.format("this=%s; evaluate onExpression=%s, functionName=%s, guarded=%s", this, onExpression, functionName, guarded));
+
         if (onExpression != null) {
+            process.trace(() -> "top");
             process.trace(() -> "looking up function from expression " + onExpression);
             final JanitorObject object = onExpression.evaluate(process);
             if (object == null) {
@@ -90,14 +94,21 @@ public class FunctionLookup extends Statement implements Expression, JsonExporta
 
 
         } else if (functionName != null) {
+            process.trace(() -> "bottom");
             process.trace(() -> "looking up function '" + functionName + "' from scopes");
             function = process.lookup(functionName);
         }
+
+        process.trace(() -> "check-1");
+
 
         if (expressionList == null && function instanceof JConstant) {
             process.trace(() -> "the 'function' is a constant and there's no expr. list --> returning it");
             return function;
         }
+
+        process.trace(() -> "check-2");
+
         if (expressionList == null && function != null) { // war: instanceof MangedObject, mal gucken ob das noch funktioniert...
             process.trace(() -> "the 'function' is a managed object and there's no expr. list --> returning it");
             return function;
@@ -130,12 +141,14 @@ public class FunctionLookup extends Statement implements Expression, JsonExporta
             //runningScript.trace(() -> "function call result: " + result);
             //return result;
         }
+        process.trace(() -> "check-3");
 
         if (function != null) {
             final JanitorObject finalFunction2 = function;
             process.trace(() -> "function LOOKUP: returning the variable " + finalFunction2);
             return function;
         }
+        process.trace(() -> "check-4");
 
         throw new JanitorNameException(process, "invalid callable: " + functionName + " (name: " + functionName + ")");
     }

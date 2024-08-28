@@ -79,6 +79,7 @@ public abstract class AbstractScriptProcess implements JanitorScriptProcess {
     public void pushClosureScope(final Scope closureScope) {
         // do we really want to do this?
         closureScopes.add(closureScope);
+        trace(() -> "pushed closure scope " + getCurrentLocation().getColumn());
     }
 
     @Override
@@ -86,7 +87,7 @@ public abstract class AbstractScriptProcess implements JanitorScriptProcess {
         // do we really want to do this?
         final Scope poppedScope = closureScopes.remove(closureScopes.size()-1);
         if (poppedScope != closureScope) {
-            log.warn("popClosureScope: poppedScope = {}, but expected {}", poppedScope, closureScope);
+            trace(() -> String.format("popClosureScope: poppedScope = %s, but expected %s", poppedScope, closureScope));
         }
     }
 

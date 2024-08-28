@@ -13,6 +13,8 @@ import com.eischet.janitor.runtime.BaseRuntime;
 import com.eischet.janitor.runtime.JanitorFormattingGerman;
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -22,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  * Janitor users are expected to add a few of those here and there, so this process should be easy and straightforward.
  *
  */
+@Execution(ExecutionMode.SAME_THREAD)
 public class ExtensionMethodsTestCase {
 
     /**
@@ -65,6 +68,9 @@ public class ExtensionMethodsTestCase {
         // add a property to the string class
         final @Language("Janitor") String scriptSource2 = "return ('cbaa23' + 'thx1138').numberOfDigits * 2;";
         final RunnableScript script2 = RT.compile("test", scriptSource2);
+
+        RT.setTraceListener(message -> System.out.println("TRACE: " + message));
+
         assertThrows(JanitorNameException.class, script2::run); // can't work, because there's no such property
         ENV.getBuiltinTypes().internals().getStringDispatcher().addLongProperty("numberOfDigits", (self) -> self.janitorGetHostValue().codePoints().filter(Character::isDigit).count());
         assertEquals(12L, script2.run().janitorGetHostValue()); // now it works
