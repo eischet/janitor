@@ -320,5 +320,14 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
         }
         return null;
     }
+
+    public AttributeLookupHandler<T> get(final String key) {
+        return map.get(key);
+    }
+
+    public boolean has(final String key) {
+        return map.containsKey(key);
+    }
+
     
 }
