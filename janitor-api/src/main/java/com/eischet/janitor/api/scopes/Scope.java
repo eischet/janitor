@@ -511,7 +511,7 @@ public class Scope implements JanitorObject {
      *
      * @return this scope
      */
-    public Scope hold() {
+    public Scope capture() {
         // boolean heldByClosure = true;
         // hier muss ggf. noch was getan werden, damit wir einen Scope nicht leer räumen, der noch in Benutzung ist.
         return this;
