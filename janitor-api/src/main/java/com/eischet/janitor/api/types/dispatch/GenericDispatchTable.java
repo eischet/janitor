@@ -69,6 +69,19 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
     }
 
     /**
+     * Add a method to the dispatch table that returns (Janitor) 'null'.
+     * This is just a shorthand for addMethod where you could also return null manually.
+     * @param name the method's name
+     * @param method the method
+     */
+    public void addVoidMethod(final String name, final JVoidMethod<T> method) {
+        map.put(name, (instance, process) -> new JBoundMethod<>(name, instance, (self, p1, arguments) -> {
+            method.call(instance, p1, arguments);
+            return JNull.NULL;
+        }));
+    }
+
+    /**
      * Adds a read-only integer property.
      * @param name property name
      * @param getter property getter
