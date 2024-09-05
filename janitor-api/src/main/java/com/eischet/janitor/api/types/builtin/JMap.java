@@ -12,7 +12,7 @@ import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 import com.eischet.janitor.api.types.JAssignable;
 import com.eischet.janitor.api.types.JIterable;
 import com.eischet.janitor.api.types.JanitorObject;
-import com.eischet.janitor.api.types.wrapped.JanitorWrapperDispatchTable;
+import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import com.eischet.janitor.toolbox.json.api.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -298,7 +298,7 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
         producer.endObject();
     }
 
-    public static JMap newInstance(final JanitorWrapperDispatchTable<Map<JanitorObject, JanitorObject>> dispatch, BuiltinTypes builtins) {
+    public static JMap newInstance(final WrapperDispatchTable<Map<JanitorObject, JanitorObject>> dispatch, BuiltinTypes builtins) {
         return new JMap(dispatch, builtins);
     }
 

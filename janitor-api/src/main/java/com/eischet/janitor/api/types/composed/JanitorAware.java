@@ -1,6 +1,7 @@
 package com.eischet.janitor.api.types.composed;
 
 import com.eischet.janitor.api.types.JanitorObject;
+import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 
 /**
  * Interface for objects that can be converted to a JanitorObject.
@@ -24,7 +25,7 @@ import com.eischet.janitor.api.types.JanitorObject;
  * </p>
  *
  * @see com.eischet.janitor.api.types.wrapped.JanitorWrapper
- * @see com.eischet.janitor.api.types.wrapped.JanitorWrapperDispatchTable
+ * @see WrapperDispatchTable
  */
 public interface JanitorAware {
 

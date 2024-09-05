@@ -1,7 +1,7 @@
 package com.eischet.janitor.api.types.builtin;
 
 import com.eischet.janitor.api.types.TemporaryAssignable;
-import com.eischet.janitor.api.types.wrapped.JanitorWrapperDispatchTable;
+import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 import com.eischet.janitor.api.types.JIterable;
@@ -46,7 +46,7 @@ public class JList extends JanitorWrapper<List<JanitorObject>> implements JItera
      * @param objects initial list
      * @return this
      */
-    public static JList newInstance(final JanitorWrapperDispatchTable<List<JanitorObject>> listDispatcher, final List<JanitorObject> objects) {
+    public static JList newInstance(final WrapperDispatchTable<List<JanitorObject>> listDispatcher, final List<JanitorObject> objects) {
         return new JList(listDispatcher, objects);
     }
 

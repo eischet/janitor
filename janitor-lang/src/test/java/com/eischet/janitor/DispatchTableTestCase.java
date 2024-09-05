@@ -4,7 +4,7 @@ import com.eischet.janitor.api.RunnableScript;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
-import com.eischet.janitor.api.types.dispatch.RegularDispatchTable;
+import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import com.eischet.janitor.runtime.OutputCatchingTestRuntime;
 import org.junit.jupiter.api.Test;
 
@@ -64,7 +64,7 @@ public class DispatchTableTestCase {
      */
     private static class SimpleObject extends JanitorComposed<SimpleObject> {
 
-        private static final RegularDispatchTable<SimpleObject> DISPATCH = new RegularDispatchTable<>();
+        private static final DispatchTable<SimpleObject> DISPATCH = new DispatchTable<>();
 
         static {
             DISPATCH.addNullableBooleanProperty("frobnicate", SimpleObject::getFrobnicate, SimpleObject::setFrobnicate);

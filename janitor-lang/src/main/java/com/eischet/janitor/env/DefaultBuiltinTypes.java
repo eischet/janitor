@@ -4,9 +4,9 @@ import com.eischet.janitor.api.types.BuiltinTypes;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.*;
-import com.eischet.janitor.api.types.dispatch.RegularDispatchTable;
+import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
-import com.eischet.janitor.api.types.wrapped.JanitorWrapperDispatchTable;
+import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import com.eischet.janitor.compiler.JanitorAntlrCompiler;
 import com.eischet.janitor.runtime.DateTimeUtilities;
 import org.jetbrains.annotations.NotNull;
@@ -31,25 +31,25 @@ public class DefaultBuiltinTypes implements BuiltinTypes {
      */
     private static final int MAX_INTERNED_LENGTH = 10;
 
-    protected final RegularDispatchTable<JanitorObject> baseDispatcher = new RegularDispatchTable<>();
+    protected final DispatchTable<JanitorObject> baseDispatcher = new DispatchTable<>();
 
-    protected final JanitorWrapperDispatchTable<Map<JanitorObject, JanitorObject>> mapDispatcher = new JanitorWrapperDispatchTable<>();
-    protected final RegularDispatchTable<JString> stringDispatcher = new RegularDispatchTable<>(baseDispatcher, it -> it);
+    protected final WrapperDispatchTable<Map<JanitorObject, JanitorObject>> mapDispatcher = new WrapperDispatchTable<>();
+    protected final DispatchTable<JString> stringDispatcher = new DispatchTable<>(baseDispatcher, it -> it);
 
     // TODO: figure out why I cannot write Dispatcher<JMap> here. I keep forgetting the subleties of the Java generics system...
     // I'm sure it's something with blah super foo extends lalala that everybody but me knows about. ;-)
 
 
 
-    protected final JanitorWrapperDispatchTable<List<JanitorObject>> listDispatcher = new JanitorWrapperDispatchTable<>(baseDispatcher, it -> it);
-    protected final JanitorWrapperDispatchTable<Set<JanitorObject>> setDispatcher = new JanitorWrapperDispatchTable<>(baseDispatcher, it -> it);
-    protected final JanitorWrapperDispatchTable<Long> intDispatcher = new JanitorWrapperDispatchTable<>(baseDispatcher, it -> it);
-    protected final JanitorWrapperDispatchTable<byte[]> binaryDispatcher = new JanitorWrapperDispatchTable<>(baseDispatcher, it -> it);
-    protected final JanitorWrapperDispatchTable<Double> floatDispatcher = new JanitorWrapperDispatchTable<>(baseDispatcher, it -> it);
-    protected final JanitorWrapperDispatchTable<Pattern> regexDispatcher = new JanitorWrapperDispatchTable<>(baseDispatcher, it -> it);
-    protected final RegularDispatchTable<JDuration> durationDispatch = new RegularDispatchTable<>(baseDispatcher, it -> it);
-    protected final RegularDispatchTable<JDateTime> dateTimeDispatch = new RegularDispatchTable<>(baseDispatcher, it -> it);
-    protected final RegularDispatchTable<JDate> dateDispatch = new RegularDispatchTable<>(baseDispatcher, it -> it);
+    protected final WrapperDispatchTable<List<JanitorObject>> listDispatcher = new WrapperDispatchTable<>(baseDispatcher, it -> it);
+    protected final WrapperDispatchTable<Set<JanitorObject>> setDispatcher = new WrapperDispatchTable<>(baseDispatcher, it -> it);
+    protected final WrapperDispatchTable<Long> intDispatcher = new WrapperDispatchTable<>(baseDispatcher, it -> it);
+    protected final WrapperDispatchTable<byte[]> binaryDispatcher = new WrapperDispatchTable<>(baseDispatcher, it -> it);
+    protected final WrapperDispatchTable<Double> floatDispatcher = new WrapperDispatchTable<>(baseDispatcher, it -> it);
+    protected final WrapperDispatchTable<Pattern> regexDispatcher = new WrapperDispatchTable<>(baseDispatcher, it -> it);
+    protected final DispatchTable<JDuration> durationDispatch = new DispatchTable<>(baseDispatcher, it -> it);
+    protected final DispatchTable<JDateTime> dateTimeDispatch = new DispatchTable<>(baseDispatcher, it -> it);
+    protected final DispatchTable<JDate> dateDispatch = new DispatchTable<>(baseDispatcher, it -> it);
 
 
     private final JString emptyString;
@@ -334,47 +334,47 @@ public class DefaultBuiltinTypes implements BuiltinTypes {
      */
     public class Internals {
 
-        public RegularDispatchTable<JanitorObject> getBaseDispatcher() {
+        public DispatchTable<JanitorObject> getBaseDispatcher() {
             return baseDispatcher;
         }
 
-        public JanitorWrapperDispatchTable<Map<JanitorObject, JanitorObject>> getMapDispatcher() {
+        public WrapperDispatchTable<Map<JanitorObject, JanitorObject>> getMapDispatcher() {
             return mapDispatcher;
         }
 
-        public RegularDispatchTable<JString> getStringDispatcher() {
+        public DispatchTable<JString> getStringDispatcher() {
             return stringDispatcher;
         }
 
-        public JanitorWrapperDispatchTable<List<JanitorObject>> getListDispatcher() {
+        public WrapperDispatchTable<List<JanitorObject>> getListDispatcher() {
             return listDispatcher;
         }
 
-        public JanitorWrapperDispatchTable<Set<JanitorObject>> getSetDispatcher() {
+        public WrapperDispatchTable<Set<JanitorObject>> getSetDispatcher() {
             return setDispatcher;
         }
 
-        public JanitorWrapperDispatchTable<Long> getIntDispatcher() {
+        public WrapperDispatchTable<Long> getIntDispatcher() {
             return intDispatcher;
         }
 
-        public JanitorWrapperDispatchTable<byte[]> getBinaryDispatcher() {
+        public WrapperDispatchTable<byte[]> getBinaryDispatcher() {
             return binaryDispatcher;
         }
 
-        public JanitorWrapperDispatchTable<Double> getFloatDispatcher() {
+        public WrapperDispatchTable<Double> getFloatDispatcher() {
             return floatDispatcher;
         }
 
-        public JanitorWrapperDispatchTable<Pattern> getRegexDispatcher() {
+        public WrapperDispatchTable<Pattern> getRegexDispatcher() {
             return regexDispatcher;
         }
 
-        public RegularDispatchTable<JDuration> getDurationDispatch() {
+        public DispatchTable<JDuration> getDurationDispatch() {
             return durationDispatch;
         }
 
-        public RegularDispatchTable<JDateTime> getDateTimeDispatch() {
+        public DispatchTable<JDateTime> getDateTimeDispatch() {
             return dateTimeDispatch;
         }
 

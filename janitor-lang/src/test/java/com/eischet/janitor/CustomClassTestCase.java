@@ -8,7 +8,7 @@ import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.JNull;
 import com.eischet.janitor.api.types.builtin.JString;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
-import com.eischet.janitor.api.types.dispatch.RegularDispatchTable;
+import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import com.eischet.janitor.runtime.OutputCatchingTestRuntime;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
@@ -30,7 +30,7 @@ public class CustomClassTestCase {
     public static class Dog extends JanitorComposed<Dog> {
 
         // Create a dispatch table. This can be shared between all instances of a class, so make it static:
-        public static final RegularDispatchTable<Dog> DISPATCH = new RegularDispatchTable<>();
+        public static final DispatchTable<Dog> DISPATCH = new DispatchTable<>();
 
         // Define instance variables as usual (because they ARE just regular ones):
         // (These definitions are up here so you can see them before you look at the dispatch table next.
