@@ -174,7 +174,7 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
             return NUMB;
         }
         try {
-            return new FilterScript(this, name, code);
+            return new FilterScript(this, name, code, g -> {});
         } catch (JanitorCompilerException JanitorParserException) {
             warn("error compiling filter: " + code + ":" + JanitorParserException);
             // TODO: report an exception -> exception(JanitorParserException);

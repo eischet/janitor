@@ -1,9 +1,10 @@
-# 0.9.7, work in progress
+# 0.9.7, 2024-09-05
 
 Added basic syntax highlighters for ACE, TextMate and VS Code. Added a logo.
 Added several example scripts, some implementing challenges from sampleprograms.io.
 Remove the "CompilerSettings", which allowed to automatically turn "." into "?.", which
 was a bad idea from the start and caused subtle concurrency bugs in unit tests.
+Lots of test improvements, some refactorings.
 
 
 # 0.9.6, 2024-08-13
