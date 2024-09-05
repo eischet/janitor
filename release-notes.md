@@ -1,3 +1,8 @@
+# 0.9.8, 2024-09-05
+
+0.9.7 broke filter scripts with implicit objects in an app; restoring old behaviour.
+
+
 # 0.9.7, 2024-09-05
 
 Added basic syntax highlighters for ACE, TextMate and VS Code. Added a logo.
