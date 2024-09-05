@@ -173,8 +173,9 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
         if (code == null || code.isEmpty() || code.trim().isEmpty()) {
             return NUMB;
         }
+        // TODO accidentally broke the build here; add tests for old/new style filter scripts!
         try {
-            return new FilterScript(this, name, code, g -> {});
+            return new FilterScript(this, name, code);
         } catch (JanitorCompilerException JanitorParserException) {
             warn("error compiling filter: " + code + ":" + JanitorParserException);
             // TODO: report an exception -> exception(JanitorParserException);
