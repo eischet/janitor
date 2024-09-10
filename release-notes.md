@@ -1,3 +1,9 @@
+# 0.9.9, wip
+
+New 'md5' and 'sha256' methods on binary values to calculate checksums.
+Provide easier access to the dispatch tables for builtin types, though I'm not happy with having those implementation details in the API.
+
+
 # 0.9.8, 2024-09-05
 
 0.9.7 broke filter scripts with implicit objects in an app; restoring old behaviour.

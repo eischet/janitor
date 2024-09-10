@@ -98,6 +98,8 @@ public interface BuiltinTypes {
 
     @NotNull JDateTime dateTime(@NotNull LocalDateTime dateTime);
 
+    BuiltinTypeInternals internals();
+
     @NotNull JanitorObject nullableDateTimeFromLiteral(@Nullable String text);
 
     @NotNull JanitorObject nullableDateFromLiteral(@Nullable String text);

@@ -1,5 +1,6 @@
 package com.eischet.janitor.env;
 
+import com.eischet.janitor.api.types.BuiltinTypeInternals;
 import com.eischet.janitor.api.types.BuiltinTypes;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.types.JanitorObject;
@@ -140,6 +141,8 @@ public class DefaultBuiltinTypes implements BuiltinTypes {
         binaryDispatcher.addMethod("size", JBinaryClass::__size);
         binaryDispatcher.addStringProperty("string", wrapper -> wrapper.janitorIsTrue() ? new String(wrapper.janitorGetHostValue()) : "");
         binaryDispatcher.addIntegerProperty("length", wrapper -> wrapper.janitorGetHostValue() == null ? 0 : wrapper.janitorGetHostValue().length);
+        binaryDispatcher.addMethod("md5", JBinaryClass::__md5);
+        binaryDispatcher.addMethod("sha256", JBinaryClass::__sha256);
 
         durationDispatch.addLongProperty("seconds", JDuration::toSeconds);
         durationDispatch.addLongProperty("minutes", self -> self.toSeconds() / 60);
@@ -322,7 +325,8 @@ public class DefaultBuiltinTypes implements BuiltinTypes {
      *
      * @return internals
      */
-    public Internals internals() {
+    @Override
+    public BuiltinTypeInternals internals() {
         return new Internals();
     }
 
@@ -332,48 +336,59 @@ public class DefaultBuiltinTypes implements BuiltinTypes {
      * This is useful for extending the scripting runtime.</p>
      * <p>This class is separate from the JanitorDefaultBuiltins class only to avoid polluting its public API.</p>
      */
-    public class Internals {
+    public class Internals implements BuiltinTypeInternals {
 
+        @Override
         public DispatchTable<JanitorObject> getBaseDispatcher() {
             return baseDispatcher;
         }
 
+        @Override
         public WrapperDispatchTable<Map<JanitorObject, JanitorObject>> getMapDispatcher() {
             return mapDispatcher;
         }
 
+        @Override
         public DispatchTable<JString> getStringDispatcher() {
             return stringDispatcher;
         }
 
+        @Override
         public WrapperDispatchTable<List<JanitorObject>> getListDispatcher() {
             return listDispatcher;
         }
 
+        @Override
         public WrapperDispatchTable<Set<JanitorObject>> getSetDispatcher() {
             return setDispatcher;
         }
 
+        @Override
         public WrapperDispatchTable<Long> getIntDispatcher() {
             return intDispatcher;
         }
 
+        @Override
         public WrapperDispatchTable<byte[]> getBinaryDispatcher() {
             return binaryDispatcher;
         }
 
+        @Override
         public WrapperDispatchTable<Double> getFloatDispatcher() {
             return floatDispatcher;
         }
 
+        @Override
         public WrapperDispatchTable<Pattern> getRegexDispatcher() {
             return regexDispatcher;
         }
 
+        @Override
         public DispatchTable<JDuration> getDurationDispatch() {
             return durationDispatch;
         }
 
+        @Override
         public DispatchTable<JDateTime> getDateTimeDispatch() {
             return dateTimeDispatch;
         }
