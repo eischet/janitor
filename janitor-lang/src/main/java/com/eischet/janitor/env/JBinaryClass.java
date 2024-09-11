@@ -2,8 +2,6 @@ package com.eischet.janitor.env;
 
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
-import com.eischet.janitor.api.errors.runtime.JanitorNotImplementedException;
-import com.eischet.janitor.api.types.builtin.JNull;
 import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
@@ -91,17 +89,6 @@ public class JBinaryClass {
 
     // LATER: should we support all Java-supported algorithms from https://docs.oracle.com/en/java/javase/17/docs/specs/security/standard-names.html#messagedigest-algorithms ?
 
-    /**
-     * Calculate the MD5 checksum of the JBinary.
-     * @param self the JBinary
-     * @param process the running script
-     * @return the checksum, as a JString. Empty binary arrays return the empty string.
-     * @throws JanitorRuntimeException on errors
-     */
-    public static JString __md5(final JanitorWrapper<byte[]> self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
-        arguments.require(0);
-        return __hash("MD5", self, process);
-    }
 
     /**
      * Calculate the SHA-256 checksum of the JBinary.

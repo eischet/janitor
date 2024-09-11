@@ -141,7 +141,7 @@ public class DefaultBuiltinTypes implements BuiltinTypes {
         binaryDispatcher.addMethod("size", JBinaryClass::__size);
         binaryDispatcher.addStringProperty("string", wrapper -> wrapper.janitorIsTrue() ? new String(wrapper.janitorGetHostValue()) : "");
         binaryDispatcher.addIntegerProperty("length", wrapper -> wrapper.janitorGetHostValue() == null ? 0 : wrapper.janitorGetHostValue().length);
-        binaryDispatcher.addMethod("md5", JBinaryClass::__md5);
+
         binaryDispatcher.addMethod("sha256", JBinaryClass::__sha256);
 
         durationDispatch.addLongProperty("seconds", JDuration::toSeconds);
