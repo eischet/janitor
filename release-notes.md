@@ -1,4 +1,4 @@
-# 0.9.9, wip
+# 0.9.9, 2024-09-11
 
 New 'md5' and 'sha256' methods on binary values to calculate checksums.
 Provide easier access to the dispatch tables for builtin types, though I'm not happy with having those implementation details in the API.

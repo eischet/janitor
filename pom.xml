@@ -5,7 +5,7 @@
 
     <groupId>com.eischet.janitor</groupId>
     <artifactId>janitor-project</artifactId>
-    <version>0.9.8</version>
+    <version>0.9.9</version>
 
     <name>Janitor</name>
     <description>A simple scripting language for the JVM.</description>
