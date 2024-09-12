@@ -1,11 +1,18 @@
 package com.eischet.janitor.api.types.composed;
 
+import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
+import com.eischet.janitor.toolbox.json.api.JsonException;
+import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
+import com.eischet.janitor.toolbox.json.api.JsonWriter;
+import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.function.Supplier;
 
 /**
  * Base class for "composing" Janitor objects in Java.
@@ -19,7 +26,7 @@ import org.jetbrains.annotations.Nullable;
  *
  * @param <T> the type of the subclass you supply, e.g. Subclass extends JanitorComposed&lt;Subclass&gt;.
  */
-public abstract class JanitorComposed<T extends JanitorComposed<T>> implements JanitorObject {
+public abstract class JanitorComposed<T extends JanitorComposed<T>> implements JanitorObject, JsonWriter {
     protected final Dispatcher<T> dispatcher;
 
     /**
@@ -53,6 +60,20 @@ public abstract class JanitorComposed<T extends JanitorComposed<T>> implements J
     @SuppressWarnings("unchecked")
     protected T self() {
         return (T) this;
+    }
+
+    public String toJson(final JanitorEnvironment env) throws JsonException {
+        return dispatcher.writeToJson(env, self());
+    }
+
+    static <X extends JanitorComposed<X>> X fromJson(final JanitorEnvironment env, final Supplier<X> constructor, @Language("JSON") final String json) throws JsonException {
+        final X instance = constructor.get();
+        return instance.dispatcher.readFromJson(env, () -> instance, json);
+    }
+
+    @Override
+    public void writeJson(final JsonOutputStream producer) throws JsonException {
+        dispatcher.writeToJson(producer, self());
     }
 
 }

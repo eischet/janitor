@@ -1,3 +1,8 @@
+# 0.9.10, work in progress
+
+Provide automatic conversion to/from JSON in classes that extends JanitorComposed<T>, base on the existing dispatch tables.  Basic cases work, but overall the feature needs some more thought.
+
+
 # 0.9.9, 2024-09-11
 
 New 'md5' and 'sha256' methods on binary values to calculate checksums.

@@ -132,6 +132,7 @@ public class DefaultBuiltinTypes implements BuiltinTypes {
         setDispatcher.addMethod("isEmpty", JSetClass::__isEmpty);
 
         intDispatcher.addLongProperty("int", JanitorWrapper::janitorGetHostValue);
+        // intDispatcher.addDateTimeProperty("epoch", wrapper -> DateTimeUtilities.localFromEpochSeconds(wrapper.janitorGetHostValue()));
         intDispatcher.addObjectProperty("epoch", wrapper -> dateTime(DateTimeUtilities.localFromEpochSeconds(wrapper.janitorGetHostValue())));
 
         floatDispatcher.addLongProperty("int", doubleJanitorWrapper -> doubleJanitorWrapper.janitorGetHostValue().longValue());
