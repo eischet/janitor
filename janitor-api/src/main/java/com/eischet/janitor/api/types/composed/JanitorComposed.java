@@ -5,9 +5,7 @@ import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
-import com.eischet.janitor.toolbox.json.api.JsonException;
-import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
-import com.eischet.janitor.toolbox.json.api.JsonWriter;
+import com.eischet.janitor.toolbox.json.api.*;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -26,7 +24,7 @@ import java.util.function.Supplier;
  *
  * @param <T> the type of the subclass you supply, e.g. Subclass extends JanitorComposed&lt;Subclass&gt;.
  */
-public abstract class JanitorComposed<T extends JanitorComposed<T>> implements JanitorObject, JsonWriter {
+public abstract class JanitorComposed<T extends JanitorComposed<T>> implements JanitorObject, JsonWriter, JsonReader {
     protected final Dispatcher<T> dispatcher;
 
     /**
@@ -76,4 +74,8 @@ public abstract class JanitorComposed<T extends JanitorComposed<T>> implements J
         dispatcher.writeToJson(producer, self());
     }
 
+    @Override
+    public void readJson(final JsonInputStream stream) throws JsonException {
+        dispatcher.readFromJson(this::self, stream); // we simply delegate this to our own dispatcher, which can do it for us
+    }
 }

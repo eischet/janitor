@@ -5,7 +5,7 @@
 
     <groupId>com.eischet.janitor</groupId>
     <artifactId>janitor-project</artifactId>
-    <version>0.9.9</version>
+    <version>0.9.9-SNAPSHOT</version>
 
     <name>Janitor</name>
     <description>A simple scripting language for the JVM.</description>
@@ -116,16 +116,44 @@
         </plugins>
     </build>
 
-    <!--
-        first, publish to Github; later: to Maven Central (too)
-        https://docs.github.com/en/enterprise-cloud@latest/actions/publishing-packages/publishing-java-packages-with-maven
-    -->
-    <distributionManagement>
-        <repository>
-            <id>github</id>
-            <name>Github Packages</name>
-            <url>https://maven.pkg.github.com/eischet/janitor</url>
-        </repository>
-    </distributionManagement>
+    <profiles>
+        <!--
+            first, publish to Github; later: to Maven Central (too)
+            https://docs.github.com/en/enterprise-cloud@latest/actions/publishing-packages/publishing-java-packages-with-maven
+        -->
+        <profile>
+            <id>deploy-github</id>
+            <distributionManagement>
+                <repository>
+                    <id>github</id>
+                    <name>Github Packages</name>
+                    <url>https://maven.pkg.github.com/eischet/janitor</url>
+                </repository>
+                <snapshotRepository>
+                    <id>repo-eischet-snapshots</id>
+                    <name>Eischet Software Repository</name>
+                    <url>https://repo.srv.eischet.net/snapshots</url>
+                </snapshotRepository>
+            </distributionManagement>
+        </profile>
+        <!-- profile for deploying to the internal repository -->
+        <profile>
+            <id>deploy-internal</id>
+            <distributionManagement>
+                <repository>
+                    <id>repo-eischet-releases</id>
+                    <name>Eischet Software Repository</name>
+                    <url>https://repo.srv.eischet.net/releases</url>
+                </repository>
+                <snapshotRepository>
+                    <id>repo-eischet-snapshots</id>
+                    <name>Eischet Software Repository</name>
+                    <url>https://repo.srv.eischet.net/snapshots</url>
+                </snapshotRepository>
+
+            </distributionManagement>
+        </profile>
+    </profiles>
+
 
 </project>

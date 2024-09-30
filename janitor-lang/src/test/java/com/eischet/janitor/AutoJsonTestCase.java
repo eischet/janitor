@@ -2,6 +2,7 @@ package com.eischet.janitor;
 
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
+import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.runtime.OutputCatchingTestRuntime;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonInputStream;
@@ -188,6 +189,10 @@ public class AutoJsonTestCase {
             super(DISPATCH);
         }
 
+        public Mixed(final Dispatcher<Mixed> dispatcher) {
+            super(dispatcher);
+        }
+
         public ThingWithListProp getA() {
             return a;
         }
@@ -204,6 +209,73 @@ public class AutoJsonTestCase {
             this.b = b;
         }
     }
+
+
+    @Test
+    public void testMixedClass() throws JsonException {
+        @Language("JSON") final String MY_UGLY_LIST = "{\"a\":{\"list\":[\"a\",\"b\",\"c\",\"d\"]},\"b\":{\"foo\":\"baz\"}}";
+
+        final Mixed mixer = new Mixed();
+        mixer.setA(new ThingWithListProp());
+        mixer.setB(new SimpleObject());
+        mixer.getA().setList(List.of("a", "b", "c", "d"));
+        mixer.getB().setFoo("baz");
+
+        assertEquals(MY_UGLY_LIST, mixer.toJson(rt.getEnvironment()));
+
+
+        final Mixed read = Mixed.DISPATCH.readFromJson(rt.getEnvironment(), Mixed::new, MY_UGLY_LIST);
+        assertNull(read.getB().getBar());
+        assertEquals(4, read.getA().getList().size());
+        assertEquals("baz", read.getB().getFoo());
+        assertEquals(List.of("a", "b", "c", "d"), read.getA().getList());
+
+    }
+
+
+    private static class Inheritor extends Mixed {
+        private static final DispatchTable<Inheritor> DISPATCH = new DispatchTable<>();
+        static {
+            DISPATCH.addStringProperty("gumbo", Inheritor::getGumbo, Inheritor::setGumbo);
+        }
+
+        public Inheritor() {
+            super(Dispatcher.inherit(Mixed.DISPATCH, DISPATCH));
+        }
+
+        private String gumbo;
+
+        public String getGumbo() {
+            return gumbo;
+        }
+
+        public void setGumbo(final String gumbo) {
+            this.gumbo = gumbo;
+        }
+    }
+
+    /* TODO: same test as above, but make it work for "subclasses"
+    @Test
+    public void testMixedClassInheritor() throws JsonException {
+        @Language("JSON") final String MY_UGLY_LIST = "{\"a\":{\"list\":[\"a\",\"b\",\"c\",\"d\"]},\"b\":{\"foo\":\"baz\"}}";
+
+        final Inheritor mixer = new Inheritor();
+        mixer.setA(new ThingWithListProp());
+        mixer.setB(new SimpleObject());
+        mixer.getA().setList(List.of("a", "b", "c", "d"));
+        mixer.getB().setFoo("baz");
+
+        assertEquals(MY_UGLY_LIST, mixer.toJson(rt.getEnvironment()));
+
+
+        final Inheritor read = Inheritor.DISPATCH.readFromJson(rt.getEnvironment(), Inheritor::new, MY_UGLY_LIST);
+        assertNull(read.getB().getBar());
+        assertEquals(4, read.getA().getList().size());
+        assertEquals("baz", read.getB().getFoo());
+        assertEquals(List.of("a", "b", "c", "d"), read.getA().getList());
+
+    }
+     */
 
 
 

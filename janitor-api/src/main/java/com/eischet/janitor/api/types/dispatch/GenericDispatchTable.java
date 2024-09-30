@@ -11,10 +11,7 @@ import com.eischet.janitor.api.types.functions.JConstructor;
 import com.eischet.janitor.api.types.functions.JUnboundMethod;
 import com.eischet.janitor.api.types.functions.JVoidMethod;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
-import com.eischet.janitor.toolbox.json.api.JsonException;
-import com.eischet.janitor.toolbox.json.api.JsonInputStream;
-import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
-import com.eischet.janitor.toolbox.json.api.JsonWriter;
+import com.eischet.janitor.toolbox.json.api.*;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -43,19 +40,43 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
     private final DispatchDelegate<T> parentLookupHandler;
     private final Map<String, AttributeLookupHandler<T>> map = new HashMap<>();
     private final List<Attribute<T>> attributes = new ArrayList<>();
-    // private final Dispatcher<?> parentDispatcher; // for json purposes
     private JConstructor<T> constructor;
+    private final ParentAttributeReader<T> parentAttributeReader;
+    private final ParentAttributeWriter<T> parentAttributeWriter;
+
+
+    @FunctionalInterface
+    private interface ParentAttributeReader<T> {
+        boolean readAttribute(final JsonInputStream stream, final String key, final T instance) throws JsonException;
+    }
+
+    @FunctionalInterface
+    private interface ParentAttributeWriter<T> {
+        void writeToJson(final JsonOutputStream stream, T instance) throws JsonException;
+    }
 
     public GenericDispatchTable() {
         parentLookupHandler = null;
-        // parentDispatcher = null;
+        parentAttributeReader = null;
+        parentAttributeWriter = null;
     }
-
 
     public <P extends JanitorObject> GenericDispatchTable(final Dispatcher<P> parent, final Function<T, P> caster) {
         parentLookupHandler = (instance, process, name) -> parent.dispatch(caster.apply(instance), process, name);
-        //parentDispatcher = parent;
-        // parentCaster = caster;
+        // not tested yet: can we use this to delegate
+        parentAttributeReader = (stream, key, instance) -> {
+            if (parent instanceof GenericDispatchTable<P> parentDispatch) {
+                return parentDispatch.readAttribute(stream, key, caster.apply(instance));
+            } else {
+                return false;
+            }
+        };
+        parentAttributeWriter = (stream, instance) -> {
+            System.out.println("parent is an instance of " + parent.getClass());
+            if (parent instanceof GenericDispatchTable<P> parentDispatch) {
+                parentDispatch.writeMyAttributes(stream, caster.apply(instance));
+            }
+        };
     }
 
     public <X> JsonAdapter<T> adapt(final @NotNull JsonSupport<X> delegate, final @NotNull Function<T, X> getter, final @Nullable BiConsumer<T, X> setter) {
@@ -419,7 +440,12 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
             @Override
             public @NotNull X read(final @NotNull JsonInputStream stream) throws JsonException {
                 final X instance = constructor.get();
-                stream.skipValue(); // TODO: actually read stuff, after figuring out how
+                if (instance instanceof JsonReader jsonReader) {
+                    jsonReader.readJson(stream);
+                } else {
+                    // there might be more ways to read json we need to implement...
+                    stream.skipValue();
+                }
                 return instance;
             }
 
@@ -427,8 +453,9 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
             public void write(final @NotNull JsonOutputStream stream, final @NotNull X object) throws JsonException {
                 if (object instanceof JsonWriter writer) {
                     writer.writeJson(stream);
+                } else {
+                    throw new JsonException("Cannot serialize " + object + " [" + object.getClass().getSimpleName() + "]");
                 }
-                throw new JsonException("Cannot serialize " + object + " [" + object.getClass().getSimpleName() + "]");
             }
         };
     }
@@ -483,6 +510,14 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
 
     public void writeToJson(final JsonOutputStream stream, final T instance) throws JsonException {
         stream.beginObject();
+        if (parentAttributeWriter != null) {
+            parentAttributeWriter.writeToJson(stream, instance);
+        }
+        writeMyAttributes(stream, instance);
+        stream.endObject();
+    }
+
+    private void writeMyAttributes(final JsonOutputStream stream, final T instance) throws JsonException {
         for (final Attribute<T> attribute : attributes) {
             @Nullable final JsonAdapter<T> attributeAdapter = attribute.jsonAdapter;
             if (attributeAdapter != null) {
@@ -492,7 +527,7 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
                 }
             }
         }
-        stream.endObject();
+
     }
 
     // TODO: the basic "inheritance" implemented by Dispatcher<...> etc. is not used in the JSON code. Figure out how, then do it.
@@ -508,13 +543,19 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
         while (stream.hasNext()) {
             final String key = stream.nextKey();
             if (!readAttribute(stream, key, instance)) {
-                // TODO: warn
-                stream.skipValue();
+                if (parentAttributeReader != null) {
+                    if (!parentAttributeReader.readAttribute(stream, key, instance)) {
+                        stream.skipValue(); // TODO: and warn
+                    }
+                } else {
+                    stream.skipValue(); // TODO: warn
+                }
             }
         }
         stream.endObject();
         return instance;
     }
+
 
     private boolean readAttribute(final JsonInputStream stream, final String key, final T instance) throws JsonException {
         final Attribute<T> matched = attributes.stream().filter(attr -> Objects.equals(attr.name(), key)).findFirst().orElse(null);
