@@ -52,7 +52,7 @@
         <maven.plugin.validation>VERBOSE</maven.plugin.validation>
 
         <!-- dependency versions -->
-        <dep.jetbrains-annotations>24.1.0</dep.jetbrains-annotations>
+        <dep.jetbrains-annotations>25.0.0</dep.jetbrains-annotations>
         <dep.slf4j>2.0.16</dep.slf4j>
 
         <!-- enable deployment of project pom, or else no one will be able to use the child poms due to missing links back up here... -->
