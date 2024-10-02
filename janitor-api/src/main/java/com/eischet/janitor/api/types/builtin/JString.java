@@ -19,7 +19,7 @@ import java.util.function.Function;
  * A string object, representing a string of characters.
  * This is one of the built-in types that Janitor provides automatically.
  */
-public class JString extends JanitorComposed<JString> implements JConstant, JsonExportablePrimitive, JStringBase {
+public class JString extends JanitorComposed<JString> implements JConstant, JsonExportablePrimitive, JStringBase, Comparable<JString> {
 
     /**
      * String class name.
@@ -136,6 +136,11 @@ public class JString extends JanitorComposed<JString> implements JConstant, Json
     @Override
     public int hashCode() {
         return Objects.hashCode(wrapped);
+    }
+
+    @Override
+    public int compareTo(@NotNull final JString o) {
+        return CharSequence.compare(wrapped, o.wrapped);
     }
 
 }

@@ -14,6 +14,7 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Locale;
 import java.util.regex.Pattern;
@@ -297,5 +298,44 @@ public class JStringClass {
         return process.getEnvironment().getBuiltinTypes().binary(Base64.getDecoder().decode(self.janitorGetHostValue()));
     }
 
+    public static JString toConstantCase(final JString self, final JanitorScriptProcess process, final JCallArgs args) throws JanitorRuntimeException {
+        args.require(0);
+        return process.getEnvironment().getBuiltinTypes().string(toConstant(self.janitorGetHostValue()));
+    }
+
+    public static JString toCamelCase(final JString self, final JanitorScriptProcess process, final JCallArgs args) throws JanitorRuntimeException {
+        args.require(0);
+        return process.getEnvironment().getBuiltinTypes().string(camelize(self.janitorGetHostValue()));
+    }
+
+
+    public static String toConstant(final String string) {
+        if (string == null || string.isEmpty()) {
+            return null;
+        }
+        var name = Arrays.stream(string.toUpperCase().replaceAll("[^_A-Z0-9]+|_+", "_").split("_"))
+                .map(s -> s.toUpperCase(Locale.ROOT))
+                .reduce((s1, s2) -> s1 + "_" + s2)
+                .orElse("");
+        if (Character.isDigit(name.charAt(0))) {
+            return "_" + name;
+        } else {
+            return name;
+        }
+    }
+
+    public static String camelize(final String string) {
+        if (string == null || string.isEmpty()) {
+            return null;
+        }
+        // alt: return CaseUtils.toCamelCase(string.toUpperCase().replaceAll("[^_A-Z0-9]+|_+", "_"), false, '_');
+        final String fullCamel = Arrays.stream(string.toUpperCase().replaceAll("[^_A-Z0-9]+|_+", "_").split("_"))
+                .map(s -> s.toLowerCase(Locale.ROOT))
+                .map(s -> s.substring(0, 1).toUpperCase(Locale.ROOT) + s.substring(1))
+                .reduce((s1, s2) -> s1 + s2)
+                .orElse("");
+
+        return fullCamel.substring(0, 1).toLowerCase(Locale.ROOT) + fullCamel.substring(1);
+    }
 
 }

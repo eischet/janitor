@@ -39,6 +39,8 @@
         <module>janitor-lang</module>
         <module>janitor-demo</module>
         <module>janitor-jsr223</module>
+        <module>janitor-maven-plugin</module>
+        <module>janitor-commons</module>
     </modules>
 
 

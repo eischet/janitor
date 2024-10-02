@@ -150,6 +150,12 @@ public class JList extends JanitorWrapper<List<JanitorObject>> implements JItera
         wrapped.set(index.janitorGetHostValue().intValue(), value);
     }
 
+    public void replaceAllElements(final List<JanitorObject> withTheseElements) {
+        wrapped.clear();
+        wrapped.addAll(withTheseElements);
+    }
+
+
     @Override
     public @Unmodifiable List<JanitorObject> janitorGetHostValue() {
         return List.copyOf(wrapped);
@@ -231,4 +237,7 @@ public class JList extends JanitorWrapper<List<JanitorObject>> implements JItera
         }
         producer.endArray();
     }
+
+
+
 }

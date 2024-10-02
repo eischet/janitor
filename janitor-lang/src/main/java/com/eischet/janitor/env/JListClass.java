@@ -170,6 +170,13 @@ public class JListClass {
         return JNull.NULL;
     }
 
+    public static JNull __sort(final JanitorWrapper<List<JanitorObject>> _self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+        final JList self = ((JList) _self);
+        arguments.require(0);
+        self.replaceAllElements(self.stream().sorted().toList());
+        return JNull.NULL;
+    }
+
     public static JNull __add(final JanitorWrapper<List<JanitorObject>> _self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         final JList self = ((JList) _self);
         arguments.require(1, 2);

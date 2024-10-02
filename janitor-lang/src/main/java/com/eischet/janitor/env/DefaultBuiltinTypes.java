@@ -96,6 +96,8 @@ public class DefaultBuiltinTypes implements BuiltinTypes {
         stringDispatcher.addMethod("urlEncode", JStringClass::__urlEncode);
         stringDispatcher.addMethod("urlDecode", JStringClass::__urlDecode);
         stringDispatcher.addMethod("decodeBase64", JStringClass::__decodeBase64);
+        stringDispatcher.addMethod("toCamelCase", JStringClass::toCamelCase);
+        stringDispatcher.addMethod("toConstantCase", JStringClass::toConstantCase);
 
         mapDispatcher.addMethod("toJson", JMapClass::__toJson);
         mapDispatcher.addMethod("parseJson", JMapClass::__parseJson);
@@ -123,6 +125,7 @@ public class DefaultBuiltinTypes implements BuiltinTypes {
         listDispatcher.addMethod("add", JListClass::__add);
         listDispatcher.addMethod("get", JListClass::__get);
         listDispatcher.addMethod(JanitorAntlrCompiler.INDEXED_GET_METHOD, JListClass::__getSliced);
+        listDispatcher.addMethod("sort", JListClass::__sort);
 
         setDispatcher.addMethod("add", JSetClass::__add);
         setDispatcher.addMethod("remove", JSetClass::__remove);

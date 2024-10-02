@@ -14,7 +14,6 @@ import com.eischet.janitor.api.types.JanitorObject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -137,16 +136,24 @@ public class TemplateParser {
             arguments.require(0, 1);
             final JanitorObject values = arguments.size() > 0 ? arguments.get(0) : null;
 
-            final StringWriter stringWriter = new StringWriter();
+
+            final StringBuilder stringBuilder = new StringBuilder();
+
             final JCallable writer = (runningScript, arguments1) -> {
                 for (final JanitorObject jObj : arguments1.getList()) {
                     if (jObj != JNull.NULL) {
-                        stringWriter.append(jObj.janitorToString());
+                        stringBuilder.append(jObj.janitorToString());
                     }
                 }
                 return JNull.NULL;
             };
+            final JCallable popper = (rs, args1) -> {
+                stringBuilder.setLength((int) (stringBuilder.length() - args1.getRequiredLongValue(0)));
+                return JNull.NULL;
+            };
+
             script.runInScope(g -> {
+                        g.bind("__POP__", popper.asObject("__POP__"));
                         g.bind("__OUT__", writer.asObject("__OUT__"));
                         if (values != null) {
                             // System.out.println("Setting implicit object: " + values);
@@ -154,7 +161,7 @@ public class TemplateParser {
                         }
                     }, process.getCurrentScope()
             );
-            return runtime.getEnvironment().getBuiltinTypes().string(stringWriter.toString());
+            return runtime.getEnvironment().getBuiltinTypes().string(stringBuilder.toString());
         } catch (JanitorCompilerException e) {
             throw new JanitorArgumentException(process, "invalid template", e);
         }

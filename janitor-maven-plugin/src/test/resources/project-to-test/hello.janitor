@@ -1,0 +1,2 @@
+print("Hello, Maven world!");
+print("Model version: " + model.version);

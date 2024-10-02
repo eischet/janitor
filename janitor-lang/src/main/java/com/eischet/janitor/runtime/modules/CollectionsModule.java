@@ -15,13 +15,13 @@ public class CollectionsModule extends JanitorNativeModule {
 
     @Override
     public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess process, final @NotNull String name, final boolean required) throws JanitorNameException {
-        if ("set".equals(name)) {
+        if ("set".equals(name) || "Set".equals(name)) {
             return JNativeMethod.of(arguments -> process.getEnvironment().getBuiltinTypes().set(arguments.getList().stream()));
         }
-        if ("list".equals(name)) {
+        if ("list".equals(name) || "List".equals(name)) {
             return JNativeMethod.of(arguments -> process.getEnvironment().getBuiltinTypes().list(arguments.getList()));
         }
-        if ("map".equals(name)) {
+        if ("map".equals(name) || "Map".equals(name)) {
             return JNativeMethod.of(arguments -> {
                 arguments.require(0);
                 return process.getEnvironment().getBuiltinTypes().map();

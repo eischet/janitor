@@ -142,6 +142,14 @@ public class JCallArgs {
         throw new JanitorArgumentException(process, "%s: argument %s must be a string value, but the caller provided: %s".formatted(functionName, i, args));
     }
 
+    public long getRequiredLongValue(final int i) throws JanitorArgumentException {
+        final JanitorObject arg = get(i);
+        if (arg instanceof JNumber num) {
+            return num.toLong();
+        }
+        throw new JanitorArgumentException(process, "%s: argument %s must be a numeric value, but the caller provided: %s".formatted(functionName, i, args));
+    }
+
     /**
      * Get a required boolean value at the given position.
      *
