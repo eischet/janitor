@@ -6,27 +6,17 @@
     <parent>
         <groupId>com.eischet.janitor</groupId>
         <artifactId>janitor-project</artifactId>
-        <version>0.9.9-SNAPSHOT</version>
+        <version>0.9.10-SNAPSHOT</version>
     </parent>
 
     <artifactId>janitor-lang</artifactId>
 
-    <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <!-- enable deployment of this pom -->
-        <maven.deploy.skip>false</maven.deploy.skip>
-    </properties>
-
     <dependencies>
-
         <dependency>
             <groupId>com.eischet.janitor</groupId>
             <artifactId>janitor-api</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
-
 
         <!-- ANTLR 4 for parsing the language -->
         <!-- https://mvnrepository.com/artifact/org.antlr/antlr4-runtime -->
@@ -37,7 +27,6 @@
             <scope>compile</scope>
         </dependency>
 
-
         <!-- logging APIs -->
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -45,7 +34,6 @@
             <version>${dep.slf4j}</version>
             <scope>compile</scope>
         </dependency>
-
 
         <!-- JSON parsing and generation -->
         <dependency>

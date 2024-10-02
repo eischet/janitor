@@ -5,7 +5,7 @@
 
     <groupId>com.eischet.janitor</groupId>
     <artifactId>janitor-project</artifactId>
-    <version>0.9.9-SNAPSHOT</version>
+    <version>0.9.10-SNAPSHOT</version>
 
     <name>Janitor</name>
     <description>A simple scripting language for the JVM.</description>
@@ -54,9 +54,8 @@
         <!-- dependency versions -->
         <dep.jetbrains-annotations>24.1.0</dep.jetbrains-annotations>
         <dep.slf4j>2.0.16</dep.slf4j>
+        <dep.autoservice>1.1.1</dep.autoservice>
 
-        <!-- enable deployment of project pom, or else no one will be able to use the child poms due to missing links back up here... -->
-        <maven.deploy.skip>false</maven.deploy.skip>
     </properties>
 
     <build>

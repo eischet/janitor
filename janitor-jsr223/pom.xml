@@ -6,31 +6,22 @@
     <parent>
         <groupId>com.eischet.janitor</groupId>
         <artifactId>janitor-project</artifactId>
-        <version>0.9.9-SNAPSHOT</version>
+        <version>0.9.10-SNAPSHOT</version>
     </parent>
 
     <artifactId>janitor-jsr223</artifactId>
 
-    <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
-        <auto-service.version>1.1.1</auto-service.version>
-    </properties>
-
     <dependencies>
-        <dependency>
-            <groupId>com.google.auto.service</groupId>
-            <artifactId>auto-service-annotations</artifactId>
-            <version>${auto-service.version}</version>
-        </dependency>
         <dependency>
             <groupId>com.eischet.janitor</groupId>
             <artifactId>janitor-lang</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
-        <!-- JUnit 5 for unit testing -->
+        <dependency>
+            <groupId>com.google.auto.service</groupId>
+            <artifactId>auto-service-annotations</artifactId>
+            <version>${dep.autoservice}</version>
+        </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
@@ -49,7 +40,7 @@
                         <path>
                             <groupId>com.google.auto.service</groupId>
                             <artifactId>auto-service</artifactId>
-                            <version>${auto-service.version}</version>
+                            <version>${dep.autoservice}</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>
