@@ -5,6 +5,7 @@ import com.eischet.janitor.api.errors.JanitorException;
 import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.api.scopes.ScriptModule;
 import com.eischet.janitor.api.types.JanitorObject;
+import com.eischet.janitor.api.types.composed.JanitorAware;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -64,6 +65,15 @@ public abstract class JanitorRuntimeException extends JanitorException implement
         }
         if ("type".equals(name)) {
             return process.getEnvironment().getBuiltinTypes().string(getClass().getSimpleName());
+        }
+        if (getCause() instanceof JanitorAware aware) {
+            final JanitorObject jo = aware.asJanitorObject();
+            if (jo != null) {
+                return jo.janitorGetAttribute(process, name, required);
+            }
+        }
+        if (getCause() instanceof JanitorObject jo) {
+            return jo.janitorGetAttribute(process, name, required);
         }
         return JanitorObject.super.janitorGetAttribute(process, name, required);
     }
