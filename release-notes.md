@@ -1,4 +1,4 @@
-# 0.9.10, work in progress
+# 0.9.10, 2024-10-07
 
 Provide automatic conversion to/from JSON in classes that extends JanitorComposed<T>, base on the existing dispatch tables.  Basic cases work, but overall the feature needs some more thought.
 

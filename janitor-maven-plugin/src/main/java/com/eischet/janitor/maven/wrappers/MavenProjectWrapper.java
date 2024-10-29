@@ -17,10 +17,12 @@ public class MavenProjectWrapper extends JanitorWrapper<MavenProject> {
         dispatcher.addStringProperty("modelVersion", self -> self.janitorGetHostValue().getModelVersion(), (self, value) -> self.janitorGetHostValue().setModelVersion(value));
         dispatcher.addObjectProperty("model", self -> new ModelWrapper(self.janitorGetHostValue().getModel()));
         dispatcher.addBuilderMethod("addCompileSourceRoot", (self, process, args) -> self.janitorGetHostValue().addCompileSourceRoot(args.getRequiredStringValue(0)));
+        dispatcher.addObjectProperty("build", self -> new MavenBuildWrapper(self.janitorGetHostValue().getBuild()));
     }
 
     public MavenProjectWrapper(final @NotNull MavenProject wrapped) {
         super(dispatcher, wrapped);
+
     }
 
     public void testNames() {
