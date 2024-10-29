@@ -1,3 +1,8 @@
+# 0.9.11, 2024-10-29
+
+Add some properties to the maven plugin.
+
+
 # 0.9.10, 2024-10-07
 
 Provide automatic conversion to/from JSON in classes that extends JanitorComposed<T>, base on the existing dispatch tables.  Basic cases work, but overall the feature needs some more thought.

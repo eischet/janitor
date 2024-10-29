@@ -6,7 +6,7 @@
 
     <groupId>com.eischet.janitor</groupId>
     <artifactId>project-to-test</artifactId>
-    <version>0.9.10</version>
+    <version>0.9.11</version>
     <packaging>jar</packaging>
     <name>Test MyMojo</name>
 
