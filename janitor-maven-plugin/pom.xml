@@ -27,7 +27,7 @@
         <!-- janitor-lang requires 17, therefore the plugin does, too -->
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <maven.version>3.9.8</maven.version>
+        <maven.version>3.9.9</maven.version>
     </properties>
 
     <dependencies>
