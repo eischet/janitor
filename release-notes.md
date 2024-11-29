@@ -1,3 +1,9 @@
+# 0.9.12, 2024-11-28
+
+Fix maps throwing a null pointer exception when non-existent keys are accessed as d.foo instead of d["foo"].
+This makes map.foo behave like map?.foo in call cases now, which is probably more readable, especially when working with JSON-like data.
+
+
 # 0.9.11, 2024-10-29
 
 Add some properties to the maven plugin.

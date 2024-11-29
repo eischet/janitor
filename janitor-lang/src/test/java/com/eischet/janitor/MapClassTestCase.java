@@ -2,7 +2,6 @@ package com.eischet.janitor;
 
 import com.eischet.janitor.api.types.BuiltinTypes;
 import com.eischet.janitor.api.RunnableScript;
-import com.eischet.janitor.api.types.RuntimeConsumer;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.builtin.JMap;
@@ -99,6 +98,15 @@ public class MapClassTestCase {
         play.accept("map.put('e', 5.0);");
         assertEquals(map.get(bt.string("e")), bt.floatingPoint(5.0));
         assertEquals(5, map.size(), "size increases when adding elements");
+
+        play.accept("map['foobar'] = map.d + 1;");
+        assertEquals(6, map.size(), "size increases when adding elements");
+
+        play.accept("map.foobar == 5.0;");
+
+        play.accept("assert(map.missingKey == null);");
+
+
 
 
     }

@@ -5,6 +5,7 @@ import com.eischet.janitor.api.errors.runtime.JanitorControlFlowException;
 import com.eischet.janitor.api.errors.runtime.JanitorNameException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.Location;
+import com.eischet.janitor.api.types.builtin.JMap;
 import com.eischet.janitor.api.types.dispatch.FlatProperty;
 import com.eischet.janitor.api.types.functions.JCallable;
 import com.eischet.janitor.api.types.JConstant;
@@ -88,7 +89,7 @@ public class FunctionLookup extends Statement implements Expression, JsonExporta
 
             if (function == null /* || function == CSNull.NULL) */) {
                 process.trace(() -> "function not found; guarded=" + guarded);
-                if (guarded) {
+                if (guarded || object instanceof JMap) {
                     return JNull.NULL;
                 }
                 throw new JanitorNameException(process, "function/method not found: " + functionName + "; on: " + object + "[" + simpleClassNameOf(object) + "] --> " + function);
