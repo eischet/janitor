@@ -82,7 +82,7 @@
                 <!-- required for ${revision} to work in deployed/installed POMs generated from this build, and a good idea anyways -->
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>flatten-maven-plugin</artifactId>
-                <version>1.1.0</version>
+                <version>1.6.0</version>
                 <configuration>
                     <updatePomFile>true</updatePomFile>
                     <flattenMode>resolveCiFriendliesOnly</flattenMode>
