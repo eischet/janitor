@@ -271,6 +271,30 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
                 jsonSupportDelegate == null ? null : adaptList(jsonSupportDelegate, getter, setter));
     }
 
+    /* TODO:
+    public <N extends JanitorObject> void addListOfNativeObjectsProperty(final String name, final Function<T, List<N>> getter, final BiConsumer<T, List<N>> setter) {
+        put(name,
+                (instance, process) -> new TemporaryAssignable(ConverterToJanitor.toJanitorList(process, getter.apply(instance), new ConverterToJanitor<N>() {
+                    @Override
+                    public JanitorObject convertToJanitor(final JanitorScriptProcess process, final N value) throws JanitorRuntimeException {
+                        return value;
+                    }
+                }), value -> {
+                    if (!(value instanceof JList argList)) {
+                        throw new IllegalArgumentException("Expected a list");
+                    }
+                    final List<N> list = ConverterFromJanitor.toList(process, argList, new ConverterFromJanitor<N>() {
+                        @Override
+                        public N convertFromJanitor(final JanitorScriptProcess process, final JanitorObject value) throws JanitorRuntimeException {
+                            return (N) value;
+                        }
+                    });
+                    setter.accept(instance, list);
+                }), );
+    }
+
+     */
+
     public void addListOfStringsProperty(final String name, final Function<T, List<String>> getter, final BiConsumer<T, List<String>> setter) {
         addListProperty(name, getter, setter, StringConverter.INSTANCE, JSON_STRING);
     }
@@ -282,6 +306,7 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
     public void addListOfDoublesProperty(final String name, final Function<T, List<Double>> getter, final BiConsumer<T, List<Double>> setter) {
         addListProperty(name, getter, setter, FloatConverter.INSTANCE, JSON_DOUBLE);
     }
+
 
     /**
      * Adds a read-only boolean property.

@@ -127,4 +127,15 @@ public interface BuiltinTypes {
      */
     @Nullable String intern(final @Nullable String string);
 
+    /**
+     * Returns a numeric object that best represents the double value.
+     * This method tries to return an int when there is no loss of precision.
+     * This is mainly useful for parsing JSON, were otherwise any ints would be returned as doubles, which some APIs do not like at all.
+     * (E.g. you get a list of things from an APi as 1.0, 2.0, ... and send those back to the same API and *boom* it doesn't like it.
+     * This should not really be our problem, but turns out the one who cares needs to act because the other side will not do anything.)
+     *
+     * @param v double value
+     * @return an appropriate numeric object
+     */
+    @NotNull JanitorObject numeric(double v);
 }

@@ -170,6 +170,18 @@ public class JListClass {
         return JNull.NULL;
     }
 
+    /*
+    TODO: add removeAll
+    TODO: make addAll and other *all methods access JIterable instead of JList only
+     */
+
+    /*
+    public static JList __removAll(final JanitorWrapper<List<JanitorObject>> self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+        final JanitorObject
+    }
+        */
+
+
     public static JNull __sort(final JanitorWrapper<List<JanitorObject>> _self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         final JList self = ((JList) _self);
         arguments.require(0);

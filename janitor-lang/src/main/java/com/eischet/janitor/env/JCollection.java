@@ -21,7 +21,8 @@ public abstract class JCollection {
             case END_OBJECT -> throw new JsonException("Unexpected end of object at " + reader.getPath());
             case NAME -> throw new JsonException("Unexpected name array at " + reader.getPath());
             case STRING -> env.getBuiltinTypes().nullableString(reader.nextString());
-            case NUMBER -> env.getBuiltinTypes().floatingPoint(reader.nextDouble());
+            case NUMBER -> env.getBuiltinTypes().numeric(reader.nextDouble());
+
             case BOOLEAN -> JBool.of(reader.nextBoolean());
             case NULL -> {
                 reader.nextNullObject();

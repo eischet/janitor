@@ -541,4 +541,14 @@ public class DefaultBuiltinTypes implements BuiltinTypes {
         }
     }
 
+    @Override
+    public @NotNull JanitorObject numeric(final double v) {
+        boolean isAnInteger = v == Math.floor(v) && !Double.isInfinite(v);
+        if (isAnInteger) {
+            return integer((long) v);
+        } else {
+            return floatingPoint(v);
+        }
+    }
+
 }

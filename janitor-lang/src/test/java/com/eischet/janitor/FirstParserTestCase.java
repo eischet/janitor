@@ -906,18 +906,26 @@ public class FirstParserTestCase {
             '''));
             """, g -> {
         }));
-        assertEquals("[a, b, 1.0]\n", getOutput("""
+        assertEquals("[a, b, 1]\n", getOutput("""
             print([].parseJson('''
             ["a", "b", 1]
             '''));
             """, g -> {
         }));
-        assertEquals("[a, b, 1.0, {}]\n", getOutput("""
+        assertEquals("[a, b, 1, {}]\n", getOutput("""
             print([].parseJson('''
             ["a", "b", 1, {}]
             '''));
             """, g -> {
         }));
+
+        assertEquals("[a, b, 1.5, {}]\n", getOutput("""
+            print([].parseJson('''
+            ["a", "b", 1.5, {}]
+            '''));
+            """, g -> {
+        }));
+
 
         final JanitorObject emptyMap = evaluate("""
             {}.parseJson('''{}''');
