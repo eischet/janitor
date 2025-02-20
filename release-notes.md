@@ -1,3 +1,10 @@
+# 0.9.13, 2025-02-20
+
+Tweak JSON parsing to return integers for numbers that are integers, and doubles only for numbers that are not.
+This improves interoperability with many JSON APIs, which seem to have issues with e.g. an ID value of 5.0 where 5 is 
+expected, even though there are actually no integers in the JSON specification.
+
+
 # 0.9.12, 2024-11-28
 
 Fix maps throwing a null pointer exception when non-existent keys are accessed as d.foo instead of d["foo"].
