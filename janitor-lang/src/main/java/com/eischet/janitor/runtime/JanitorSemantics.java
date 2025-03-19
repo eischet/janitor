@@ -89,7 +89,14 @@ public class JanitorSemantics {
     public static @NotNull JBool areEquals(final JanitorObject leftValue, final JanitorObject rightValue) {
         return JBool.of(leftValue == rightValue
                          || leftValue.janitorGetHostValue() == rightValue.janitorGetHostValue()
-                         || Objects.equals(leftValue.janitorGetHostValue(), rightValue.janitorGetHostValue()));
+                         || Objects.equals(leftValue.janitorGetHostValue(), rightValue.janitorGetHostValue())
+                         || (leftValue instanceof JNumber leftNumber && rightValue instanceof JNumber rightNumber && 0 == compareNumbers(leftNumber, rightNumber))
+
+        );
+    }
+
+    private static int compareNumbers(final JNumber leftNumber, final JNumber rightNumber) {
+        return Double.compare(leftNumber.toDouble(), rightNumber.toDouble());
     }
 
     /**

@@ -63,41 +63,43 @@ public class DefaultBuiltinTypes implements BuiltinTypes {
         zero = JInt.newInstance(intDispatcher, 0);
 
         // OLD: addStringMethod("length", JStringClass::__length);
-        stringDispatcher.addMethod("length", JStringClass::__length);
-        stringDispatcher.addMethod("trim", JStringClass::__trim);
-        stringDispatcher.addMethod("contains", JStringClass::__contains);
-        stringDispatcher.addMethod("containsIgnoreCase", JStringClass::__containsIgnoreCase);
-        stringDispatcher.addMethod("splitLines", JStringClass::__splitLines);
-        stringDispatcher.addMethod("indexOf", JStringClass::__indexOf);
-        stringDispatcher.addMethod("empty", JStringClass::__empty);
-        stringDispatcher.addMethod("startsWith", JStringClass::__startsWith);
-        stringDispatcher.addMethod("endsWith", JStringClass::__endsWith);
-        stringDispatcher.addMethod("removeLeadingZeros", JStringClass::__removeLeadingZeros);
-        stringDispatcher.addMethod("substring", JStringClass::__substring);
-        stringDispatcher.addMethod("replaceAll", JStringClass::__replaceAll);
-        stringDispatcher.addMethod("replace", JStringClass::__replace);
-        stringDispatcher.addMethod("replaceFirst", JStringClass::__replaceFirst);
-        stringDispatcher.addMethod("toUpperCase", JStringClass::__toUpperCase);
-        stringDispatcher.addMethod("toLowerCase", JStringClass::__toLowerCase);
-        stringDispatcher.addMethod("count", JStringClass::__count);
-        stringDispatcher.addMethod("format", JStringClass::__format);
-        stringDispatcher.addMethod("expand", JStringClass::__expand);
-        stringDispatcher.addMethod("toBinaryUtf8", JStringClass::__toBinaryUtf8);
-        stringDispatcher.addMethod("int", JStringClass::__toInt);
-        stringDispatcher.addMethod("toInt", JStringClass::__toInt);
-        stringDispatcher.addMethod("toFloat", JStringClass::__toFloat);
-        stringDispatcher.addMethod("get", JStringClass::__get);
-        stringDispatcher.addMethod(JanitorAntlrCompiler.INDEXED_GET_METHOD, JStringClass::__get); // das lassen wir auch so: keine Zuweisung per Index an String-Teile, die sind ja immutable
-        stringDispatcher.addMethod("isNumeric", JStringClass::__isNumeric);
-        stringDispatcher.addMethod("startsWithNumbers", JStringClass::__startsWithNumbers);
-        stringDispatcher.addMethod("parseDate", JStringClass::__parseDate);
-        stringDispatcher.addMethod("parseDateTime", JStringClass::__parseDateTime);
+        stringDispatcher.addMethod("length", JStringClass::__length); // "foo".length() == 3
+        stringDispatcher.addMethod("trim", JStringClass::__trim); // "  foo  ".trim() == "foo"
+        stringDispatcher.addMethod("contains", JStringClass::__contains); // "foobar".contains("bar") == true, "barbaz".contains("foo") == false
+        stringDispatcher.addMethod("containsIgnoreCase", JStringClass::__containsIgnoreCase); // "foobar".containsIgnoreCase("BAR") == true
+        stringDispatcher.addMethod("splitLines", JStringClass::__splitLines); // "foo\nbar\nbaz".splitLines() == ["foo", "bar", "baz"]
+        stringDispatcher.addMethod("indexOf", JStringClass::__indexOf); // "foobar".indexOf("bar") == 3, "foobar".indexOf("x") == -1
+        stringDispatcher.addMethod("empty", JStringClass::__empty); // "".empty() == true, "foo".empty() == false
+        stringDispatcher.addMethod("startsWith", JStringClass::__startsWith); // "foobar".startsWith("foo") == true, "foobar".startsWith("bar") == false
+        stringDispatcher.addMethod("endsWith", JStringClass::__endsWith); // "foobar".endsWith("bar") == true, "foobar".endsWith("foo") == false
+        stringDispatcher.addMethod("removeLeadingZeros", JStringClass::__removeLeadingZeros); // "000123".removeLeadingZeros() == "123"
+        stringDispatcher.addMethod("substring", JStringClass::__substring); // "foobar".substring(3) == "bar", "foobar".substring(3, 5) == "ba"
+        stringDispatcher.addMethod("replaceAll", JStringClass::__replaceAll); // "foobar".replaceAll("o", "x") == "fxxbar"
+        stringDispatcher.addMethod("replace", JStringClass::__replace); // "foobar".replace("o", "x") == "fxobar"
+        stringDispatcher.addMethod("replaceFirst", JStringClass::__replaceFirst); // "foobar".replaceFirst("o", "x") == "fxobar"
+        stringDispatcher.addMethod("toUpperCase", JStringClass::__toUpperCase); // "foo".toUpperCase() == "FOO"
+        stringDispatcher.addMethod("toLowerCase", JStringClass::__toLowerCase); // "FOO".toLowerCase() == "foo"
+        stringDispatcher.addMethod("count", JStringClass::__count); // "foobar".count("o") == 2
+        stringDispatcher.addMethod("format", JStringClass::__format); // "Hello, %s!".format("world") == "Hello, world!"
+        stringDispatcher.addMethod("expand", JStringClass::__expand); // "Hello, ${name}!".expand({name: "world"}) == "Hello, world!"
+        stringDispatcher.addMethod("toBinaryUtf8", JStringClass::__toBinaryUtf8); // convert to binary, in UTF-8
+        stringDispatcher.addMethod("encode", JStringClass::__encode); // convert to binary, in the given character set
+        stringDispatcher.addMethod("int", JStringClass::__toInt); // "123".int() == 123
+        stringDispatcher.addMethod("toInt", JStringClass::__toInt); // "123".toInt() == 123
+        stringDispatcher.addMethod("toFloat", JStringClass::__toFloat); // "123.45".toFloat() == 123.45
+        stringDispatcher.addMethod("get", JStringClass::__get); // "foobar".get(3) == "b", "foobar".get(3, 5) == "ba"
+        stringDispatcher.addMethod("isNumeric", JStringClass::__isNumeric); // "17".isNumeric() == true, "mario".isNumeric() == false
+        stringDispatcher.addMethod("startsWithNumbers", JStringClass::__startsWithNumbers); // "123foo".startsWithNumbers() == true, "foo123".startsWithNumbers() == false
+        stringDispatcher.addMethod("parseDate", JStringClass::__parseDate); // "2021-12-31".parseDate('yyyy-MM-dd') == @2021-12-31
+        stringDispatcher.addMethod("parseDateTime", JStringClass::__parseDateTime); // "2021-12-31T23:59:59".parseDateTime('yyyy-MM-dd\'T\'HH:mm:ss') == @2021-12-31-23:59:59
+        stringDispatcher.addMethod("split", JStringClass::split); // "foo,bar,baz".split(",") == ["foo", "bar", "baz"]
         stringDispatcher.addMethod("cutFilename", JStringClass::__cutFilename);
         stringDispatcher.addMethod("urlEncode", JStringClass::__urlEncode);
         stringDispatcher.addMethod("urlDecode", JStringClass::__urlDecode);
         stringDispatcher.addMethod("decodeBase64", JStringClass::__decodeBase64);
         stringDispatcher.addMethod("toCamelCase", JStringClass::toCamelCase);
         stringDispatcher.addMethod("toConstantCase", JStringClass::toConstantCase);
+        stringDispatcher.addMethod(JanitorAntlrCompiler.INDEXED_GET_METHOD, JStringClass::__get); // das lassen wir auch so: keine Zuweisung per Index an String-Teile, die sind ja immutable
 
         mapDispatcher.addMethod("toJson", JMapClass::__toJson);
         mapDispatcher.addMethod("parseJson", JMapClass::__parseJson);
@@ -108,6 +110,7 @@ public class DefaultBuiltinTypes implements BuiltinTypes {
         mapDispatcher.addMethod("isEmpty", JMapClass::__isEmpty);
         mapDispatcher.addMethod("keys", JMapClass::__keys);
         mapDispatcher.addMethod("values", JMapClass::__values);
+        mapDispatcher.addMethod("containsKey", JMapClass::__containsKey);
 
         listDispatcher.addMethod("toJson", JListClass::__toJson);
         listDispatcher.addMethod("parseJson", JListClass::__parseJson);
@@ -116,6 +119,7 @@ public class DefaultBuiltinTypes implements BuiltinTypes {
         listDispatcher.addMethod("map", JListClass::__map);
         listDispatcher.addMethod("join", JListClass::__join);
         listDispatcher.addMethod("toSet", JListClass::__toSet);
+        listDispatcher.addMethod("toList", JListClass::__toList); // copies the list
         listDispatcher.addMethod("size", JListClass::__size);
         listDispatcher.addMethod("isEmpty", JListClass::__isEmpty);
         listDispatcher.addMethod("contains", JListClass::__contains);
@@ -131,6 +135,7 @@ public class DefaultBuiltinTypes implements BuiltinTypes {
         setDispatcher.addMethod("remove", JSetClass::__remove);
         setDispatcher.addMethod("contains", JSetClass::__contains);
         setDispatcher.addMethod("toList", JSetClass::__toList);
+        setDispatcher.addMethod("toSet", JSetClass::__toSet); // copies the set
         setDispatcher.addMethod("size", JSetClass::__size);
         setDispatcher.addMethod("isEmpty", JSetClass::__isEmpty);
 
@@ -141,6 +146,7 @@ public class DefaultBuiltinTypes implements BuiltinTypes {
         floatDispatcher.addLongProperty("int", doubleJanitorWrapper -> doubleJanitorWrapper.janitorGetHostValue().longValue());
 
         binaryDispatcher.addMethod("encodeBase64", JBinaryClass::__encodeBase64);
+        binaryDispatcher.addMethod("decode", JBinaryClass::__toString);
         binaryDispatcher.addMethod("toString", JBinaryClass::__toString);
         binaryDispatcher.addMethod("size", JBinaryClass::__size);
         binaryDispatcher.addStringProperty("string", wrapper -> wrapper.janitorIsTrue() ? new String(wrapper.janitorGetHostValue()) : "");
@@ -551,4 +557,8 @@ public class DefaultBuiltinTypes implements BuiltinTypes {
         }
     }
 
+    @Override
+    public @NotNull JanitorObject nullableNumeric(final Double v) {
+        return v == null ? JNull.NULL : numeric(v);
+    }
 }

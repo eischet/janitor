@@ -1,3 +1,14 @@
+# 0.9.14, 2025-03-19
+
+New string method `split` splits a string into a list of substrings by the given separator.
+Usually, a separator is taken as a string: `'1,2,3'.split(',')` returns `['1', '2', '3']`.
+This string can be empty, splitting by each character: `'abc'.split('')` returns `['a', 'b', 'c']`.
+If the separator is a regular expression, it is used to split the string: `'1,2,3'.split(/,/)`. This is very similar to how split works in Java.
+
+''.encode(charset) encodes a string to a binary representation using the given charset, which defaults to UTF-8 when omitted.
+
+
+
 # 0.9.13, 2025-02-20
 
 Tweak JSON parsing to return integers for numbers that are integers, and doubles only for numbers that are not.

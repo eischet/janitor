@@ -12,11 +12,12 @@ import com.eischet.janitor.runtime.OutputCatchingTestRuntime;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
-
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -215,5 +216,46 @@ public class JStringTestCase {
         assertEquals(JBool.FALSE, rt.compile("test", " 'foo/bar' !~ re/foo\\/bar/").run());
     }
 
+    @Test
+    public void splitting() throws JanitorCompilerException, JanitorRuntimeException {
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
+        Function<String, JanitorObject> str = it -> rt.getBuiltinTypes().nullableString(it);
+        // Splitting by a string returns a list of strings, not including the separator string:
+        assertEquals(List.of(str.apply("a"), str.apply("b"), str.apply("c")), rt.compile("test", "'a,b,c'.split(',')").run().janitorGetHostValue());
+        assertEquals(List.of(str.apply("a"), str.apply("b")), rt.compile("test", "'a,b,'.split(',')").run().janitorGetHostValue());
+        // Splitting by an empty string returns a list of characters:
+        assertEquals(List.of(str.apply("a"), str.apply("b"), str.apply("c")), rt.compile("test", "'abc'.split('')").run().janitorGetHostValue());
+        // Splitting an empty string returns an empty list:
+        assertEquals(List.of(), rt.compile("test", "''.split('')").run().janitorGetHostValue());
+        // Split by a regular expression:
+        assertEquals(List.of(str.apply("a"), str.apply("b"), str.apply("c"), str.apply("d")), rt.compile("test", "'a1b2c3d'.split(re/\\d/)").run().janitorGetHostValue());
+        // same as:
+        assertEquals(List.of(str.apply("a"), str.apply("b"), str.apply("c"), str.apply("d")), rt.compile("test", "re/\\d/.split('a1b2c3d')").run().janitorGetHostValue());
+
+        @NotNull final JanitorObject anomaly = rt.compile("test", "''.split('foobar')").run();
+        System.err.println(anomaly);
+        System.err.println(anomaly.getClass());
+        System.err.println(anomaly.janitorIsTrue());
+
+        // assertEquals(List.of(), .janitorGetHostValue());
+
+
+        rt.compile("sameInScriptCodeOnly", """
+                assert('a,b,c'.split(',') == ['a', 'b', 'c']);
+                assert('a,b,'.split(',') == ['a', 'b']);
+                assert('abc'.split('') == ['a', 'b', 'c']);
+                assert(''.split('') == []);
+                // assert(''.split('foobar').isEmpty());
+                print("->", ''.split('foobar'), "<-");
+                assert('a1b2c3d'.split(re/\\d/) == ['a', 'b', 'c', 'd']);
+                assert(re/\\d/.split('a1b2c3d') == ['a', 'b', 'c', 'd']);
+                """).run();
+        System.err.println(rt.getAllOutput());
+
+
+    }
+    
+    
+    
 
 }

@@ -117,6 +117,11 @@ public class JListClass {
         return process.getEnvironment().getBuiltinTypes().string(self.janitorGetHostValue().stream().map(JanitorObject::janitorToString).collect(Collectors.joining(separator)));
     }
 
+    public static JList __toList(final JanitorWrapper<List<JanitorObject>> self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+        arguments.require(0);
+        return process.getEnvironment().getBuiltinTypes().list(self.janitorGetHostValue());
+    }
+
     public static JSet __toSet(final JanitorWrapper<List<JanitorObject>> self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);
         return process.getEnvironment().getBuiltinTypes().set(self.janitorGetHostValue().stream());

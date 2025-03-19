@@ -1,6 +1,7 @@
 package com.eischet.janitor.env;
 
 import com.eischet.janitor.api.JanitorScriptProcess;
+import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
 import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
@@ -10,6 +11,7 @@ import com.eischet.janitor.toolbox.strings.StringHelpers;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -36,6 +38,15 @@ public class JStringClass {
 
     public static JBinary __toBinaryUtf8(final JString self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         return process.getEnvironment().getBuiltinTypes().binary(self.janitorGetHostValue().getBytes(StandardCharsets.UTF_8));
+    }
+
+    public static JBinary __encode(final JString self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+        final String enc = arguments.getOptionalStringValue(0, "UTF-8");
+        try {
+            return process.getEnvironment().getBuiltinTypes().binary(self.janitorGetHostValue().getBytes(enc));
+        } catch (UnsupportedEncodingException e) {
+            throw new JanitorNativeException(process, "invalid binary encoding: " + enc, e);
+        }
     }
 
 
@@ -338,4 +349,32 @@ public class JStringClass {
         return fullCamel.substring(0, 1).toLowerCase(Locale.ROOT) + fullCamel.substring(1);
     }
 
+    public static JanitorObject split(JString self, JanitorScriptProcess process, JCallArgs args) throws JanitorRuntimeException {
+        final JanitorObject splitBy = args.require(1).get(0);
+        if (splitBy instanceof JRegex regex) {
+            final JList list = process.getEnvironment().getBuiltinTypes().list();
+            final String[] parts = self.janitorGetHostValue().split(regex.janitorGetHostValue().pattern());
+            for (final String part : parts) {
+                list.add(process.getEnvironment().getBuiltinTypes().string(part));
+            }
+            return list;
+        }
+        if (splitBy instanceof JString str) {
+            if (str.isEmpty()) { // special case: empty string should split all unicode chars separately
+                final JList list = process.getEnvironment().getBuiltinTypes().list();
+                for (int i = 0; i < self.janitorGetHostValue().length(); i++) {
+                    list.add(process.getEnvironment().getBuiltinTypes().string(self.janitorGetHostValue().substring(i, i + 1)));
+                }
+                return list;
+            } else { // usual case, split by the string, NOT interpreting it as a pattern
+                final JList list = process.getEnvironment().getBuiltinTypes().list();
+                final String[] parts = self.janitorGetHostValue().split(Pattern.quote(str.janitorGetHostValue()));
+                for (final String part : parts) {
+                    list.add(process.getEnvironment().getBuiltinTypes().string(part));
+                }
+                return list;
+            }
+        }
+        return null;
+    }
 }

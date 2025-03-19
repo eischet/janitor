@@ -84,6 +84,14 @@ public class JMapClass {
         return process.getEnvironment().getBuiltinTypes().list(mapJanitorWrapper.janitorGetHostValue().values().stream());
     }
 
+    public static JanitorObject __containsKey(JanitorWrapper<Map<JanitorObject, JanitorObject>> mapJanitorWrapper, JanitorScriptProcess process, JCallArgs jCallArgs) throws JanitorRuntimeException {
+        return JBool.of(mapJanitorWrapper.janitorGetHostValue().containsKey(jCallArgs.require(1).get(0)));
+    }
+
+    public static JanitorObject __containsValue(JanitorWrapper<Map<JanitorObject, JanitorObject>> mapJanitorWrapper, JanitorScriptProcess process, JCallArgs jCallArgs) throws JanitorRuntimeException {
+        return JBool.of(mapJanitorWrapper.janitorGetHostValue().containsValue(jCallArgs.require(1).get(0)));
+    }
+
     /**
      * Parse a JSON string into a map.
      *

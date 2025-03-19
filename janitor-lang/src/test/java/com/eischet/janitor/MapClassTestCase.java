@@ -41,9 +41,9 @@ public class MapClassTestCase {
 
         final JMap map = rt.getEnvironment().parseJsonToMap(JSON_SOURCE);
         // I'd prefer having bt.integer(1..4), but that's not how JSON works.
-        assertEquals(bt.floatingPoint(1.0), map.get(bt.string("a")));
-        assertEquals(bt.floatingPoint(2.0), map.get(bt.string("b")));
-        assertEquals(bt.floatingPoint(3.0), map.get(bt.string("c")));
+        assertEquals(bt.integer(1), map.get(bt.string("a")));
+        assertEquals(bt.integer(2), map.get(bt.string("b")));
+        assertEquals(bt.integer(3), map.get(bt.string("c")));
         assertFalse(map.isEmpty(), "non-empty maps are not empty");
         assertFalse(map.isDefaultOrEmpty(), "non-empty maps are not default/empty");
         assertTrue(map.janitorIsTrue(), "non-empty maps are true");
@@ -82,10 +82,10 @@ public class MapClassTestCase {
         play.accept("""
                 values = map.values();
                 assert(values.size() == 3);
-                assert(values.contains(1.0));
-                assert(values.contains(2.0));
-                assert(values.contains(3.0));
-                assert(not values.contains(4.0));
+                assert(values.contains(1));
+                assert(values.contains(2));
+                assert(values.contains(3));
+                assert(not values.contains(4));
                 """);
 
         final JMap anotherMap = rt.getEnvironment().parseJsonToMap(JSON_SOURCE);

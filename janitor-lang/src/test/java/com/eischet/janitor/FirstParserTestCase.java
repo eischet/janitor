@@ -1370,5 +1370,34 @@ public class FirstParserTestCase {
         process.run();
     }
 
+    @Test
+    public void enhancedComparisonOfNumbers() throws JanitorRuntimeException {
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
+        /*
+         * simplify script execution for the rest of the test.
+         */
+        final TestEnv.ScriptConsumer play = (@Language("Janitor") var script) -> {
+            try {
+                final RunnableScript runnableScript = rt.compile("test", script);
+                runnableScript.run();
+            } catch (JanitorCompilerException e) {
+                throw new RuntimeException(e); // RuntimeConsumers allow Runtime Errors, but not compile errors, so let's just convert
+            }
+        };
+
+        play.accept("assert(1 == 1);"); // used to work before 0.9.13
+        play.accept("assert(1.0 == 1.0);");
+        play.accept("assert(1 < 2.0);");
+        play.accept("assert(1.0 < 2);");
+
+        play.accept("assert(5 > 2.0);");
+        play.accept("assert(3.5 > 2);");
+
+        play.accept("assert(1 == 1.0);"); // dit NOT always work before 0.9.13
+
+
+
+    }
+
 
 }
