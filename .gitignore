@@ -6,3 +6,4 @@ janitor.iml
 .DS_Store
 janitor-lang/janitor-lang.iml
 
+.flattened-pom.xml

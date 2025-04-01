@@ -1,24 +1,23 @@
 package com.eischet.janitor.commons;
 
 import com.eischet.janitor.api.JanitorScriptProcess;
-import com.eischet.janitor.api.types.builtin.JList;
+import com.eischet.janitor.api.types.builtin.*;
 import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.modules.JanitorModule;
 import com.eischet.janitor.api.modules.JanitorModuleRegistration;
 import com.eischet.janitor.api.types.JanitorObject;
-import com.eischet.janitor.api.types.builtin.JBinary;
-import com.eischet.janitor.api.types.builtin.JBool;
-import com.eischet.janitor.api.types.builtin.JNull;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
+import com.eischet.janitor.runtime.DateTimeUtilities;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
 
 public class FilesModule extends JanitorComposed<FilesModule> implements JanitorModule {
 
@@ -33,7 +32,26 @@ public class FilesModule extends JanitorComposed<FilesModule> implements Janitor
         dispatcher.addMethod("readBinary", FilesModule::readBinary);
         dispatcher.addMethod("list", FilesModule::list);
         dispatcher.addMethod("mkdirs", FilesModule::mkdir);
+        dispatcher.addMethod("normalize", FilesModule::normalize);
+        dispatcher.addMethod("lastmod", FilesModule::lastMod);
+
+        dispatcher.addMethod("delete", FilesModule::delete);
+        dispatcher.addVoidMethod("move", FilesModule::move);
+        dispatcher.addVoidMethod("copy", FilesModule::copy);
+
+        dispatcher.addMethod("Zip", FilesModule::zip);
+
     }
+
+    private JanitorObject zip(JanitorScriptProcess process, JCallArgs args) throws JanitorRuntimeException {
+        final String zipFilename = args.getRequiredStringValue(0);
+        try {
+            return new ZipFile(zipFilename);
+        } catch (Exception e) {
+            throw new JanitorNativeException(process, "error creating zip file " + zipFilename, e);
+        }
+    }
+
 
     public FilesModule() {
         super(dispatcher);
@@ -96,6 +114,7 @@ public class FilesModule extends JanitorComposed<FilesModule> implements Janitor
 
     public JanitorObject list(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         final String folderName = arguments.require(1).getRequiredStringValue(0);
+        // TODO: final String glob = arguments.getOptionalStringValue(1, ""); ...
         final JList result = process.getBuiltins().list();
         final String[] listing = new File(folderName).list();
         if (listing != null) {
@@ -110,5 +129,52 @@ public class FilesModule extends JanitorComposed<FilesModule> implements Janitor
         final String folderName = arguments.require(1).getRequiredStringValue(0);
         return JBool.of(new File(folderName).mkdirs());
     }
+
+    private JanitorObject lastMod(JanitorScriptProcess process, JCallArgs arguments) throws JanitorRuntimeException {
+        final String fileName = arguments.require(1).getRequiredStringValue(0);
+        final long lastModified = new File(fileName).lastModified();
+        final LocalDateTime date = DateTimeUtilities.localFromEpochSeconds(lastModified);
+        return process.getBuiltins().dateTime(date);
+    }
+
+    private JString normalize(JanitorScriptProcess process, JCallArgs arguments) throws JanitorRuntimeException {
+        final String fileName = arguments.require(1).getRequiredStringValue(0);
+        final String normalized;
+        try {
+            normalized = new File(fileName).getCanonicalPath();
+        } catch (IOException e) {
+            throw new JanitorNativeException(process, "error normalizing file name '" + fileName + "'", e);
+        }
+        return process.getBuiltins().string(normalized);
+    }
+
+    public JanitorObject delete(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+        final String fileName = arguments.require(1).getRequiredStringValue(0);
+        final boolean success = new File(fileName).delete();
+        return JBool.of(success);
+    }
+
+    public void move(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+        arguments.require(2);
+        final String source = arguments.getRequiredStringValue(0);
+        final String target = arguments.getRequiredStringValue(1);
+        try {
+            Files.move(Path.of(source), Path.of(target));
+        } catch (IOException e) {
+            throw new JanitorNativeException(process, "error moving file", e);
+        }
+    }
+
+    public void copy(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+        arguments.require(2);
+        final String source = arguments.getRequiredStringValue(0);
+        final String target = arguments.getRequiredStringValue(1);
+        try {
+            Files.copy(Path.of(source), Path.of(target));
+        } catch (IOException e) {
+            throw new JanitorNativeException(process, "error copying file", e);
+        }
+    }
+
 
 }

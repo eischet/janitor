@@ -2,6 +2,7 @@ package com.eischet.janitor.maven.env;
 
 import com.eischet.janitor.api.JanitorRuntime;
 import com.eischet.janitor.commons.FilesModule;
+import com.eischet.janitor.commons.OperatingSystemModule;
 import com.eischet.janitor.env.JanitorDefaultEnvironment;
 import com.eischet.janitor.runtime.JanitorFormattingLocale;
 import com.eischet.janitor.runtime.modules.CollectionsModule;
@@ -20,6 +21,7 @@ public class MavenScriptingEnv extends JanitorDefaultEnvironment {
 
         addModule(FilesModule.REGISTRATION);
         addModule(CollectionsModule.REGISTRATION);
+        addModule(OperatingSystemModule.REGISTRATION);
     }
 
     @Override

@@ -1,3 +1,8 @@
+# 0.9.15, 2025-03-28
+
+Update the maven plugin to add os.exec, for another project that uses this plugin.
+
+
 # 0.9.14, 2025-03-19
 
 New string method `split` splits a string into a list of substrings by the given separator.
