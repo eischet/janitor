@@ -141,7 +141,9 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
         };
     }
 
-    private void put(final String name, final AttributeLookupHandler<T> handler, final @Nullable JsonAdapter<T> jsonSupport) {
+    private void put(final String name,
+                     final AttributeLookupHandler<T> handler,
+                     final @Nullable JsonAdapter<T> jsonSupport) {
         map.put(name, handler);
         attributes.removeIf(element -> Objects.equals(element.name, name));
         attributes.add(new Attribute<>(name, handler, jsonSupport));

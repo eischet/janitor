@@ -142,6 +142,17 @@ public class JCallArgs {
         throw new JanitorArgumentException(process, "%s: argument %s must be a string value, but the caller provided: %s".formatted(functionName, i, args));
     }
 
+    public int getRequiredIntValue(final int i) throws JanitorArgumentException {
+        final JanitorObject arg = get(i);
+        if (arg instanceof JInt num) {
+            if (num.toLong() > Integer.MAX_VALUE) {
+                throw new JanitorArgumentException(process, "%s: argument %s must be an integer value, but the value that was provided is too big for an integer: %s".formatted(functionName, i, args));
+            }
+            return (int) num.toLong();
+        }
+        throw new JanitorArgumentException(process, "%s: argument %s must be a numeric value, but the caller provided: %s".formatted(functionName, i, args));
+    }
+
     public long getRequiredLongValue(final int i) throws JanitorArgumentException {
         final JanitorObject arg = get(i);
         if (arg instanceof JNumber num) {
