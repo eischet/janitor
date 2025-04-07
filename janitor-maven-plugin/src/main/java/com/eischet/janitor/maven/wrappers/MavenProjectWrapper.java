@@ -37,6 +37,8 @@ public class MavenProjectWrapper extends JanitorWrapper<MavenProject> {
         dispatcher.addStringProperty("basedir", self -> self.janitorGetHostValue().getBasedir().getAbsolutePath());
         // LATER: dispatcher.addObjectProperty("properties", ); cannot automatically wrap this at the moment
 
+        dispatcher.addStringProperty("revision", self -> self.janitorGetHostValue().getProperties().getProperty("revision"));
+
         dispatcher.addMethod("getProperty", (self, process, args) -> {
             final String name = args.getRequiredStringValue(0);
             final String value = self.janitorGetHostValue().getProperties().getProperty(name);
