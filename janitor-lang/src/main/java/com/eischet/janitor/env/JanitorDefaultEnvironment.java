@@ -71,6 +71,15 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
         this.builtins = new DefaultBuiltinTypes();
     }
 
+    public static JanitorDefaultEnvironment create(final JanitorFormatting formatting, final Consumer<String> warningEmitter) {
+        return new JanitorDefaultEnvironment(formatting) {
+            @Override
+            public void warn(final String message) {
+                warningEmitter.accept(message);
+            }
+        };
+    }
+
     /**
      * Assert a condition.
      *
