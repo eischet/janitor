@@ -25,10 +25,15 @@ import java.util.function.Supplier;
 
 public abstract class GenericDispatchTable<T extends JanitorObject> implements Dispatcher<T> {
 
-    protected final JsonSupportDelegate<String> JSON_STRING = new JsonSupportDelegate<>(JsonInputStream::nextString, JsonOutputStream::value);
-    protected final JsonSupportDelegate<Integer> JSON_INT = new JsonSupportDelegate<>(JsonInputStream::nextInt, JsonOutputStream::value);
-    protected final JsonSupportDelegate<Long> JSON_LONG = new JsonSupportDelegate<>(JsonInputStream::nextLong, JsonOutputStream::value);
-    protected final JsonSupportDelegate<Double> JSON_DOUBLE = new JsonSupportDelegate<>(JsonInputStream::nextDouble, JsonOutputStream::value);
+    protected final JsonSupportDelegate<String> JSON_STRING = new JsonSupportDelegate<>(JsonInputStream::nextString, JsonOutputStream::value, String::isEmpty);
+
+    protected final JsonSupportDelegate<Integer> JSON_NULLABLE_INT = new JsonSupportDelegate<>(JsonInputStream::nextInt, JsonOutputStream::value);
+    protected final JsonSupportDelegate<Long> JSON_NULLABLE_LONG = new JsonSupportDelegate<>(JsonInputStream::nextLong, JsonOutputStream::value);
+    protected final JsonSupportDelegate<Double> JSON_NULLABLE_DOUBLE = new JsonSupportDelegate<>(JsonInputStream::nextDouble, JsonOutputStream::value);
+
+    protected final JsonSupportDelegate<Integer> JSON_INT = new JsonSupportDelegate<>(JsonInputStream::nextInt, JsonOutputStream::value, intValue -> intValue == 0);
+    protected final JsonSupportDelegate<Long> JSON_LONG = new JsonSupportDelegate<>(JsonInputStream::nextLong, JsonOutputStream::value, longValue -> longValue == 0L);
+    protected final JsonSupportDelegate<Double> JSON_DOUBLE = new JsonSupportDelegate<>(JsonInputStream::nextDouble, JsonOutputStream::value, doubleValue -> doubleValue == 0.0d);
 
     // The difference between JSON_BOOL and JSON_BOOL_NULLABLE is subtle for JSON purposes: boolean true/false is only written when true and omitted otherwise,
     // Boolean null/true/false writes both true and false but omits null. I think that's what people using these types should expect.
@@ -40,20 +45,10 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
     private final DispatchDelegate<T> parentLookupHandler;
     private final Map<String, AttributeLookupHandler<T>> map = new HashMap<>();
     private final List<Attribute<T>> attributes = new ArrayList<>();
-    private JConstructor<T> constructor;
     private final ParentAttributeReader<T> parentAttributeReader;
     private final ParentAttributeWriter<T> parentAttributeWriter;
+    private JConstructor<T> constructor;
 
-
-    @FunctionalInterface
-    private interface ParentAttributeReader<T> {
-        boolean readAttribute(final JsonInputStream stream, final String key, final T instance) throws JsonException;
-    }
-
-    @FunctionalInterface
-    private interface ParentAttributeWriter<T> {
-        void writeToJson(final JsonOutputStream stream, T instance) throws JsonException;
-    }
 
     public GenericDispatchTable() {
         parentLookupHandler = null;
@@ -72,10 +67,12 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
             }
         };
         parentAttributeWriter = (stream, instance) -> {
-            System.out.println("parent is an instance of " + parent.getClass());
             if (parent instanceof GenericDispatchTable<P> parentDispatch) {
                 parentDispatch.writeMyAttributes(stream, caster.apply(instance));
+                return;
             }
+            // otherwise?
+            System.out.println("parent is an instance of " + parent.getClass() + ", but only GenericDispatchTable is supported at the moment. This needs to be fixed within GenericDispatchTable.java in the Janitor project, module janitor-api.");
         };
     }
 
@@ -92,7 +89,7 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
                 if (setter != null) {
                     final @NotNull X jsonValue = delegate.read(stream);
                     setter.accept(instance, jsonValue);
-                // } else { // TODO: warn!
+                    // } else { // TODO: warn!
                 }
             }
 
@@ -259,7 +256,28 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
      * @param getter property getter
      */
     public void addListProperty(final String name, final Function<T, JList> getter) {
-        put(name, (instance, process) -> getter.apply(instance), null);
+        put(name, (instance, process) -> getter.apply(instance), new JsonAdapter<>() {
+            @Override
+            public void write(final JsonOutputStream stream, final T instance) throws JsonException {
+                final JList list = getter.apply(instance);
+                if (list != null) {
+                    list.writeJson(stream);
+                } else {
+                    stream.beginArray().endArray();
+                }
+            }
+
+            @Override
+            public void read(final JsonInputStream stream, final T instance) throws JsonException {
+                throw new JsonException("Unexpected JSON read operation for readonly list property " + name + " on instance " + instance);
+            }
+
+            @Override
+            public boolean isDefault(final T instance) {
+                final JList list = getter.apply(instance);
+                return list == null || list.isEmpty();
+            }
+        });
     }
 
     public <E> void addListProperty(final String name, final Function<T, List<E>> getter, final BiConsumer<T, List<E>> setter, final TwoWayConverter<E> converter, final @Nullable JsonSupportDelegate<E> jsonSupportDelegate) {
@@ -271,6 +289,14 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
                     setter.accept(instance, list);
                 }),
                 jsonSupportDelegate == null ? null : adaptList(jsonSupportDelegate, getter, setter));
+    }
+
+    public void addListOfStringsProperty(final String name, final Function<T, List<String>> getter, final BiConsumer<T, List<String>> setter) {
+        addListProperty(name, getter, setter, StringConverter.INSTANCE, JSON_STRING);
+    }
+
+    public void addListOfIntegersProperty(final String name, final Function<T, List<Integer>> getter, final BiConsumer<T, List<Integer>> setter) {
+        addListProperty(name, getter, setter, IntegerConverter.INSTANCE, JSON_INT);
     }
 
     /* TODO:
@@ -297,18 +323,9 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
 
      */
 
-    public void addListOfStringsProperty(final String name, final Function<T, List<String>> getter, final BiConsumer<T, List<String>> setter) {
-        addListProperty(name, getter, setter, StringConverter.INSTANCE, JSON_STRING);
-    }
-
-    public void addListOfIntegersProperty(final String name, final Function<T, List<Integer>> getter, final BiConsumer<T, List<Integer>> setter) {
-        addListProperty(name, getter, setter, IntegerConverter.INSTANCE, JSON_INT);
-    }
-
     public void addListOfDoublesProperty(final String name, final Function<T, List<Double>> getter, final BiConsumer<T, List<Double>> setter) {
         addListProperty(name, getter, setter, FloatConverter.INSTANCE, JSON_DOUBLE);
     }
-
 
     /**
      * Adds a read-only boolean property.
@@ -487,7 +504,6 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
         };
     }
 
-
     /**
      * Dispatches a call to the instance, using the dispatch table to figure out what to do.
      *
@@ -557,8 +573,6 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
 
     }
 
-    // TODO: the basic "inheritance" implemented by Dispatcher<...> etc. is not used in the JSON code. Figure out how, then do it.
-
     @Language("JSON")
     public String writeToJson(final JanitorEnvironment env, final T instance) throws JsonException {
         return env.writeJson(producer -> writeToJson(producer, instance));
@@ -583,6 +597,7 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
         return instance;
     }
 
+    // TODO: the basic "inheritance" implemented by Dispatcher<...> etc. is not used in the JSON code. Figure out how, then do it.
 
     private boolean readAttribute(final JsonInputStream stream, final String key, final T instance) throws JsonException {
         final Attribute<T> matched = attributes.stream().filter(attr -> Objects.equals(attr.name(), key)).findFirst().orElse(null);
@@ -598,6 +613,17 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
 
     public T readFromJson(final JanitorEnvironment env, final Supplier<T> constructor, @Language("JSON") final String json) throws JsonException {
         return readFromJson(constructor, env.getLenientJsonConsumer(json));
+    }
+
+
+    @FunctionalInterface
+    private interface ParentAttributeReader<T> {
+        boolean readAttribute(final JsonInputStream stream, final String key, final T instance) throws JsonException;
+    }
+
+    @FunctionalInterface
+    private interface ParentAttributeWriter<T> {
+        void writeToJson(final JsonOutputStream stream, T instance) throws JsonException;
     }
 
     private record Attribute<T extends JanitorObject>(
