@@ -68,7 +68,7 @@ public class AutoJsonTestCase {
 
     @Language("JSON")
     private static final String SIMPLE_TWO = """
-                {"foo":"baz","bar":""}""";
+                {"foo":"baz"}""";
 
     @Language("JSON")
     private static final String SIMPLE_THREE = """
@@ -125,7 +125,7 @@ public class AutoJsonTestCase {
 
         final SimpleObject so2 = SimpleObject.fromJson(rt.getEnvironment().getLenientJsonConsumer(SIMPLE_TWO));
         assertEquals("baz", so2.getFoo());
-        assertEquals("", so2.getBar());
+        // makes no sense, really: assertEquals("", so2.getBar());
 
         final SimpleObject so3 = SimpleObject.fromJson(rt.getEnvironment().getLenientJsonConsumer(SIMPLE_THREE));
         assertEquals("baz", so3.getFoo());

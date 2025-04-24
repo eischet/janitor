@@ -15,7 +15,12 @@
         <dependency>
             <groupId>com.eischet.janitor</groupId>
             <artifactId>janitor-api</artifactId>
-            <version>${project.parent.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <!-- ANTLR 4 for parsing the language -->
@@ -24,31 +29,24 @@
             <groupId>org.antlr</groupId>
             <artifactId>antlr4-runtime</artifactId>
             <version>4.13.2</version>
-            <scope>compile</scope>
         </dependency>
 
         <!-- logging APIs -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>${dep.slf4j}</version>
-            <scope>compile</scope>
         </dependency>
 
         <!-- JSON parsing and generation -->
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
-            <version>2.13.0</version>
-            <scope>compile</scope>
         </dependency>
 
         <!-- JUnit 5 for unit testing -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.12.0</version>
-            <scope>test</scope>
         </dependency>
 
         <!-- Logging stubs for unit testing -->
@@ -56,7 +54,6 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-jdk14</artifactId>
-            <version>2.0.17</version>
             <scope>test</scope>
         </dependency>
 

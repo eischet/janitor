@@ -20,7 +20,6 @@
         <dependency>
             <groupId>com.eischet.janitor</groupId>
             <artifactId>janitor-lang</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-nop -->
         <dependency>

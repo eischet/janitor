@@ -24,10 +24,18 @@ public class OperatingSystemModule extends JanitorComposed<OperatingSystemModule
 
     static {
         dispatcher.addMethod("exec", OperatingSystemModule::exec);
+        dispatcher.addMethod("getenv", OperatingSystemModule::getenv);
     }
 
     public OperatingSystemModule() {
         super(dispatcher);
+    }
+
+    public JanitorObject getenv(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+        arguments.require(1);
+        final String name = arguments.getString(0).janitorGetHostValue();
+        final String value = System.getenv(name);
+        return process.getBuiltins().nullableString(value);
     }
 
     /**

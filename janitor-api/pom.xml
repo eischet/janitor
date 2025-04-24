@@ -15,13 +15,11 @@
         <dependency>
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
-            <version>${dep.jetbrains-annotations}</version>
-            <scope>compile</scope>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.eischet.janitor</groupId>
             <artifactId>janitor-toolbox</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>
     </dependencies>
 

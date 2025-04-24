@@ -34,13 +34,18 @@
         <dependency>
             <groupId>com.eischet.janitor</groupId>
             <artifactId>janitor-lang</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>com.eischet.janitor</groupId>
             <artifactId>janitor-commons</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+
         <!-- https://mvnrepository.com/artifact/org.apache.maven/maven-slf4j-provider -->
         <dependency>
             <groupId>org.apache.maven</groupId>
