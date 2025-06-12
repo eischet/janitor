@@ -25,6 +25,14 @@ public class JRegexClass {
         }
     }
 
+    public static JanitorObject matcher(final JanitorWrapper<Pattern> self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+        arguments.require(1);
+        final JString str = arguments.getString(0);
+        final Matcher matcher = self.janitorGetHostValue().matcher(str.janitorGetHostValue());
+        return new JMatcherWrapper(matcher);
+    }
+
+
     public static JanitorObject extractAll(final JanitorWrapper<Pattern> self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(1);
         final JList list = process.getEnvironment().getBuiltinTypes().list();
