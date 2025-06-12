@@ -1,11 +1,11 @@
 package com.eischet.janitor.api.types.builtin;
 
-import com.eischet.janitor.api.types.JConstant;
-import com.eischet.janitor.api.types.JanitorObject;
-import com.eischet.janitor.toolbox.json.api.JsonExportablePrimitive;
 import org.jetbrains.annotations.NotNull;
 
-public interface JNumber extends JanitorObject, JConstant, JsonExportablePrimitive, Comparable<JNumber> {
+import com.eischet.janitor.api.types.JConstant;
+import com.eischet.janitor.toolbox.json.api.JsonExportablePrimitive;
+
+public interface JNumber extends JConstant, JsonExportablePrimitive, Comparable<JNumber> {
 
     /**
      * Return the inner/host value of this JNumber.
