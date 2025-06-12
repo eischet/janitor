@@ -185,8 +185,8 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
         // TODO accidentally broke the build here; add tests for old/new style filter scripts!
         try {
             return new FilterScript(this, name, code);
-        } catch (JanitorCompilerException JanitorParserException) {
-            warn("error compiling filter: " + code + ":" + JanitorParserException);
+        } catch (JanitorCompilerException janitorParserException) {
+            warn("error compiling filter: " + code + ":" + janitorParserException);
             // TODO: report an exception -> exception(JanitorParserException);
             return NUMB;
         }
@@ -199,8 +199,8 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
         }
         try {
             return new FilterScript(this, name, code, globalsProvider);
-        } catch (JanitorCompilerException JanitorParserException) {
-            warn("error compiling filter: " + code + ":" + JanitorParserException);
+        } catch (JanitorCompilerException janitorParserException) {
+            warn("error compiling filter: " + code + ":" + janitorParserException);
             // TODO: report an exception -> exception(JanitorParserException);
             return NUMB;
         }
