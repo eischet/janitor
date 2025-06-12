@@ -1,10 +1,15 @@
-# 09.9.18, 2025-04-24
+# 0.9.19, 2025-05-xx
+
+Add a regex matcher class, in Java style, e.g. `m = re/(foo)/.matcher(text);`
+
+
+# 0.9.18, 2025-04-24
 
 Add os.getenv(string): string to the os module.
 When serializing objects to JSON, using the DispatchTable, omit empty strings by default.
 Skipped 0.9.17 because of build settings mistake.
 
-# 09.9.16, 2025-04-23
+# 0.9.16, 2025-04-23
 
 Improve JSON output in the "GenericDispatchTable" implementation: ignore defaults like 0, "", 0.0d instead of writing them; automatically output lists.
 
