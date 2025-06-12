@@ -25,14 +25,12 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
-            <version>${dep.slf4j}</version>
             <scope>test</scope>
         </dependency>
         <!-- JUnit 5 for unit testing -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.12.0</version>
             <scope>test</scope>
         </dependency>
 
