@@ -69,6 +69,7 @@ public class DefaultBuiltinTypes implements BuiltinTypes {
         stringDispatcher.addMethod("containsIgnoreCase", JStringClass::__containsIgnoreCase); // "foobar".containsIgnoreCase("BAR") == true
         stringDispatcher.addMethod("splitLines", JStringClass::__splitLines); // "foo\nbar\nbaz".splitLines() == ["foo", "bar", "baz"]
         stringDispatcher.addMethod("indexOf", JStringClass::__indexOf); // "foobar".indexOf("bar") == 3, "foobar".indexOf("x") == -1
+        stringDispatcher.addMethod("lastIndexOf", JStringClass::__lastIndexOf); // "foobar".indexOf("bar") == 3, "foobar".indexOf("x") == -1
         stringDispatcher.addMethod("empty", JStringClass::__empty); // "".empty() == true, "foo".empty() == false
         stringDispatcher.addMethod("startsWith", JStringClass::__startsWith); // "foobar".startsWith("foo") == true, "foobar".startsWith("bar") == false
         stringDispatcher.addMethod("endsWith", JStringClass::__endsWith); // "foobar".endsWith("bar") == true, "foobar".endsWith("foo") == false
@@ -165,7 +166,7 @@ public class DefaultBuiltinTypes implements BuiltinTypes {
         regexDispatcher.addMethod("replaceAll", JRegexClass::replaceAll);
         regexDispatcher.addMethod("replaceFirst", JRegexClass::replaceFirst);
         regexDispatcher.addMethod("split", JRegexClass::split);
-
+        regexDispatcher.addMethod("matcher", JRegexClass::matcher);
 
         dateTimeDispatch.addLongProperty("epoch", JDateTimeClass::__epochAsAttribute);
         dateTimeDispatch.addMethod("toEpoch", JDateTimeClass::__epoch);
