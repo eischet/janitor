@@ -1,11 +1,10 @@
 package com.eischet.janitor.api.scopes;
 
+import org.jetbrains.annotations.Nullable;
+
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonExportableObject;
 import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
-import org.jetbrains.annotations.Nullable;
-
-import java.io.Serializable;
 
 /**
  * The Location represents a position in a script source code.

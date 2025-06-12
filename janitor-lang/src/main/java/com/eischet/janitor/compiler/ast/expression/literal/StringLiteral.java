@@ -2,12 +2,10 @@ package com.eischet.janitor.compiler.ast.expression.literal;
 
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.scopes.Location;
-import com.eischet.janitor.api.types.builtin.JString;
 import com.eischet.janitor.api.types.JanitorObject;
+import com.eischet.janitor.api.types.builtin.JString;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
-
-import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
 /**
  * String literal: "foobar".

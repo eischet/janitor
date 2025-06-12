@@ -27,7 +27,7 @@ public abstract class BinaryOperation extends AstNode implements Expression {
      * @param right right operand
      * @param functor what to do with the operands
      */
-    public BinaryOperation(final Location location,
+    protected BinaryOperation(final Location location,
                            final Expression left,
                            final Expression right,
                            final BinaryOperationDelegate functor) {
