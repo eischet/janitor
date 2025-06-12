@@ -242,6 +242,11 @@ public class JStringClass {
         return process.getEnvironment().getBuiltinTypes().integer(self.janitorGetHostValue().indexOf(arguments.getString(0).janitorGetHostValue()));
     }
 
+    public static JInt __lastIndexOf(final JString self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+        return process.getEnvironment().getBuiltinTypes().integer(self.janitorGetHostValue().lastIndexOf(arguments.getString(0).janitorGetHostValue()));
+    }
+
+
     public static JString __substring(final JString self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         final int from = (int) arguments.getInt(0).getValue();
         final int to = arguments.size() > 1 ? (int) arguments.getInt(1).getValue() : self.janitorGetHostValue().length();
