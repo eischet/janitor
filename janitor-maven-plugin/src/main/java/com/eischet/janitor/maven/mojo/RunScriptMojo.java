@@ -39,7 +39,7 @@ import org.eclipse.aether.util.artifact.JavaScopes;
 import org.eclipse.aether.resolution.DependencyResult;
 
 @Mojo(name = "run-script-file", defaultPhase = LifecyclePhase.PROCESS_SOURCES)
-public class RunScriptMojo extends AbstractMojo {
+public class RunScriptMojo extends AbstractMojo implements Lookups {
 
     @Parameter(defaultValue = "${project}", required = true, readonly = true)
     MavenProject project;
@@ -56,6 +56,11 @@ public class RunScriptMojo extends AbstractMojo {
 
     @Component
     private RepositorySystem repoSystem;
+
+
+    public RepositorySystem lookupRepositorySystem() {
+        return repoSystem;
+    }
 
 
     @Override
