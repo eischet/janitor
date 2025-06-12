@@ -245,6 +245,16 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
      * @param name   property name
      * @param getter property getter
      */
+    public void addDoubleProperty(final String name, final Function<T, Double> getter) {
+        put(name, (instance, process) -> process.getBuiltins().nullableFloatingPoint(getter.apply(instance)), adapt(JSON_NULLABLE_DOUBLE, getter, null));
+    }
+
+    /**
+     * Adds a double property
+     * @param name   property name
+     * @param getter property getter
+     * @param setter property setter
+     */
     public void addDoubleProperty(final String name, final Function<T, Double> getter, final BiConsumer<T, Double> setter) {
         put(name, (instance, process) -> new TemporaryAssignable(process.getEnvironment().getBuiltinTypes().floatingPoint(getter.apply(instance)), value -> setter.accept(instance, process.requireFloat(value).janitorGetHostValue())), adapt(JSON_DOUBLE, getter, setter));
     }
@@ -551,6 +561,7 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
         return map.containsKey(key);
     }
 
+    @Override
     public void writeToJson(final JsonOutputStream stream, final T instance) throws JsonException {
         stream.beginObject();
         if (parentAttributeWriter != null) {
@@ -574,10 +585,12 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
     }
 
     @Language("JSON")
+    @Override
     public String writeToJson(final JanitorEnvironment env, final T instance) throws JsonException {
         return env.writeJson(producer -> writeToJson(producer, instance));
     }
 
+    @Override
     public T readFromJson(final Supplier<T> constructor, final JsonInputStream stream) throws JsonException {
         final T instance = constructor.get();
         stream.beginObject();
@@ -611,6 +624,7 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
         return false;
     }
 
+    @Override
     public T readFromJson(final JanitorEnvironment env, final Supplier<T> constructor, @Language("JSON") final String json) throws JsonException {
         return readFromJson(constructor, env.getLenientJsonConsumer(json));
     }
