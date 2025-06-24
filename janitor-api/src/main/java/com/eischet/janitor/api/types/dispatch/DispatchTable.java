@@ -24,8 +24,7 @@ public class DispatchTable<T extends JanitorObject> extends GenericDispatchTable
      * @param caster a function to case from our T type to the parent P type, because Java cannot provide this automatically
      * @param <P> the type of the parent dispatch table
      */
-    public <P extends JanitorObject> DispatchTable(final Dispatcher<P> parent,
-                                                   final Function<T, P> caster) {
+    public <P extends JanitorObject> DispatchTable(final Dispatcher<P> parent, final Function<T, P> caster) {
         super(parent, caster);
     }
 

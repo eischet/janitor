@@ -5,8 +5,9 @@ import com.eischet.janitor.api.JanitorScriptProcess;
 /**
  * An exception thrown when an assignment operation fails.
  * For example, when you assign a string value to a number property, host code may throw this exception.
+ * TODO: at the moment, JanitorArgumentException is actually thrown e.g. by the Dispatch Tables
  */
-public class JanitorAssignmentException extends JanitorRuntimeException {
+public class JanitorAssignmentException extends JanitorArgumentException {
 
     /**
      * Constructs a new JanitorAssignmentException.

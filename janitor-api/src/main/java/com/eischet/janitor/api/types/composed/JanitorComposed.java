@@ -3,6 +3,7 @@ package com.eischet.janitor.api.types.composed;
 import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
+import com.eischet.janitor.api.types.dispatch.HasDispatcher;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.toolbox.json.api.*;
@@ -24,7 +25,7 @@ import java.util.function.Supplier;
  *
  * @param <T> the type of the subclass you supply, e.g. Subclass extends JanitorComposed&lt;Subclass&gt;.
  */
-public abstract class JanitorComposed<T extends JanitorComposed<T>> implements JanitorObject, JsonWriter, JsonReader {
+public abstract class JanitorComposed<T extends JanitorComposed<T>> implements JanitorObject, JsonWriter, JsonReader, HasDispatcher<T> {
     protected final Dispatcher<T> dispatcher;
 
     /**
@@ -34,6 +35,17 @@ public abstract class JanitorComposed<T extends JanitorComposed<T>> implements J
      */
     protected JanitorComposed(final Dispatcher<T> dispatcher) {
         this.dispatcher = dispatcher;
+    }
+
+    /**
+     * Return the internal Dispatch table.
+     * This is from the HasDispatcher interface.
+     *
+     * @return the internal dispatch table
+     */
+    @Override
+    public Dispatcher<T> getDispatcher() {
+        return dispatcher;
     }
 
     @Override

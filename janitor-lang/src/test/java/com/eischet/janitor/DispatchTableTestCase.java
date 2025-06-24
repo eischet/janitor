@@ -2,14 +2,14 @@ package com.eischet.janitor;
 
 import com.eischet.janitor.api.RunnableScript;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
+import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import com.eischet.janitor.runtime.OutputCatchingTestRuntime;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class DispatchTableTestCase {
 
@@ -68,9 +68,11 @@ public class DispatchTableTestCase {
 
         static {
             DISPATCH.addNullableBooleanProperty("frobnicate", SimpleObject::getFrobnicate, SimpleObject::setFrobnicate);
+            DISPATCH.addStringProperty("foo", SimpleObject::getFoo, SimpleObject::setFoo);
         }
 
         private Boolean frobnicate;
+        private String foo;
 
         public SimpleObject() {
             super(DISPATCH);
@@ -83,7 +85,35 @@ public class DispatchTableTestCase {
         public void setFrobnicate(final Boolean frobnicate) {
             this.frobnicate = frobnicate;
         }
+
+        public String getFoo() {
+            return foo;
+        }
+
+        public void setFoo(final String foo) {
+            this.foo = foo;
+        }
     }
 
+    @Test
+    void invalidAssignment() throws JanitorRuntimeException {
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
+        final SimpleObject so = new SimpleObject();
+
+        /*
+         * simplify script execution for the rest of the test.
+         */
+        final TestEnv.ScriptConsumer play = (script) -> {
+            try {
+                final RunnableScript runnableScript = rt.compile("test", script);
+                runnableScript.run(g -> g.bind("obj", so));
+            } catch (JanitorCompilerException e) {
+                throw new RuntimeException(e); // RuntimeConsumers allow Runtime Errors, but not compile errors, so let's just convert
+            }
+        };
+
+        assertThrows(JanitorArgumentException.class, () -> play.accept("obj.foo = 17;"));
+
+    }
 
 }

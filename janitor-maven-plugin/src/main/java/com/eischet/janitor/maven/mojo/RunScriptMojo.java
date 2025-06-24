@@ -1,11 +1,8 @@
 package com.eischet.janitor.maven.mojo;
 
-import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.JList;
 import com.eischet.janitor.api.types.builtin.JNull;
-import com.eischet.janitor.api.types.functions.JCallArgs;
-import com.eischet.janitor.api.types.functions.JCallable;
 import com.eischet.janitor.lang.JNativeMethod;
 import com.eischet.janitor.maven.env.MavenScriptingEnv;
 import com.eischet.janitor.api.JanitorRuntime;

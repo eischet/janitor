@@ -1,8 +1,11 @@
-package com.eischet.janitor.json.impl;
+package com.eischet.janitor;
 
+import com.eischet.janitor.json.impl.DateTimeUtils;
+import com.eischet.janitor.json.impl.JsonExportControls;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
-import com.google.gson.stream.JsonWriter;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -12,31 +15,33 @@ import java.io.Writer;
 import java.time.LocalDateTime;
 import java.util.Date;
 
-/**
- * JsonOutputStream implementation using Gson.
- */
-public abstract class GsonOutputStream implements JsonOutputStream {
+public class JacksonOutputStream implements JsonOutputStream {
 
-    public static GsonOutputStream prettyWriter(final OutputStreamWriter outputStreamWriter) {
-        return new GsonStreamOut(JsonExportControls.pretty(), outputStreamWriter);
+    /*
+    public static JacksonOutputStream prettyWriter(final OutputStreamWriter outputStreamWriter) {
+        return new GsonOutputStream.GsonStreamOut(JsonExportControls.pretty(), outputStreamWriter);
     }
 
-    public static GsonStringOut stringWriter(final JsonExportControls jsonExportControls) {
-        return new GsonStringOut(jsonExportControls);
+    public static GsonOutputStream.GsonStringOut stringWriter(final JsonExportControls jsonExportControls) {
+        return new GsonOutputStream.GsonStringOut(jsonExportControls);
     }
+
+     */
 
     protected final JsonExportControls jsonExportControls;
     protected final Writer sw;
-    protected final JsonWriter jw;
+    private final JsonFactory factory;
+    private final JsonGenerator generator;
     protected int level = 0;
 
-    protected GsonOutputStream(final JsonExportControls jsonExportControls, final Writer sw) {
+    protected JacksonOutputStream(final JsonExportControls jsonExportControls, final Writer sw) throws IOException {
+        this.factory = JsonFactory.builder().build(); // LATER: options...
         this.jsonExportControls = jsonExportControls != null ? jsonExportControls : JsonExportControls.standard();
         this.sw = sw;
-        this.jw = new JsonWriter(sw);
-        if (jsonExportControls != null && jsonExportControls.isPretty()) {
-            jw.setIndent("  ");
-        }
+        // if (jsonExportControls != null && jsonExportControls.isPretty()) {
+            // jw.setIndent("  ");
+        //}
+        this.generator = factory.createGenerator(sw);
     }
 
     @Override
@@ -67,7 +72,7 @@ public abstract class GsonOutputStream implements JsonOutputStream {
     @Override
     public void close() throws JsonException {
         try {
-            jw.close();
+            generator.close();
             sw.close();
         } catch (IOException e) {
             throw new JsonException("error closing gson writer", e);
@@ -77,7 +82,7 @@ public abstract class GsonOutputStream implements JsonOutputStream {
     @Override
     public JsonOutputStream beginObject() throws JsonException {
         try {
-            jw.beginObject();
+            generator.writeStartObject();
             return this;
         } catch (IOException e) {
             throw new JsonException("error generating JSON", e);
@@ -88,7 +93,7 @@ public abstract class GsonOutputStream implements JsonOutputStream {
     @Override
     public JsonOutputStream endObject() throws JsonException {
         try {
-            jw.endObject();
+            generator.writeEndObject();
             return this;
         } catch (IOException e) {
             throw new JsonException("error generating JSON", e);
@@ -99,7 +104,7 @@ public abstract class GsonOutputStream implements JsonOutputStream {
     @Override
     public JsonOutputStream key(final String key) throws JsonException {
         try {
-            jw.name(key);
+            generator.writeFieldName(key);
             return this;
         } catch (IOException e) {
             throw new JsonException("error generating JSON", e);
@@ -109,7 +114,7 @@ public abstract class GsonOutputStream implements JsonOutputStream {
     @Override
     public JsonOutputStream value(final String value) throws JsonException {
         try {
-            jw.value(value);
+            generator.writeString(value);
             return this;
         } catch (IOException e) {
             throw new JsonException("error generating JSON", e);
@@ -120,7 +125,7 @@ public abstract class GsonOutputStream implements JsonOutputStream {
     @Override
     public JsonOutputStream nullValue() throws JsonException {
         try {
-            jw.nullValue();
+            generator.writeNull();
             return this;
         } catch (IOException e) {
             throw new JsonException("error generating JSON", e);
@@ -130,7 +135,7 @@ public abstract class GsonOutputStream implements JsonOutputStream {
     @Override
     public JsonOutputStream value(final long value) throws JsonException {
         try {
-            jw.value(value);
+            generator.writeNumber(value);
             return this;
         } catch (IOException e) {
             throw new JsonException("error generating JSON", e);
@@ -140,7 +145,7 @@ public abstract class GsonOutputStream implements JsonOutputStream {
     @Override
     public JsonOutputStream value(final double value) throws JsonException {
         try {
-            jw.value(value);
+            generator.writeNumber(value);
             return this;
         } catch (IOException e) {
             throw new JsonException("error generating JSON", e);
@@ -150,7 +155,17 @@ public abstract class GsonOutputStream implements JsonOutputStream {
     @Override
     public JsonOutputStream value(final Number value) throws JsonException {
         try {
-            jw.value(value);
+            if (value instanceof Integer) {
+                generator.writeNumber(value.intValue());
+            } else if (value instanceof Long) {
+                generator.writeNumber(value.longValue());
+            } else if (value instanceof Double) {
+                generator.writeNumber(value.doubleValue());
+            } else if (value instanceof Float) {
+                generator.writeNumber(value.doubleValue());
+            } else {
+                generator.writeNumber(value.doubleValue());
+            }
             return this;
         } catch (IOException e) {
             throw new JsonException("error generating JSON", e);
@@ -160,7 +175,7 @@ public abstract class GsonOutputStream implements JsonOutputStream {
     @Override
     public JsonOutputStream value(final boolean value) throws JsonException {
         try {
-            jw.value(value);
+            generator.writeBoolean(value);
             return this;
         } catch (IOException e) {
             throw new JsonException("error generating JSON", e);
@@ -170,7 +185,7 @@ public abstract class GsonOutputStream implements JsonOutputStream {
     @Override
     public JsonOutputStream beginArray() throws JsonException {
         try {
-            jw.beginArray();
+            generator.writeStartArray();
             return this;
         } catch (IOException e) {
             throw new JsonException("error generating JSON", e);
@@ -181,7 +196,7 @@ public abstract class GsonOutputStream implements JsonOutputStream {
     @Override
     public JsonOutputStream endArray() throws JsonException {
         try {
-            jw.endArray();
+            generator.writeEndArray();
             return this;
         } catch (IOException e) {
             throw new JsonException("error generating JSON", e);
@@ -191,15 +206,15 @@ public abstract class GsonOutputStream implements JsonOutputStream {
     @Override
     public void flush() throws JsonException {
         try {
-            jw.flush();
+            generator.flush();
         } catch (IOException e) {
             throw new JsonException("error generating JSON", e);
         }
     }
 
-    public static class GsonStringOut extends GsonOutputStream {
+    public static class JacksonStringOut extends JacksonOutputStream {
 
-        public GsonStringOut(final JsonExportControls jsonExportControls) {
+        public JacksonStringOut(final JsonExportControls jsonExportControls) throws IOException {
             super(jsonExportControls, new StringWriter());
         }
 
@@ -209,8 +224,8 @@ public abstract class GsonOutputStream implements JsonOutputStream {
 
     }
 
-    public static class GsonStreamOut extends GsonOutputStream {
-        public GsonStreamOut(final JsonExportControls pretty, final OutputStreamWriter outputStreamWriter) {
+    public static class JacksonStreamOut extends JacksonOutputStream {
+        public JacksonStreamOut(final JsonExportControls pretty, final OutputStreamWriter outputStreamWriter) throws IOException {
             super(pretty, outputStreamWriter);
         }
     }

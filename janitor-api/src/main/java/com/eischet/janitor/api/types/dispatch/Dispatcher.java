@@ -3,11 +3,15 @@ package com.eischet.janitor.api.types.dispatch;
 import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
+import com.eischet.janitor.api.metadata.HasMetaData;
+import com.eischet.janitor.api.metadata.MetaDataKey;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonInputStream;
 import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
 import org.intellij.lang.annotations.Language;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Supplier;
 
@@ -16,7 +20,7 @@ import java.util.function.Supplier;
  *
  * @param <T> the type of JanitorObject
  */
-public interface Dispatcher<T extends JanitorObject> {
+public interface Dispatcher<T extends JanitorObject> extends HasMetaData {
 
     /**
      * Creates a combined dispatcher from a "parent" and a "child", or "superclass" and "subclass" if you prefer.
@@ -32,6 +36,16 @@ public interface Dispatcher<T extends JanitorObject> {
         // Therefore, this method looks more dangerous than it really is, with all those stupid casts.
 
         return new Dispatcher<P>() {
+            @Override
+            public <K> @Nullable K getMetaData(final @NotNull MetaDataKey<K> key) {
+                return child.getMetaData(key);
+            }
+
+            @Override
+            public <K> @Nullable K getMetaData(final @NotNull String attributeName, final @NotNull MetaDataKey<K> key) {
+                return child.getMetaData(attributeName, key);
+            }
+
             @SuppressWarnings("unchecked")
             @Override
             public JanitorObject dispatch(final P instance, final JanitorScriptProcess process, final String name) throws JanitorRuntimeException {
@@ -97,4 +111,5 @@ public interface Dispatcher<T extends JanitorObject> {
     T readFromJson(Supplier<T> constructor, JsonInputStream stream) throws JsonException;
 
     T readFromJson(JanitorEnvironment env, Supplier<T> constructor, @Language("JSON") String json) throws JsonException;
+
 }
