@@ -1,5 +1,6 @@
 package com.eischet.janitor.api.types.functions;
 
+import com.eischet.janitor.api.JanitorMetaData;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.metadata.HasMetaData;
@@ -20,18 +21,30 @@ public class JBoundMethod<T> implements JCallable, JanitorObject, HasMetaData {
     private final JUnboundMethod<T> worker;
     private final String name;
     private final MetaDataRetriever metaDataRetriever;
+    private String help;
 
     /**
      * Create a new bound method.
      * @param name the name of the method.
      * @param object the object to which this method is bound.
      * @param worker the worker that will execute the method.
+     * @param metaDataRetriever a helper that fetches meta-data about the method from somewhere else
      */
     public JBoundMethod(final String name, final T object, final JUnboundMethod<T> worker, final MetaDataRetriever metaDataRetriever) {
         this.object = object;
         this.worker = worker;
         this.name = name;
         this.metaDataRetriever = metaDataRetriever;
+    }
+
+    /**
+     * Create a new bound method without meta-data.
+     * @param name the name of the method.
+     * @param object the object to which this method is bound.
+     * @param worker the worker that will execute the method.
+     */
+    public JBoundMethod(final String name, final T object, final JUnboundMethod<T> worker) {
+        this(name, object, worker, null);
     }
 
     @Override
@@ -41,6 +54,7 @@ public class JBoundMethod<T> implements JCallable, JanitorObject, HasMetaData {
 
     /**
      * Retrieve "direct" meta-data "indirectly" (from an optional metaDataRetriever).
+     * The NAME and HELP are served from within this instance when set and when not overridden by the retriever.
      *
      * @param key the key
      * @return the associated data
@@ -48,7 +62,21 @@ public class JBoundMethod<T> implements JCallable, JanitorObject, HasMetaData {
      */
     @Override
     public <K> @Nullable K getMetaData(final @NotNull MetaDataKey<K> key) {
-        return metaDataRetriever == null ? null : metaDataRetriever.retrieveMetaData(key);
+        if (metaDataRetriever != null) {
+            final @Nullable K datum = metaDataRetriever.retrieveMetaData(key);
+            if (datum != null) {
+                return datum;
+            }
+        }
+        if (key == JanitorMetaData.NAME) {
+            //noinspection unchecked
+            return (K) name;
+        }
+        if (key == JanitorMetaData.HELP) {
+            //noinspection unchecked
+            return (K) help;
+        }
+        return null;
     }
 
     @Override
@@ -64,6 +92,20 @@ public class JBoundMethod<T> implements JCallable, JanitorObject, HasMetaData {
     @Override
     public @NotNull String janitorClassName() {
         return "Function";
+    }
+
+
+    public String getHelp() {
+        return help;
+    }
+
+    public void setHelp(final String help) {
+        this.help = help;
+    }
+
+    public JBoundMethod<T> withHelp(final String help) {
+        setHelp(help);
+        return this;
     }
 
     /**

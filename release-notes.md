@@ -1,5 +1,5 @@
 
-# 0.9.19, 2025-06-xx
+# 0.9.19, 2025-06-25
 
 Add a regex matcher class, in Java style, e.g. `m = re/(foo)/.matcher(text);`
 Add arbitrary meta data to dispatch tables.
