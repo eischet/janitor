@@ -12,6 +12,7 @@ import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.maven.wrappers.AetherArtifactWrapper;
 import com.eischet.janitor.maven.wrappers.ModelWrapper;
 import com.eischet.janitor.maven.wrappers.MavenProjectWrapper;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -37,6 +38,13 @@ import org.eclipse.aether.resolution.DependencyResult;
 
 @Mojo(name = "run-script-file", defaultPhase = LifecyclePhase.PROCESS_SOURCES)
 public class RunScriptMojo extends AbstractMojo implements Lookups {
+
+    /**
+     * The Maven Session Object; copied this from the Maven Assembly Mojo
+     * Might need later for all the fun stuff in the session!
+     */
+    //@Parameter(defaultValue = "${session}", readonly = true, required = true)
+    //private MavenSession mavenSession;
 
     @Parameter(defaultValue = "${project}", required = true, readonly = true)
     MavenProject project;
