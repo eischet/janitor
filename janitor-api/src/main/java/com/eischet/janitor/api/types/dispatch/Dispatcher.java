@@ -14,6 +14,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 /**
  * A dispatcher for JanitorObjects.
@@ -80,6 +81,11 @@ public interface Dispatcher<T extends JanitorObject> extends HasMetaData {
             public P readFromJson(final JanitorEnvironment env, final Supplier<P> constructor, final String json) throws JsonException {
                 return (P) child.readFromJson(env, () -> (C) constructor.get(), json);
             }
+
+            @Override
+            public Stream<String> streamAttributeNames() {
+                return Stream.concat(child.streamAttributeNames(), parent.streamAttributeNames());
+            }
         };
 
         /* used to be a functional interface:
@@ -111,5 +117,7 @@ public interface Dispatcher<T extends JanitorObject> extends HasMetaData {
     T readFromJson(Supplier<T> constructor, JsonInputStream stream) throws JsonException;
 
     T readFromJson(JanitorEnvironment env, Supplier<T> constructor, @Language("JSON") String json) throws JsonException;
+
+    Stream<String> streamAttributeNames();
 
 }

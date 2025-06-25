@@ -9,9 +9,6 @@ import org.jetbrains.annotations.Nullable;
  * The use case behind this is to attach arbitrary information to Janitor wrapper classes that the interpreter or
  */
 public interface HasMetaData {
-
     <K> @Nullable K getMetaData(final @NotNull MetaDataKey<K> key);
-
     <K> @Nullable K getMetaData(final @NotNull String attributeName, final @NotNull MetaDataKey<K> key);
-
 }

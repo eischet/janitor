@@ -2,7 +2,10 @@ package com.eischet.janitor.env;
 
 import com.eischet.janitor.api.FilterPredicate;
 import com.eischet.janitor.api.JanitorEnvironment;
+import com.eischet.janitor.api.JanitorMetaData;
 import com.eischet.janitor.api.JanitorScriptProcess;
+import com.eischet.janitor.api.metadata.HasMetaData;
+import com.eischet.janitor.api.types.dispatch.HasDispatcher;
 import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.errors.runtime.JanitorAssertionException;
@@ -38,11 +41,9 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 /**
  * Default environment for the Janitor scripting language.
@@ -63,7 +64,36 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
         builtinScope.bindF("print", (rs, args) -> rs.getRuntime().print(rs, args));
         builtinScope.bindF("assert", JanitorDefaultEnvironment::doAssert);
         builtinScope.bind("__builtin__", builtinScope); // not sure if this is actually a good idea, because that's a perfect circle of references.
+
+        // Very experimental... and will not yet work like it does in Python, if ever.
+        // For example, help(foo.bar) will print HELP from JInt when the bar property contains an integral number.
+        // That's because we're using "unpack()" all over the place to get to the inner-most value, which is
+        // what we want in most cases, but maybe not here. I'm not sure if it's worth it to make things more complicated
+        // just for this feature, though.
+        builtinScope.bindF("help", (rs, args) -> {
+            final JanitorObject subject = args.get(0);
+            if (subject instanceof HasMetaData hasMetaData) {
+                return getBuiltinTypes().nullableString(hasMetaData.getMetaData(JanitorMetaData.HELP));
+            }
+            if (subject instanceof HasDispatcher<?> hasDispatcher) {
+                return getBuiltinTypes().nullableString(hasDispatcher.getDispatcher().getMetaData(JanitorMetaData.HELP));
+            }
+            return JNull.NULL;
+        });
+        builtinScope.bindF("dir", (rs, args) -> {
+            final JanitorObject subject = args.get(0);
+            if (subject instanceof HasDispatcher<?> hasDispatcher) {
+                return deduplicatedListOfStrings(hasDispatcher.getDispatcher().streamAttributeNames());
+            }
+            return getBuiltinTypes().list(0);
+        });
         builtinScope.seal();
+    }
+
+    private JList deduplicatedListOfStrings(final Stream<String> stream) {
+        final TreeSet<String> ts = new TreeSet<>();
+        stream.forEach(ts::add);
+        return getBuiltinTypes().list(ts.stream().map(element -> getBuiltinTypes().string(element)));
     }
 
     public JanitorDefaultEnvironment(JanitorFormatting formatting) {

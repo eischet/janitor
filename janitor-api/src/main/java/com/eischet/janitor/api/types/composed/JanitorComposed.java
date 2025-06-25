@@ -33,7 +33,7 @@ public abstract class JanitorComposed<T extends JanitorComposed<T>> implements J
      *
      * @param dispatcher dispatch table
      */
-    protected JanitorComposed(final Dispatcher<T> dispatcher) {
+    public JanitorComposed(final Dispatcher<T> dispatcher) {
         this.dispatcher = dispatcher;
     }
 
@@ -53,17 +53,10 @@ public abstract class JanitorComposed<T extends JanitorComposed<T>> implements J
         // We cannot dispatch(this), but we can dispatch self(), which will always work - but javac is not
         // aware of this. Looks funny, but works.
         final JanitorObject attribute = dispatcher.dispatch(self(), process, name);
-        if ("numberOfDigits".equals(name)) {
-            process.trace(() -> "numberOfDigits lookup yielded: " +  attribute + ", required=" + required);
-        }
         if (attribute != null) {
             return attribute;
         }
         @Nullable final JanitorObject superValue = JanitorObject.super.janitorGetAttribute(process, name, required);
-        if ("numberOfDigits".equals(name)) {
-            process.trace(() -> "numberOfDigits lookup yielded from super: " +  superValue + ", required=" + required);
-            //throw new RuntimeException("should be required! required=" + required);
-        }
         return superValue;
     }
 

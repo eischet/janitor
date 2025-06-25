@@ -1,5 +1,6 @@
 package com.eischet.janitor.env;
 
+import com.eischet.janitor.api.JanitorMetaData;
 import com.eischet.janitor.api.types.BuiltinTypeInternals;
 import com.eischet.janitor.api.types.BuiltinTypes;
 import com.eischet.janitor.api.JanitorScriptProcess;
@@ -62,45 +63,49 @@ public class DefaultBuiltinTypes implements BuiltinTypes {
         emptyString = JString.newInstance(stringDispatcher, "", it -> it); // cannot pass this::intern here in a constructor, and "" is already interned anyway
         zero = JInt.newInstance(intDispatcher, 0);
 
+
+        stringDispatcher.setMetaData(JanitorMetaData.HELP, JStringClass.STRING_CLASS);
         // OLD: addStringMethod("length", JStringClass::__length);
-        stringDispatcher.addMethod("length", JStringClass::__length); // "foo".length() == 3
-        stringDispatcher.addMethod("trim", JStringClass::__trim); // "  foo  ".trim() == "foo"
-        stringDispatcher.addMethod("contains", JStringClass::__contains); // "foobar".contains("bar") == true, "barbaz".contains("foo") == false
-        stringDispatcher.addMethod("containsIgnoreCase", JStringClass::__containsIgnoreCase); // "foobar".containsIgnoreCase("BAR") == true
-        stringDispatcher.addMethod("splitLines", JStringClass::__splitLines); // "foo\nbar\nbaz".splitLines() == ["foo", "bar", "baz"]
-        stringDispatcher.addMethod("indexOf", JStringClass::__indexOf); // "foobar".indexOf("bar") == 3, "foobar".indexOf("x") == -1
-        stringDispatcher.addMethod("lastIndexOf", JStringClass::__lastIndexOf); // "foobar".indexOf("bar") == 3, "foobar".indexOf("x") == -1
-        stringDispatcher.addMethod("empty", JStringClass::__empty); // "".empty() == true, "foo".empty() == false
-        stringDispatcher.addMethod("startsWith", JStringClass::__startsWith); // "foobar".startsWith("foo") == true, "foobar".startsWith("bar") == false
-        stringDispatcher.addMethod("endsWith", JStringClass::__endsWith); // "foobar".endsWith("bar") == true, "foobar".endsWith("foo") == false
-        stringDispatcher.addMethod("removeLeadingZeros", JStringClass::__removeLeadingZeros); // "000123".removeLeadingZeros() == "123"
-        stringDispatcher.addMethod("substring", JStringClass::__substring); // "foobar".substring(3) == "bar", "foobar".substring(3, 5) == "ba"
-        stringDispatcher.addMethod("replaceAll", JStringClass::__replaceAll); // "foobar".replaceAll("o", "x") == "fxxbar"
-        stringDispatcher.addMethod("replace", JStringClass::__replace); // "foobar".replace("o", "x") == "fxobar"
-        stringDispatcher.addMethod("replaceFirst", JStringClass::__replaceFirst); // "foobar".replaceFirst("o", "x") == "fxobar"
-        stringDispatcher.addMethod("toUpperCase", JStringClass::__toUpperCase); // "foo".toUpperCase() == "FOO"
-        stringDispatcher.addMethod("toLowerCase", JStringClass::__toLowerCase); // "FOO".toLowerCase() == "foo"
-        stringDispatcher.addMethod("count", JStringClass::__count); // "foobar".count("o") == 2
-        stringDispatcher.addMethod("format", JStringClass::__format); // "Hello, %s!".format("world") == "Hello, world!"
-        stringDispatcher.addMethod("expand", JStringClass::__expand); // "Hello, ${name}!".expand({name: "world"}) == "Hello, world!"
-        stringDispatcher.addMethod("toBinaryUtf8", JStringClass::__toBinaryUtf8); // convert to binary, in UTF-8
-        stringDispatcher.addMethod("encode", JStringClass::__encode); // convert to binary, in the given character set
-        stringDispatcher.addMethod("int", JStringClass::__toInt); // "123".int() == 123
-        stringDispatcher.addMethod("toInt", JStringClass::__toInt); // "123".toInt() == 123
-        stringDispatcher.addMethod("toFloat", JStringClass::__toFloat); // "123.45".toFloat() == 123.45
-        stringDispatcher.addMethod("get", JStringClass::__get); // "foobar".get(3) == "b", "foobar".get(3, 5) == "ba"
-        stringDispatcher.addMethod("isNumeric", JStringClass::__isNumeric); // "17".isNumeric() == true, "mario".isNumeric() == false
-        stringDispatcher.addMethod("startsWithNumbers", JStringClass::__startsWithNumbers); // "123foo".startsWithNumbers() == true, "foo123".startsWithNumbers() == false
-        stringDispatcher.addMethod("parseDate", JStringClass::__parseDate); // "2021-12-31".parseDate('yyyy-MM-dd') == @2021-12-31
-        stringDispatcher.addMethod("parseDateTime", JStringClass::__parseDateTime); // "2021-12-31T23:59:59".parseDateTime('yyyy-MM-dd\'T\'HH:mm:ss') == @2021-12-31-23:59:59
+        stringDispatcher.addMethod("length", JStringClass::length)
+                .setMetaData(JanitorMetaData.HELP, JStringClass.STRING_LENGTH); // "foo".length() == 3
+        stringDispatcher.addMethod("trim", JStringClass::trim)
+                .setMetaData(JanitorMetaData.HELP, JStringClass.STRING_TRIM); // "  foo  ".trim() == "foo"
+        stringDispatcher.addMethod("contains", JStringClass::contains); // "foobar".contains("bar") == true, "barbaz".contains("foo") == false
+        stringDispatcher.addMethod("containsIgnoreCase", JStringClass::containsIgnoreCase); // "foobar".containsIgnoreCase("BAR") == true
+        stringDispatcher.addMethod("splitLines", JStringClass::splitLines); // "foo\nbar\nbaz".splitLines() == ["foo", "bar", "baz"]
+        stringDispatcher.addMethod("indexOf", JStringClass::indexOf); // "foobar".indexOf("bar") == 3, "foobar".indexOf("x") == -1
+        stringDispatcher.addMethod("lastIndexOf", JStringClass::lastIndexOf); // "foobar".indexOf("bar") == 3, "foobar".indexOf("x") == -1
+        stringDispatcher.addMethod("empty", JStringClass::empty); // "".empty() == true, "foo".empty() == false
+        stringDispatcher.addMethod("startsWith", JStringClass::startsWith); // "foobar".startsWith("foo") == true, "foobar".startsWith("bar") == false
+        stringDispatcher.addMethod("endsWith", JStringClass::endsWith); // "foobar".endsWith("bar") == true, "foobar".endsWith("foo") == false
+        stringDispatcher.addMethod("removeLeadingZeros", JStringClass::removeLeadingZeros); // "000123".removeLeadingZeros() == "123"
+        stringDispatcher.addMethod("substring", JStringClass::substring); // "foobar".substring(3) == "bar", "foobar".substring(3, 5) == "ba"
+        stringDispatcher.addMethod("replaceAll", JStringClass::replaceAll); // "foobar".replaceAll("o", "x") == "fxxbar"
+        stringDispatcher.addMethod("replace", JStringClass::replace); // "foobar".replace("o", "x") == "fxobar"
+        stringDispatcher.addMethod("replaceFirst", JStringClass::replaceFirst); // "foobar".replaceFirst("o", "x") == "fxobar"
+        stringDispatcher.addMethod("toUpperCase", JStringClass::toUpperCase); // "foo".toUpperCase() == "FOO"
+        stringDispatcher.addMethod("toLowerCase", JStringClass::toLowerCase); // "FOO".toLowerCase() == "foo"
+        stringDispatcher.addMethod("count", JStringClass::count); // "foobar".count("o") == 2
+        stringDispatcher.addMethod("format", JStringClass::format); // "Hello, %s!".format("world") == "Hello, world!"
+        stringDispatcher.addMethod("expand", JStringClass::expand); // "Hello, ${name}!".expand({name: "world"}) == "Hello, world!"
+        stringDispatcher.addMethod("toBinaryUtf8", JStringClass::toBinaryUtf8); // convert to binary, in UTF-8
+        stringDispatcher.addMethod("encode", JStringClass::encode); // convert to binary, in the given character set
+        stringDispatcher.addMethod("int", JStringClass::toInt); // "123".int() == 123
+        stringDispatcher.addMethod("toInt", JStringClass::toInt); // "123".toInt() == 123
+        stringDispatcher.addMethod("toFloat", JStringClass::toFloat); // "123.45".toFloat() == 123.45
+        stringDispatcher.addMethod("get", JStringClass::indexedGet); // "foobar".get(3) == "b", "foobar".get(3, 5) == "ba"
+        stringDispatcher.addMethod("isNumeric", JStringClass::isNumeric); // "17".isNumeric() == true, "mario".isNumeric() == false
+        stringDispatcher.addMethod("startsWithNumbers", JStringClass::startsWithNumbers); // "123foo".startsWithNumbers() == true, "foo123".startsWithNumbers() == false
+        stringDispatcher.addMethod("parseDate", JStringClass::parseDate); // "2021-12-31".parseDate('yyyy-MM-dd') == @2021-12-31
+        stringDispatcher.addMethod("parseDateTime", JStringClass::parseDateTime); // "2021-12-31T23:59:59".parseDateTime('yyyy-MM-dd\'T\'HH:mm:ss') == @2021-12-31-23:59:59
         stringDispatcher.addMethod("split", JStringClass::split); // "foo,bar,baz".split(",") == ["foo", "bar", "baz"]
-        stringDispatcher.addMethod("cutFilename", JStringClass::__cutFilename);
-        stringDispatcher.addMethod("urlEncode", JStringClass::__urlEncode);
-        stringDispatcher.addMethod("urlDecode", JStringClass::__urlDecode);
-        stringDispatcher.addMethod("decodeBase64", JStringClass::__decodeBase64);
+        stringDispatcher.addMethod("cutFilename", JStringClass::cutFilename);
+        stringDispatcher.addMethod("urlEncode", JStringClass::urlEncode);
+        stringDispatcher.addMethod("urlDecode", JStringClass::urlDecode);
+        stringDispatcher.addMethod("decodeBase64", JStringClass::decodeBase64);
         stringDispatcher.addMethod("toCamelCase", JStringClass::toCamelCase);
         stringDispatcher.addMethod("toConstantCase", JStringClass::toConstantCase);
-        stringDispatcher.addMethod(JanitorAntlrCompiler.INDEXED_GET_METHOD, JStringClass::__get); // das lassen wir auch so: keine Zuweisung per Index an String-Teile, die sind ja immutable
+        stringDispatcher.addMethod(JanitorAntlrCompiler.INDEXED_GET_METHOD, JStringClass::indexedGet); // das lassen wir auch so: keine Zuweisung per Index an String-Teile, die sind ja immutable
 
         mapDispatcher.addMethod("toJson", JMapClass::__toJson);
         mapDispatcher.addMethod("parseJson", JMapClass::__parseJson);

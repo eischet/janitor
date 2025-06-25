@@ -3,6 +3,8 @@
 
 Add a regex matcher class, in Java style, e.g. `m = re/(foo)/.matcher(text);`
 Add arbitrary meta data to dispatch tables.
+Add rudimentary support for Pythonic "dir" and "help" functions as default builtins.
+
 
 # 0.9.18, 2025-04-24
 
