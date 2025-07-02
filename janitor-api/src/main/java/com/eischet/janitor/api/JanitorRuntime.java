@@ -1,12 +1,16 @@
 package com.eischet.janitor.api;
 
+import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
+import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.types.BuiltinTypes;
 import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.types.JanitorObject;
+import com.eischet.janitor.api.types.functions.JCallable;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
 import java.util.function.Supplier;
 
 /**
@@ -19,6 +23,17 @@ public interface JanitorRuntime {
     RunnableScript compile(String moduleName, @Language("Janitor") String source) throws JanitorCompilerException;
     RunnableScript checkCompile(String moduleName, @Language("Janitor") String source) throws JanitorCompilerException;
     JanitorObject print(JanitorScriptProcess process, JCallArgs args);
+
+    /**
+     * Run a callback function.
+     * Use case: you obtain a callback from a script and later call this, e.g. to filter or manipulate a list of values.
+     *
+     * @param scope a suitable scope that contains e.g. globals used by the callable
+     * @param callable the callable
+     * @param args arguments to be passed to the callable
+     * @return whatever the callable chooses to return
+     */
+    JanitorObject executeCallback(Scope scope, JCallable callable, List<JanitorObject> args) throws JanitorRuntimeException;
 
 
     void trace(Supplier<String> traceMessageSupplier);

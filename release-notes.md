@@ -1,3 +1,8 @@
+# 0.9.20, 2025-07-02
+
+The runtime now supports arbitrary callbacks to be executed; those are JCallable (and usually JanitorObject) instances that are retrieved from another script
+and then can be called by the Java side when needed.
+
 
 # 0.9.19, 2025-06-25
 
