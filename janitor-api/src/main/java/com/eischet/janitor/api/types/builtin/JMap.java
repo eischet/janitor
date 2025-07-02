@@ -20,6 +20,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 import java.util.function.Consumer;
 
+import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
+
 /**
  * A map object, representing a mutable map of Janitor objects.
  * This is one of the built-in types that Janitor provides automatically.
@@ -237,7 +239,7 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
             }
         });
         if (!notAssignable.isEmpty()) {
-            throw new JanitorNameException(process, "assigned invalid object properties: " + notAssignable);
+            throw new JanitorNameException(process, "assigned invalid object properties: " + notAssignable + " to instance of class " + simpleClassNameOf(target));
         }
     }
 
