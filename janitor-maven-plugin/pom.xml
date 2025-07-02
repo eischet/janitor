@@ -15,8 +15,7 @@
 
     <name>janitor-maven-plugin Maven Plugin</name>
 
-    <!-- FIXME change it to the project's website -->
-    <url>http://www.example.com</url>
+    <url>https://github.com/eischet/janitor</url>
 
     <prerequisites>
         <maven>${maven.version}</maven>
@@ -28,6 +27,9 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <maven.version>3.9.9</maven.version>
+
+
+        <deps.maven-resolver>2.0.10</deps.maven-resolver>
 
         <!-- TODO: with current dependency versions, the (old?) unit test does not work anymore.
              it was all just boilerplate generated when I started, anyway, so I'll live without
@@ -97,33 +99,36 @@
         <dependency>
             <groupId>org.apache.maven.resolver</groupId>
             <artifactId>maven-resolver-impl</artifactId>
-            <version>2.0.10</version>
+            <version>${deps.maven-resolver}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.maven.resolver</groupId>
             <artifactId>maven-resolver-api</artifactId>
-            <version>2.0.10</version>
+            <version>${deps.maven-resolver}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.maven.resolver</groupId>
             <artifactId>maven-resolver-spi</artifactId>
-            <version>2.0.10</version>
+            <version>${deps.maven-resolver}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.maven.resolver</groupId>
             <artifactId>maven-resolver-util</artifactId>
-            <version>2.0.10</version>
+            <version>${deps.maven-resolver}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.maven.resolver</groupId>
             <artifactId>maven-resolver-connector-basic</artifactId>
-            <version>2.0.9</version>
+            <version>${deps.maven-resolver}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.maven.resolver</groupId>
             <artifactId>maven-resolver-transport-wagon</artifactId>
-            <version>2.0.9</version>
+            <version>${deps.maven-resolver}</version>
         </dependency>
+
+        <!-- Thanks, IntelliJ, but there's nothing I can do about this -->
+        <!--suppress VulnerableLibrariesLocal -->
         <dependency>
             <groupId>org.apache.maven.wagon</groupId>
             <artifactId>wagon-http</artifactId>
@@ -139,6 +144,9 @@
             <version>4.13.2</version>
             <scope>test</scope>
         </dependency>
+
+        <!-- Thanks, IntelliJ, but there's nothing I can do about this -->
+        <!--suppress VulnerableLibrariesLocal -->
         <dependency>
             <groupId>org.apache.maven.plugin-testing</groupId>
             <artifactId>maven-plugin-testing-harness</artifactId>
