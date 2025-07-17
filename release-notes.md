@@ -5,6 +5,8 @@ New MetaData Key TYPE_HINT is automatically populated by the DispatchTable where
 The Map within the Dispatch table is now a TreeMap instead of a HashMap, which will return properties in definition order, which is usually the expected behaviour.
 This will also affect the list returned by the dir() function, when used in a script.
 
+Made the REPL work and added a standalone REPL jar. Some logging issues remain, where SLF4J bindings are not picked up; still figuring that one out.
+
 
 # 0.9.20, 2025-07-02
 
