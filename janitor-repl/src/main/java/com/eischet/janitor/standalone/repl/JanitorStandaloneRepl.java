@@ -12,6 +12,7 @@ import com.eischet.janitor.repl.JanitorRepl;
 import com.eischet.janitor.runtime.BaseRuntime;
 import com.eischet.janitor.runtime.JanitorFormattingLocale;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -48,7 +49,11 @@ public class JanitorStandaloneRepl {
             }
         };
         JanitorRepl repl = new JanitorRepl(runtime, io);
-        repl.run();
+        try {
+            repl.run();
+        } catch (IOException e) {
+            io.exception(e);
+        }
     }
 
 }

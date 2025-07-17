@@ -24,6 +24,7 @@ import com.eischet.janitor.compiler.ast.statement.Script;
 import com.eischet.janitor.lang.JanitorParser;
 import com.eischet.janitor.repl.ConsoleReplIO;
 import com.eischet.janitor.repl.JanitorRepl;
+import com.eischet.janitor.repl.PartialParseResult;
 import com.eischet.janitor.runtime.*;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
@@ -1174,12 +1175,12 @@ public class FirstParserTestCase {
     public void partialParsing() throws JanitorControlFlowException, JanitorRuntimeException {
         final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         final JanitorRepl repl = new JanitorRepl(rt, new ConsoleReplIO());
-        assertEquals(JanitorRepl.PartialParseResult.OK, repl.parse("x = 17;"));
+        assertEquals(PartialParseResult.OK, repl.parse("x = 17;"));
 
 
-        assertEquals(JanitorRepl.PartialParseResult.INCOMPLETE, repl.parse("if (x < 20) {"));
-        assertEquals(JanitorRepl.PartialParseResult.INCOMPLETE, repl.parse("if (x < 20) {\n  print(x);"));
-        assertEquals(JanitorRepl.PartialParseResult.OK, repl.parse("if (x < 20) {\n  print(x);\n}"));
+        assertEquals(PartialParseResult.INCOMPLETE, repl.parse("if (x < 20) {"));
+        assertEquals(PartialParseResult.INCOMPLETE, repl.parse("if (x < 20) {\n  print(x);"));
+        assertEquals(PartialParseResult.OK, repl.parse("if (x < 20) {\n  print(x);\n}"));
 
 
         repl.parse("if (x > 5) { return 'X is greater than five'; }");
