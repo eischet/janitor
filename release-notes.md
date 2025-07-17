@@ -1,3 +1,11 @@
+# 0.9.21, 2025-07-xx
+
+New MetaData Key TYPE_HINT is automatically populated by the DispatchTable where possible. This means that Java code can now more easily introspect an unknown object.
+
+The Map within the Dispatch table is now a TreeMap instead of a HashMap, which will return properties in definition order, which is usually the expected behaviour.
+This will also affect the list returned by the dir() function, when used in a script.
+
+
 # 0.9.20, 2025-07-02
 
 The runtime now supports arbitrary callbacks to be executed; those are JCallable (and usually JanitorObject) instances that are retrieved from another script
