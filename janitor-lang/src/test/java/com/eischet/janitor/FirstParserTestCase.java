@@ -22,6 +22,7 @@ import com.eischet.janitor.compiler.JanitorCompiler;
 import com.eischet.janitor.compiler.ast.expression.literal.DurationLiteral;
 import com.eischet.janitor.compiler.ast.statement.Script;
 import com.eischet.janitor.lang.JanitorParser;
+import com.eischet.janitor.repl.ConsoleReplIO;
 import com.eischet.janitor.repl.JanitorRepl;
 import com.eischet.janitor.runtime.*;
 import org.intellij.lang.annotations.Language;
@@ -1172,7 +1173,7 @@ public class FirstParserTestCase {
     @Test
     public void partialParsing() throws JanitorControlFlowException, JanitorRuntimeException {
         final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
-        final JanitorRepl repl = new JanitorRepl(rt);
+        final JanitorRepl repl = new JanitorRepl(rt, new ConsoleReplIO());
         assertEquals(JanitorRepl.PartialParseResult.OK, repl.parse("x = 17;"));
 
 
@@ -1329,7 +1330,7 @@ public class FirstParserTestCase {
     }
 
     @Test public void deadlock() throws Exception {
-        final @Language("Janitor")String scriptSource = """
+        final @Language("Janitor") String scriptSource = """
         print('hallo');
         x = 17;
         print(x);

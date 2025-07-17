@@ -60,6 +60,7 @@
         <module>janitor-maven-plugin</module>
         <module>janitor-commons</module>
         <module>janitor-grammarkit</module>
+        <module>janitor-repl</module>
     </modules>
 
 

@@ -7,6 +7,7 @@ import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.scopes.ScriptModule;
 import com.eischet.janitor.api.types.JanitorObject;
+import com.eischet.janitor.api.types.builtin.JNull;
 import com.eischet.janitor.compiler.JanitorAntlrCompiler;
 import com.eischet.janitor.compiler.ast.Ast;
 import com.eischet.janitor.compiler.ast.statement.Script;
@@ -41,16 +42,64 @@ public class JanitorRepl {
     private final ScriptModule module;
     private final Scope globalScope;
     private final JanitorRuntime runtime;
+    private final ReplIO io;
+    private static final String DEFAULT_PROMPT = "janitor> ";
+    private String defaultPrompt = DEFAULT_PROMPT;
 
-    public JanitorRepl(final JanitorRuntime runtime) {
+
+    public JanitorRepl(final JanitorRuntime runtime, final ReplIO io) {
         this.runtime = runtime;
+        this.io = io;
         module = new ScriptModule("repl", "");
         globalScope = Scope.createGlobalScope(runtime.getEnvironment(), module);
     }
 
+    public String getDefaultPrompt() {
+        return defaultPrompt;
+    }
 
-    public PartialParseResult parse(final String text) throws JanitorControlFlowException, JanitorRuntimeException {
-        System.out.println("> parsing: " + text);
+    public void setDefaultPrompt(final String defaultPrompt) {
+        this.defaultPrompt = defaultPrompt;
+    }
+
+    private static class Fragment {
+
+        private final PartialParseResult parseResult;
+        private final JanitorParser.ScriptContext scriptContext;
+        private final boolean missingStatementTerminator;
+
+        public Fragment(final PartialParseResult partialParseResult) {
+            this.parseResult = partialParseResult;
+            this.scriptContext = null;
+            this.missingStatementTerminator = false;
+        }
+
+        public Fragment(final JanitorParser.ScriptContext scriptContext) {
+            this.parseResult = PartialParseResult.OK;
+            this.scriptContext = scriptContext;
+            this.missingStatementTerminator = false;
+        }
+
+        public Fragment(final boolean missingStatementTerminator) {
+            this.parseResult = null;
+            this.scriptContext = null;
+            this.missingStatementTerminator = missingStatementTerminator;
+        }
+
+        public PartialParseResult getParseResult() {
+            return parseResult;
+        }
+
+        public JanitorParser.ScriptContext getScriptContext() {
+            return scriptContext;
+        }
+
+        public boolean isMissingStatementTerminator() {
+            return missingStatementTerminator;
+        }
+    }
+
+    private Fragment parseFragment(final String text) {
         final CharStream stream = CharStreams.fromString(text);
         final JanitorLexer lexer = new JanitorLexer(stream);
         final CommonTokenStream tokenStream = new CommonTokenStream(lexer);
@@ -58,6 +107,7 @@ public class JanitorRepl {
         parser.setBuildParseTree(true);
 
         final boolean[] incomplete = {false};
+        final boolean[] missingTerminator = {false};
 
         parser.addErrorListener(new ANTLRErrorListener() {
             @Override
@@ -67,18 +117,23 @@ public class JanitorRepl {
                                     final int charPositionInLine,
                                     final String msg,
                                     final RecognitionException e) {
-                System.out.println("Syntax Error: " + msg);
+                if ("missing STMT_TERM at '<EOF>'".equals(msg)) {
+                    missingTerminator[0] = true;
+                    return;
+                }
+                if (msg != null && (msg.contains("extraneous input '<EOF>'") || msg.contains("missing") && msg.contains("at '<EOF>'"))) {
+                    io.verbose("looks incomplete!");
+                    incomplete[0] = true;
+                }
                 if (e != null) {
-                    System.out.println("  Recognition Exception: " + e);
+                    io.verbose("Recognition Exception:");
+                    io.verbose(e.getMessage());
                     if (e instanceof InputMismatchException) {
                         incomplete[0] = true;
-                    }
-                } else {
-                    System.out.println("  No Exception");
-                    if (msg != null && msg.contains("extraneous input '<EOF>'")) {
-                        incomplete[0] = true;
+                        return;
                     }
                 }
+                io.error("Syntax Error: " + msg);
             }
 
             @Override
@@ -89,7 +144,7 @@ public class JanitorRepl {
                                         final boolean exact,
                                         final BitSet ambigAlts,
                                         final ATNConfigSet configs) {
-                System.out.println("Ambiguity: " + ambigAlts.toString());
+                io.verbose("Ambiguity: " + ambigAlts.toString());
             }
 
             @Override
@@ -99,7 +154,7 @@ public class JanitorRepl {
                                                     final int stopIndex,
                                                     final BitSet conflictingAlts,
                                                     final ATNConfigSet configs) {
-                System.out.println("Attempting: " + conflictingAlts.toString());
+                io.verbose("Attempting: " + conflictingAlts.toString());
             }
 
             @Override
@@ -109,37 +164,57 @@ public class JanitorRepl {
                                                  final int stopIndex,
                                                  final int prediction,
                                                  final ATNConfigSet configs) {
-                System.out.println("Context Sensitivity: " + prediction);
+                io.verbose("Context Sensitivity: " + prediction);
             }
         });
-
-        final JanitorParser.TopLevelStatementContext tls = parser.topLevelStatement();
-        System.out.println(tls.toStringTree(parser));
-
+        if (missingTerminator[0]) {
+            return new Fragment(true);
+        }
+        final JanitorParser.ScriptContext scriptContext = parser.script();
         if (incomplete[0]) {
-            System.out.println("Incomplete");
+            io.verbose("--> Incomplete!");
+            return new Fragment(PartialParseResult.INCOMPLETE);
+        }
+        return new Fragment(scriptContext);
+    }
+
+    public PartialParseResult parse(final String text) throws JanitorControlFlowException, JanitorRuntimeException {
+        if (hasUnclosedMultilineString(text) || hasUnclosedBrackets(text)) {
+            io.verbose("looks incomplete");
             return PartialParseResult.INCOMPLETE;
         }
+
+        Fragment fragment = parseFragment(text);
+        if (fragment.isMissingStatementTerminator()) {
+            final Fragment betterFragment = parseFragment(text + ";");
+            if (betterFragment.scriptContext != null) {
+                fragment = betterFragment;
+            } else {
+                io.verbose("missing statement terminator, and adding one did not really help!");
+            }
+        }
+        if (fragment.getParseResult() == PartialParseResult.INCOMPLETE) {
+            io.verbose("Fragment incomplete");
+            return PartialParseResult.INCOMPLETE;
+        }
+
+        // TODO: on 'missing STMT_TERM', try to parse the same text again
+
+
         final ScriptModule module = new ScriptModule("repl", text);
         final JanitorAntlrCompiler compiler = new JanitorAntlrCompiler(runtime.getEnvironment(), module, false, text);
-        final Ast compiledText = compiler.visit(tls);
-        System.out.println("Compiled: " + compiledText.toString());
-        //final RuleContext parseTree = root.getRuleContext();
-        //compiler.visit(parseTree)
-        //return (IR.Script) compiler.visit(parseTree);
-
+        io.verbose("start compile");
+        final Ast compiledText = compiler.visit(fragment.getScriptContext());
         if (compiledText instanceof Statement compiledStatement) {
-            System.out.println("Statement");
-
             final Location loc = Location.startOf(module);
             final Script partialScript = new Script(loc, List.of(compiledStatement), text);
-
             final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, partialScript);
-
             try {
                 partialScript.execute(process);
                 final JanitorObject result = process.getScriptResult();
-                System.out.println("Result: " + result);
+                if (result != JNull.NULL) {
+                    System.out.println(result);
+                }
             } catch (ReturnStatement.Return ret) {
                 final JanitorObject returnResult = ret.getValue();
                 System.out.println("Return Result: " + returnResult);
@@ -151,17 +226,63 @@ public class JanitorRepl {
             // compiledStatement.execute(new RunningScriptProcess(null, null, partialScript);
 
         } else {
-            System.out.println("Not a statement");
+            io.verbose("Not a statement");
         }
-
-
         return PartialParseResult.OK;
-
-
     }
 
 
     public enum PartialParseResult {OK, INCOMPLETE}
 
+    private boolean hasUnclosedMultilineString(String text) {
+        int count = 0, idx = 0;
+        while ((idx = text.indexOf("\"\"\"", idx)) != -1) {
+            count++;
+            idx += 3;
+        }
+        return count % 2 != 0;
+    }
+
+    private boolean hasUnclosedBrackets(String text) {
+        int parens = 0, braces = 0, brackets = 0;
+        for (char c : text.toCharArray()) {
+            switch (c) {
+                case '(': parens++; break;
+                case ')': parens--; break;
+                case '{': braces++; break;
+                case '}': braces--; break;
+                case '[': brackets++; break;
+                case ']': brackets--; break;
+            }
+        }
+        return parens > 0 || braces > 0 || brackets > 0;
+    }
+
+    public void run() {
+        io.println(LOGO);
+
+        StringBuilder buffer = new StringBuilder();
+        String prompt = defaultPrompt;
+
+        while (true) {
+            try {
+                String line = io.readLine(prompt);
+                if (line == null) break; // EOF (Ctrl+D)
+                buffer.append(line).append("\n");
+                PartialParseResult result = parse(buffer.toString());
+                if (result == PartialParseResult.OK) {
+                    buffer.setLength(0); // Clear buffer for next statement
+                } else {
+                    prompt = "... "; // Indicate continuation
+                    continue;
+                }
+                prompt = defaultPrompt;
+            } catch (Exception e) {
+                System.out.println("Error: " + e.getMessage());
+                buffer.setLength(0);
+                prompt = defaultPrompt;
+            }
+        }
+    }
 
 }

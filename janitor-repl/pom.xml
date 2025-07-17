@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.eischet.janitor</groupId>
+        <artifactId>janitor-project</artifactId>
+        <version>${revision}</version>
+    </parent>
+
+    <artifactId>janitor-repl</artifactId>
+
+    <description>
+        This is an interactive REPL, a.k.a. "read-eval-print-loop", where you can execute Janitor code and expressions.
+    </description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.eischet.janitor</groupId>
+            <artifactId>janitor-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.eischet.janitor</groupId>
+            <artifactId>janitor-lang</artifactId>
+        </dependency>
+        <!-- to satisfy logging needs -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>2.0.17</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.2.0</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>lib/</classpathPrefix>
+                            <mainClass>com.eischet.janitor.standalone.repl.JanitorStandaloneRepl</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+
+</project>
