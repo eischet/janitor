@@ -1,5 +1,6 @@
 package com.eischet.janitor.runtime;
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.builtin.JBool;
 
 /**
@@ -37,7 +38,7 @@ public enum ComparisonResult {
      * @return TRUE when appropriate, FALSE otherwise
      */
     public JBool isGreaterThan() {
-        return JBool.of(this == GREATER);
+        return Janitor.toBool(this == GREATER);
     }
 
     /**
@@ -45,7 +46,7 @@ public enum ComparisonResult {
      * @return TRUE when appropriate, FALSE otherwise
      */
     public JBool isLessThan() {
-        return JBool.of(this == LESS);
+        return Janitor.toBool(this == LESS);
     }
 
     /**
@@ -53,7 +54,7 @@ public enum ComparisonResult {
      * @return TRUE when appropriate, FALSE otherwise
      */
     public JBool isEquals() {
-        return JBool.of(this == EQUALS);
+        return Janitor.toBool(this == EQUALS);
     }
 
     /**
@@ -61,7 +62,7 @@ public enum ComparisonResult {
      * @return TRUE when appropriate, FALSE otherwise
      */
     public JBool isLessThanOrEquals() {
-        return JBool.of(this != GREATER);
+        return Janitor.toBool(this != GREATER);
     }
 
     /**
@@ -69,7 +70,7 @@ public enum ComparisonResult {
      * @return TRUE when appropriate, FALSE otherwise
      */
     public JBool isGreaterThanOrEquals() {
-        return JBool.of(this != LESS);
+        return Janitor.toBool(this != LESS);
     }
 
 }

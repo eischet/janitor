@@ -1,5 +1,6 @@
 package com.eischet.janitor.env;
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.types.functions.JCallArgs;
@@ -129,7 +130,7 @@ public class JListClass {
 
     public static JBool __isEmpty(final JanitorWrapper<List<JanitorObject>> self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);
-        return JBool.of(self.janitorGetHostValue().isEmpty());
+        return Janitor.toBool(self.janitorGetHostValue().isEmpty());
     }
 
     public static JInt __size(final JanitorWrapper<List<JanitorObject>> self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {

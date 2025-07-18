@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * Also, test cases that satisfy some picker IDEs that have no way of being told: "this is for users of a library".
  * Honestly, I have no idea why there is no such annotation e.g. in IntelliJ IDEA, but it annoys me to no end.
  */
-public class AdditionalCoverageTestCase {
+public class AdditionalCoverageTestCase extends JanitorTest {
 
     @Test
     public void coverage() throws JanitorRuntimeException {

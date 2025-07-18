@@ -1,5 +1,6 @@
 package com.eischet.janitor.runtime;
 
+import com.eischet.janitor.api.errors.glue.JanitorGlueException;
 import com.eischet.janitor.api.types.BuiltinTypes;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorArithmeticException;
@@ -7,6 +8,7 @@ import com.eischet.janitor.api.errors.runtime.JanitorNotImplementedException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.errors.runtime.JanitorTypeException;
 import com.eischet.janitor.api.types.JAssignable;
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.*;
 import com.eischet.janitor.api.util.ObjectUtilities;
@@ -57,7 +59,7 @@ public class JanitorSemantics {
      * @throws JanitorRuntimeException if something goes wrong
      */
     public static @NotNull JanitorObject logicNot(final JanitorObject parameter) throws JanitorRuntimeException {
-        return JBool.of(!isTruthy(parameter));
+        return Janitor.toBool(!isTruthy(parameter));
     }
 
     /**
@@ -87,10 +89,10 @@ public class JanitorSemantics {
      * @return TRUE if the values are equals, or FALSE if not.
      */
     public static @NotNull JBool areEquals(final JanitorObject leftValue, final JanitorObject rightValue) {
-        return JBool.of(leftValue == rightValue
-                         || leftValue.janitorGetHostValue() == rightValue.janitorGetHostValue()
-                         || Objects.equals(leftValue.janitorGetHostValue(), rightValue.janitorGetHostValue())
-                         || (leftValue instanceof JNumber leftNumber && rightValue instanceof JNumber rightNumber && 0 == compareNumbers(leftNumber, rightNumber))
+        return Janitor.toBool(leftValue == rightValue
+                              || leftValue.janitorGetHostValue() == rightValue.janitorGetHostValue()
+                              || Objects.equals(leftValue.janitorGetHostValue(), rightValue.janitorGetHostValue())
+                              || (leftValue instanceof JNumber leftNumber && rightValue instanceof JNumber rightNumber && 0 == compareNumbers(leftNumber, rightNumber))
 
         );
     }
@@ -332,7 +334,7 @@ public class JanitorSemantics {
             return wc.matches((String) leftValue.janitorGetHostValue()) ? JBool.TRUE : JBool.FALSE;
         }
         if (leftValue instanceof JString str && rightValue instanceof JRegex regex) {
-            return JBool.of(regex.janitorGetHostValue().matcher(str.janitorGetHostValue()).matches());
+            return Janitor.toBool(regex.janitorGetHostValue().matcher(str.janitorGetHostValue()).matches());
         }
         throw new JanitorTypeException(process, "matches (~): invalid left " + leftValue + " / right " + rightValue + ", both should be strings");
     }
@@ -356,7 +358,7 @@ public class JanitorSemantics {
             return wc.matches((String) leftValue.janitorGetHostValue()) ? JBool.FALSE : JBool.TRUE;
         }
         if (leftValue instanceof JString str && rightValue instanceof JRegex regex) {
-            return JBool.of(!regex.janitorGetHostValue().matcher(str.janitorGetHostValue()).matches());
+            return Janitor.toBool(!regex.janitorGetHostValue().matcher(str.janitorGetHostValue()).matches());
         }
         throw new JanitorTypeException(process, "matches (~): invalid left " + leftValue + " / right " + rightValue + ", both should be strings");
     }
@@ -387,8 +389,12 @@ public class JanitorSemantics {
      * @throws JanitorRuntimeException on errors
      */
     public static void assign(JanitorScriptProcess process, final JAssignable assignable, final JanitorObject evalRight) throws JanitorRuntimeException {
-        if (!assignable.assign(evalRight)) {
-            throw new JanitorTypeException(process, "you cannot assign " + evalRight + " [" + ObjectUtilities.simpleClassNameOf(evalRight) + "] to " + assignable.describeAssignable());
+        try {
+            if (!assignable.assign(evalRight)) {
+                throw new JanitorTypeException(process, "you cannot assign " + evalRight + " [" + ObjectUtilities.simpleClassNameOf(evalRight) + "] to " + assignable.describeAssignable());
+            }
+        } catch (JanitorGlueException e) {
+            throw e.toRuntimeException(process);
         }
     }
 

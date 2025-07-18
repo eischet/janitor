@@ -199,14 +199,4 @@ public abstract class AbstractScriptProcess implements JanitorScriptProcess {
         return stack;
     }
 
-    @Override
-    public JFloat requireFloat(final Object value) throws JanitorArgumentException {
-        if (value instanceof JFloat alreadyMatches) {
-            return alreadyMatches;
-        }
-        if (value instanceof Number num) {
-            return getEnvironment().getBuiltinTypes().floatingPoint(num.doubleValue());
-        }
-        throw new JanitorArgumentException(this, "Expected float instead of " + value);
-    }
 }

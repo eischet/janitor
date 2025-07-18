@@ -109,8 +109,6 @@ public interface JanitorScriptProcess {
         getRuntime().protect(title, call);
     }
 
-    JFloat requireFloat(Object value) throws JanitorArgumentException;
-
     @FunctionalInterface
     interface ProtectedCall {
         void call() throws JanitorRuntimeException;

@@ -1,11 +1,19 @@
-# 0.9.21, 2025-07-xx
+# 0.9.21, 2025-07-18
+
+Many helper functions, e.g. for creating script objects like integers and floats, have been centralized in the new "Janitor" class.
+The plan is to move most client-facing code into that class. Instead of getting the builtins from somewhere, you can now simply write
+`Janitor.string(...)` to create a string instance, for example. That's both nicer to read and easier to remember.
+
+Behind the scenes, it is still possible to provide a custom Environment, either discovered via the service loader mechanism or manually, but your code
+doesn't have to reference it all over the place.
+
+Made the REPL work and added a standalone REPL jar. Some logging issues remain, where SLF4J bindings are not picked up; still figuring that one out.
 
 New MetaData Key TYPE_HINT is automatically populated by the DispatchTable where possible. This means that Java code can now more easily introspect an unknown object.
 
-The Map within the Dispatch table is now a TreeMap instead of a HashMap, which will return properties in definition order, which is usually the expected behaviour.
-This will also affect the list returned by the dir() function, when used in a script.
-
-Made the REPL work and added a standalone REPL jar. Some logging issues remain, where SLF4J bindings are not picked up; still figuring that one out.
+We now have distinct "glue" and "runtime" exceptions, where the new glue exception can be converted to runtime in order to get a proper script stack trace.
+This makes code working with Janitor types much simpler, mainly because it's now unnecessary to carry around references to a running script process or to
+the runtime. 
 
 
 # 0.9.20, 2025-07-02

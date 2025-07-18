@@ -1,6 +1,7 @@
 package com.eischet.janitor.api.types;
 
 import com.eischet.janitor.api.JanitorScriptProcess;
+import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.types.builtin.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -149,5 +150,6 @@ public interface BuiltinTypes {
      * @return an appropriate numeric object (might be 'null')
      */
     @NotNull JanitorObject nullableNumeric(Double v);
+
 
 }

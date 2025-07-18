@@ -1,6 +1,6 @@
 package com.eischet.janitor.api.types;
 
-import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
+import com.eischet.janitor.api.errors.glue.JanitorGlueException;
 
 /**
  * An object that can be assigned to.
@@ -11,10 +11,10 @@ public interface JAssignable {
      * Assign a value to this object.
      * @param value the value to assign
      * @return true if the assignment was successful, false if the assignment was not possible
-     * @throws JanitorRuntimeException if the assignment failed spectacularly
+     * @throws JanitorGlueException if the assignment failed
      */
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    boolean assign(JanitorObject value) throws JanitorRuntimeException;
+    boolean assign(JanitorObject value) throws JanitorGlueException;
 
     /**
      * Describe the assignable properties of this object.

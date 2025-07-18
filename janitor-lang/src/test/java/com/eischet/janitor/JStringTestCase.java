@@ -24,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Test common string operations and methods.
  */
-public class JStringTestCase {
+public class JStringTestCase extends JanitorTest {
 
     private void testStringMethod(@Language("Janitor") final String script, final Object expectedResult) throws JanitorCompilerException, JanitorRuntimeException {
         final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();

@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * So here's some synthetic code that makes Janitor comparable to other languages. You probably wouldn't write
  * programs like these in reality.
  */
-public class SampleProgramsIOTestCase {
+public class SampleProgramsIOTestCase extends JanitorTest {
 
     private static final String RELATIVE_LOCATION = "../sample-scripts/sampleprograms.io"; // where the scripts are located
 

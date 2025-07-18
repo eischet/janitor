@@ -1,5 +1,6 @@
 package com.eischet.janitor.maven.mojo;
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.JList;
 import com.eischet.janitor.api.types.builtin.JNull;
@@ -9,6 +10,7 @@ import com.eischet.janitor.api.JanitorRuntime;
 import com.eischet.janitor.api.RunnableScript;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
+import com.eischet.janitor.maven.env.MavenScriptingEnvProvider;
 import com.eischet.janitor.maven.wrappers.AetherArtifactWrapper;
 import com.eischet.janitor.maven.wrappers.ModelWrapper;
 import com.eischet.janitor.maven.wrappers.MavenProjectWrapper;
@@ -70,6 +72,8 @@ public class RunScriptMojo extends AbstractMojo implements Lookups {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
+        Janitor.setUserProvider(new MavenScriptingEnvProvider()); // Workaround: the @AutoService should theoretically make this unnecessary, but does not work at the moment!?
+
         final String contents = pickContents(script, scriptFile);
         if (script != null && !script.isBlank()) {
             getLog().info("Running inline script");

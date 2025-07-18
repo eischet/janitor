@@ -1,6 +1,5 @@
 package com.eischet.janitor.api.types.composed;
 
-import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.dispatch.HasDispatcher;
@@ -65,13 +64,13 @@ public abstract class JanitorComposed<T extends JanitorComposed<T>> implements J
         return (T) this;
     }
 
-    public String toJson(final JanitorEnvironment env) throws JsonException {
-        return dispatcher.writeToJson(env, self());
+    public String toJson() throws JsonException {
+        return dispatcher.writeToJson(self());
     }
 
-    static <X extends JanitorComposed<X>> X fromJson(final JanitorEnvironment env, final Supplier<X> constructor, @Language("JSON") final String json) throws JsonException {
+    static <X extends JanitorComposed<X>> X fromJson(final Supplier<X> constructor, @Language("JSON") final String json) throws JsonException {
         final X instance = constructor.get();
-        return instance.dispatcher.readFromJson(env, () -> instance, json);
+        return instance.dispatcher.readFromJson(() -> instance, json);
     }
 
     @Override

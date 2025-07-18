@@ -1,9 +1,6 @@
 package com.eischet.janitor.api.types.builtin;
 
-import com.eischet.janitor.api.JanitorScriptProcess;
-import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.types.JConstant;
-import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import org.jetbrains.annotations.NotNull;
@@ -151,20 +148,6 @@ public class JDate extends JanitorComposed<JDate> implements JConstant {
     public long getDayOfMonth() {
         final LocalDate unpacked = unpackLocalDate(date);
         return unpacked == null ? 0 : unpacked.getDayOfMonth();
-    }
-
-    /**
-     * Require a date value.
-     * @param process the running script
-     * @param value the value to check
-     * @return the value, if it's a date
-     * @throws JanitorArgumentException if the value is not a date
-     */
-    public static JDate require(final JanitorScriptProcess process, final JanitorObject value) throws JanitorArgumentException {
-        if (value instanceof JDate ok) {
-            return ok;
-        }
-        throw new JanitorArgumentException(process, "Expected a date value, but got " + value.janitorClassName() + " instead.");
     }
 
 }

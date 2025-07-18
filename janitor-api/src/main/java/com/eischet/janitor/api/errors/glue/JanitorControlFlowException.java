@@ -1,4 +1,4 @@
-package com.eischet.janitor.api.errors.runtime;
+package com.eischet.janitor.api.errors.glue;
 
 import com.eischet.janitor.api.errors.JanitorException;
 

@@ -1,5 +1,6 @@
 package com.eischet.janitor.env;
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.types.functions.JCallArgs;
@@ -7,7 +8,6 @@ import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 import com.eischet.janitor.api.types.*;
-import com.eischet.janitor.api.types.builtin.JBool;
 import com.eischet.janitor.api.types.builtin.JMap;
 import com.eischet.janitor.api.types.builtin.JNull;
 import com.eischet.janitor.api.types.builtin.JString;
@@ -73,7 +73,7 @@ public class JMapClass {
     }
 
     public static JanitorObject __isEmpty(JanitorWrapper<Map<JanitorObject, JanitorObject>> mapJanitorWrapper, JanitorScriptProcess process, JCallArgs jCallArgs) {
-        return JBool.of(mapJanitorWrapper.janitorGetHostValue().isEmpty());
+        return Janitor.toBool(mapJanitorWrapper.janitorGetHostValue().isEmpty());
     }
 
     public static JanitorObject __keys(JanitorWrapper<Map<JanitorObject, JanitorObject>> mapJanitorWrapper, JanitorScriptProcess process, JCallArgs jCallArgs) {
@@ -85,11 +85,11 @@ public class JMapClass {
     }
 
     public static JanitorObject __containsKey(JanitorWrapper<Map<JanitorObject, JanitorObject>> mapJanitorWrapper, JanitorScriptProcess process, JCallArgs jCallArgs) throws JanitorRuntimeException {
-        return JBool.of(mapJanitorWrapper.janitorGetHostValue().containsKey(jCallArgs.require(1).get(0)));
+        return Janitor.toBool(mapJanitorWrapper.janitorGetHostValue().containsKey(jCallArgs.require(1).get(0)));
     }
 
     public static JanitorObject __containsValue(JanitorWrapper<Map<JanitorObject, JanitorObject>> mapJanitorWrapper, JanitorScriptProcess process, JCallArgs jCallArgs) throws JanitorRuntimeException {
-        return JBool.of(mapJanitorWrapper.janitorGetHostValue().containsValue(jCallArgs.require(1).get(0)));
+        return Janitor.toBool(mapJanitorWrapper.janitorGetHostValue().containsValue(jCallArgs.require(1).get(0)));
     }
 
     /**

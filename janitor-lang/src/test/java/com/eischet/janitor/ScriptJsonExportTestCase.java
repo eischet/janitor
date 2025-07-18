@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * Test that this actually works.
  * (Loading JSON into a new AST is not yet implemented.)
  */
-public class ScriptJsonExportTestCase {
+public class ScriptJsonExportTestCase extends JanitorTest  {
 
     /**
      * Write a very simple hello world script to JSON.

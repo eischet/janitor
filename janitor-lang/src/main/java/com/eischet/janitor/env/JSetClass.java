@@ -2,6 +2,7 @@ package com.eischet.janitor.env;
 
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.JBool;
 import com.eischet.janitor.api.types.builtin.JInt;
@@ -19,17 +20,17 @@ public class JSetClass {
 
     public static JBool __add(final JanitorWrapper<Set<JanitorObject>> _self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         final JSet self = ((JSet) _self);
-        return JBool.of(self.add(arguments.require(1).get(0)));
+        return Janitor.toBool(self.add(arguments.require(1).get(0)));
     }
 
     public static JBool __remove(final JanitorWrapper<Set<JanitorObject>> _self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         final JSet self = ((JSet) _self);
-        return JBool.of(self.remove(arguments.require(1).get(0)));
+        return Janitor.toBool(self.remove(arguments.require(1).get(0)));
     }
 
     public static JBool __contains(final JanitorWrapper<Set<JanitorObject>> _self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         final JSet self = ((JSet) _self);
-        return JBool.of(self.contains(arguments.require(1).get(0)));
+        return Janitor.toBool(self.contains(arguments.require(1).get(0)));
     }
 
     public static JSet __toSet(final JanitorWrapper<Set<JanitorObject>> _self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
@@ -53,7 +54,7 @@ public class JSetClass {
     public static JBool __isEmpty(final JanitorWrapper<Set<JanitorObject>> _self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         final JSet self = ((JSet) _self);
         arguments.require(0);
-        return JBool.of(self.janitorGetHostValue().isEmpty());
+        return Janitor.toBool(self.janitorGetHostValue().isEmpty());
     }
 
 }

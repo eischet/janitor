@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class DispatchTableWithMetaDataTestsCase {
+public class DispatchTableWithMetaDataTestsCase extends JanitorTest {
 
     private static final MetaDataKey<Integer> MAX_LENGTH = new MetaDataKey<>("max_length", Integer.class);
 
@@ -112,17 +112,17 @@ public class DispatchTableWithMetaDataTestsCase {
     @Test
     void checkJsonWriting() throws JsonException {
         final var soc = new SomeChildObject();
-        assertEquals("{}", soc.toJson(TestEnv.env));
+        assertEquals("{}", soc.toJson());
         soc.setNickname("nicky");
-        assertEquals("{\"nickname\":\"nicky\"}", soc.toJson(TestEnv.env));
+        assertEquals("{\"nickname\":\"nicky\"}", soc.toJson());
         soc.setNickname(null);
-        assertEquals("{}", soc.toJson(TestEnv.env));
+        assertEquals("{}", soc.toJson());
         soc.setName("Nicholas");
-        assertEquals("{\"name\":\"Nicholas\"}", soc.toJson(TestEnv.env));
+        assertEquals("{\"name\":\"Nicholas\"}", soc.toJson());
         soc.setWidth(10);
-        assertEquals("{\"name\":\"Nicholas\",\"width\":10}", soc.toJson(TestEnv.env));
+        assertEquals("{\"name\":\"Nicholas\",\"width\":10}", soc.toJson());
         soc.setNickname("nicky");
-        assertEquals("{\"name\":\"Nicholas\",\"width\":10,\"nickname\":\"nicky\"}", soc.toJson(TestEnv.env));
+        assertEquals("{\"name\":\"Nicholas\",\"width\":10,\"nickname\":\"nicky\"}", soc.toJson());
     }
 
 

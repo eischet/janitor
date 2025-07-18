@@ -2,9 +2,9 @@ package com.eischet.janitor.env;
 
 import com.eischet.janitor.api.FilterPredicate;
 import com.eischet.janitor.api.JanitorEnvironment;
-import com.eischet.janitor.api.JanitorMetaData;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.metadata.HasMetaData;
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.dispatch.HasDispatcher;
 import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
@@ -18,7 +18,6 @@ import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.scopes.ScriptModule;
 import com.eischet.janitor.api.types.JanitorObject;
-import com.eischet.janitor.api.types.builtin.JBool;
 import com.eischet.janitor.api.types.builtin.JList;
 import com.eischet.janitor.api.types.builtin.JMap;
 import com.eischet.janitor.api.types.builtin.JNull;
@@ -73,10 +72,10 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
         builtinScope.bindF("help", (rs, args) -> {
             final JanitorObject subject = args.get(0);
             if (subject instanceof HasMetaData hasMetaData) {
-                return getBuiltinTypes().nullableString(hasMetaData.getMetaData(JanitorMetaData.HELP));
+                return getBuiltinTypes().nullableString(hasMetaData.getMetaData(Janitor.MetaData.HELP));
             }
             if (subject instanceof HasDispatcher<?> hasDispatcher) {
-                return getBuiltinTypes().nullableString(hasDispatcher.getDispatcher().getMetaData(JanitorMetaData.HELP));
+                return getBuiltinTypes().nullableString(hasDispatcher.getDispatcher().getMetaData(Janitor.MetaData.HELP));
             }
             return JNull.NULL;
         });
@@ -186,7 +185,7 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
             return builtins.floatingPoint(bigDecimal.doubleValue());
         }
         if (o instanceof Boolean bool) {
-            return JBool.of(bool);
+            return Janitor.toBool(bool);
         }
         Logger log = LoggerFactory.getLogger(JanitorObject.class);
         log.warn("nativeToScript(object={} [{}]) --> don't know how to convert this into a script variable!", o, ObjectUtilities.simpleClassNameOf(o));

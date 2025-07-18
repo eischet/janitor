@@ -1,6 +1,7 @@
 package com.eischet.janitor.commons;
 
 import com.eischet.janitor.api.JanitorScriptProcess;
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.builtin.*;
 import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
@@ -59,7 +60,7 @@ public class FilesModule extends JanitorComposed<FilesModule> implements Janitor
 
     public JBool fileExists(final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         final File f = new File(arguments.require(1).getString(0).janitorGetHostValue());
-        return JBool.of(f.exists());
+        return Janitor.toBool(f.exists());
     }
 
     public JNull writeString(final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
@@ -127,7 +128,7 @@ public class FilesModule extends JanitorComposed<FilesModule> implements Janitor
 
     public JBool mkdir(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         final String folderName = arguments.require(1).getRequiredStringValue(0);
-        return JBool.of(new File(folderName).mkdirs());
+        return Janitor.toBool(new File(folderName).mkdirs());
     }
 
     private JanitorObject lastMod(JanitorScriptProcess process, JCallArgs arguments) throws JanitorRuntimeException {
@@ -151,7 +152,7 @@ public class FilesModule extends JanitorComposed<FilesModule> implements Janitor
     public JanitorObject delete(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         final String fileName = arguments.require(1).getRequiredStringValue(0);
         final boolean success = new File(fileName).delete();
-        return JBool.of(success);
+        return Janitor.toBool(success);
     }
 
     public void move(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {

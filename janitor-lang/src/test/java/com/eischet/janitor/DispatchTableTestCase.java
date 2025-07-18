@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class DispatchTableTestCase {
+public class DispatchTableTestCase extends JanitorTest {
 
     /**
      * Java Booleans might be null, and need to be mapped differently than booleans in Janitor.

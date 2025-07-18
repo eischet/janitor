@@ -1,6 +1,7 @@
 package com.eischet.janitor.api.types.builtin;
 
-import com.eischet.janitor.api.types.BuiltinTypes;
+import com.eischet.janitor.api.Janitor;
+import com.eischet.janitor.api.errors.glue.JanitorGlueException;
 import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.types.TemporaryAssignable;
@@ -28,14 +29,11 @@ import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
  */
 public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> implements JIterable, JsonWriter, JsonExportableObject {
 
-    private final BuiltinTypes builtins;
-
     /**
      * Create a new JMap.
      */
-    private JMap(final Dispatcher<JanitorWrapper<Map<JanitorObject, JanitorObject>>> dispatch, BuiltinTypes builtins) {
+    private JMap(final Dispatcher<JanitorWrapper<Map<JanitorObject, JanitorObject>>> dispatch) {
         super(dispatch, new HashMap<>());
-        this.builtins = builtins;
     }
 
 
@@ -103,7 +101,7 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
 
         if ("missingKey".equals(name)) {
             return null;
-            //fthrow new RuntimeException("missingKey, required = " + required);
+            // throw new RuntimeException("missingKey, required = " + required);
         }
 
         if (required) {
@@ -120,8 +118,10 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
      * @param value the value
      */
     public void put(final String key, final JanitorObject value) {
-        wrapped.put(builtins.nullableString(key), value);
+        wrapped.put(Janitor.nullableString(key), value);
     }
+
+
 
     /**
      * Put a key-value pair into the map, builder style.
@@ -159,12 +159,35 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
 
     /**
      * Put a key-value pair into the map.
+     * This is a helper that maps Java to Janitor for you.
      *
      * @param key   the key
      * @param value the value
      */
     public void put(final @NotNull String key, final @Nullable String value) {
-        wrapped.put(builtins.nullableString(key),  builtins.nullableString(value));
+        wrapped.put(Janitor.string(key),  Janitor.nullableString(value));
+    }
+
+    /**
+     * Put a key-value pair into the map.
+     * This is a helper that maps Java to Janitor for you.
+     *
+     * @param key   the key
+     * @param value the value
+     */
+    public void put(final @NotNull String key, final boolean value) {
+        wrapped.put(Janitor.string(key), Janitor.toBool(value));
+    }
+
+    /**
+     * Put a key-value pair into the map.
+     * This is a helper that maps Java to Janitor for you.
+     *
+     * @param key   the key
+     * @param value the value
+     */
+    public void put(final @NotNull String key, final int value) {
+        wrapped.put(Janitor.string(key), Janitor.integer(value));
     }
 
     /**
@@ -228,7 +251,7 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
                     if (!assignableProperty.assign(value)) {
                         notAssignable.add(key);
                     }
-                } catch (JanitorRuntimeException assignmentError) {
+                } catch (JanitorGlueException assignmentError) {
                     // TODO: check if this is really OK
                     process.warn("error assigning to object %s property %s for key %s, value %s -> %s".formatted(target, prop, key, value, assignmentError));
                     notAssignable.add(key);
@@ -258,7 +281,7 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
      * @param consumer the consumer of the value
      */
     public void extractString(final JanitorScriptProcess process, final String key, final Consumer<String> consumer) {
-        final JanitorObject value = wrapped.get(builtins.nullableString(key));
+        final JanitorObject value = wrapped.get(Janitor.nullableString(key));
         if (value instanceof JString str) {
             consumer.accept(str.janitorGetHostValue());
         } else if (value != null) {
@@ -274,7 +297,7 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
      * @param consumer the consumer of the value
      */
     public void extract(final String key, final Consumer<JanitorObject> consumer) {
-        final JanitorObject value = wrapped.get(builtins.nullableString(key));
+        final JanitorObject value = wrapped.get(Janitor.nullableString(key));
         if (value != null && value != JNull.NULL) {
             consumer.accept(value);
         }
@@ -316,8 +339,8 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
         producer.endObject();
     }
 
-    public static JMap newInstance(final WrapperDispatchTable<Map<JanitorObject, JanitorObject>> dispatch, BuiltinTypes builtins) {
-        return new JMap(dispatch, builtins);
+    public static JMap newInstance(final WrapperDispatchTable<Map<JanitorObject, JanitorObject>> dispatch) {
+        return new JMap(dispatch);
     }
 
 }

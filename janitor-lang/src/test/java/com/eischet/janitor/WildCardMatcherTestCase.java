@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * Tests for the wild card matcher, which is the ~ operator in the Janitor language.
  */
-public class WildCardMatcherTestCase {
+public class WildCardMatcherTestCase extends JanitorTest {
 
     @Test
     public void testSingle() {

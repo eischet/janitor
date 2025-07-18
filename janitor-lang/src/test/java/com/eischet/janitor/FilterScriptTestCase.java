@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * the FilterPredicate interface extends Predicate&lt;JanitorObject&gt; accordingly.
  * </p>
  */
-public class FilterScriptTestCase {
+public class FilterScriptTestCase extends JanitorTest  {
 
     /**
      * Very simple: take a list of numbers, manually converted to Janitor Objects, and apply various

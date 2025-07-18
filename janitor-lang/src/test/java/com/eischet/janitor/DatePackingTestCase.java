@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
  * I'm pretty sure that later versions will remove the "date packing" feature, but that's how things work right now.
  * One huge advantage of this is that it's very easy to compare dates and date-times, and that they take very little RAM space.
  */
-public class DatePackingTestCase {
+public class DatePackingTestCase extends JanitorTest  {
 
     private static final LocalDateTime BORN_TIME = LocalDateTime.of(1976, 1, 10, 13, 30, 0);
     private static final long BORN_PACKED = 1976_01_10_13_30_00L;

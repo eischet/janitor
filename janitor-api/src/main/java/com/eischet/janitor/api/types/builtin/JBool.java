@@ -1,9 +1,6 @@
 package com.eischet.janitor.api.types.builtin;
 
-import com.eischet.janitor.api.JanitorScriptProcess;
-import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.types.JConstant;
-import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonExportablePrimitive;
 import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
@@ -30,20 +27,6 @@ public enum JBool implements JConstant, JsonExportablePrimitive {
     private final boolean value;
 
     /**
-     * Require a boolean value.
-     * @param scriptProcess the running script
-     * @param value the value to check
-     * @return the value, if it's a boolean
-     * @throws JanitorArgumentException if the value is not a boolean
-     */
-    public static JBool require(final JanitorScriptProcess scriptProcess, final JanitorObject value) throws JanitorArgumentException {
-        if (value instanceof JBool ok) {
-            return ok;
-        }
-        throw new JanitorArgumentException(scriptProcess, "Expected a boolean value, but got " + value.janitorClassName() + " instead.");
-    }
-
-    /**
      * Get the boolean value.
      * @return the boolean value
      */
@@ -58,28 +41,6 @@ public enum JBool implements JConstant, JsonExportablePrimitive {
      */
     JBool(final boolean value) {
         this.value = value;
-    }
-
-    /**
-     * Map a java boolean to a JBool.
-     * @param value the value
-     * @return the JBool
-     */
-    public static JBool of(final boolean value) {
-        return value ? TRUE : FALSE;
-    }
-
-    /**
-     * Map a nullable java Boolean to a JBool. Null yields FALSE.
-     * @param value the value
-     * @return the JBool
-     */
-    public static JBool of(final Boolean value) {
-        return value == Boolean.TRUE ? TRUE : FALSE;
-    }
-
-    public static JanitorObject nullableBooleanOf(final Boolean value) {
-        return value == null ? JNull.NULL : of(value);
     }
 
     @Override

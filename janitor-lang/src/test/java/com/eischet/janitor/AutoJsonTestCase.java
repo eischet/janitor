@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 /**
  * Working on automatic import/export of JSON from dispatch tables.
  */
-public class AutoJsonTestCase {
+public class AutoJsonTestCase extends JanitorTest  {
 
     private static final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
 
@@ -54,7 +54,7 @@ public class AutoJsonTestCase {
         }
 
         public String toJson() throws JsonException {
-            return DISPATCH.writeToJson(rt.getEnvironment(), this);
+            return DISPATCH.writeToJson(this);
         }
 
         public static SimpleObject fromJson(final JsonInputStream stream) throws JsonException {
@@ -91,11 +91,11 @@ public class AutoJsonTestCase {
         assertEquals(SIMPLE_ONE, json);
 
         // shorthand:
-        final Object shorterJson = SimpleObject.DISPATCH.writeToJson(rt.getEnvironment(), testObject);
+        final Object shorterJson = SimpleObject.DISPATCH.writeToJson(testObject);
         assertEquals(SIMPLE_ONE, shorterJson);
 
         testObject.setBar("");
-        assertEquals(SIMPLE_TWO, SimpleObject.DISPATCH.writeToJson(rt.getEnvironment(), testObject));
+        assertEquals(SIMPLE_TWO, SimpleObject.DISPATCH.writeToJson(testObject));
 
         // event shorter
         assertEquals(SIMPLE_TWO, testObject.toJson());
@@ -162,10 +162,10 @@ public class AutoJsonTestCase {
         final ThingWithListProp thing = new ThingWithListProp();
         thing.setList(List.of("foo", "bar", "baz"));
 
-        final String json = ThingWithListProp.DISPATCH.writeToJson(rt.getEnvironment(), thing);
+        final String json = ThingWithListProp.DISPATCH.writeToJson(thing);
         assertEquals(LIST_JSON, json);
 
-        ThingWithListProp otherThing = ThingWithListProp.DISPATCH.readFromJson(rt.getEnvironment(), ThingWithListProp::new, LIST_JSON);
+        ThingWithListProp otherThing = ThingWithListProp.DISPATCH.readFromJson(ThingWithListProp::new, LIST_JSON);
         assertEquals(thing.getList(), otherThing.getList());
 
 
@@ -221,10 +221,10 @@ public class AutoJsonTestCase {
         mixer.getA().setList(List.of("a", "b", "c", "d"));
         mixer.getB().setFoo("baz");
 
-        assertEquals(MY_UGLY_LIST, mixer.toJson(rt.getEnvironment()));
+        assertEquals(MY_UGLY_LIST, mixer.toJson());
 
 
-        final Mixed read = Mixed.DISPATCH.readFromJson(rt.getEnvironment(), Mixed::new, MY_UGLY_LIST);
+        final Mixed read = Mixed.DISPATCH.readFromJson(Mixed::new, MY_UGLY_LIST);
         assertNull(read.getB().getBar());
         assertEquals(4, read.getA().getList().size());
         assertEquals("baz", read.getB().getFoo());

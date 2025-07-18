@@ -1,7 +1,7 @@
 package com.eischet.janitor;
 
-import com.eischet.janitor.api.JanitorScriptProcess;
-import com.eischet.janitor.api.RunnableScript;
+import com.eischet.janitor.api.*;
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.errors.runtime.JanitorNameException;
@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  */
 @Execution(ExecutionMode.SAME_THREAD)
-public class ExtensionMethodsTestCase {
+public class ExtensionMethodsTestCase extends JanitorTest {
 
     /**
      * Create an environment.
@@ -60,6 +60,7 @@ public class ExtensionMethodsTestCase {
      */
     @Test
     public void testExtensionMethods() throws JanitorRuntimeException, JanitorCompilerException {
+        Janitor.setUserProvider(JanitorEnvironmentProvider.returning(ENV));
 
         assertEquals(1L, runCount.incrementAndGet());
 

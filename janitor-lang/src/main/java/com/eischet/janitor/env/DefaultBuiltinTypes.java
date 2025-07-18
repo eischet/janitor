@@ -1,6 +1,6 @@
 package com.eischet.janitor.env;
 
-import com.eischet.janitor.api.JanitorMetaData;
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.BuiltinTypeInternals;
 import com.eischet.janitor.api.types.BuiltinTypes;
 import com.eischet.janitor.api.JanitorScriptProcess;
@@ -64,12 +64,12 @@ public class DefaultBuiltinTypes implements BuiltinTypes {
         zero = JInt.newInstance(intDispatcher, 0);
 
 
-        stringDispatcher.setMetaData(JanitorMetaData.HELP, JStringClass.STRING_CLASS);
+        stringDispatcher.setMetaData(Janitor.MetaData.HELP, JStringClass.STRING_CLASS);
         // OLD: addStringMethod("length", JStringClass::__length);
         stringDispatcher.addMethod("length", JStringClass::length)
-                .setMetaData(JanitorMetaData.HELP, JStringClass.STRING_LENGTH); // "foo".length() == 3
+                .setMetaData(Janitor.MetaData.HELP, JStringClass.STRING_LENGTH); // "foo".length() == 3
         stringDispatcher.addMethod("trim", JStringClass::trim)
-                .setMetaData(JanitorMetaData.HELP, JStringClass.STRING_TRIM); // "  foo  ".trim() == "foo"
+                .setMetaData(Janitor.MetaData.HELP, JStringClass.STRING_TRIM); // "  foo  ".trim() == "foo"
         stringDispatcher.addMethod("contains", JStringClass::contains); // "foobar".contains("bar") == true, "barbaz".contains("foo") == false
         stringDispatcher.addMethod("containsIgnoreCase", JStringClass::containsIgnoreCase); // "foobar".containsIgnoreCase("BAR") == true
         stringDispatcher.addMethod("splitLines", JStringClass::splitLines); // "foo\nbar\nbaz".splitLines() == ["foo", "bar", "baz"]
@@ -207,7 +207,7 @@ public class DefaultBuiltinTypes implements BuiltinTypes {
 
     @Override
     public @NotNull JMap map() {
-        return JMap.newInstance(mapDispatcher, this);
+        return JMap.newInstance(mapDispatcher);
     }
 
     @Override

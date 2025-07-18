@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Tests for the map class.
  */
-public class MapClassTestCase {
+public class MapClassTestCase extends JanitorTest {
 
     /**
      * Exercise some basic map operations

@@ -66,8 +66,8 @@ public interface Dispatcher<T extends JanitorObject> extends HasMetaData {
 
             @SuppressWarnings("unchecked")
             @Override
-            public String writeToJson(final JanitorEnvironment env, final P instance) throws JsonException {
-                return child.writeToJson(env, (C) instance);
+            public String writeToJson(final P instance) throws JsonException {
+                return child.writeToJson((C) instance);
             }
 
             @SuppressWarnings("unchecked")
@@ -78,8 +78,8 @@ public interface Dispatcher<T extends JanitorObject> extends HasMetaData {
 
             @SuppressWarnings("unchecked")
             @Override
-            public P readFromJson(final JanitorEnvironment env, final Supplier<P> constructor, final String json) throws JsonException {
-                return (P) child.readFromJson(env, () -> (C) constructor.get(), json);
+            public P readFromJson(final Supplier<P> constructor, final String json) throws JsonException {
+                return (P) child.readFromJson(() -> (C) constructor.get(), json);
             }
 
             @Override
@@ -112,11 +112,11 @@ public interface Dispatcher<T extends JanitorObject> extends HasMetaData {
 
     void writeToJson(JsonOutputStream stream, T instance) throws JsonException;
 
-    @Language("JSON") String writeToJson(JanitorEnvironment env, T instance)  throws JsonException;
+    @Language("JSON") String writeToJson(T instance)  throws JsonException;
 
     T readFromJson(Supplier<T> constructor, JsonInputStream stream) throws JsonException;
 
-    T readFromJson(JanitorEnvironment env, Supplier<T> constructor, @Language("JSON") String json) throws JsonException;
+    T readFromJson(Supplier<T> constructor, @Language("JSON") String json) throws JsonException;
 
     Stream<String> streamAttributeNames();
 

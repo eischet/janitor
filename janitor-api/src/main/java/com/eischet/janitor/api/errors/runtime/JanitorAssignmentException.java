@@ -1,6 +1,7 @@
 package com.eischet.janitor.api.errors.runtime;
 
 import com.eischet.janitor.api.JanitorScriptProcess;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * An exception thrown when an assignment operation fails.
@@ -13,7 +14,7 @@ public class JanitorAssignmentException extends JanitorArgumentException {
      * Constructs a new JanitorAssignmentException.
      * @param process the running script
      */
-    public JanitorAssignmentException(final JanitorScriptProcess process) {
+    public JanitorAssignmentException(final @NotNull JanitorScriptProcess process) {
         super(process, JanitorAssignmentException.class);
     }
 
@@ -22,7 +23,7 @@ public class JanitorAssignmentException extends JanitorArgumentException {
      * @param process the running script
      * @param message the detail message
      */
-    public JanitorAssignmentException(final JanitorScriptProcess process, final String message) {
+    public JanitorAssignmentException(final @NotNull JanitorScriptProcess process, final String message) {
         super(process, message, JanitorAssignmentException.class);
     }
 
@@ -32,7 +33,7 @@ public class JanitorAssignmentException extends JanitorArgumentException {
      * @param message the detail message
      * @param cause the cause
      */
-    public JanitorAssignmentException(final JanitorScriptProcess process, final String message, final Throwable cause) {
+    public JanitorAssignmentException(final @NotNull JanitorScriptProcess process, final String message, final Throwable cause) {
         super(process, message, cause, JanitorAssignmentException.class);
     }
 
@@ -41,7 +42,7 @@ public class JanitorAssignmentException extends JanitorArgumentException {
      * @param process the running script
      * @param cause the cause
      */
-    public JanitorAssignmentException(final JanitorScriptProcess process, final Throwable cause) {
+    public JanitorAssignmentException(final @NotNull JanitorScriptProcess process, final Throwable cause) {
         super(process, cause, JanitorAssignmentException.class);
     }
 }

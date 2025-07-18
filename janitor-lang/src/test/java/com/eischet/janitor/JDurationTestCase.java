@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class JDurationTestCase {
+public class JDurationTestCase extends JanitorTest {
 
     final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
 

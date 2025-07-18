@@ -5,7 +5,7 @@ import com.eischet.janitor.api.RunnableScript;
 import com.eischet.janitor.lang.JNativeMethod;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.errors.runtime.JanitorAssertionException;
-import com.eischet.janitor.api.errors.runtime.JanitorControlFlowException;
+import com.eischet.janitor.api.errors.glue.JanitorControlFlowException;
 import com.eischet.janitor.api.errors.runtime.JanitorNameException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.modules.JanitorModule;
@@ -43,7 +43,7 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class FirstParserTestCase {
+public class FirstParserTestCase extends JanitorTest {
 
     private static final Logger log = LoggerFactory.getLogger(FirstParserTestCase.class);
 

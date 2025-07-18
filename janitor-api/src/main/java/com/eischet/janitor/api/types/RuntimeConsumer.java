@@ -1,6 +1,6 @@
 package com.eischet.janitor.api.types;
 
-import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
+import com.eischet.janitor.api.errors.glue.JanitorGlueException;
 
 /**
  * Like the functional interface Consumer, but with a throws clause, so it can be used in interpreted code.
@@ -11,7 +11,7 @@ public interface RuntimeConsumer<T> {
     /**
      * Accepts the given object.
      * @param object the object to accept.
-     * @throws JanitorRuntimeException on errors
+     * @throws JanitorGlueException on errors
      */
-    void accept(T object) throws JanitorRuntimeException;
+    void accept(T object) throws JanitorGlueException;
 }

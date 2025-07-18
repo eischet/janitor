@@ -16,7 +16,7 @@ import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class SimpleExpressionTestCase {
+public class SimpleExpressionTestCase extends JanitorTest {
 
     private JanitorObject eval(final @Language("Janitor")  String expressionSource) throws JanitorCompilerException, JanitorRuntimeException {
         return eval(expressionSource, globals -> {

@@ -2,6 +2,7 @@ package com.eischet.janitor.api.types.builtin;
 
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
+import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 import com.eischet.janitor.api.types.JanitorObject;
@@ -21,20 +22,6 @@ public class JInt extends JanitorWrapper<Long> implements JNumber {
         super(dispatcher, wrapped);
     }
 
-    /**
-     * Create a new JInt.
-     *
-     * @param scriptProcess the script process
-     * @param value         the value
-     * @return the integer
-     * @throws JanitorArgumentException if the value is not an integer
-     */
-    public static JInt requireInt(final JanitorScriptProcess scriptProcess, final JanitorObject value) throws JanitorArgumentException {
-        if (value instanceof JInt ok) {
-            return ok;
-        }
-        throw new JanitorArgumentException(scriptProcess, "Expected an integer value, but got " + value.janitorClassName() + " instead.");
-    }
 
 
     /**

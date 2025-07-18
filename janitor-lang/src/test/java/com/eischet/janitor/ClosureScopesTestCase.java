@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class ClosureScopesTestCase {
+public class ClosureScopesTestCase extends JanitorTest  {
 
     @Test
     public void testCaptureArgumentScopes() throws Exception {

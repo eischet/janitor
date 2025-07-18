@@ -1,6 +1,7 @@
 package com.eischet.janitor.api.errors.runtime;
 
 import com.eischet.janitor.api.JanitorScriptProcess;
+import com.eischet.janitor.api.errors.glue.JanitorControlFlowException;
 
 /**
  * An exception thrown when an internal error occurs in the Janitor interpreter.

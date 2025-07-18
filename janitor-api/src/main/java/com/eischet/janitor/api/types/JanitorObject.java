@@ -1,6 +1,7 @@
 package com.eischet.janitor.api.types;
 
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorNameException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
@@ -138,7 +139,7 @@ public interface JanitorObject {
         // Handle the class attribute here, previously called _type (which should be removed from older scripts which use it).
         // LATER get rid of "_type", used in a few legacy scripts
         if ("_type".equals(name) || "class".equals(name)) {
-            return process.getEnvironment().getBuiltinTypes().string(janitorClassName());
+            return Janitor.getBuiltins().string(janitorClassName());
         }
         if (required) {
             final Object hv = janitorGetHostValue();

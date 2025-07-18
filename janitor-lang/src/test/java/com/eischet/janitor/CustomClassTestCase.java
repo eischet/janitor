@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Test and demonstrate how a custom class can be added to the interpreter and how it can be used from within scripts.
  */
-public class CustomClassTestCase {
+public class CustomClassTestCase extends JanitorTest  {
 
     /**
      * Our custom object, based on the JanitorComposed approach.

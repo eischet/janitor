@@ -13,7 +13,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class CallbackTestCase {
+public class CallbackTestCase  extends JanitorTest {
 
     /**
      * Test the new callback functionality, where we can retrieve a JCallable from the Java side and call it freely when needed again.

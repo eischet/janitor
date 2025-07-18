@@ -21,7 +21,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class ManualAstTestCase {
+public class ManualAstTestCase extends JanitorTest  {
 
     @Test
     public void stackingScopes() {

@@ -1,7 +1,7 @@
 package com.eischet.janitor.repl;
 
 import com.eischet.janitor.api.JanitorRuntime;
-import com.eischet.janitor.api.errors.runtime.JanitorControlFlowException;
+import com.eischet.janitor.api.errors.glue.JanitorControlFlowException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.api.scopes.Scope;

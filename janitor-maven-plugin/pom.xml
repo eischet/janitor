@@ -52,6 +52,10 @@
             <artifactId>annotations</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>com.google.auto.service</groupId>
+            <artifactId>auto-service-annotations</artifactId>
+        </dependency>
 
 
         <!-- https://mvnrepository.com/artifact/org.apache.maven/maven-slf4j-provider -->
@@ -198,6 +202,19 @@
             </plugins>
         </pluginManagement>
         <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.14.0</version>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>com.google.auto.service</groupId>
+                            <artifactId>auto-service</artifactId>
+                            <version>${deps.autoservice}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-plugin-plugin</artifactId>

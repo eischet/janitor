@@ -1,19 +1,17 @@
 package com.eischet.janitor;
 
-import com.eischet.janitor.api.JanitorMetaData;
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
-import com.eischet.janitor.api.types.builtin.JBool;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
-import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.env.JStringClass;
 import com.eischet.janitor.runtime.OutputCatchingTestRuntime;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class MetaDataTestCase {
+public class MetaDataTestCase extends JanitorTest {
 
     @Test
     void checkStringClassDocstring() throws JanitorCompilerException, JanitorRuntimeException {
@@ -33,10 +31,10 @@ public class MetaDataTestCase {
         private static final DispatchTable<Simpleton> DISPATCH = new DispatchTable<>();
 
         static {
-            DISPATCH.setMetaData(JanitorMetaData.NAME, "Simpleton");
-            DISPATCH.setMetaData(JanitorMetaData.HELP, "a very simple type of class");
+            DISPATCH.setMetaData(Janitor.MetaData.NAME, "Simpleton");
+            DISPATCH.setMetaData(Janitor.MetaData.HELP, "a very simple type of class");
             DISPATCH.addBooleanProperty("stoopid", it -> true)
-                    .setMetaData(JanitorMetaData.HELP, "this is beyond help");
+                    .setMetaData(Janitor.MetaData.HELP, "this is beyond help");
         }
 
         public Simpleton() {

@@ -1,8 +1,8 @@
 package com.eischet.janitor.env;
 
 import com.eischet.janitor.api.JanitorEnvironment;
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.JanitorObject;
-import com.eischet.janitor.api.types.builtin.JBool;
 import com.eischet.janitor.api.types.builtin.JNull;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonInputStream;
@@ -23,7 +23,7 @@ public abstract class JCollection {
             case STRING -> env.getBuiltinTypes().nullableString(reader.nextString());
             case NUMBER -> env.getBuiltinTypes().numeric(reader.nextDouble());
 
-            case BOOLEAN -> JBool.of(reader.nextBoolean());
+            case BOOLEAN -> Janitor.toBool(reader.nextBoolean());
             case NULL -> {
                 reader.nextNullObject();
                 yield JNull.NULL;

@@ -5,6 +5,7 @@ import com.eischet.janitor.api.errors.JanitorException;
 import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.api.scopes.ScriptModule;
 import com.eischet.janitor.api.types.JanitorObject;
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.composed.JanitorAware;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -22,7 +23,7 @@ public abstract class JanitorRuntimeException extends JanitorException implement
      * @param process the running script
      * @param cls the class of the exception
      */
-    public JanitorRuntimeException(final JanitorScriptProcess process, final Class<? extends JanitorRuntimeException> cls) {
+    public JanitorRuntimeException(final @NotNull  JanitorScriptProcess process, final @NotNull Class<? extends JanitorRuntimeException> cls) {
         super(formatScriptStackTrace(process, null, cls, null));
     }
 
@@ -32,7 +33,7 @@ public abstract class JanitorRuntimeException extends JanitorException implement
      * @param message the detail message
      * @param cls the class of the exception
      */
-    public JanitorRuntimeException(final JanitorScriptProcess process, final String message, final Class<? extends JanitorRuntimeException> cls) {
+    public JanitorRuntimeException(final @NotNull  JanitorScriptProcess process, final String message, final Class<? extends JanitorRuntimeException> cls) {
         super(formatScriptStackTrace(process, message, cls, null));
     }
 
@@ -43,7 +44,7 @@ public abstract class JanitorRuntimeException extends JanitorException implement
      * @param cause the cause
      * @param cls the class of the exception
      */
-    public JanitorRuntimeException(final JanitorScriptProcess process, final String message, final Throwable cause, final Class<? extends JanitorRuntimeException> cls) {
+    public JanitorRuntimeException(final @NotNull  JanitorScriptProcess process, final String message, final Throwable cause, final Class<? extends JanitorRuntimeException> cls) {
         super(formatScriptStackTrace(process, message, cls, cause), cause);
     }
 
@@ -53,7 +54,7 @@ public abstract class JanitorRuntimeException extends JanitorException implement
      * @param cause the cause
      * @param cls the class of the exception
      */
-    public JanitorRuntimeException(final JanitorScriptProcess process, final Throwable cause, final Class<? extends JanitorRuntimeException> cls) {
+    public JanitorRuntimeException(final @NotNull  JanitorScriptProcess process, final Throwable cause, final Class<? extends JanitorRuntimeException> cls) {
         super(formatScriptStackTrace(process, null, cls, cause), cause);
     }
 
@@ -61,10 +62,10 @@ public abstract class JanitorRuntimeException extends JanitorException implement
     @Override
     public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess process, final @NotNull String name, final boolean required) throws JanitorRuntimeException {
         if ("message".equals(name)) {
-            return process.getEnvironment().getBuiltinTypes().nullableString(getMessage());
+            return Janitor.getBuiltins().nullableString(getMessage());
         }
         if ("type".equals(name)) {
-            return process.getEnvironment().getBuiltinTypes().string(getClass().getSimpleName());
+            return Janitor.getBuiltins().string(getClass().getSimpleName());
         }
         if (getCause() instanceof JanitorAware aware) {
             final JanitorObject jo = aware.asJanitorObject();
@@ -86,12 +87,12 @@ public abstract class JanitorRuntimeException extends JanitorException implement
      * @param cause the optional cause of the exception
      * @return the formatted stack trace
      */
-    private static String formatScriptStackTrace(final JanitorScriptProcess process, final String message, final Class<? extends JanitorRuntimeException> cls, final Throwable cause) {
+    private static String formatScriptStackTrace(final @NotNull JanitorScriptProcess process, final String message, final Class<? extends JanitorRuntimeException> cls, final Throwable cause) {
+        final StringBuilder out = new StringBuilder();
         final ArrayList<Location> stack = new ArrayList<>(process.getStackTrace());
         Collections.reverse(stack);
 
         // final ImmutableList<String> sourceLines = splitSource(process);
-        final StringBuilder out = new StringBuilder();
         out.append("Traceback (most recent call last):");
         if (!stack.isEmpty()) {
             for (final Location location : stack) {

@@ -1,7 +1,7 @@
 package com.eischet.janitor.maven.wrappers;
 
 import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
-import com.eischet.janitor.api.types.builtin.JBool;
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import com.eischet.janitor.maven.env.MavenScriptingEnv;
@@ -26,7 +26,7 @@ public class ArtifactWrapper extends JanitorWrapper<Artifact> {
         dispatcher.addStringProperty("absoluteFilename", self -> self.janitorGetHostValue().getFile().getAbsolutePath());
         dispatcher.addStringProperty("downloadUrl", self -> self.janitorGetHostValue().getDownloadUrl(), (self, value) -> self.janitorGetHostValue().setDownloadUrl(value));
         dispatcher.addStringProperty("type", self -> self.janitorGetHostValue().getType());
-        dispatcher.addMethod("hasClassifier", (self, process, args) -> JBool.of(self.janitorGetHostValue().hasClassifier()));
+        dispatcher.addMethod("hasClassifier", (self, process, args) -> Janitor.toBool(self.janitorGetHostValue().hasClassifier()));
         dispatcher.addListProperty("dependencyTrail", self -> MavenScriptingEnv.INSTANCE.getBuiltinTypes().list(self.janitorGetHostValue().getDependencyTrail().stream().map(it -> MavenScriptingEnv.INSTANCE.getBuiltinTypes().nullableString(it))));
         dispatcher.addBooleanProperty("snapshot", self -> self.janitorGetHostValue().isSnapshot());
         dispatcher.addBooleanProperty("release", self -> self.janitorGetHostValue().isRelease(), (self, value) -> self.janitorGetHostValue().setRelease(value));
@@ -34,7 +34,7 @@ public class ArtifactWrapper extends JanitorWrapper<Artifact> {
         dispatcher.addBooleanProperty("optional", self -> self.janitorGetHostValue().isOptional(), (self, value) -> self.janitorGetHostValue().setOptional(value));
         dispatcher.addMethod("isSelectedVersionKnown", (self, process, args) -> {
             try {
-                return JBool.of(self.janitorGetHostValue().isSelectedVersionKnown());
+                return Janitor.toBool(self.janitorGetHostValue().isSelectedVersionKnown());
             } catch (OverConstrainedVersionException e) {
                 throw new JanitorNativeException(process, "error checking if selected version is known", e);
             }

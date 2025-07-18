@@ -1,13 +1,13 @@
 package com.eischet.janitor.api.scopes;
 
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.composed.JanitorAware;
 import com.eischet.janitor.api.types.functions.JCallable;
 import com.eischet.janitor.api.types.*;
-import com.eischet.janitor.api.types.builtin.JBool;
 import com.eischet.janitor.api.types.builtin.JMap;
 import com.eischet.janitor.api.types.builtin.JNull;
 import org.jetbrains.annotations.NotNull;
@@ -412,7 +412,7 @@ public class Scope implements JanitorObject {
      * @return this scope (for chained, builder-style calls)
      */
     public Scope bind(final String variableName, final boolean variable) {
-        return bind(variableName, JBool.of(variable));
+        return bind(variableName, Janitor.toBool(variable));
     }
 
     /**

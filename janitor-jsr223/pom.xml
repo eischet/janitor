@@ -19,7 +19,7 @@
         <dependency>
             <groupId>com.google.auto.service</groupId>
             <artifactId>auto-service-annotations</artifactId>
-            <version>${dep.autoservice}</version>
+            <version>${deps.autoservice}</version>
         </dependency>
         <dependency>
             <groupId>org.jetbrains</groupId>
@@ -43,7 +43,7 @@
                         <path>
                             <groupId>com.google.auto.service</groupId>
                             <artifactId>auto-service</artifactId>
-                            <version>${dep.autoservice}</version>
+                            <version>${deps.autoservice}</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>

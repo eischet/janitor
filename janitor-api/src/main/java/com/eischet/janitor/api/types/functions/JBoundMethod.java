@@ -1,6 +1,6 @@
 package com.eischet.janitor.api.types.functions;
 
-import com.eischet.janitor.api.JanitorMetaData;
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.metadata.HasMetaData;
@@ -68,11 +68,11 @@ public class JBoundMethod<T> implements JCallable, JanitorObject, HasMetaData {
                 return datum;
             }
         }
-        if (key == JanitorMetaData.NAME) {
+        if (key == Janitor.MetaData.NAME) {
             //noinspection unchecked
             return (K) name;
         }
-        if (key == JanitorMetaData.HELP) {
+        if (key == Janitor.MetaData.HELP) {
             //noinspection unchecked
             return (K) help;
         }

@@ -11,7 +11,7 @@ import java.util.TimeZone;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-public class DateTimeUtilsTestCase {
+public class DateTimeUtilsTestCase extends JanitorTest {
 
 
     @Test

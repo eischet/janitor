@@ -13,7 +13,7 @@
 
     <properties>
         <!-- project revision -->
-        <revision>0.9.21-SNAPSHOT</revision>
+        <revision>0.9.21</revision>
 
         <!-- project settings -->
         <maven.compiler.release>17</maven.compiler.release>
@@ -22,9 +22,9 @@
         <maven.plugin.validation>VERBOSE</maven.plugin.validation>
 
         <!-- dependency versions -->
-        <dep.jetbrains-annotations>26.0.2</dep.jetbrains-annotations>
-        <dep.slf4j>2.0.17</dep.slf4j>
-        <dep.autoservice>1.1.1</dep.autoservice>
+        <deps.jetbrains-annotations>26.0.2</deps.jetbrains-annotations>
+        <deps.slf4j>2.0.17</deps.slf4j>
+        <deps.autoservice>1.1.1</deps.autoservice>
 
     </properties>
 
@@ -191,7 +191,7 @@
             <dependency>
                 <groupId>org.jetbrains</groupId>
                 <artifactId>annotations</artifactId>
-                <version>${dep.jetbrains-annotations}</version>
+                <version>${deps.jetbrains-annotations}</version>
                 <scope>provided</scope>
                 <!--
                   provided is better than compile because these are compile-time only, see https://github.com/JetBrains/java-annotations;
@@ -221,7 +221,7 @@
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
-                <version>${dep.slf4j}</version>
+                <version>${deps.slf4j}</version>
                 <scope>compile</scope>
             </dependency>
             <dependency>
@@ -233,7 +233,7 @@
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-simple</artifactId>
-                <version>${dep.slf4j}</version>
+                <version>${deps.slf4j}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
@@ -252,6 +252,11 @@
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-core</artifactId>
                 <version>2.19.1</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.auto.service</groupId>
+                <artifactId>auto-service-annotations</artifactId>
+                <version>${deps.autoservice}</version>
             </dependency>
 
 

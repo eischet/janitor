@@ -2,7 +2,7 @@ package com.eischet.janitor.compiler.ast.function;
 
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.types.functions.JCallArgs;
-import com.eischet.janitor.api.errors.runtime.JanitorControlFlowException;
+import com.eischet.janitor.api.errors.glue.JanitorControlFlowException;
 import com.eischet.janitor.api.errors.runtime.JanitorInternalException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.Location;
