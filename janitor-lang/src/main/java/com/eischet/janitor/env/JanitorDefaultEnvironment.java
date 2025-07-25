@@ -5,6 +5,7 @@ import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.metadata.HasMetaData;
 import com.eischet.janitor.api.Janitor;
+import com.eischet.janitor.api.modules.DiscoverableModules;
 import com.eischet.janitor.api.types.dispatch.HasDispatcher;
 import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
@@ -259,6 +260,14 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
     @Override
     public void addModule(final @NotNull JanitorModuleRegistration registration) {
         moduleRegistrations.add(registration);
+    }
+
+    public void autoDiscoverModules() {
+        for (final DiscoverableModules discoverableModules : ServiceLoader.load(DiscoverableModules.class)) {
+            for (JanitorModuleRegistration registration : discoverableModules.getModules()) {
+                addModule(registration);
+            }
+        }
     }
 
 

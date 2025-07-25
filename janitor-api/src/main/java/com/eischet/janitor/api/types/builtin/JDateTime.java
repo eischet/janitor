@@ -1,6 +1,7 @@
 package com.eischet.janitor.api.types.builtin;
 
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.types.JConstant;
 import com.eischet.janitor.api.types.JanitorObject;
@@ -140,8 +141,8 @@ public class JDateTime extends JanitorComposed<JDateTime> implements JConstant {
      * Get the date part of the date and time.
      * @return the date
      */
-    public JDate toDate(final JanitorScriptProcess process) {
-        return process.getBuiltins().date(janitorGetHostValue().toLocalDate());
+    public JDate toDate() {
+        return Janitor.date(janitorGetHostValue().toLocalDate());
     }
 
     @Override

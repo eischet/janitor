@@ -130,4 +130,6 @@ public interface JanitorEnvironment extends JsonOutputSupport {
 
     @NotNull JanitorModule getModuleByStringName(final JanitorScriptProcess process, String name) throws JanitorRuntimeException;
 
+    void autoDiscoverModules();
+
 }

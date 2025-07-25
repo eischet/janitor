@@ -288,6 +288,7 @@ public class Janitor {
         throw new JanitorGlueException(JanitorArgumentException::fromGlue, "Expected a datetime value, but got " + value.janitorClassName() + " instead.");
     }
 
+
     public static JanitorObject nullableBooleanOf(final Boolean value) {
         return value == null ? JNull.NULL : toBool(value);
     }
@@ -339,7 +340,13 @@ public class Janitor {
         return value == Boolean.TRUE ? JBool.TRUE : JBool.FALSE;
     }
 
+
     public static class MetaData {
+
+        /**
+         * The class name for an object.
+         */
+        public static MetaDataKey<String> CLASS = new MetaDataKey<>("class", String.class);
 
         public enum TypeHint {
             NUMBER, INTEGER, FLOAT, STRING, BOOLEAN, METHOD, DATE, DATETIME, LIST
@@ -371,6 +378,18 @@ public class Janitor {
          * </p>
          */
         public static final MetaDataKey<String> NAME = new MetaDataKey<>("name", String.class);
+
+
+        /**
+         * Meta-Data: mark a property as required.
+         * <p>
+         * Janitor does currently not use this itself, but for additional tooling, this can e.g. make the difference
+         * between emitting "foo: string | undefined" or "foo: string", assuming you're generating an index.d.ts file
+         * for some Janitor classes.
+         * </p>
+         */
+        public static final MetaDataKey<Boolean> REQUIRED = new MetaDataKey<>("required", Boolean.class);
+
 
         private MetaData() {}
 

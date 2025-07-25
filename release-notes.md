@@ -1,3 +1,11 @@
+# 0.9.22, 2025-xx-xx
+
+JanitorEnvironment: enable auto-discovery of modules via the Service Loader mechanism; this is an opt-in feature.
+Maven Plugin: opt in to this new auto-discovery. Use case: I'm auto-generating TypeScript definitions for Java Code in a web project.
+Relax some parts of the GenericDispatchTable, which were rejecting valid values since 0.9.21, e.g. null for a nullable string property.
+General toolbox thing: Add a very simple i18n tool that handles a single resource bundle for translations.
+
+
 # 0.9.21, 2025-07-18
 
 Many helper functions, e.g. for creating script objects like integers and floats, have been centralized in the new "Janitor" class.

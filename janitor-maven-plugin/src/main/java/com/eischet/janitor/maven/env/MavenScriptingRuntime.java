@@ -15,6 +15,7 @@ public class MavenScriptingRuntime extends BaseRuntime {
     public MavenScriptingRuntime(final JanitorEnvironment environment) {
         super(environment);
         this.log = new SystemStreamLog();
+        environment.autoDiscoverModules();
     }
 
     @Override

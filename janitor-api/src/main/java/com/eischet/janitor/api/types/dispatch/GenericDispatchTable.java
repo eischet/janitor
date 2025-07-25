@@ -2,6 +2,7 @@ package com.eischet.janitor.api.types.dispatch;
 
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.glue.JanitorGlueException;
+import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.metadata.*;
 import com.eischet.janitor.api.types.JanitorObject;
@@ -30,6 +31,7 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static com.eischet.janitor.api.Janitor.MetaData.TYPE_HINT;
+import static com.eischet.janitor.api.Janitor.nullableDate;
 import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
 public abstract class GenericDispatchTable<T extends JanitorObject> implements Dispatcher<T> {
@@ -230,7 +232,7 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
      *
      * @param name   the name of the method
      * @param method the method
-     * @return this
+     * @return a meta-data builder
      */
     public MetaDataBuilder<T> addMethod(final String name, final JUnboundMethod<T> method) {
         return put(name, instance ->new JBoundMethod<>(name, instance, method, new MetaDataRetriever() {
@@ -246,7 +248,7 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
      *
      * @param name   the name of the method
      * @param method the method
-     * @return this
+     * @return a meta-data builder
      */
     public MetaDataBuilder<T> addBuilderMethod(final String name, final JVoidMethod<T> method) {
         return put(name, instance ->new JBoundMethod<>(name, instance, (self, p1, arguments) -> {
@@ -266,7 +268,7 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
      *
      * @param name   the method's name
      * @param method the method
-     * @return this
+     * @return a meta-data builder
      */
     public MetaDataBuilder<T> addVoidMethod(final String name, final JVoidMethod<T> method) {
         return put(name, instance ->new JBoundMethod<>(name, instance, (self, p1, arguments) -> {
@@ -521,10 +523,10 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
      * @param name   property name
      * @param getter property getter
      * @param setter property setter
-     * @return
+     * @return a meta-data builder
      */
     public MetaDataBuilder<T> addStringProperty(final String name, final Function<T, String> getter, final BiConsumer<T, String> setter) {
-        return put(name, instance ->new TemporaryAssignable(Janitor.getBuiltins().nullableString(getter.apply(instance)), value -> setter.accept(instance, Janitor.requireString(value).janitorGetHostValue())), adapt(JSON_STRING, getter, setter)).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.STRING);
+        return put(name, instance ->new TemporaryAssignable(Janitor.getBuiltins().nullableString(getter.apply(instance)), value -> setter.accept(instance, stringOrNull(value))), adapt(JSON_STRING, getter, setter)).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.STRING);
     }
 
     /**
@@ -532,7 +534,7 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
      *
      * @param name   property name
      * @param getter property getter
-     * @return
+     * @return a meta-data builder
      */
     public MetaDataBuilder<T> addDateProperty(final String name, final Function<T, LocalDate> getter) {
         return put(name, instance -> Janitor.getBuiltins().nullableDate(getter.apply(instance)), null).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.DATE);
@@ -544,10 +546,41 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
      * @param name   property name
      * @param getter property getter
      * @param setter property setter
-     * @return
+     * @return a meta-data builder
      */
     public MetaDataBuilder<T> addDateProperty(final String name, final Function<T, LocalDate> getter, final BiConsumer<T, LocalDate> setter) {
-        return put(name, instance ->new TemporaryAssignable(Janitor.getBuiltins().date(getter.apply(instance)), value -> setter.accept(instance, Janitor.requireDate(value).janitorGetHostValue())), null).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.DATE); // TODO: support dates
+        return put(name, instance ->new TemporaryAssignable(Janitor.getBuiltins().nullableDate(getter.apply(instance)), value -> setter.accept(instance, dateOrNull(value))), null).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.DATE); // TODO: support dates
+    }
+
+    private String stringOrNull(final JanitorObject value) throws JanitorGlueException {
+        if (value == Janitor.NULL) {
+            return null;
+        } else if (value instanceof JString jstring) {
+            return jstring.janitorGetHostValue();
+        }
+        throw new JanitorGlueException(JanitorArgumentException::fromGlue, "expected String or null, but received " + value + " [" + simpleClassNameOf(value) + "]");
+    }
+
+    private LocalDateTime dateTimeOrNull(final JanitorObject value) throws JanitorGlueException {
+        if (value == Janitor.NULL) {
+            return null;
+        } else if (value instanceof JDate date) {
+            return date.janitorGetHostValue().atStartOfDay();
+        } else if (value instanceof JDateTime dateTime) {
+            return dateTime.janitorGetHostValue();
+        }
+        throw new JanitorGlueException(JanitorArgumentException::fromGlue, "expected DateTime (or Date, or null), but received " + value + " [" + simpleClassNameOf(value) + "]");
+    }
+
+    private LocalDate dateOrNull(final JanitorObject value) throws JanitorGlueException {
+        if (value == Janitor.NULL) {
+            return null;
+        } else if (value instanceof JDate date) {
+            return date.janitorGetHostValue();
+        } else if (value instanceof JDateTime dateTime) {
+            return dateTime.toDate().janitorGetHostValue();
+        }
+        throw new JanitorGlueException(JanitorArgumentException::fromGlue, "expected Date (or DateTime, or null), but received " + value + " [" + simpleClassNameOf(value) + "]");
     }
 
     /**
@@ -555,7 +588,7 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
      *
      * @param name   property name
      * @param getter property getter
-     * @return
+     * @return a meta-data builder
      */
     public MetaDataBuilder<T> addDateTimeProperty(final String name, final Function<T, LocalDateTime> getter) {
         return put(name, instance -> Janitor.getBuiltins().nullableDateTime(getter.apply(instance)), null).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.DATETIME); // TODO: support datetime
@@ -567,10 +600,10 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
      * @param name   property name
      * @param getter property getter
      * @param setter property setter
-     * @return
+     * @return a meta-data builder
      */
     public MetaDataBuilder<T> addDateTimeProperty(final String name, final Function<T, LocalDateTime> getter, final BiConsumer<T, LocalDateTime> setter) {
-        return put(name, instance ->new TemporaryAssignable(Janitor.getBuiltins().nullableDateTime(getter.apply(instance)), value -> setter.accept(instance, Janitor.requireDateTime(value).janitorGetHostValue())), null).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.DATETIME);
+        return put(name, instance ->new TemporaryAssignable(Janitor.getBuiltins().nullableDateTime(getter.apply(instance)), value -> setter.accept(instance, dateTimeOrNull(value))), null).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.DATETIME);
     }
 
     /**
@@ -578,7 +611,7 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
      *
      * @param name   property name
      * @param getter property getter
-     * @return this
+     * @return a meta-data builder
      */
     public <X extends JanitorObject> MetaDataBuilder<T> addObjectProperty(final String name, final Function<T, X> getter) {
         return put(name, getter::apply, adaptGetterOnly(name, getter)); // no jsonSupport when there's no setter!
@@ -615,7 +648,7 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
      * @param name   property name
      * @param getter property getter
      * @param setter property setter
-     * @return this
+     * @return a meta-data builder
      */
     public <X extends JanitorObject> MetaDataBuilder<T> addObjectProperty(final String name, final Function<T, X> getter, final BiConsumer<T, X> setter, final Supplier<X> constructor) {
         // because we'll turn a class cast exception into a script runtime error:
