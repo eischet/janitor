@@ -1,14 +1,18 @@
 package com.eischet.janitor.api;
 
+import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.errors.glue.JanitorGlueException;
 import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.metadata.MetaDataKey;
 import com.eischet.janitor.api.types.BuiltinTypes;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.*;
+import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
 
+import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -20,22 +24,71 @@ import java.util.stream.Stream;
 
 /**
  * This is the main entry point for working with the Janitor language in Java.
- * TODO: add methods for compiling and running scripts, so that the previous sentence is actually true :o)
+ *
+ * You'll use this class to:
+ * <ul>
+ * <li>Access the basic built-in types NULL, TRUE and FALSE.</li>
+ * <li>Create instances of Janitor classes from Java classes, e.g. Janitor.int(17).</li>
+ * <li>Compile scripts into executable code.</li>
+ * </ul>
  */
 public class Janitor {
 
+    /**
+     * 'null' in the Janitor language, designed to act just like null in Java and JavaScript, among others.
+     */
     public static final JNull NULL = JNull.NULL;
 
+    /**
+     * The boolean value 'true'.
+     */
     public static final JBool TRUE = JBool.TRUE;
+
+    /**
+     * The boolean value 'false'.
+     */
     public static final JBool FALSE = JBool.FALSE;
 
+    /**
+     * Customisation of the scripting environment is mostly done in an Environment, and these can be
+     * discovered using the ServiceLoader mechanism. The idea here is that you either implement
+     * an environment provider yourself or choose an existing library that comes with one.
+     * This alles your own code to automatically discover your environment, which could also be done
+     * using a global variable. However, it also allows foreign / library code that you're using to
+     * discover <b>your</b> provider, which is nice to have.
+     * There's also a userProvider setting that takes precedence.
+     */
     private static final JanitorEnvironmentProvider automaticProvider =
             ServiceLoader.load(JanitorEnvironmentProvider.class)
                     .stream()
                     .map(ServiceLoader.Provider::get)
                     .max(Comparator.comparingInt(JanitorEnvironmentProvider::priority))
                     .orElse(null);
-    public static @Nullable JanitorEnvironmentProvider userProvider = null;
+
+    /**
+     * The userProvider takes precedence over discovered providers. If you want to simple use a single environment
+     * in your app, use this setting to avoid all ceremony required to use the automaticProvider ans simply set
+     * the user provider.
+     */
+    private static @Nullable JanitorEnvironmentProvider userProvider = null;
+
+    /**
+     * Compiles a script (source code) to a runnable script (an executable AST in the default implementation).
+     *
+     * @param runtime a runtime to use [TODO: this is actually only used to retrieve an environment, so this could and should be dropped soon!]
+     * @param moduleName the name of the script module; this will show up in stack traces, so it's a good idea to pick an informative name here if you run lots of scripts
+     * @param source the actual script source code
+     * @return the script in executable form
+     * @throws JanitorCompilerException on compiler errors
+     */
+    public RunnableScript compile(JanitorRuntime runtime, String moduleName, @Language("Janitor") String source) throws JanitorCompilerException {
+        return runtime.compile(moduleName, source);
+    }
+
+    // TODO: properly document this, and when you're at it make this more useful.
+    public RunnableScript checkCompile(JanitorRuntime runtime, String moduleName, @Language("Janitor") String source) throws JanitorCompilerException {
+        return runtime.checkCompile(moduleName, source);
+    }
 
     /**
      * Return an empty String.
@@ -71,125 +124,255 @@ public class Janitor {
         return getBuiltins().nullableString(value);
     }
 
-
+    /**
+     * Return a new JMap object.
+     * @return a new JMap object
+     */
     @NotNull
     public static JMap map() {
         return getBuiltins().map();
     }
 
+    /**
+     * Return a new empty JList.
+     * @return an empty JList
+     */
     @NotNull
     public static JList list() {
         return getBuiltins().list();
     }
 
+    /**
+     * Returns a new empty list, preallocated for the specified number of elements.
+     * Even though this is probably a negligible optimization, if you know the required list size before creating the list,
+     * you can tell us about it here. If you don't have the size, do not bother and use the plain list() method.
+     * @param initialSize the initial size of the list
+     * @return an empty JList
+     */
     @NotNull
     public static JList list(int initialSize) {
         return getBuiltins().list(initialSize);
     }
 
+    /**
+     * Returns a new JList as a copy of a java.util.List of JanitorObject elements.
+     * @param list a list of JanitorObject elements
+     * @return a JList containing all elements of the list argument
+     */
     @NotNull
-    public static JList list(@NotNull List<? extends JanitorObject> list) {
+    public static JList list(@NotNull @Unmodifiable List<? extends JanitorObject> list) {
         return getBuiltins().list(list);
     }
 
+    /**
+     * Returns a new JList with all elements from the Stream of JanitorObject elements.
+     * @param stream a stram of JanitorObject elements
+     * @return a JList containing all elements of the stream argument
+     */
     @NotNull
     public static JList list(@NotNull Stream<? extends JanitorObject> stream) {
         return getBuiltins().list(stream);
     }
 
-
+    /**
+     * Returns a new empty JSet.
+     * @return a new empty JSet
+     */
     @NotNull
     public static JSet set() {
         return getBuiltins().set();
     }
 
-    public static @NotNull JSet set(@NotNull Collection<? extends JanitorObject> list) {
-        return getBuiltins().set(list);
+    /**
+     * Returns a new JSet containing all elements of the provided collection.
+     * @param collection a collection of JanitorObject elements
+     * @return a JSet containing all elements of the collection
+     */
+    public static @NotNull JSet set(@NotNull Collection<? extends JanitorObject> collection) {
+        return getBuiltins().set(collection);
     }
 
+    /**
+     * Returns a new JSet containing all elements of the provided stream.
+     * @param stream a stream of JanitorObject elements
+     * @return a JSet containing all elements of the stream
+     */
     public static @NotNull JSet set(@NotNull Stream<? extends JanitorObject> stream) {
         return getBuiltins().set(stream);
     }
 
-
+    /**
+     * Returns a new JInt from the long argument.
+     * @param value a number
+     * @return a JInt representing the number
+     */
     public static @NotNull JInt integer(long value) {
         return getBuiltins().integer(value);
     }
 
+    /**
+     * Returns a new JInt from the int argument.
+     * @param value a number
+     * @return a JInt representing the number
+     */
     public static @NotNull JInt integer(int value) {
         return getBuiltins().integer(value);
     }
 
+    /**
+     * Returns a new JInt from the Number, or NULL in case Java null is passed in.
+     * @param value a number or null
+     * @return a JInt representing the number or NULL
+     */
     public static @NotNull JanitorObject nullableInteger(@Nullable Number value) {
         return getBuiltins().nullableInteger(value);
     }
 
+    /**
+     * Returns a new JBinary object from the byte array.
+     * @param arr a byte array
+     * @return a JBinary object
+     */
     public static @NotNull JBinary binary(byte @NotNull [] arr) {
         return getBuiltins().binary(arr);
     }
 
+    /**
+     * Returns a new JFloat from the passed in value, or NULL if Java null is passed.
+     * @param value Java null or a Double
+     * @return NULL or a JFloat representing the argument
+     */
     public static @NotNull JanitorObject nullableFloatingPoint(final Double value) {
         return getBuiltins().nullableFloatingPoint(value);
     }
 
-
+    /**
+     * Returns a new JFloat from the passed in value.
+     * @param value a double
+     * @return a JFloat representing the argument
+     */
     public static @NotNull JFloat floatingPoint(double value) {
         return getBuiltins().floatingPoint(value);
     }
 
+    /**
+     * Returns a new JFloat from the passed in value.
+     * @param value a long
+     * @return a JFloat representing the argument
+     */
     public static @NotNull JFloat floatingPoint(long value) {
         return getBuiltins().floatingPoint(value);
     }
 
+    /**
+     * Returns a new JFloat from the passed in value.
+     * @param value an int
+     * @return a JFloat representing the argument
+     */
     public static @NotNull JFloat floatingPoint(int value) {
         return getBuiltins().floatingPoint(value);
     }
 
 
+    /**
+     * Returns a new JDuration from the arguments.
+     * @param value the number of e.g. seconds, minutes, hours...
+     * @param kind the unit, e.g. seconds, minutes, hours
+     * @return the JDuration
+     */
     public static @NotNull JDuration duration(long value, JDuration.JDurationKind kind) {
         return getBuiltins().duration(value, kind);
     }
 
+    /**
+     * Returns a new JRegex for the Java regular expression pattern.
+     * @param pattern a Java Pattern
+     * @return a JRegex instance
+     */
     public static @NotNull JRegex regex(@NotNull Pattern pattern) {
         return getBuiltins().regex(pattern);
     }
 
-
+    /**
+     * Returns a new JDateTime or NULL.
+     * @param dateTime a Java LocalDateTime or Java null
+     * @return a new JDateTime or NULL
+     */
     public static @NotNull JanitorObject nullableDateTime(@Nullable LocalDateTime dateTime) {
         return getBuiltins().nullableDateTime(dateTime);
     }
 
+    /**
+     * Returns a new JDateTime.
+     * @param dateTime a Java LocalDateTime
+     * @return a new JDateTime
+     */
     public static @NotNull JDateTime dateTime(@NotNull LocalDateTime dateTime) {
         return getBuiltins().dateTime(dateTime);
     }
 
+    /**
+     * Returns a new JDateTime from the datetime literal, or NULL.
+     * @param text a datetime literal, or Java null
+     * @return a new JDateTime from the datetime literal, or NULL
+     */
     public static @NotNull JanitorObject nullableDateTimeFromLiteral(@Nullable String text) {
         return getBuiltins().nullableDateTimeFromLiteral(text);
     }
 
+    /**
+     * Returns a new JDate from the date literal, or NULL.
+     * @param text a date literal, or Java null
+     * @return a new JDate from the date literal, or NULL
+     */
     public static @NotNull JanitorObject nullableDateFromLiteral(@Nullable String text) {
         return getBuiltins().nullableDateFromLiteral(text);
     }
 
+    /**
+     * Returns the current date and time as a JDateTime.
+     * @return the current date and time as a JDateTime
+     */
     public static @NotNull JDateTime now() {
         return getBuiltins().now();
     }
 
-
+    /**
+     * Returns the current date as a JDate.
+     * @return the current date as a JDate.
+     */
     public static @NotNull JDate today() {
         return getBuiltins().today();
     }
 
+    /**
+     * Returns a JDate from the LocalDate argument
+     * @param date a LocalDate
+     * @return a JDate
+     */
     public static @NotNull JDate date(final @NotNull LocalDate date) {
         return getBuiltins().date(date);
     }
 
-
+    /**
+     * Returns a JDate from the LocalDate argument, or NULL when null.
+     * @param date a LocalDate or Java null
+     * @return a JDate or NULL
+     */
     public static @NotNull JanitorObject nullableDate(@Nullable LocalDate date) {
         return getBuiltins().nullableDate(date);
     }
 
-    public static @NotNull JDate date(long year, long month, long day) {
+    /**
+     * Returns a JDate from the given year, month and day.
+     * The rules for Java's LocalDate::of method apply for the Java implementation!
+     * @param year  the year to represent, from MIN_YEAR to MAX_YEAR
+     * @param month the month-of-year to represent, from 1 (January) to 12 (December)
+     * @param day the day-of-month to represent, from 1 to 31
+     * @return that JDate you asked for
+     * @throws DateTimeException in case Java's LocalDateTime does not accept the parameters.
+     */
+    public static @NotNull JDate date(long year, long month, long day) throws DateTimeException {
         return getBuiltins().date(year, month, day);
     }
 
@@ -232,7 +415,6 @@ public class Janitor {
         return getBuiltins().nullableNumeric(v);
     }
 
-
     /**
      * Require a boolean value.
      * @param value the value to check
@@ -244,9 +426,6 @@ public class Janitor {
             return ok;
         }
         throw new JanitorGlueException(JanitorArgumentException::fromGlue, "Expected a boolean value, but got " + value.janitorClassName() + " instead.");
-    }
-
-    private Janitor() {
     }
 
     /**
@@ -288,24 +467,55 @@ public class Janitor {
         throw new JanitorGlueException(JanitorArgumentException::fromGlue, "Expected a datetime value, but got " + value.janitorClassName() + " instead.");
     }
 
-
+    /**
+     * Turns a Java Boolean into a Janitor JBool, or returns NULL for Java null.
+     * @param value a Boolean or null
+     * @return a JBool or NULL
+     */
     public static JanitorObject nullableBooleanOf(final Boolean value) {
         return value == null ? JNull.NULL : toBool(value);
     }
 
+    /**
+     * Gets the user defined environment provider
+     * @return the user defined environment provider
+     */
     public static @Nullable JanitorEnvironmentProvider getUserProvider() {
         return userProvider;
     }
 
+    /**
+     * Sets the user defined environment provider.
+     * This method should only ever be used by application code! Library code should <b>never</b> call this.
+     * @param userProvider the user defined environment provider
+     */
     public static void setUserProvider(final @NotNull JanitorEnvironmentProvider userProvider) {
         Janitor.userProvider = userProvider;
     }
 
+    /**
+     * Gets the selected automatic environment provider
+     * @return the selected automatic environment provider
+     */
     public static @NotNull JanitorEnvironmentProvider getAutomaticProvider() {
         return automaticProvider;
     }
 
-    public static @NotNull JanitorEnvironment current() {
+    /**
+     * Map a java boolean to a JBool.
+     * @param value the value
+     * @return the JBool
+     */
+    public static JBool toBool(final boolean value) {
+        return value ? JBool.TRUE : JBool.FALSE;
+    }
+
+    /**
+     * Retrieves the best applicable enviornment from either the userProvider or the highest priority automatic provider.
+     * @return an environment
+     * @throws IllegalStateException when neither a user env nor an automatically provided env are available
+     */
+    public static @NotNull JanitorEnvironment current() throws IllegalStateException {
         if (userProvider != null) {
             return userProvider.getCurrentEnvironment();
         }
@@ -323,15 +533,6 @@ public class Janitor {
     }
 
     /**
-     * Map a java boolean to a JBool.
-     * @param value the value
-     * @return the JBool
-     */
-    public static JBool toBool(final boolean value) {
-        return value ? JBool.TRUE : JBool.FALSE;
-    }
-
-    /**
      * Map a nullable java Boolean to a JBool. Null yields FALSE.
      * @param value the value
      * @return the JBool
@@ -340,7 +541,16 @@ public class Janitor {
         return value == Boolean.TRUE ? JBool.TRUE : JBool.FALSE;
     }
 
+    /**
+     * Private constructor, to keep you from creating instances of this singleton / "namespace class".
+     */
+    private Janitor() {
+    }
 
+    /**
+     * Nested namespace class for script meta-data, which is available with Dispatcher instances, which help
+     * bridging between Janitor code and Java code.
+     */
     public static class MetaData {
 
         /**
@@ -348,6 +558,11 @@ public class Janitor {
          */
         public static MetaDataKey<String> CLASS = new MetaDataKey<>("class", String.class);
 
+        /**
+         * Gives Java code an optional hint what the type of a property is supposed to be.
+         * Turns out that knowing the type of an object is very convenient.
+         * These hints are automatically populated by most Dispatcher methods.
+         */
         public enum TypeHint {
             NUMBER, INTEGER, FLOAT, STRING, BOOLEAN, METHOD, DATE, DATETIME, LIST
         }
@@ -366,7 +581,6 @@ public class Janitor {
          * an object/property, but it can be provided by the runtime.
          * </p>
          */
-
         public static final MetaDataKey<String> HELP = new MetaDataKey<>("help", String.class);
 
 
@@ -390,9 +604,10 @@ public class Janitor {
          */
         public static final MetaDataKey<Boolean> REQUIRED = new MetaDataKey<>("required", Boolean.class);
 
-
+        /**
+         * Private constructor, to keep you from creating instances of this singleton / "namespace class".
+         */
         private MetaData() {}
-
 
     }
 }
