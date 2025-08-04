@@ -13,6 +13,7 @@ import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.api.types.functions.JCallable;
 import com.eischet.janitor.api.types.*;
 import com.eischet.janitor.toolbox.json.api.JsonInputStream;
+import org.intellij.lang.annotations.Language;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -23,9 +24,9 @@ import java.util.stream.Collectors;
 public class JListClass {
 
 
-    public static JList __parseJson(final JanitorWrapper<List<JanitorObject>> self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static JList __parseJson(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         try {
-            return parseJson((JList) self, arguments.require(1).getString(0).janitorGetHostValue(), process.getRuntime().getEnvironment());
+            return parseJson(self, arguments.require(1).getString(0).janitorGetHostValue(), process.getRuntime().getEnvironment());
         } catch (JsonException e) {
             throw new JanitorNativeException(process, "error parsing json", e);
         }
@@ -39,7 +40,7 @@ public class JListClass {
      * @return this list
      * @throws JsonException if the JSON is invalid, e.g. it's not really a list
      */
-    public static JList parseJson(final JList self, final String json, final JanitorEnvironment env) throws JsonException {
+    public static JList parseJson(final JList self, @Language("JSON") final String json, final JanitorEnvironment env) throws JsonException {
         if (json == null || json.isBlank()) {
             return self;
         }
@@ -65,16 +66,16 @@ public class JListClass {
     }
 
 
-    public static JString __toJson(final JanitorWrapper<List<JanitorObject>> self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static JString __toJson(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         try {
             arguments.require(0);
-            return process.getEnvironment().getBuiltinTypes().string(((JList) self).exportToJson(process.getRuntime().getEnvironment()));
+            return process.getEnvironment().getBuiltinTypes().string(self.exportToJson(process.getRuntime().getEnvironment()));
         } catch (JsonException e) {
             throw new JanitorNativeException(process, "error exporting json", e);
         }
     }
 
-    public static JInt __count(final JanitorWrapper<List<JanitorObject>> self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static JInt __count(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         final JanitorObject countable = arguments.require(1).get(0);
         int count = 0;
         for (final JanitorObject element : self.janitorGetHostValue()) {
@@ -85,7 +86,7 @@ public class JListClass {
         return process.getEnvironment().getBuiltinTypes().integer(count);
     }
 
-    public static JList __filter(final JanitorWrapper<List<JanitorObject>> self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static JList __filter(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         final JanitorObject callable = arguments.getRequired(0, JanitorObject.class);
         if (callable instanceof JCallable func) {
             JList result = process.getEnvironment().getBuiltinTypes().list();
@@ -100,7 +101,7 @@ public class JListClass {
         }
     }
 
-    public static JList __map(final JanitorWrapper<List<JanitorObject>> self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static JList __map(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         final JanitorObject callable = arguments.getRequired(0, JanitorObject.class);
         if (callable instanceof JCallable func) {
             final JList result = process.getEnvironment().getBuiltinTypes().list(self.janitorGetHostValue().size());
@@ -113,32 +114,32 @@ public class JListClass {
         }
     }
 
-    public static JString __join(final JanitorWrapper<List<JanitorObject>> self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static JString __join(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         final String separator = arguments.getOptionalStringValue(0, " ");
         return process.getEnvironment().getBuiltinTypes().string(self.janitorGetHostValue().stream().map(JanitorObject::janitorToString).collect(Collectors.joining(separator)));
     }
 
-    public static JList __toList(final JanitorWrapper<List<JanitorObject>> self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static JList __toList(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);
         return process.getEnvironment().getBuiltinTypes().list(self.janitorGetHostValue());
     }
 
-    public static JSet __toSet(final JanitorWrapper<List<JanitorObject>> self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static JSet __toSet(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);
         return process.getEnvironment().getBuiltinTypes().set(self.janitorGetHostValue().stream());
     }
 
-    public static JBool __isEmpty(final JanitorWrapper<List<JanitorObject>> self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static JBool __isEmpty(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);
         return Janitor.toBool(self.janitorGetHostValue().isEmpty());
     }
 
-    public static JInt __size(final JanitorWrapper<List<JanitorObject>> self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static JInt __size(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);
         return process.getEnvironment().getBuiltinTypes().integer(self.janitorGetHostValue().size());
     }
 
-    public static JBool __contains(final JanitorWrapper<List<JanitorObject>> self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static JBool __contains(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         final JanitorObject countable = arguments.require(1).get(0);
         for (final JanitorObject element : self.janitorGetHostValue()) {
             if (Objects.equals(countable, element)) {
@@ -148,7 +149,7 @@ public class JListClass {
         return JBool.FALSE;
     }
 
-    public static JList __randomSublist(final JanitorWrapper<List<JanitorObject>> self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static JList __randomSublist(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         final int count = arguments.getInt(0).getAsInt();
         if (count >= self.janitorGetHostValue().size()) {
             return process.getEnvironment().getBuiltinTypes().list(self.janitorGetHostValue());
@@ -163,15 +164,15 @@ public class JListClass {
         return process.getEnvironment().getBuiltinTypes().list(result);
     }
 
-    public static JNull __put(final JanitorWrapper<List<JanitorObject>> self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static JNull __put(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(2);
-        ((JList)self).put(arguments.require(1).getInt(0), arguments.get(1));
+        self.put(arguments.require(1).getInt(0), arguments.get(1));
         return JNull.NULL;
     }
 
-    public static JNull __addAll(final JanitorWrapper<List<JanitorObject>> self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static JNull __addAll(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         for (final JanitorObject jObj : arguments.getRequired(0, JList.class)) {
-            ((JList)self).add(jObj);
+            self.add(jObj);
         }
         return JNull.NULL;
     }
@@ -188,15 +189,13 @@ public class JListClass {
         */
 
 
-    public static JNull __sort(final JanitorWrapper<List<JanitorObject>> _self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
-        final JList self = ((JList) _self);
+    public static JNull __sort(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);
         self.replaceAllElements(self.stream().sorted().toList());
         return JNull.NULL;
     }
 
-    public static JNull __add(final JanitorWrapper<List<JanitorObject>> _self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
-        final JList self = ((JList) _self);
+    public static JNull __add(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(1, 2);
         if (arguments.size() == 1) {
             self.add(arguments.get(0));
@@ -206,8 +205,7 @@ public class JListClass {
         return JNull.NULL;
     }
 
-    public static JanitorObject __get(final JanitorWrapper<List<JanitorObject>> _self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
-        final JList self = ((JList) _self);
+    public static JanitorObject __get(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         if (arguments.size() == 1) {
             return self.get(arguments.require(1).getInt(0));
         }
@@ -231,8 +229,7 @@ public class JListClass {
 
     // __get results cannot be assigned to, but __getSliced can be
 
-    public static JanitorObject __getSliced(final JanitorWrapper<List<JanitorObject>> _self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
-        final JList self = ((JList) _self);
+    public static JanitorObject __getSliced(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         if (arguments.size() == 1) {
             return self.getIndexed(arguments.require(1).getInt(0));
         }
@@ -256,8 +253,7 @@ public class JListClass {
     }
 
 
-    public static JNull __remove(final JanitorWrapper<List<JanitorObject>> _self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
-        final JList self = ((JList) _self);
+    public static JNull __remove(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         for (final JanitorObject jObj : arguments.getRequired(0, JList.class)) {
             self.remove(jObj);
         }

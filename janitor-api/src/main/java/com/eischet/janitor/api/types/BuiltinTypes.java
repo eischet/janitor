@@ -1,8 +1,8 @@
 package com.eischet.janitor.api.types;
 
 import com.eischet.janitor.api.JanitorScriptProcess;
-import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.types.builtin.*;
+import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -60,6 +61,9 @@ public interface BuiltinTypes {
 
     @NotNull
     JList list(@NotNull Stream<? extends JanitorObject> stream);
+
+    @NotNull
+    JList responsiveList(final DispatchTable<?> elementDispatchTable, @NotNull Stream<? extends JanitorObject> stream, @NotNull Consumer<JList> onChange);
 
 
     @NotNull

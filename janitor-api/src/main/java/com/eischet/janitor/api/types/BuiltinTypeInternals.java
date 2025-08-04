@@ -2,6 +2,7 @@ package com.eischet.janitor.api.types;
 
 import com.eischet.janitor.api.types.builtin.JDateTime;
 import com.eischet.janitor.api.types.builtin.JDuration;
+import com.eischet.janitor.api.types.builtin.JList;
 import com.eischet.janitor.api.types.builtin.JString;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
@@ -18,7 +19,7 @@ public interface BuiltinTypeInternals {
 
     DispatchTable<JString> getStringDispatcher();
 
-    WrapperDispatchTable<List<JanitorObject>> getListDispatcher();
+    DispatchTable<JList> getListDispatcher();
 
     WrapperDispatchTable<Set<JanitorObject>> getSetDispatcher();
 

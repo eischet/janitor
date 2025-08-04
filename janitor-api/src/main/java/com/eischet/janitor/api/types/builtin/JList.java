@@ -1,9 +1,9 @@
 package com.eischet.janitor.api.types.builtin;
 
 import com.eischet.janitor.api.types.TemporaryAssignable;
-import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
+import com.eischet.janitor.api.types.composed.JanitorComposed;
+import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
-import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 import com.eischet.janitor.api.types.JIterable;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.toolbox.json.api.*;
@@ -11,18 +11,56 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 /**
  * A list object, representing a mutable list of Janitor objects.
  * This is one of the built-in types that Janitor provides automatically.
  */
-public class JList extends JanitorWrapper<List<JanitorObject>> implements JIterable, Iterable<JanitorObject>, JsonExportableList {
+public class JList extends JanitorComposed<JList> implements JIterable, Iterable<JanitorObject>, JsonExportableList {
 
-    private JList(final Dispatcher<JanitorWrapper<List<JanitorObject>>> dispatcher, final List<JanitorObject> list) {
-        super(dispatcher, list);
+    private final List<JanitorObject> list;
+    private List<Consumer<JList>> updateReceivers;
+    private DispatchTable<?> elementDispatchTable;
+
+    private JList(final Dispatcher<JList> dispatcher, final List<JanitorObject> list) {
+        super(dispatcher);
+        this.list = list;
     }
 
+    public JList withElementDispatchTable(final DispatchTable<?> elementDispatchTable) {
+        setElementDispatchTable(elementDispatchTable);
+        return this;
+    }
+
+    public void setElementDispatchTable(final DispatchTable<?> elementDispatchTable) {
+        this.elementDispatchTable = elementDispatchTable;
+    }
+
+    public DispatchTable<?> getElementDispatchTable() {
+        return elementDispatchTable;
+    }
+
+    public @NotNull JList onUpdate(final @NotNull Consumer<JList> onUpdate) {
+        if (updateReceivers == null) {
+            updateReceivers = new LinkedList<>();
+        }
+        updateReceivers.add(onUpdate);
+        return this;
+    }
+
+    public int countOnUpdateReceivers() {
+        return updateReceivers == null ? 0 : updateReceivers.size();
+    }
+
+    private void notifyUpdateReceivers() {
+        if (updateReceivers != null && !updateReceivers.isEmpty()) {
+            for (final Consumer<JList> updateReceiver : updateReceivers) {
+                updateReceiver.accept(this);
+            }
+        }
+    }
 
     /**
      * Convert a Python-like index into an actual list index.
@@ -46,11 +84,9 @@ public class JList extends JanitorWrapper<List<JanitorObject>> implements JItera
      * @param objects initial list
      * @return this
      */
-    public static JList newInstance(final WrapperDispatchTable<List<JanitorObject>> listDispatcher, final List<JanitorObject> objects) {
+    public static JList newInstance(final DispatchTable<JList> listDispatcher, final List<JanitorObject> objects) {
         return new JList(listDispatcher, objects);
     }
-
-
 
     /**
      * Get the size of the list.
@@ -58,7 +94,7 @@ public class JList extends JanitorWrapper<List<JanitorObject>> implements JItera
      * @return the size
      */
     public int size() {
-        return wrapped.size();
+        return list.size();
     }
 
     /**
@@ -68,7 +104,7 @@ public class JList extends JanitorWrapper<List<JanitorObject>> implements JItera
      * @return the element
      */
     public JanitorObject get(int index) {
-        return wrapped.get(index);
+        return list.get(index);
     }
 
     /**
@@ -78,7 +114,7 @@ public class JList extends JanitorWrapper<List<JanitorObject>> implements JItera
      * @return the element
      */
     public JanitorObject get(JInt index) {
-        return wrapped.get(toIndex(index.getAsInt(), wrapped.size()));
+        return list.get(toIndex(index.getAsInt(), list.size()));
     }
 
     /**
@@ -90,7 +126,10 @@ public class JList extends JanitorWrapper<List<JanitorObject>> implements JItera
      * @return the element
      */
     public JanitorObject getIndexed(JInt index) {
-        return new TemporaryAssignable(get(index), value -> wrapped.set(toIndex(index.getAsInt(), wrapped.size()), value));
+        return new TemporaryAssignable(get(index), value -> {
+            list.set(toIndex(index.getAsInt(), list.size()), value);
+            notifyUpdateReceivers();
+        });
     }
 
     /**
@@ -103,9 +142,9 @@ public class JList extends JanitorWrapper<List<JanitorObject>> implements JItera
     public JanitorObject getRange(JInt start, JInt end) {
         // LATER: stepping
         // LATER: wrap in TemporaryAssignable for things like list[10:] = ["rest", "of", "list"];
-        final int startIndex = toIndex(start.getAsInt(), wrapped.size());
-        final int endIndex = toIndex(end.getAsInt(), wrapped.size());
-        final List<JanitorObject> subList = wrapped.subList(Math.min(startIndex, endIndex), Math.max(startIndex, endIndex));
+        final int startIndex = toIndex(start.getAsInt(), list.size());
+        final int endIndex = toIndex(end.getAsInt(), list.size());
+        final List<JanitorObject> subList = list.subList(Math.min(startIndex, endIndex), Math.max(startIndex, endIndex));
         if (endIndex < startIndex) {
             Collections.reverse(subList);
         }
@@ -119,7 +158,8 @@ public class JList extends JanitorWrapper<List<JanitorObject>> implements JItera
      * @param value the value
      */
     public void add(JInt i, JanitorObject value) {
-        wrapped.add(i.janitorGetHostValue().intValue(), value);
+        list.add(i.janitorGetHostValue().intValue(), value);
+        notifyUpdateReceivers();
     }
 
     /**
@@ -128,7 +168,8 @@ public class JList extends JanitorWrapper<List<JanitorObject>> implements JItera
      * @param value the value
      */
     public void add(JanitorObject value) {
-        wrapped.add(value.janitorUnpack());
+        list.add(value.janitorUnpack());
+        notifyUpdateReceivers();
     }
 
     /**
@@ -137,7 +178,8 @@ public class JList extends JanitorWrapper<List<JanitorObject>> implements JItera
      * @param value the value
      */
     public void remove(JanitorObject value) {
-        wrapped.remove(value.janitorUnpack());
+        list.remove(value.janitorUnpack());
+        notifyUpdateReceivers();
     }
 
     /**
@@ -147,18 +189,20 @@ public class JList extends JanitorWrapper<List<JanitorObject>> implements JItera
      * @param value the value
      */
     public void put(JInt index, JanitorObject value) {
-        wrapped.set(index.janitorGetHostValue().intValue(), value);
+        list.set(index.janitorGetHostValue().intValue(), value);
+        notifyUpdateReceivers();
     }
 
     public void replaceAllElements(final List<JanitorObject> withTheseElements) {
-        wrapped.clear();
-        wrapped.addAll(withTheseElements);
+        list.clear();
+        list.addAll(withTheseElements);
+        notifyUpdateReceivers();
     }
 
 
     @Override
     public @Unmodifiable List<JanitorObject> janitorGetHostValue() {
-        return List.copyOf(wrapped);
+        return List.copyOf(list);
     }
 
     /**
@@ -168,12 +212,12 @@ public class JList extends JanitorWrapper<List<JanitorObject>> implements JItera
      */
     @Override
     public boolean janitorIsTrue() {
-        return !wrapped.isEmpty();
+        return !list.isEmpty();
     }
 
     @Override
     public Iterator<JanitorObject> getIterator() {
-        return wrapped.iterator();
+        return list.iterator();
     }
 
     /**
@@ -182,7 +226,7 @@ public class JList extends JanitorWrapper<List<JanitorObject>> implements JItera
      * @return the stream
      */
     public Stream<JanitorObject> stream() {
-        return wrapped.stream();
+        return list.stream();
     }
 
     /**
@@ -191,10 +235,12 @@ public class JList extends JanitorWrapper<List<JanitorObject>> implements JItera
      * @return the first element, or NULL if the list was empty
      */
     public JanitorObject popFirst() {
-        if (wrapped.isEmpty()) {
+        if (list.isEmpty()) {
             return JNull.NULL;
         } else {
-            return wrapped.remove(0);
+            final JanitorObject removed = list.remove(0);
+            notifyUpdateReceivers();
+            return removed;
         }
     }
 
@@ -215,7 +261,7 @@ public class JList extends JanitorWrapper<List<JanitorObject>> implements JItera
      * @return true if the list is empty
      */
     public boolean isEmpty() {
-        return wrapped.isEmpty();
+        return list.isEmpty();
     }
 
     @Override
@@ -226,7 +272,7 @@ public class JList extends JanitorWrapper<List<JanitorObject>> implements JItera
     @Override
     public void writeJson(final JsonOutputStream producer) throws JsonException {
         producer.beginArray();
-        for (final JanitorObject jObj : wrapped) {
+        for (final JanitorObject jObj : list) {
             if (jObj instanceof JsonExportable ex) {
                 ex.writeJson(producer);
             } else if (jObj instanceof JsonWriter jw) {
@@ -238,6 +284,10 @@ public class JList extends JanitorWrapper<List<JanitorObject>> implements JItera
         producer.endArray();
     }
 
+    @Override
+    public String toString() {
+        return list.toString();
+    }
 
 
 }

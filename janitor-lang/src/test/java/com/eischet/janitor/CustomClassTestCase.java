@@ -30,7 +30,7 @@ public class CustomClassTestCase extends JanitorTest  {
     public static class Dog extends JanitorComposed<Dog> {
 
         // Create a dispatch table. This can be shared between all instances of a class, so make it static:
-        public static final DispatchTable<Dog> DISPATCH = new DispatchTable<>();
+        public static final DispatchTable<Dog> DISPATCH = new DispatchTable<>(null);
 
         // Define instance variables as usual (because they ARE just regular ones):
         // (These definitions are up here so you can see them before you look at the dispatch table next.

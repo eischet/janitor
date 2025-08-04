@@ -23,7 +23,7 @@ public class AutoJsonTestCase extends JanitorTest  {
 
 
     private static class SimpleObject extends JanitorComposed<SimpleObject> {
-        private static final DispatchTable<SimpleObject> DISPATCH = new DispatchTable<>();
+        private static final DispatchTable<SimpleObject> DISPATCH = new DispatchTable<>(null);
 
         static {
             DISPATCH.addStringProperty("foo", SimpleObject::getFoo, SimpleObject::setFoo);
@@ -134,7 +134,7 @@ public class AutoJsonTestCase extends JanitorTest  {
     }
 
     private static class ThingWithListProp extends JanitorComposed<ThingWithListProp> {
-        private static final DispatchTable<ThingWithListProp> DISPATCH = new DispatchTable<>();
+        private static final DispatchTable<ThingWithListProp> DISPATCH = new DispatchTable<>(null);
         static {
             DISPATCH.addListOfStringsProperty("list", ThingWithListProp::getList, ThingWithListProp::setList);
         }
@@ -174,7 +174,7 @@ public class AutoJsonTestCase extends JanitorTest  {
 
 
     private static class Mixed extends JanitorComposed<Mixed> {
-        private static final DispatchTable<Mixed> DISPATCH = new DispatchTable<>();
+        private static final DispatchTable<Mixed> DISPATCH = new DispatchTable<>(null);
 
         static {
             DISPATCH.addObjectProperty("a", Mixed::getA, Mixed::setA, ThingWithListProp::new);
@@ -234,7 +234,7 @@ public class AutoJsonTestCase extends JanitorTest  {
 
 
     private static class Inheritor extends Mixed {
-        private static final DispatchTable<Inheritor> DISPATCH = new DispatchTable<>();
+        private static final DispatchTable<Inheritor> DISPATCH = new DispatchTable<>(null);
         static {
             DISPATCH.addStringProperty("gumbo", Inheritor::getGumbo, Inheritor::setGumbo);
         }

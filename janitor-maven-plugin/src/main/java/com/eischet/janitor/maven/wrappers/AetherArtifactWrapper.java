@@ -6,7 +6,7 @@ import org.eclipse.aether.artifact.Artifact;
 import org.jetbrains.annotations.NotNull;
 
 public class AetherArtifactWrapper extends JanitorWrapper<Artifact> {
-    private static final WrapperDispatchTable<Artifact> dispatcher = new WrapperDispatchTable<>();
+    private static final WrapperDispatchTable<Artifact> dispatcher = new WrapperDispatchTable<>(null);
 
     static {
         dispatcher.addStringProperty("groupId", self -> self.janitorGetHostValue().getGroupId());

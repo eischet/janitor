@@ -4,7 +4,9 @@ import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.api.types.dispatch.GenericDispatchTable;
 
+import java.lang.reflect.Constructor;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * Dispatch Table Variant for JanitorWrapper descendants.
@@ -17,7 +19,12 @@ public class WrapperDispatchTable<T> extends GenericDispatchTable<JanitorWrapper
      * This is used for "root" objects or for objects where it is not necessary
      * to simulate any form of inheritance.
      */
+    public WrapperDispatchTable(final Supplier<JanitorWrapper<T>> javaDefaultConstructor) {
+        super(javaDefaultConstructor);
+    }
+
     public WrapperDispatchTable() {
+        super(null);
     }
 
     /**

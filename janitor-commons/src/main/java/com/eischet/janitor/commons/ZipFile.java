@@ -14,7 +14,7 @@ import java.util.zip.ZipOutputStream;
 
 public class ZipFile extends JanitorComposed<ZipFile> {
 
-    private static final DispatchTable<ZipFile> dispatcher = new DispatchTable<>();
+    private static final DispatchTable<ZipFile> dispatcher = new DispatchTable<>(null);
 
     static {
         dispatcher.addMethod("addFile", (self, process, arguments) -> {

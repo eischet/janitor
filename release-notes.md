@@ -1,9 +1,18 @@
 # 0.9.22, 2025-xx-xx
 
 JanitorEnvironment: enable auto-discovery of modules via the Service Loader mechanism; this is an opt-in feature.
+
 Maven Plugin: opt in to this new auto-discovery. Use case: I'm auto-generating TypeScript definitions for Java Code in a web project.
+
 Relax some parts of the GenericDispatchTable, which were rejecting valid values since 0.9.21, e.g. null for a nullable string property.
+
 General toolbox thing: Add a very simple i18n tool that handles a single resource bundle for translations.
+
+JList is now JanitorComposed, not wrapped, to hide the inner list object. This enables us to more easily implement list properties that, when changed,
+"write back" to the original object. E.g. you can now "foo.entries.add('bar')", which would've manipulated a temporary list and had no visible effect
+before when a simple addListProperty(getter) call was used to define "entries".
+
+Dispatch tables now take an optional, but recommended, java default constructor. Having this enables reading objects from JSON lists, for example.
 
 
 # 0.9.21, 2025-07-18

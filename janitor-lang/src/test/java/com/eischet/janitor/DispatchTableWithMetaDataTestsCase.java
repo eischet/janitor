@@ -18,7 +18,7 @@ public class DispatchTableWithMetaDataTestsCase extends JanitorTest {
 
     public static class SomeObject extends JanitorComposed<SomeObject> {
 
-        public static final DispatchTable<SomeObject> DISPATCH = new DispatchTable<>();
+        public static final DispatchTable<SomeObject> DISPATCH = new DispatchTable<>(null);
 
         static {
             DISPATCH.addStringProperty("name", SomeObject::getName, SomeObject::setName).setMetaData(MAX_LENGTH, 10);

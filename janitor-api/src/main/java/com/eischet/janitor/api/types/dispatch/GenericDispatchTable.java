@@ -26,6 +26,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -62,15 +63,17 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
     private final ParentAttributeReader<T> parentAttributeReader;
     private final ParentAttributeWriter<T> parentAttributeWriter;
     private JConstructor<T> constructor;
+    private @Nullable Supplier<T> javaDefaultConstructor;
     private final Map<String, MetaDataMap> attributeMetaData = new HashMap<>();
     private final MetaDataMap classMetaData = new MetaDataMap();
 
 
-    public GenericDispatchTable() {
+    public GenericDispatchTable(final @Nullable Supplier<T> javaDefaultConstructor) {
         parent = null;
         parentLookupHandler = null;
         parentAttributeReader = null;
         parentAttributeWriter = null;
+        this.javaDefaultConstructor = javaDefaultConstructor;
     }
 
     public <P extends JanitorObject> GenericDispatchTable(final Dispatcher<P> parent, final Function<T, P> caster) {
@@ -360,7 +363,7 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
     }
 
     /**
-     * Adds a read-only list property.
+     * Adds a list property.
      *
      * @param name   property name
      * @param getter property getter
@@ -380,7 +383,14 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
 
             @Override
             public void read(final JsonInputStream stream, final T instance) throws JsonException {
-                throw new JsonException("Unexpected JSON read operation for readonly list property " + name + " on instance " + instance);
+                final JList list = getter.apply(instance);
+                // Reading the list from JSON will only have an effect if the (possibly temporary) list returned by the getter has an onUpdate listener.
+                // We assume that, if such a listener exists, the list will properly be written back to the instance. If not, fail.
+                if (list.countOnUpdateReceivers() == 0) {
+                    throw new JsonException("Unexpected JSON read operation for readonly list property " + name + " on instance " + instance);
+                } else {
+                    list.readJson(stream);
+                }
             }
 
             @Override
@@ -391,6 +401,17 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
         }).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.LIST);
     }
 
+    /**
+     * Add a list property.
+     *
+     * @param name field name
+     * @param getter getter
+     * @param setter setter
+     * @param converter converter
+     * @param jsonSupportDelegate  json support
+     * @return meta data builder
+     * @param <E> type of list
+     */
     public <E> MetaDataBuilder<T> addListProperty(final String name, final Function<T, List<E>> getter, final BiConsumer<T, List<E>> setter, final TwoWayConverter<E> converter, final @Nullable JsonSupportDelegate<E> jsonSupportDelegate) {
         return put(name, instance ->new TemporaryAssignable(Conversions.toJanitorList(getter.apply(instance), converter), value -> {
                     if (!(value instanceof JList argList)) {
@@ -770,20 +791,28 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
     @Override
     public T readFromJson(final Supplier<T> constructor, final JsonInputStream stream) throws JsonException {
         final T instance = constructor.get();
-        stream.beginObject();
-        while (stream.hasNext()) {
-            final String key = stream.nextKey();
-            if (!readAttribute(stream, key, instance)) {
-                if (parentAttributeReader != null) {
-                    if (!parentAttributeReader.readAttribute(stream, key, instance)) {
-                        stream.skipValue(); // TODO: and warn
+        if (instance instanceof JList list && list.getElementDispatchTable() != null) {
+            stream.beginArray();
+            while (stream.hasNext()) {
+                list.getElementDispatchTable().readAsListElement(stream, readElement -> list.add(readElement));
+            }
+            stream.endArray();
+        } else {
+            stream.beginObject();
+            while (stream.hasNext()) {
+                final String key = stream.nextKey();
+                if (!readAttribute(stream, key, instance)) {
+                    if (parentAttributeReader != null) {
+                        if (!parentAttributeReader.readAttribute(stream, key, instance)) {
+                            stream.skipValue(); // TODO: and warn
+                        }
+                    } else {
+                        stream.skipValue(); // TODO: warn
                     }
-                } else {
-                    stream.skipValue(); // TODO: warn
                 }
             }
+            stream.endObject();
         }
-        stream.endObject();
         return instance;
     }
 
@@ -844,5 +873,13 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
             return attributeNames.stream();
         }
     }
+
+    public void readAsListElement(final JsonInputStream stream, Consumer<JanitorObject> elementConsumer) throws JsonException {
+        if (javaDefaultConstructor == null) {
+            throw new JsonException("Error: you need to supply a Java constructor to read objects of this type from JSON as a list!");
+        }
+        elementConsumer.accept(readFromJson(javaDefaultConstructor, stream));
+    }
+
 
 }

@@ -7,6 +7,7 @@ import com.eischet.janitor.api.metadata.MetaDataKey;
 import com.eischet.janitor.api.types.BuiltinTypes;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.*;
+import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -19,6 +20,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.ServiceLoader;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -172,6 +174,18 @@ public class Janitor {
     @NotNull
     public static JList list(@NotNull Stream<? extends JanitorObject> stream) {
         return getBuiltins().list(stream);
+    }
+
+    /**
+     * Returns a new JList with all elements from the Stream of JanitorObject elements.
+     * Use this when returning a writable list for an object property.
+     * @param stream a stream of JanitorObject elements
+     * @param onUpdate will be called whenever the JList object is changed
+     * @return a JList containing all elements of the stream argument
+     */
+    @NotNull
+    public static JList responsiveList(final DispatchTable<?> elementDispatchTable, @NotNull Stream<? extends JanitorObject> stream, @NotNull Consumer<JList> onUpdate) {
+        return getBuiltins().responsiveList(elementDispatchTable, stream, onUpdate);
     }
 
     /**
@@ -603,6 +617,13 @@ public class Janitor {
          * </p>
          */
         public static final MetaDataKey<Boolean> REQUIRED = new MetaDataKey<>("required", Boolean.class);
+
+        /**
+         * Helper for emitting TS defs for Janutor objects: A property points to a class of this name.
+         * To be used where type hints are not possible, because they refer to builtin types only.
+         */
+        public static MetaDataKey<String> REF = new MetaDataKey<>("ref", String.class);
+
 
         /**
          * Private constructor, to keep you from creating instances of this singleton / "namespace class".

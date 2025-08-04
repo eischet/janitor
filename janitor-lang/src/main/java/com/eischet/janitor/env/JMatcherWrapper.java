@@ -2,7 +2,6 @@ package com.eischet.janitor.env;
 
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.JNull;
-import com.eischet.janitor.api.types.builtin.JString;
 import com.eischet.janitor.api.types.builtin.JStringBase;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
@@ -11,7 +10,7 @@ import java.util.regex.Matcher;
 
 public class JMatcherWrapper extends JanitorWrapper<Matcher> {
 
-    private static final WrapperDispatchTable<Matcher> DISPATCH = new WrapperDispatchTable<>();
+    private static final WrapperDispatchTable<Matcher> DISPATCH = new WrapperDispatchTable<>(null);
 
     static {
         DISPATCH.addMethod("start", (self, process, arguments) -> {

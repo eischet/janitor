@@ -1,8 +1,10 @@
 package com.eischet.janitor.api.types.dispatch;
 
 import com.eischet.janitor.api.types.JanitorObject;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * Dispatch Table variant for most object.
@@ -15,7 +17,12 @@ public class DispatchTable<T extends JanitorObject> extends GenericDispatchTable
     /**
      * Create a "root" dispatch table.
      */
+    public DispatchTable(final @Nullable Supplier<T> javaDefaultConstructor) {
+        super(javaDefaultConstructor);
+    }
+
     public DispatchTable() {
+        super(null);
     }
 
     /**

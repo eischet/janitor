@@ -19,6 +19,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -33,9 +34,9 @@ public class DefaultBuiltinTypes implements BuiltinTypes {
      */
     private static final int MAX_INTERNED_LENGTH = 10;
 
-    protected final DispatchTable<JanitorObject> baseDispatcher = new DispatchTable<>();
+    protected final DispatchTable<JanitorObject> baseDispatcher = new DispatchTable<>(null);
 
-    protected final WrapperDispatchTable<Map<JanitorObject, JanitorObject>> mapDispatcher = new WrapperDispatchTable<>();
+    protected final WrapperDispatchTable<Map<JanitorObject, JanitorObject>> mapDispatcher = new WrapperDispatchTable<>(Janitor::map);
     protected final DispatchTable<JString> stringDispatcher = new DispatchTable<>(baseDispatcher, it -> it);
 
     // TODO: figure out why I cannot write Dispatcher<JMap> here. I keep forgetting the subleties of the Java generics system...
@@ -43,7 +44,7 @@ public class DefaultBuiltinTypes implements BuiltinTypes {
 
 
 
-    protected final WrapperDispatchTable<List<JanitorObject>> listDispatcher = new WrapperDispatchTable<>(baseDispatcher, it -> it);
+    protected final DispatchTable<JList> listDispatcher = new DispatchTable<>(baseDispatcher, it -> it);
     protected final WrapperDispatchTable<Set<JanitorObject>> setDispatcher = new WrapperDispatchTable<>(baseDispatcher, it -> it);
     protected final WrapperDispatchTable<Long> intDispatcher = new WrapperDispatchTable<>(baseDispatcher, it -> it);
     protected final WrapperDispatchTable<byte[]> binaryDispatcher = new WrapperDispatchTable<>(baseDispatcher, it -> it);
@@ -231,6 +232,11 @@ public class DefaultBuiltinTypes implements BuiltinTypes {
     }
 
     @Override
+    public @NotNull JList responsiveList(final DispatchTable<?> elementDispatchTable, @NotNull final Stream<? extends JanitorObject> stream, @NotNull final Consumer<JList> onUpdate) {
+        return JList.newInstance(listDispatcher, new ArrayList<>(stream.toList())).withElementDispatchTable(elementDispatchTable).onUpdate(onUpdate);
+    }
+
+    @Override
     public @NotNull JSet set() {
         return JSet.newInstance(setDispatcher, new HashSet<>());
     }
@@ -370,7 +376,7 @@ public class DefaultBuiltinTypes implements BuiltinTypes {
         }
 
         @Override
-        public WrapperDispatchTable<List<JanitorObject>> getListDispatcher() {
+        public DispatchTable<JList> getListDispatcher() {
             return listDispatcher;
         }
 

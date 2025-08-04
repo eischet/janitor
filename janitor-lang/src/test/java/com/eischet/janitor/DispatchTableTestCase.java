@@ -64,7 +64,7 @@ public class DispatchTableTestCase extends JanitorTest {
      */
     private static class SimpleObject extends JanitorComposed<SimpleObject> {
 
-        private static final DispatchTable<SimpleObject> DISPATCH = new DispatchTable<>();
+        private static final DispatchTable<SimpleObject> DISPATCH = new DispatchTable<>(null);
 
         static {
             DISPATCH.addNullableBooleanProperty("frobnicate", SimpleObject::getFrobnicate, SimpleObject::setFrobnicate);
