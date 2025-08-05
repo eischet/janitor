@@ -626,6 +626,34 @@ public class Janitor {
 
 
         /**
+         * The column name for an object property, in case you're working with a database.
+         */
+        public static MetaDataKey<String> COLUMN_NAME = new MetaDataKey<>("column_name", String.class);
+
+        /**
+         * The database table name for an object.
+         */
+        public static MetaDataKey<String> TABLE_NAME = new MetaDataKey<>("table_name", String.class);
+
+        /**
+         * The column name of an ID field for an object, e.g. "person_id".
+         */
+        public static MetaDataKey<String> ID_FIELD = new MetaDataKey<>("id_field", String.class);
+
+        /**
+         * The column name of a KEY field for an object, e.g. "person_key".
+         */
+        public static MetaDataKey<String> KEY_FIELD = new MetaDataKey<>("key_field", String.class);
+
+
+        /**
+         * The maximum length for an object property.
+         */
+        public static MetaDataKey<Integer> MAX_LENGTH = new MetaDataKey<>("max_length", Integer.class);
+
+
+
+        /**
          * Private constructor, to keep you from creating instances of this singleton / "namespace class".
          */
         private MetaData() {}
