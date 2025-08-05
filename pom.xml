@@ -13,7 +13,7 @@
 
     <properties>
         <!-- project revision -->
-        <revision>0.9.22-SNAPSHOT</revision>
+        <revision>0.9.22</revision>
 
         <!-- project settings -->
         <maven.compiler.release>17</maven.compiler.release>

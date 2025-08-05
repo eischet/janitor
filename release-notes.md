@@ -1,4 +1,4 @@
-# 0.9.22, 2025-xx-xx
+# 0.9.22, 2025-08-05
 
 JanitorEnvironment: enable auto-discovery of modules via the Service Loader mechanism; this is an opt-in feature.
 
