@@ -254,6 +254,15 @@ public class JStringTestCase extends JanitorTest {
 
 
     }
+
+
+    @Test void indexingShouldNotFailOnShorterStrings() throws JanitorRuntimeException, JanitorCompilerException {
+        testStringMethod("'foo'[:0]", ""); // no problem
+        testStringMethod("'foo'[:1]", "f"); // no problem
+        testStringMethod("'foo'[:2]", "fo"); // no problem
+        testStringMethod("'foo'[:3]", "foo"); // no problem
+        testStringMethod("'foo'[:8]", "foo"); // was a problem up to and including 0.9.22
+    }
     
     
     

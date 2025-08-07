@@ -1,3 +1,8 @@
+# 0.9.23, 2025-08-xx
+
+`"foo"[:8]` now returns `"foo"` instead of failing with an exception, like it was always meant to.
+
+
 # 0.9.22, 2025-08-05
 
 JanitorEnvironment: enable auto-discovery of modules via the Service Loader mechanism; this is an opt-in feature.

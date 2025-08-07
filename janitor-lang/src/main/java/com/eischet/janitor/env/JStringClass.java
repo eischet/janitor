@@ -94,6 +94,9 @@ public class JStringClass {
                     // System.err.println("case 2 inverted end: " + end + " => " + (len + end));
                     end = len + end;
                 }
+                if (end > len) {
+                    end = len;
+                }
                 final String str = string.substring(0, end);
                 return process.getBuiltins().string(str);
             } else if (second == JNull.NULL) {
