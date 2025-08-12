@@ -37,6 +37,12 @@ public interface Dispatcher<T extends JanitorObject> extends HasMetaData {
         // Therefore, this method looks more dangerous than it really is, with all those stupid casts.
 
         return new Dispatcher<P>() {
+
+            @Override
+            public @Nullable Supplier<P> getJavaDefaultConstructor() {
+                return () -> (P) child.getJavaDefaultConstructor();
+            }
+
             @Override
             public <K> @Nullable K getMetaData(final @NotNull MetaDataKey<K> key) {
                 return child.getMetaData(key);
@@ -120,4 +126,5 @@ public interface Dispatcher<T extends JanitorObject> extends HasMetaData {
 
     Stream<String> streamAttributeNames();
 
+    @Nullable Supplier<T> getJavaDefaultConstructor();
 }

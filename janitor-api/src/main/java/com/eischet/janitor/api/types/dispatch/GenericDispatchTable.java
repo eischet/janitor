@@ -32,7 +32,6 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static com.eischet.janitor.api.Janitor.MetaData.TYPE_HINT;
-import static com.eischet.janitor.api.Janitor.nullableDate;
 import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
 public abstract class GenericDispatchTable<T extends JanitorObject> implements Dispatcher<T> {
@@ -881,5 +880,8 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
         elementConsumer.accept(readFromJson(javaDefaultConstructor, stream));
     }
 
-
+    @Override
+    public @Nullable Supplier<T> getJavaDefaultConstructor() {
+        return javaDefaultConstructor;
+    }
 }
