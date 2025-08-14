@@ -82,7 +82,7 @@ public abstract class BaseRuntime implements JanitorRuntime {
 
     @Override
     public JanitorObject executeCallback(final Scope scope, final JCallable callable, final List<JanitorObject> args) throws JanitorRuntimeException {
-        final RunningScriptProcess process = new RunningScriptProcess(this, scope, Script.wrapperForCallback(callable, args));
+        final RunningScriptProcess process = new RunningScriptProcess(this, scope, "callback", Script.wrapperForCallback(callable, args));
         return process.run();
     }
 

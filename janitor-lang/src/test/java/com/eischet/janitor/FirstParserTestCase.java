@@ -62,7 +62,7 @@ public class FirstParserTestCase extends JanitorTest {
 
         final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), module); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
         globalScope.bind("x", 17);
-        final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, scriptObject);
+        final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, "manual", scriptObject);
         process.run();
         assertEquals("hello, world\n", runtime.getAllOutput());
     }
@@ -77,14 +77,14 @@ public class FirstParserTestCase extends JanitorTest {
 
         final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), module); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
         globalScope.bind("x", 17);
-        final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, scriptObject);
+        final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, "manual", scriptObject);
         process.run();
         assertEquals("high\n", runtime.getAllOutput());
 
         runtime.resetOutput();
 
         globalScope.bind("x", 5);
-        final RunningScriptProcess runningScript2 = new RunningScriptProcess(runtime, globalScope, scriptObject);
+        final RunningScriptProcess runningScript2 = new RunningScriptProcess(runtime, globalScope, "manual", scriptObject);
         runningScript2.run();
         assertEquals("low\n", runtime.getAllOutput());
     }
@@ -103,7 +103,7 @@ public class FirstParserTestCase extends JanitorTest {
 
         final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), module); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
         prepareGlobals.accept(globalScope);
-        final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, scriptObject);
+        final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, "manual", scriptObject);
         process.run();
         return runtime.getAllOutput();
     }
@@ -117,7 +117,7 @@ public class FirstParserTestCase extends JanitorTest {
 
         final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), module); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
         prepareGlobals.accept(globalScope);
-        final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, scriptObject);
+        final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, "manual", scriptObject);
         return process.run();
     }
 
@@ -1368,7 +1368,7 @@ public class FirstParserTestCase extends JanitorTest {
         runtime.setTraceListener(System.out::println);
 
         final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), module); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
-        final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, scriptObject);
+        final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, "manual", scriptObject);
         process.run();
     }
 

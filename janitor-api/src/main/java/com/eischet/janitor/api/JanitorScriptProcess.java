@@ -37,6 +37,12 @@ public interface JanitorScriptProcess {
     void warn(final String warning);
 
     /**
+     * Returns a name for the process,
+     * @return
+     */
+    @NotNull String getProcessName();
+
+    /**
      * Retrieve the source code, if available, of the currently running script's main module.
      * @return source code
      */
@@ -78,6 +84,13 @@ public interface JanitorScriptProcess {
 
     JanitorObject lookup(String text);
 
+    /**
+     * Expand a template with arguments.
+     * @param template the template to expand
+     * @param arguments the arguments to expand with
+     * @return the expanded template
+     * @throws JanitorRuntimeException on errors
+     */
     JString expandTemplate(JString template, JCallArgs arguments) throws JanitorRuntimeException;
 
     @NotNull

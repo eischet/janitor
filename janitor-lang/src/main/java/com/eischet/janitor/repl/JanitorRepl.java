@@ -173,7 +173,7 @@ public class JanitorRepl {
         if (compiledText instanceof Statement compiledStatement) {
             final Location loc = Location.startOf(module);
             final Script partialScript = new Script(loc, List.of(compiledStatement), text);
-            final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, partialScript);
+            final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, module.getName(), partialScript);
             try {
                 partialScript.execute(process);
                 final JanitorObject result = process.getScriptResult();

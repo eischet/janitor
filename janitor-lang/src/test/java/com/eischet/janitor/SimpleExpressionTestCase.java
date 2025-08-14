@@ -32,7 +32,7 @@ public class SimpleExpressionTestCase extends JanitorTest {
 
         final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), module); // new Scope(root, null, null);
         prepareGlobals.accept(globalScope);
-        final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, scriptObject);
+        final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, "manual", scriptObject);
         return process.run();
     }
 

@@ -4,12 +4,10 @@ package com.eischet.janitor.runtime;
 import com.eischet.janitor.api.JanitorRuntime;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.types.functions.JCallArgs;
-import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.api.scopes.ResultAndScope;
 import com.eischet.janitor.api.scopes.Scope;
-import com.eischet.janitor.api.types.builtin.JFloat;
 import com.eischet.janitor.api.types.builtin.JNull;
 import com.eischet.janitor.api.types.builtin.JString;
 import com.eischet.janitor.api.types.JanitorObject;
@@ -29,6 +27,7 @@ public abstract class AbstractScriptProcess implements JanitorScriptProcess {
     private final JanitorRuntime runtime;
     private final Scope mainScope;
     private final List<Scope> closureScopes = new LinkedList<>();
+    private final @NotNull String processName;
     private Scope currentScope;
 
     private JanitorObject scriptResult = JNull.NULL;
@@ -38,19 +37,18 @@ public abstract class AbstractScriptProcess implements JanitorScriptProcess {
      * @param runtime the runtime to work with
      * @param mainScope the script scope to start with
      */
-    public AbstractScriptProcess(final JanitorRuntime runtime, final Scope mainScope) {
+    public AbstractScriptProcess(final JanitorRuntime runtime, final Scope mainScope, final @NotNull String processName) {
         this.runtime = runtime;
         this.mainScope = mainScope;
         this.currentScope = mainScope;
+        this.processName = processName;
     }
 
-    /**
-     * Expand a template with arguments.
-     * @param template the template to expand
-     * @param arguments the arguments to expand with
-     * @return the expanded template
-     * @throws JanitorRuntimeException on errors
-     */
+    @Override
+    public @NotNull String getProcessName() {
+        return processName;
+    }
+
     @Override
     public JString expandTemplate(final JString template, final JCallArgs arguments) throws JanitorRuntimeException {
         return TemplateParser.expand(getRuntime(), this, template, arguments);
@@ -183,7 +181,6 @@ public abstract class AbstractScriptProcess implements JanitorScriptProcess {
 
     @Override
     public List<Location> getStackTrace() {
-        // LATER hier stimmt noch irgendwas nicht. Es werden sinnlose "stack frames" eingemischt.
         final List<Location> stack = new ArrayList<>();
         Scope scope = getCurrentScope();
         while (scope != null) {

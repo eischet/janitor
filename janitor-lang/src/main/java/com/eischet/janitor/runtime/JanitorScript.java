@@ -18,6 +18,8 @@ import com.eischet.janitor.toolbox.json.api.JsonExportableObject;
 import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
 import org.antlr.v4.runtime.*;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,35 +38,35 @@ public class JanitorScript implements RunnableScript, JsonExportableObject {
 
     private static final Logger log = LoggerFactory.getLogger(JanitorScript.class);
 
-    private final JanitorRuntime runtime;
-    private final ScriptModule module;
-    private final Script scriptObject;
-    private final List<String> issues;
-    private Exception compilerException;
+    private final @NotNull JanitorRuntime runtime;
+    private final @NotNull ScriptModule module;
+    private final @Nullable Script scriptObject;
+    private final @NotNull List<String> issues;
+    private @Nullable Exception compilerException;
 
     @Override
-    public Exception getCompilerException() {
+    public @Nullable Exception getCompilerException() {
         return compilerException;
     }
 
-    public static String hostString(final JanitorObject obj) {
+    public static @Nullable String hostString(final JanitorObject obj) {
         return obj == null || obj == JNull.NULL ? null : obj.janitorToString();
     }
 
     @Override
-    public @NotNull List<String> getIssues() {
-        return issues;
+    public @NotNull @Unmodifiable List<String> getIssues() {
+        return List.copyOf(issues);
     }
 
-    public JanitorScript(final JanitorRuntime runtime,
-                         final String moduleName,
-                         final String source) throws JanitorCompilerException {
+    public JanitorScript(final @NotNull JanitorRuntime runtime,
+                         final @NotNull String moduleName,
+                         final @NotNull String source) throws JanitorCompilerException {
         this(runtime, moduleName, source, false, false);
     }
 
-    public JanitorScript(final JanitorRuntime runtime,
-                         final String moduleName,
-                         final String source,
+    public JanitorScript(final @NotNull JanitorRuntime runtime,
+                         final @NotNull String moduleName,
+                         final @NotNull String source,
                          final boolean checking,
                          final boolean verbose) throws JanitorCompilerException {
         this.runtime = runtime;
@@ -137,7 +139,7 @@ public class JanitorScript implements RunnableScript, JsonExportableObject {
     public @NotNull JanitorObject run(final @NotNull Consumer<Scope> prepareGlobals) throws JanitorRuntimeException {
         final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), module); // new Scope(Location.at(module, 0, 0), BUILTIN_SCOPE, null);
         prepareGlobals.accept(globalScope);
-        final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, scriptObject);
+        final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, module.getName(), scriptObject);
         try {
             return process.run();
         } finally {
@@ -149,7 +151,7 @@ public class JanitorScript implements RunnableScript, JsonExportableObject {
     public @NotNull JanitorObject runInScope(final @NotNull Consumer<Scope> prepareGlobals, final Scope parentScope) throws JanitorRuntimeException {
         final Scope globalScope = Scope.createMainScope(parentScope); // GlobalScope(module); // new Scope(Location.at(module, 0, 0), parentScope, null);
         prepareGlobals.accept(globalScope);
-        final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, scriptObject);
+        final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, module.getName(), scriptObject);
         return process.run();
     }
 
@@ -158,13 +160,13 @@ public class JanitorScript implements RunnableScript, JsonExportableObject {
     public @NotNull ResultAndScope runAndKeepGlobals(final @NotNull Consumer<Scope> prepareGlobals) throws JanitorRuntimeException {
         final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), module); // new Scope(Location.at(module, 0, 0), BUILTIN_SCOPE, null);
         prepareGlobals.accept(globalScope);
-        final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, scriptObject);
+        final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, module.getName(), scriptObject);
         return new ResultAndScope(process.getMainScope(), process.run());
     }
 
     @Override
     public @NotNull ResultAndScope runInScopeAndKeepGlobals(final Scope parentScope) throws JanitorRuntimeException {
-        final RunningScriptProcess process = new RunningScriptProcess(runtime, parentScope, scriptObject, false);
+        final RunningScriptProcess process = new RunningScriptProcess(runtime, parentScope, module.getName(), scriptObject, false);
         return new ResultAndScope(process.getMainScope(), process.run());
     }
 

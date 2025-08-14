@@ -1,6 +1,11 @@
-# 0.9.23, 2025-08-xx
+# 0.9.23, 2025-08-14
 
 `"foo"[:8]` now returns `"foo"` instead of failing with an exception, like it was always meant to.
+
+Script processes now always have a name, which an upstream project uses for auditing data access.
+The name is filled with the module name, which was always mandatory, and should not influence existing client code.
+
+A number of @Nullable/@NotNull annotations were added to clarify the API auf the JanitorScriptProcess.
 
 
 # 0.9.22, 2025-08-05
