@@ -325,6 +325,9 @@ public class JanitorSemantics {
      * @throws JanitorRuntimeException on errors
      */
     public static @NotNull JanitorObject matches(JanitorScriptProcess process, final JanitorObject leftValue, final JanitorObject rightValue) throws JanitorRuntimeException {
+        if (leftValue == Janitor.NULL || rightValue == Janitor.NULL) {
+            return Janitor.FALSE;
+        }
         if (leftValue instanceof JString && rightValue instanceof JString) {
             if (((JString) rightValue).getWildCardMatcher() != null) {
                 return ((JString) rightValue).getWildCardMatcher().matches((String) leftValue.janitorGetHostValue()) ? JBool.TRUE : JBool.FALSE;
@@ -349,6 +352,9 @@ public class JanitorSemantics {
      * @throws JanitorRuntimeException on errors
      */
     public static @NotNull JanitorObject matchesNot(JanitorScriptProcess process, final JanitorObject leftValue, final JanitorObject rightValue) throws JanitorRuntimeException {
+        if (leftValue == Janitor.NULL || rightValue == Janitor.NULL) {
+            return Janitor.FALSE;
+        }
         if (leftValue instanceof JString && rightValue instanceof JString) {
             if (((JString) rightValue).getWildCardMatcher() != null) {
                 return ((JString) rightValue).getWildCardMatcher().matches((String) leftValue.janitorGetHostValue()) ? JBool.FALSE : JBool.TRUE;
@@ -360,7 +366,7 @@ public class JanitorSemantics {
         if (leftValue instanceof JString str && rightValue instanceof JRegex regex) {
             return Janitor.toBool(!regex.janitorGetHostValue().matcher(str.janitorGetHostValue()).matches());
         }
-        throw new JanitorTypeException(process, "matches (~): invalid left " + leftValue + " / right " + rightValue + ", both should be strings");
+        throw new JanitorTypeException(process, "matches not (!~): invalid left " + leftValue + " / right " + rightValue + ", both should be strings");
     }
 
     /**

@@ -1,3 +1,34 @@
+# 0.9.28, 2025-08-25
+
+Add missing list methods "remove" and "removeAll" that remove elements (by equality) from the list.
+
+Add a "value expander" that allows you to auto-translate values assigned to object properties.
+E.g. your client code can detect "a.foo = 'bar'" and turn the string 'bar' into an object instance that can actually be assigned to the property.
+This works great with database lookups (in the not-yet-public janitor-orm sister project) and will be useful for enums, too, where you could
+turn the 'bar' string into an actual enum instance without much ado.
+
+The wildcard matching operator now handles null values more consistently. Instead of failing, a "null" string will make the operators return false.
+
+(0.9.27 was skipped because of a premature internal package deployment.)
+
+
+# 0.9.26, 2025-08-21
+
+Add a value converter to object properties in the GenericDispatchTable, so you can chose to convert script values in app object.
+This is used in a project to enable assignments like `foo.bar = 'frobnicate'` to automatically look up a database object by the string value and assign *that*
+to the property instead of the string value. This is very useful in classes that have "foreign key" properties. Value conversion is handled by the client,
+so you can make it work however you want. The default implementation simply casts to the expected type.
+
+
+# 0.9.25, 2025-08-20
+
+Wildcard matching operator: if either side of the operator is null, return false. This applies to both the "~" and "!~" operators in the same way, as SQL does it with "LIKE" and "NOT LIKE". 
+
+List: the 'remove' method was not added to the default dispatch table, and it was actually "removeAll". Fixed both.
+
+Skipped 0.9.24 because I deployed a broken version internally by mistake.
+
+
 # 0.9.23, 2025-08-14
 
 `"foo"[:8]` now returns `"foo"` instead of failing with an exception, like it was always meant to.

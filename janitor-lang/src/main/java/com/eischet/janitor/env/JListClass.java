@@ -7,7 +7,6 @@ import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
-import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 import com.eischet.janitor.api.types.builtin.*;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.api.types.functions.JCallable;
@@ -254,10 +253,16 @@ public class JListClass {
 
 
     public static JNull __remove(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+        self.remove(arguments.get(0));
+        return JNull.NULL;
+    }
+
+    public static JNull __removeAll(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         for (final JanitorObject jObj : arguments.getRequired(0, JList.class)) {
             self.remove(jObj);
         }
         return JNull.NULL;
     }
+
 
 }

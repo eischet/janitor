@@ -137,6 +137,8 @@ public class DefaultBuiltinTypes implements BuiltinTypes {
         listDispatcher.addMethod("get", JListClass::__get);
         listDispatcher.addMethod(JanitorAntlrCompiler.INDEXED_GET_METHOD, JListClass::__getSliced);
         listDispatcher.addMethod("sort", JListClass::__sort);
+        listDispatcher.addMethod("remove", JListClass::__remove);
+        listDispatcher.addMethod("removeAll", JListClass::__removeAll);
 
         setDispatcher.addMethod("add", JSetClass::__add);
         setDispatcher.addMethod("remove", JSetClass::__remove);

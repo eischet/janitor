@@ -671,10 +671,36 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
      * @return a meta-data builder
      */
     public <X extends JanitorObject> MetaDataBuilder<T> addObjectProperty(final String name, final Function<T, X> getter, final BiConsumer<T, X> setter, final Supplier<X> constructor) {
+        //noinspection unchecked
+        return addObjectProperty(name, getter, setter, constructor, (self, v) -> (X) v);
+    }
+
+    public <X extends JanitorObject> MetaDataBuilder<T> addObjectPropertyWithSingletonDefault(final String name, final Function<T, X> getter, final BiConsumer<T, X> setter, final X singletonDefault) {
+        //noinspection unchecked
+        return addObjectPropertyWithSingletonDefault(name, getter, setter, singletonDefault, (self, v) -> (X) v);
+    }
+
+
+    /**
+     * Adds a read-write object property.
+     *
+     * @param name   property name
+     * @param getter property getter
+     * @param setter property setter
+     * @return a meta-data builder
+     */
+    public <X extends JanitorObject> MetaDataBuilder<T> addObjectProperty(final String name, final Function<T, X> getter, final BiConsumer<T, X> setter, final Supplier<X> constructor, final ValueExpander<T, X> expander) {
         // because we'll turn a class cast exception into a script runtime error:
         // noinspection unchecked
-        return put(name, instance ->new TemporaryAssignable(getter.apply(instance), value -> setter.accept(instance, (X) value)), adapt(shim(constructor), getter, setter));
+        return put(name, instance ->new TemporaryAssignable(getter.apply(instance), value -> setter.accept(instance, expander.expandValue(instance, value))), adapt(shim(constructor), getter, setter));
     }
+
+    public <X extends JanitorObject> MetaDataBuilder<T> addObjectPropertyWithSingletonDefault(final String name, final Function<T, X> getter, final BiConsumer<T, X> setter, final X singletonDefault, final ValueExpander<T, X> expander) {
+        // because we'll turn a class cast exception into a script runtime error:
+        // noinspection unchecked
+        return put(name, instance ->new TemporaryAssignable(getter.apply(instance), value -> setter.accept(instance, expander.expandValue(instance, value))), adapt(shim(() -> singletonDefault), getter, setter));
+    }
+
 
     private <X extends JanitorObject> @NotNull JsonSupport<X> shim(final Supplier<X> constructor) {
         return new JsonSupport<>() {
