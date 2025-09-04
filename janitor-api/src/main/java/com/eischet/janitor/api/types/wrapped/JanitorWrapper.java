@@ -69,4 +69,8 @@ public class JanitorWrapper<T> implements JanitorTypedObject<T> {
     public int hashCode() {
         return Objects.hashCode(wrapped);
     }
+
+    public Dispatcher<JanitorWrapper<T>> getDispatcher() {
+        return dispatcher;
+    }
 }

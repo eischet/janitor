@@ -31,4 +31,9 @@ public class Keeper<T> {
     public static <U> Keeper<U> of(U init) {
         return new Keeper<>(init);
     }
+
+    public static <U> ObservableKeeper<U> observable(U init) {
+        return new ObservableKeeper<>(init);
+    }
+
 }

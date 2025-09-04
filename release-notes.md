@@ -1,3 +1,14 @@
+# 0.9.29-SNAPSHOT 
+
+Defend against null pointer exceptions coming from unset locations, as reported by an upstream project customer.
+
+Lists without a specified element type can now be read from JSON. Objects within the list will be returned as Maps.
+
+Generic Maps can now be read from JSON.
+
+Add factory methods for nullable ints and longs to the Janitor interface.
+
+
 # 0.9.28, 2025-08-25
 
 Add missing list methods "remove" and "removeAll" that remove elements (by equality) from the list.

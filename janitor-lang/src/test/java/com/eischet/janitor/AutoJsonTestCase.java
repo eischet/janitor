@@ -1,5 +1,7 @@
 package com.eischet.janitor;
 
+import com.eischet.janitor.api.Janitor;
+import com.eischet.janitor.api.types.builtin.JList;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
@@ -277,6 +279,13 @@ public class AutoJsonTestCase extends JanitorTest  {
     }
      */
 
+
+    @Test void simpleList() throws JsonException {
+        final String JSON = "[1, 2, 3, 4, 5]";
+        final JList list = Janitor.list();
+        list.readJson(Janitor.current().getLenientJsonConsumer(JSON));
+        assertEquals(5, list.size());
+    }
 
 
 }

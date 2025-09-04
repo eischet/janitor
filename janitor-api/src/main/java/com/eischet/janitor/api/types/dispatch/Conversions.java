@@ -4,10 +4,8 @@ import com.eischet.janitor.api.errors.glue.JanitorGlueException;
 import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.Janitor;
-import com.eischet.janitor.api.types.builtin.JFloat;
-import com.eischet.janitor.api.types.builtin.JInt;
-import com.eischet.janitor.api.types.builtin.JList;
-import com.eischet.janitor.api.types.builtin.JNull;
+import com.eischet.janitor.api.types.builtin.*;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +28,24 @@ public class Conversions {
         throw new JanitorGlueException(JanitorArgumentException::fromGlue, "Expected an integer value but got " + value.janitorClassName() + ".");
     }
 
+    /**
+     * Create a new JInt.
+     *
+     * @param value the value
+     * @return the integer
+     * @throws JanitorGlueException [JanitorArgumentException] if the value is not an integer
+     */
+    public static JanitorObject requireNullableInt(final JanitorObject value) throws JanitorGlueException {
+        if (value instanceof JInt ok) {
+            return ok;
+        }
+        if (value == Janitor.NULL) {
+            return Janitor.NULL;
+        }
+        throw new JanitorGlueException(JanitorArgumentException::fromGlue, "Expected an integer value or null but got " + value.janitorClassName() + ".");
+    }
+
+
 
     public static JFloat requireFloat(final Object value) throws JanitorGlueException {
         if (value instanceof JFloat alreadyMatches) {
@@ -38,7 +54,7 @@ public class Conversions {
         if (value instanceof Number num) {
             return Janitor.getBuiltins().floatingPoint(num.doubleValue());
         }
-        throw new JanitorGlueException(JanitorArgumentException::fromGlue, "Expected a  floating point value but got " + simpleClassNameOf(value) + ".");
+        throw new JanitorGlueException(JanitorArgumentException::fromGlue, "Expected a floating point value but got " + simpleClassNameOf(value) + ".");
     }
 
     public static <E> List<E> toList(JList list, ConverterFromJanitor<E> converter) throws JanitorGlueException {
@@ -63,4 +79,26 @@ public class Conversions {
         }
         return result;
     }
+
+    public static Integer toNullableJavaInteger(final @NotNull JanitorObject value) throws JanitorGlueException {
+        if (value == Janitor.NULL) {
+            return null;
+        }
+        if (value instanceof JNumber number) {
+            return (int) number.toLong();
+        }
+        throw new JanitorGlueException(JanitorArgumentException::fromGlue, "Expected an integer value or null but got " + value.janitorClassName() + ".");
+    }
+
+    public static Long toNullableJavaLong(final @NotNull JanitorObject value) throws JanitorGlueException {
+        if (value == Janitor.NULL) {
+            return null;
+        }
+        if (value instanceof JNumber number) {
+            return number.toLong();
+        }
+        throw new JanitorGlueException(JanitorArgumentException::fromGlue, "Expected a long value or null but got " + value.janitorClassName() + ".");
+    }
+
+
 }

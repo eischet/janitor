@@ -2,13 +2,11 @@ package com.eischet.janitor.api;
 
 import com.eischet.janitor.api.types.BuiltinTypes;
 import com.eischet.janitor.api.types.functions.JCallArgs;
-import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.i18n.JanitorFormatting;
 import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.api.scopes.ResultAndScope;
 import com.eischet.janitor.api.scopes.Scope;
-import com.eischet.janitor.api.types.builtin.JFloat;
 import com.eischet.janitor.api.types.builtin.JString;
 import com.eischet.janitor.api.types.JanitorObject;
 import org.jetbrains.annotations.NotNull;
@@ -18,8 +16,8 @@ import java.util.List;
 import java.util.function.Supplier;
 
 /**
- * Represents a script that is running right now.
- * This is used mainly by the interpreter, to actually run the script, but also by host code that needs to interact with a script
+ * Represents a running script.
+ * This is used mainly by the interpreter to actually run the script, but also by host code that needs to interact with a script
  * or do things for the script which require access to the interpreter's internals. In the latter context, this interface can
  * be seen as a "handle" to the interpreter.
  */
@@ -28,8 +26,7 @@ public interface JanitorScriptProcess {
     /**
      * Emit a warning.
      * <p>
-     * What this does depends on the implementation. Typically, this should log a message
-     * with the warning level.
+     * This is meant to be implemented by client code. Typically, this will log a warning level message.
      * </p>
      *
      * @param warning the warning
@@ -37,8 +34,8 @@ public interface JanitorScriptProcess {
     void warn(final String warning);
 
     /**
-     * Returns a name for the process,
-     * @return
+     * Returns a name for the process.
+     * @return a name for the process
      */
     @NotNull String getProcessName();
 

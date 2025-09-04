@@ -16,10 +16,7 @@ import org.jetbrains.annotations.Unmodifiable;
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.ServiceLoader;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -34,7 +31,7 @@ import java.util.stream.Stream;
  * <li>Compile scripts into executable code.</li>
  * </ul>
  */
-public class Janitor {
+public final class Janitor {
 
     /**
      * 'null' in the Janitor language, designed to act just like null in Java and JavaScript, among others.
@@ -124,6 +121,32 @@ public class Janitor {
     @NotNull
     public static JanitorObject nullableString(final @Nullable String value) {
         return getBuiltins().nullableString(value);
+    }
+
+    /**
+     * Return a new JInt object, or NULL if the value is null.
+     * @param value a Java Long or null
+     * @return a JInt from the Java Long, or NULL
+     */
+    @NotNull
+    public static JanitorObject nullableLong(final Long value) {
+        if (value == null) {
+            return Janitor.NULL;
+        }
+        return Janitor.integer(value);
+    }
+
+    /**
+     * Return a new JInt object, or NULL if the value is null.
+     * @param value a Java Integer or null
+     * @return a JInt from the Java Long, or NULL
+     */
+    @NotNull
+    public static JanitorObject nullableInteger(final Integer value) {
+        if (value == null) {
+            return Janitor.NULL;
+        }
+        return Janitor.integer(value);
     }
 
     /**
@@ -565,7 +588,7 @@ public class Janitor {
      * Nested namespace class for script meta-data, which is available with Dispatcher instances, which help
      * bridging between Janitor code and Java code.
      */
-    public static class MetaData {
+    public static final class MetaData {
 
         /**
          * The class name for an object.
@@ -624,6 +647,11 @@ public class Janitor {
          */
         public static MetaDataKey<String> REF = new MetaDataKey<>("ref", String.class);
 
+        /**
+         * Marks fields that are nullable on the Java side, without specifying anything about script-side nullability.
+         */
+        public static MetaDataKey<Boolean> HOST_NULLABLE = new MetaDataKey<>("host_nullable", Boolean.class);
+
 
         /**
          * The column name for an object property, in case you're working with a database.
@@ -659,4 +687,39 @@ public class Janitor {
         private MetaData() {}
 
     }
+
+    public static final class Semantics {
+        /**
+         * Check two objects for equality.
+         *
+         * @param leftValue  the left value
+         * @param rightValue the right value
+         * @return TRUE if the values are equals, or FALSE if not.
+         */
+        public static @NotNull JBool areEquals(final JanitorObject leftValue, final JanitorObject rightValue) {
+            return Janitor.toBool(leftValue == rightValue
+                                  || leftValue.janitorGetHostValue() == rightValue.janitorGetHostValue()
+                                  || Objects.equals(leftValue.janitorGetHostValue(), rightValue.janitorGetHostValue())
+                                  || (leftValue instanceof JNumber leftNumber && rightValue instanceof JNumber rightNumber && 0 == compareNumbers(leftNumber, rightNumber))
+
+            );
+        }
+
+        private static int compareNumbers(final JNumber leftNumber, final JNumber rightNumber) {
+            return Double.compare(leftNumber.toDouble(), rightNumber.toDouble());
+        }
+
+        /**
+         * Check two objects for equality.
+         *
+         * @param leftValue  the left value
+         * @param rightValue the right value
+         * @return FALSE if the values are equals, or TRUE if not.
+         */
+        public static @NotNull JBool areNotEquals(final JanitorObject leftValue, final JanitorObject rightValue) {
+            return areEquals(leftValue, rightValue).opposite();
+        }
+
+    }
+
 }

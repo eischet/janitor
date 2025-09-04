@@ -96,15 +96,19 @@ public abstract class JanitorRuntimeException extends JanitorException implement
         out.append("Traceback (most recent call last):");
         if (!stack.isEmpty()) {
             for (final Location location : stack) {
-                if (ScriptModule.isBuiltin(location.getModule())) {
-                    // skip over the builtin module, or else it would appear at the top of every script
-                    continue;
-                }
-                out.append("\n  ").append(location);
-                // final String line = getLine(sourceLines, location.getLine());
-                final String line = location.getSourceLine();
-                if (line != null) {
-                    out.append("\n    ").append(line.trim());
+                if (location != null) {
+                    if (ScriptModule.isBuiltin(location.getModule())) {
+                        // skip over the builtin module, or else it would appear at the top of every script
+                        continue;
+                    }
+                    out.append("\n  ").append(location);
+                    // final String line = getLine(sourceLines, location.getLine());
+                    final String line = location.getSourceLine();
+                    if (line != null) {
+                        out.append("\n    ").append(line.trim());
+                    }
+                } else {
+                    out.append("\n    <unknown location>");
                 }
             }
         }

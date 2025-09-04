@@ -2,10 +2,9 @@ package com.eischet.janitor;
 
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.RunnableScript;
-import com.eischet.janitor.lang.JNativeMethod;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
-import com.eischet.janitor.api.errors.runtime.JanitorAssertionException;
 import com.eischet.janitor.api.errors.glue.JanitorControlFlowException;
+import com.eischet.janitor.api.errors.runtime.JanitorAssertionException;
 import com.eischet.janitor.api.errors.runtime.JanitorNameException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.modules.JanitorModule;
@@ -15,17 +14,21 @@ import com.eischet.janitor.api.modules.ModuleResolver;
 import com.eischet.janitor.api.scopes.ResultAndScope;
 import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.scopes.ScriptModule;
-import com.eischet.janitor.api.types.*;
+import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.*;
 import com.eischet.janitor.compiler.JanitorAntlrCompiler;
 import com.eischet.janitor.compiler.JanitorCompiler;
 import com.eischet.janitor.compiler.ast.expression.literal.DurationLiteral;
 import com.eischet.janitor.compiler.ast.statement.Script;
+import com.eischet.janitor.lang.JNativeMethod;
 import com.eischet.janitor.lang.JanitorParser;
 import com.eischet.janitor.repl.ConsoleReplIO;
 import com.eischet.janitor.repl.JanitorRepl;
 import com.eischet.janitor.repl.PartialParseResult;
-import com.eischet.janitor.runtime.*;
+import com.eischet.janitor.runtime.JanitorScript;
+import com.eischet.janitor.runtime.OutputCatchingTestRuntime;
+import com.eischet.janitor.runtime.RunningScriptProcess;
+import com.eischet.janitor.runtime.SLFLoggingRuntime;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -138,16 +141,16 @@ public class FirstParserTestCase extends JanitorTest {
     @Test
     public void ifElseIfElse() throws JanitorCompilerException, JanitorRuntimeException {
         final @Language("Janitor") String script = """
-            if (x>10) {
-                print("high");
-            } else if (x>5) {
-                print("middle");
-            } else if (x > 0) {
-                print("low");
-            } else {
-                print("very low");
-            }
-            """;
+                if (x>10) {
+                    print("high");
+                } else if (x>5) {
+                    print("middle");
+                } else if (x > 0) {
+                    print("low");
+                } else {
+                    print("very low");
+                }
+                """;
         assertEquals("high\n", getOutput(script, g -> g.bind("x", TestEnv.env.getBuiltinTypes().integer(11))));
         assertEquals("high\n", getOutput(script, g -> g.bind("x", TestEnv.env.getBuiltinTypes().integer(12))));
         assertEquals("middle\n", getOutput(script, g -> g.bind("x", TestEnv.env.getBuiltinTypes().integer(6))));
@@ -334,15 +337,15 @@ public class FirstParserTestCase extends JanitorTest {
     @Test
     public void fib() throws JanitorCompilerException, JanitorRuntimeException {
         final @Language("Janitor") String FIB = """
-            function fib(n) {
-                if (n <= 1) {
-                    return n;
-                } else {
-                    return fib(n-1) + fib(n-2);
+                function fib(n) {
+                    if (n <= 1) {
+                        return n;
+                    } else {
+                        return fib(n-1) + fib(n-2);
+                    }
                 }
-            }
-            fib(x)
-            """;
+                fib(x)
+                """;
 
         assertEquals(0L, evaluate(FIB, g -> g.bind("x", 0)).janitorGetHostValue());
         assertEquals(1L, evaluate(FIB, g -> g.bind("x", 1)).janitorGetHostValue());
@@ -377,20 +380,20 @@ public class FirstParserTestCase extends JanitorTest {
         final JNativeMethod foo = JNativeMethod.of(args -> TestEnv.env.getBuiltinTypes().string("hallo"));
 
         assertEquals("hallo", evaluate("""
-            foo();
-            """, g -> g.bind("foo", foo)).janitorGetHostValue());
+                foo();
+                """, g -> g.bind("foo", foo)).janitorGetHostValue());
     }
 
     @Test
     public void stackTracing() throws JanitorCompilerException {
         try {
             evaluate("""
-                // some comment
-                function fail() {
-                    return 1/0;
-                }
-                fail();
-                """, TestEnv.NO_GLOBALS);
+                    // some comment
+                    function fail() {
+                        return 1/0;
+                    }
+                    fail();
+                    """, TestEnv.NO_GLOBALS);
         } catch (JanitorRuntimeException e) {
             log.info(e.getMessage());
         }
@@ -423,9 +426,9 @@ public class FirstParserTestCase extends JanitorTest {
         rt.getEnvironment().addModule(new JanitorModuleRegistration("foo", FooModule::new));
 
         final RunnableScript s = rt.compile("test", """
-            import foo;
-            print(foo.x);
-            """);
+                import foo;
+                print(foo.x);
+                """);
         s.run();
         assertEquals("17\n", rt.getAllOutput());
 
@@ -443,7 +446,6 @@ public class FirstParserTestCase extends JanitorTest {
     public void multiImport() throws JanitorCompilerException, JanitorRuntimeException {
 
 
-
         final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         for (final String moduleName : List.of("foo", "bar", "baz")) {
             rt.getEnvironment().addModule(new JanitorModuleRegistration(moduleName, () -> new JanitorModule() {
@@ -457,46 +459,46 @@ public class FirstParserTestCase extends JanitorTest {
             }));
         }
         final RunnableScript s = rt.compile("test", """
-            import foo;
-            import bar;
-            import baz;
-            assert(foo.name == 'foo');
-            assert(bar.name == 'bar');
-            assert(baz.name == 'baz');
-            """);
+                import foo;
+                import bar;
+                import baz;
+                assert(foo.name == 'foo');
+                assert(bar.name == 'bar');
+                assert(baz.name == 'baz');
+                """);
         s.run();
 
         final RunnableScript s2 = rt.compile("test", """
-            import foo, bar, baz;
-            assert(foo.name == 'foo');
-            assert(bar.name == 'bar');
-            assert(baz.name == 'baz');
-            """);
+                import foo, bar, baz;
+                assert(foo.name == 'foo');
+                assert(bar.name == 'bar');
+                assert(baz.name == 'baz');
+                """);
         s2.run();
 
         final RunnableScript s3 = rt.compile("test", """
-            import foo, bar, baz, baz as gumbo;
-            assert(foo.name == 'foo');
-            assert(bar.name == 'bar');
-            assert(baz.name == 'baz');
-            assert(gumbo.name == 'baz');
-            """);
+                import foo, bar, baz, baz as gumbo;
+                assert(foo.name == 'foo');
+                assert(bar.name == 'bar');
+                assert(baz.name == 'baz');
+                assert(gumbo.name == 'baz');
+                """);
         s3.run();
 
         final RunnableScript s4 = rt.compile("test", """
-            import foo as gnobb, bar, baz, baz as gumbo;
-            // should fail: assert(foo.name == 'foo'); --> JanitorNameException: name 'foo' is not defined
-            assert(bar.name == 'bar');
-            assert(baz.name == 'baz');
-            assert(gumbo.name == 'baz');
-            assert(gnobb.name == 'foo');
-            """);
+                import foo as gnobb, bar, baz, baz as gumbo;
+                // should fail: assert(foo.name == 'foo'); --> JanitorNameException: name 'foo' is not defined
+                assert(bar.name == 'bar');
+                assert(baz.name == 'baz');
+                assert(gumbo.name == 'baz');
+                assert(gnobb.name == 'foo');
+                """);
         s4.run();
 
         final RunnableScript s5 = rt.compile("test", """
-            import "dummy" as dummy;
-            assert(dummy.name == 'dummy');
-            """);
+                import "dummy" as dummy;
+                assert(dummy.name == 'dummy');
+                """);
         assertThrows(JanitorRuntimeException.class, s5::run, "Module not found: dummy");
 
         rt.getEnvironment().addModuleResolver(new ModuleResolver() {
@@ -522,7 +524,6 @@ public class FirstParserTestCase extends JanitorTest {
         s5.run();
 
     }
-
 
 
     @Test
@@ -565,11 +566,6 @@ public class FirstParserTestCase extends JanitorTest {
     }
 
 
-
-
-
-
-
     @Test
     public void lists() throws JanitorCompilerException, JanitorRuntimeException {
         final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
@@ -602,19 +598,19 @@ public class FirstParserTestCase extends JanitorTest {
     @Test
     public void accidentalJsonParser() throws JanitorCompilerException, JanitorRuntimeException {
         final String JSON = """
-            [
-                {
-                    "className": "CockpitTool",
-                    "shortCode": "ACTPROC-BV",
-                    "name": "Action Processor Bankverlag",
-                    "remarks": "Unter Einstellungen bitte noch die Datenbank auswählen!\\nAchtung, aktuell gibt es noch ein konzeptionelles Problem mit der Maske: \\ndie \\"Zuletzt verarbeitete ACT_REG_ID\\" wird mit gespeichert! F5 drücken vor Skriptänderungen!\\n",
-                    "toolType": "action-processor",
-                    "keepRunLogs": 10,
-                    "jsonConfig": "{\\n  \\"dataSourceGroup\\": \\"ASSYST1075\\"\\n}",
-                    "jsCode": "if (action.actionType.id == 6) {\\n    svd = assyst.getAssignedServDeptBeforeReopen(action.eventId, \\"SERVICE-DESK\\");\\n    if (svd) {\\n        print(\\"das ticket wurde wurde wiedereröffnet und geht zurück an:\\", svd);\\n        a = assyst.newAction();\\n        a.eventId = action.eventId;\\n        a.actionTypeId = 1;\\n        a.assignedServiceDepartment = svd;\\n        a.remarks = \\"Wiedereröffnung: zurück zu \\" + svd;\\n        assyst.createAction(a);\\n    } else {\\n        print(\\"das ticket wurde wiedereröffnet, aber wir wissen nicht wohin es soll\\");\\n    }\\n} else {\\n    print(\\"irrelevanter Aktionstyp:\\", action.actionType.shortCode);\\n}\\n"
-                }
-            ]
-            """;
+                [
+                    {
+                        "className": "CockpitTool",
+                        "shortCode": "ACTPROC-BV",
+                        "name": "Action Processor Bankverlag",
+                        "remarks": "Unter Einstellungen bitte noch die Datenbank auswählen!\\nAchtung, aktuell gibt es noch ein konzeptionelles Problem mit der Maske: \\ndie \\"Zuletzt verarbeitete ACT_REG_ID\\" wird mit gespeichert! F5 drücken vor Skriptänderungen!\\n",
+                        "toolType": "action-processor",
+                        "keepRunLogs": 10,
+                        "jsonConfig": "{\\n  \\"dataSourceGroup\\": \\"ASSYST1075\\"\\n}",
+                        "jsCode": "if (action.actionType.id == 6) {\\n    svd = assyst.getAssignedServDeptBeforeReopen(action.eventId, \\"SERVICE-DESK\\");\\n    if (svd) {\\n        print(\\"das ticket wurde wurde wiedereröffnet und geht zurück an:\\", svd);\\n        a = assyst.newAction();\\n        a.eventId = action.eventId;\\n        a.actionTypeId = 1;\\n        a.assignedServiceDepartment = svd;\\n        a.remarks = \\"Wiedereröffnung: zurück zu \\" + svd;\\n        assyst.createAction(a);\\n    } else {\\n        print(\\"das ticket wurde wiedereröffnet, aber wir wissen nicht wohin es soll\\");\\n    }\\n} else {\\n    print(\\"irrelevanter Aktionstyp:\\", action.actionType.shortCode);\\n}\\n"
+                    }
+                ]
+                """;
         final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         final JList list = (JList) rt.compile("test", JSON).run(TestEnv.NO_GLOBALS);
         final JMap map = (JMap) list.get(TestEnv.env.getBuiltinTypes().integer(0));
@@ -623,19 +619,17 @@ public class FirstParserTestCase extends JanitorTest {
     }
 
 
-
-
     @Test
     public void longStringsCollide() throws Exception {
         final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         final RunnableScript script = rt.compile("test", """
-            a = '''hallo''';
-            c = ""\"ignore""\";
-            b = '''welt''';
-            d = ""\"ignore""\";
-
-            return a + b;
-            """
+                a = '''hallo''';
+                c = ""\"ignore""\";
+                b = '''welt''';
+                d = ""\"ignore""\";
+                
+                return a + b;
+                """
         );
         assertEquals("hallowelt", script.run(TestEnv.NO_GLOBALS).janitorGetHostValue());
 
@@ -661,7 +655,7 @@ public class FirstParserTestCase extends JanitorTest {
         assertEquals("\n", rt.compile("test", "return '\\n';").run(TestEnv.NO_GLOBALS).janitorGetHostValue());
 
         final RunnableScript script3 = rt.compile("test2", """
-            return \"select usr_id from usr where regexp_like(usr_sc, '^\\\\d+$')";""");
+                return \"select usr_id from usr where regexp_like(usr_sc, '^\\\\d+$')";""");
         assertEquals("select usr_id from usr where regexp_like(usr_sc, '^\\d+$')", script3.run(TestEnv.NO_GLOBALS).janitorGetHostValue());
 
     }
@@ -670,17 +664,17 @@ public class FirstParserTestCase extends JanitorTest {
     public void collections() throws Exception {
         final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         final RunnableScript script = rt.compile("test", """
-            import collections;
-
-            set = collections.set(1, 2, 3);
-            set.add(4);
-            set.add(5);
-
-            set.add(99);
-            set.remove(99);
-
-            return set;
-            """);
+                import collections;
+                
+                set = collections.set(1, 2, 3);
+                set.add(4);
+                set.add(5);
+                
+                set.add(99);
+                set.remove(99);
+                
+                return set;
+                """);
         final JanitorObject result = script.run(TestEnv.NO_GLOBALS);
 
         assertInstanceOf(JSet.class, result);
@@ -701,16 +695,16 @@ public class FirstParserTestCase extends JanitorTest {
 
 
         assertEquals(JBool.TRUE, rt.compile("test", """
-            import collections;
-
-            set = collections.set();
-            assert(set.add(1));
-            assert(set.contains(1));
-            assert(set.remove(1));
-            assert(not set.remove(1));
-
-            return set.isEmpty();
-            """).run());
+                import collections;
+                
+                set = collections.set();
+                assert(set.add(1));
+                assert(set.contains(1));
+                assert(set.remove(1));
+                assert(not set.remove(1));
+                
+                return set.isEmpty();
+                """).run());
 
     }
 
@@ -769,31 +763,31 @@ public class FirstParserTestCase extends JanitorTest {
     public void stringTemplating() throws Exception {
         final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         final RunnableScript script = rt.compile("test", """
-            a = 1;
-            b = 2;
-            c = 3;
-            template = 'a=${a}, b=${b}, c=${c}!';
-            return template.expand();
-            """);
+                a = 1;
+                b = 2;
+                c = 3;
+                template = 'a=${a}, b=${b}, c=${c}!';
+                return template.expand();
+                """);
         assertEquals("a=1, b=2, c=3!", script.run(TestEnv.NO_GLOBALS).janitorGetHostValue());
 
 
         final RunnableScript script2 = rt.compile("test", """
-            a = 1;
-            print('start');
-            for (i in [1, 2, 3]) {
-                print('a=${a} i=${i}'.expand());
-            }
-            print('end');
-            """);
+                a = 1;
+                print('start');
+                for (i in [1, 2, 3]) {
+                    print('a=${a} i=${i}'.expand());
+                }
+                print('end');
+                """);
         script2.run();
         assertEquals("""
-            start
-            a=1 i=1
-            a=1 i=2
-            a=1 i=3
-            end
-            """, rt.getAllOutput());
+                start
+                a=1 i=1
+                a=1 i=2
+                a=1 i=3
+                end
+                """, rt.getAllOutput());
 
     }
 
@@ -803,54 +797,54 @@ public class FirstParserTestCase extends JanitorTest {
 
         final OutputCatchingTestRuntime rt3 = OutputCatchingTestRuntime.fresh();
         final RunnableScript s3 = rt3.compile("tryCatching3", """
-            try {
-                print("tried");
-            } catch (e) {
-                print("failed");
-            } finally {
-                print("always");
-            }
-            """);
+                try {
+                    print("tried");
+                } catch (e) {
+                    print("failed");
+                } finally {
+                    print("always");
+                }
+                """);
         s3.run();
         assertEquals("tried\nalways\n", rt3.getAllOutput());
 
         final OutputCatchingTestRuntime rt4 = OutputCatchingTestRuntime.fresh();
         final RunnableScript s4 = rt4.compile("tryCatching4", """
-            try {
-                print("tried");
-                i = 1/0;
-            } catch (e) {
-                print("failed", e);
-            } finally {
-                print("always");
-            }
-            """);
+                try {
+                    print("tried");
+                    i = 1/0;
+                } catch (e) {
+                    print("failed", e);
+                } finally {
+                    print("always");
+                }
+                """);
         s4.run();
         assertEquals("""
-            tried
-            failed JanitorArithmeticException: Traceback (most recent call last):
-              Module 'tryCatching4', line 1, column 4
-                try {
-              Module 'tryCatching4', line 3, column 8
-                i = 1/0;
-            ArithmeticException: / by zero
-             caused by ArithmeticException: / by zero
-            always
-            """, rt4.getAllOutput());
+                tried
+                failed JanitorArithmeticException: Traceback (most recent call last):
+                  Module 'tryCatching4', line 1, column 4
+                    try {
+                  Module 'tryCatching4', line 3, column 8
+                    i = 1/0;
+                ArithmeticException: / by zero
+                 caused by ArithmeticException: / by zero
+                always
+                """, rt4.getAllOutput());
 
 
         final OutputCatchingTestRuntime rt2 = OutputCatchingTestRuntime.fresh();
         final RunnableScript s2 = rt2.compile("tryCatching2", """
-            try { return 4/2; print("ok"); } catch (e) { print("div by zero"); }
-            """);
+                try { return 4/2; print("ok"); } catch (e) { print("div by zero"); }
+                """);
         final JanitorObject result2 = s2.run();
         assertEquals("", rt2.getAllOutput());
         assertEquals(TestEnv.env.getBuiltinTypes().integer(2), result2);
 
         final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         final RunnableScript script = rt.compile("tryCatching", """
-            try { return 1/0; print("ok"); } catch (e) { print("div by zero"); }
-            """);
+                try { return 1/0; print("ok"); } catch (e) { print("div by zero"); }
+                """);
         final JanitorObject result = script.run();
         assertEquals(JNull.NULL, result);
         assertEquals("div by zero\n", rt.getAllOutput());
@@ -903,42 +897,42 @@ public class FirstParserTestCase extends JanitorTest {
     @Test
     public void parseList() throws JanitorCompilerException, JanitorRuntimeException {
         assertEquals("[a, b, c]\n", getOutput("""
-            print([].parseJson('''
-            ["a", "b", "c"]
-            '''));
-            """, g -> {
+                print([].parseJson('''
+                ["a", "b", "c"]
+                '''));
+                """, g -> {
         }));
         assertEquals("[a, b, 1]\n", getOutput("""
-            print([].parseJson('''
-            ["a", "b", 1]
-            '''));
-            """, g -> {
+                print([].parseJson('''
+                ["a", "b", 1]
+                '''));
+                """, g -> {
         }));
         assertEquals("[a, b, 1, {}]\n", getOutput("""
-            print([].parseJson('''
-            ["a", "b", 1, {}]
-            '''));
-            """, g -> {
+                print([].parseJson('''
+                ["a", "b", 1, {}]
+                '''));
+                """, g -> {
         }));
 
         assertEquals("[a, b, 1.5, {}]\n", getOutput("""
-            print([].parseJson('''
-            ["a", "b", 1.5, {}]
-            '''));
-            """, g -> {
+                print([].parseJson('''
+                ["a", "b", 1.5, {}]
+                '''));
+                """, g -> {
         }));
 
 
         final JanitorObject emptyMap = evaluate("""
-            {}.parseJson('''{}''');
-            """, g -> {
+                {}.parseJson('''{}''');
+                """, g -> {
         });
         assertInstanceOf(JMap.class, emptyMap);
         assertTrue(((JMap) emptyMap).isEmpty());
 
         final JanitorObject map1 = evaluate("""
-            {}.parseJson('''{"a":"a", "b":"b", "c":"z"}''');
-            """, g -> {
+                {}.parseJson('''{"a":"a", "b":"b", "c":"z"}''');
+                """, g -> {
         });
         assertInstanceOf(JMap.class, map1);
         JMap jMap1 = (JMap) map1;
@@ -947,8 +941,8 @@ public class FirstParserTestCase extends JanitorTest {
         assertEquals(TestEnv.env.getBuiltinTypes().string("z"), jMap1.get(TestEnv.env.getBuiltinTypes().string("c")));
 
         final JanitorObject map2 = evaluate("""
-            {}.parseJson('''{"a":"a", "b":[], "c":["c1", "c2"]}''');
-            """, g -> {
+                {}.parseJson('''{"a":"a", "b":[], "c":["c1", "c2"]}''');
+                """, g -> {
         });
         assertInstanceOf(JMap.class, map2);
         JMap jMap2 = (JMap) map2;
@@ -1056,7 +1050,8 @@ public class FirstParserTestCase extends JanitorTest {
         assertEquals("false\n", getOutput("print('a1234'.startsWithNumbers());"));
     }
 
-    @Test void dateDiff() throws JanitorRuntimeException, JanitorCompilerException {
+    @Test
+    void dateDiff() throws JanitorRuntimeException, JanitorCompilerException {
         assertEquals("@3600s\n", getOutput("print(@2022-10-01-12:00:00 - @2022-10-01-11:00:00)"));
 
         final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
@@ -1070,19 +1065,19 @@ public class FirstParserTestCase extends JanitorTest {
 
 
         final String by60 = getOutput("""
-            diff = @2022-10-01-12:00:00 - @2022-10-01-11:00:00;
-            assert(diff == @3600s);
-            assert(diff == @60mi);
-            assert(diff == @1h);
-            assert(diff.minutes == 60);
-            assert(diff.seconds == 3600);
-            assert(diff.hours == 1);
-            assert(diff.days == 0);
-            by60 = @45mi.minutes / 60.0;
-            assert(by60 == 0.75);
-            assert(@45mi.hours == 0);
-            """);
-        System.out.println("by60:"+by60);
+                diff = @2022-10-01-12:00:00 - @2022-10-01-11:00:00;
+                assert(diff == @3600s);
+                assert(diff == @60mi);
+                assert(diff == @1h);
+                assert(diff.minutes == 60);
+                assert(diff.seconds == 3600);
+                assert(diff.hours == 1);
+                assert(diff.days == 0);
+                by60 = @45mi.minutes / 60.0;
+                assert(by60 == 0.75);
+                assert(@45mi.hours == 0);
+                """);
+        System.out.println("by60:" + by60);
 
 
     }
@@ -1121,53 +1116,53 @@ public class FirstParserTestCase extends JanitorTest {
         final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
 
         rt.compile("from_test_1", """
-            print(from);
-            """).run(g -> g.bind("from", 17));
+                print(from);
+                """).run(g -> g.bind("from", 17));
 
         rt.compile("from_test_2", """
-            for (i from 1 to 10) {
-                print(i);
-            }
-            """);
+                for (i from 1 to 10) {
+                    print(i);
+                }
+                """);
 
         rt.compile("from_test_3", """
-            x = thing.from;
-            """).run(g -> g.bind("thing", new ObjectWithKeywordsAsProperties()));
+                x = thing.from;
+                """).run(g -> g.bind("thing", new ObjectWithKeywordsAsProperties()));
 
 
         rt.compile("from_test_4", """
-            print(thing.from);
-            """).run(g -> g.bind("thing", new ObjectWithKeywordsAsProperties()));
+                print(thing.from);
+                """).run(g -> g.bind("thing", new ObjectWithKeywordsAsProperties()));
 
         rt.compile("from_test_5", """
-            x = thing.to;
-            """).run(g -> g.bind("thing", new ObjectWithKeywordsAsProperties()));
+                x = thing.to;
+                """).run(g -> g.bind("thing", new ObjectWithKeywordsAsProperties()));
 
         rt.compile("in_test", """
-            in = true;
-            assert(in == true);
-            for (i in [1,2,3]) {
-                print(i);
-            }
-            """).run();
+                in = true;
+                assert(in == true);
+                for (i in [1,2,3]) {
+                    print(i);
+                }
+                """).run();
 
         final JMap map = (JMap) rt.compile("mapkeys_test", """
-            return {from: "here", to: "eternity"};
-            """).run();
+                return {from: "here", to: "eternity"};
+                """).run();
         System.out.println("got map: " + map);
         assertEquals("here", map.get(TestEnv.env.getBuiltinTypes().string("from")).janitorToString());
         assertEquals("eternity", map.get(TestEnv.env.getBuiltinTypes().string("to")).janitorToString());
 
         final RunnableScript script = rt.compile("from_test", """
-            for (i from 1 to 10) {
-                print(i);
-            }
-            print(from);
-            from = 17;
-            print(from);
-            return from;
-
-            """);
+                for (i from 1 to 10) {
+                    print(i);
+                }
+                print(from);
+                from = 17;
+                print(from);
+                return from;
+                
+                """);
         script.run(g -> g.bind("from", 18));
     }
 
@@ -1204,9 +1199,9 @@ public class FirstParserTestCase extends JanitorTest {
     public void classProperty() throws JanitorCompilerException, JanitorRuntimeException {
         final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         final RunnableScript script = rt.compile("class_property", """
-            print((17).class);
-            print(null.class);
-            """);
+                print((17).class);
+                print(null.class);
+                """);
         script.run();
         assertEquals("int\nnull\n", rt.getAllOutput());
     }
@@ -1216,8 +1211,8 @@ public class FirstParserTestCase extends JanitorTest {
     public void npeOnBoundNull() throws JanitorCompilerException, JanitorRuntimeException {
         final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         final RunnableScript script = rt.compile("npe_on_bound_null", """
-            print("hello, world");
-            """);
+                print("hello, world");
+                """);
         script.run(g -> g.bind("foo", (JanitorObject) null));
     }
 
@@ -1226,31 +1221,31 @@ public class FirstParserTestCase extends JanitorTest {
         final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
 
         final JanitorCompilerException thrown = assertThrows(JanitorCompilerException.class, () -> {
-                rt.compile("invalid_string_literal", "failure = \"foo\\xbar\";");
-            }
+                    rt.compile("invalid_string_literal", "failure = \"foo\\xbar\";");
+                }
         );
         assertEquals(
-            """
-                found 3 issues compiling invalid_string_literal:\s
-                  line 1:10 --> invalid string at: '"foo\\x'\s
-                    failure = "foo\\xbar";
-                  line 1:19 --> invalid string at: '";;\\n'\s
-                    failure = "foo\\xbar";
-                  line 2:0 --> missing ';' at end of file"""
-            , thrown.getMessage());
+                """
+                        found 3 issues compiling invalid_string_literal:\s
+                          line 1:10 --> invalid string at: '"foo\\x'\s
+                            failure = "foo\\xbar";
+                          line 1:19 --> invalid string at: '";;\\n'\s
+                            failure = "foo\\xbar";
+                          line 2:0 --> missing ';' at end of file"""
+                , thrown.getMessage());
 
         final JanitorCompilerException thrown2 = assertThrows(JanitorCompilerException.class, () -> {
             rt.compile("invalid_string_literal", "failure = 'foo\\xbar';");
         });
         assertEquals(
-            """
-                found 3 issues compiling invalid_string_literal:\s
-                  line 1:10 --> invalid string at: ''foo\\x'\s
-                    failure = 'foo\\xbar';
-                  line 1:19 --> invalid string at: '';;\\n'\s
-                    failure = 'foo\\xbar';
-                  line 2:0 --> missing ';' at end of file"""
-            , thrown2.getMessage());
+                """
+                        found 3 issues compiling invalid_string_literal:\s
+                          line 1:10 --> invalid string at: ''foo\\x'\s
+                            failure = 'foo\\xbar';
+                          line 1:19 --> invalid string at: '';;\\n'\s
+                            failure = 'foo\\xbar';
+                          line 2:0 --> missing ';' at end of file"""
+                , thrown2.getMessage());
 
     }
 
@@ -1280,84 +1275,55 @@ public class FirstParserTestCase extends JanitorTest {
         //System.err.println(output);
     }
 
-    public static class FooModule extends JanitorNativeModule {
-
-        @Override
-        public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess process, final @NotNull String name, final boolean required) throws JanitorNameException {
-            if ("x".equals(name)) {
-                return TestEnv.env.getBuiltinTypes().integer(17);
-            } else {
-                return null;
-            }
-        }
-    }
-
-
-    private static class ObjectWithKeywordsAsProperties implements JanitorObject {
-
-
-        @Override
-        public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess process, final @NotNull String name, final boolean required) throws JanitorRuntimeException {
-            if (name.equals("from")) {
-                System.out.println("someone asked for property 'from'!");
-                return TestEnv.env.getBuiltinTypes().string("foo");
-            }
-            if (name.equals("to")) {
-                System.out.println("someone asked for property 'to'!");
-                return TestEnv.env.getBuiltinTypes().string("bar");
-            }
-            return JanitorObject.super.janitorGetAttribute(process, name, required);
-        }
-    }
-
     @Test
     public void someMoreFormatting() throws JanitorRuntimeException, JanitorCompilerException {
         assertEquals("2024-01-27T11:11\n", getOutput("""
-            print(@2024-01-27-11:11:11.string("yyyy-MM-dd'T'HH:mm"));
-            """));
+                print(@2024-01-27-11:11:11.string("yyyy-MM-dd'T'HH:mm"));
+                """));
         assertEquals("32\n", getOutput("""
-            print(2*("16".int())));
-            """));
+                print(2*("16".int())));
+                """));
         assertEquals("32\n", getOutput("""
-            print(2*("16".toInt())));
-            """));
+                print(2*("16".toInt())));
+                """));
         assertEquals("32.0\n", getOutput("""
-            print(10*("3.2".toFloat())));
-            """));
+                print(10*("3.2".toFloat())));
+                """));
         assertEquals("2024-01-27T11:11 +0100\n", getOutput("""
-            print(@2024-01-27-11:11:11.formatAtTimezone("Europe/Berlin", "yyyy-MM-dd'T'HH:mm Z"));
-            """));
+                print(@2024-01-27-11:11:11.formatAtTimezone("Europe/Berlin", "yyyy-MM-dd'T'HH:mm Z"));
+                """));
 
     }
 
-    @Test public void deadlock() throws Exception {
+    @Test
+    public void deadlock() throws Exception {
         final @Language("Janitor") String scriptSource = """
-        print('hallo');
-        x = 17;
-        print(x);
-        
-        print("before while!!!");
-        assert(x == 17);
-        x = x + 1;
-        assert(x == 18);
-        if (x < 20) {
-            print("less");
-        } else {
-            print("more");
-        }
-        
-        do {
-            //print("x before rebinding:", x);
-            x = x + 1;
-        
-            //print("x after rebinding:", x);
-            //print(x);
-            assert(x == 19);
-        } while (false);
-        
-        
-        // i = 1; do { print(i); i = i + 1; } while (i < 4);
-        """;
+                print('hallo');
+                x = 17;
+                print(x);
+                
+                print("before while!!!");
+                assert(x == 17);
+                x = x + 1;
+                assert(x == 18);
+                if (x < 20) {
+                    print("less");
+                } else {
+                    print("more");
+                }
+                
+                do {
+                    //print("x before rebinding:", x);
+                    x = x + 1;
+                
+                    //print("x after rebinding:", x);
+                    //print(x);
+                    assert(x == 19);
+                } while (false);
+                
+                
+                // i = 1; do { print(i); i = i + 1; } while (i < 4);
+                """;
         // wenn man im do{} auf x Zugreift, dann hat das x=x+1 Erfolg, sonst nicht!?
         // Ich glaube, dank des verbesserten Codes für Closures ist das Problem gelöst...?
         final JanitorParser.ScriptContext script = JanitorScript.parseScript(scriptSource);
@@ -1398,7 +1364,72 @@ public class FirstParserTestCase extends JanitorTest {
         play.accept("assert(1 == 1.0);"); // dit NOT always work before 0.9.13
 
 
+    }
 
+    @Test
+    void customerReportedBug() throws JanitorRuntimeException {
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
+        /*
+         * simplify script execution for the rest of the test.
+         */
+        final TestEnv.ScriptConsumer play = (@Language("Janitor") var script) -> {
+            try {
+                final RunnableScript runnableScript = rt.compile("test", script);
+                runnableScript.run();
+            } catch (JanitorCompilerException e) {
+                throw new RuntimeException(e); // RuntimeConsumers allow Runtime Errors, but not compile errors, so let's just convert
+            }
+        };
+
+        @Language("Janitor") final String customerCode = """
+                con_add = {};
+                con_rem = {};
+                
+                function consolidate(add, usr_id, sla_prior_id) {
+                    target = add ? con_add : con_rem;
+                    li = target[usr_id] or [];
+                    if (li) {
+                        if (not li.contains(sla_prior_id)) {
+                            li.add(sla_prior_id);
+                        }
+                    } else {
+                        target.put(usr_id, [sla_prior_id]);
+                    }
+                }
+                
+                consolidate(false, 17, 4);
+                consolidate(false, 4114, 960);
+                """;
+        play.accept(customerCode);
+    }
+
+    public static class FooModule extends JanitorNativeModule {
+
+        @Override
+        public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess process, final @NotNull String name, final boolean required) throws JanitorNameException {
+            if ("x".equals(name)) {
+                return TestEnv.env.getBuiltinTypes().integer(17);
+            } else {
+                return null;
+            }
+        }
+    }
+
+    private static class ObjectWithKeywordsAsProperties implements JanitorObject {
+
+
+        @Override
+        public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess process, final @NotNull String name, final boolean required) throws JanitorRuntimeException {
+            if (name.equals("from")) {
+                System.out.println("someone asked for property 'from'!");
+                return TestEnv.env.getBuiltinTypes().string("foo");
+            }
+            if (name.equals("to")) {
+                System.out.println("someone asked for property 'to'!");
+                return TestEnv.env.getBuiltinTypes().string("bar");
+            }
+            return JanitorObject.super.janitorGetAttribute(process, name, required);
+        }
     }
 
 

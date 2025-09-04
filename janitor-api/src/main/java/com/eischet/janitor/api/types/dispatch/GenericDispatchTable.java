@@ -1,12 +1,15 @@
 package com.eischet.janitor.api.types.dispatch;
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.glue.JanitorGlueException;
 import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
-import com.eischet.janitor.api.metadata.*;
+import com.eischet.janitor.api.metadata.MetaDataBuilder;
+import com.eischet.janitor.api.metadata.MetaDataKey;
+import com.eischet.janitor.api.metadata.MetaDataMap;
+import com.eischet.janitor.api.metadata.MetaDataRetriever;
 import com.eischet.janitor.api.types.JanitorObject;
-import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.TemporaryAssignable;
 import com.eischet.janitor.api.types.builtin.*;
 import com.eischet.janitor.api.types.functions.JBoundMethod;
@@ -54,17 +57,18 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
     protected final JsonSupportDelegate<Boolean> JSON_BOOL = new JsonSupportDelegate<>(JsonInputStream::nextBoolean, JsonOutputStream::value, value -> !value);
     protected final JsonSupportDelegate<Boolean> JSON_BOOL_NULLABLE = new JsonSupportDelegate<>(JsonInputStream::nextBoolean, JsonOutputStream::value, anything -> false);
 
-    private @Nullable final Dispatcher<?> parent;
+    private @Nullable
+    final Dispatcher<?> parent;
     private final DispatchDelegate<T> parentLookupHandler;
     private final Map<String, AttributeLookupHandler<T>> map = new HashMap<>();
     private final List<String> attributeNames = new ArrayList<>();
     private final List<Attribute<T>> attributes = new ArrayList<>();
     private final ParentAttributeReader<T> parentAttributeReader;
     private final ParentAttributeWriter<T> parentAttributeWriter;
-    private JConstructor<T> constructor;
-    private @Nullable Supplier<T> javaDefaultConstructor;
     private final Map<String, MetaDataMap> attributeMetaData = new HashMap<>();
     private final MetaDataMap classMetaData = new MetaDataMap();
+    private JConstructor<T> constructor;
+    private @Nullable Supplier<T> javaDefaultConstructor;
 
 
     public GenericDispatchTable(final @Nullable Supplier<T> javaDefaultConstructor) {
@@ -75,7 +79,25 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
         this.javaDefaultConstructor = javaDefaultConstructor;
     }
 
-    public <P extends JanitorObject> GenericDispatchTable(final Dispatcher<P> parent, final Function<T, P> caster) {
+    /*
+
+    From a discussion with an AI:
+
+    public DispatchTable<T> extendFrom(Dispatcher<? super T> parent) {
+        this.parent = parent;
+        return this;
+    }
+@Override
+public JanitorObject dispatch(T instance, JanitorScriptProcess process, String name) {
+    JanitorObject local = ...; // local lookup
+    if (local != null) return local;
+    return parent != null ? parent.dispatch(instance, process, name) : null;
+}
+
+     */
+
+
+    public <P extends JanitorObject> GenericDispatchTable(final @NotNull Dispatcher<P> parent, final Function<T, P> caster) {
         this.parent = parent;
         parentLookupHandler = (instance, process, name) -> parent.dispatch(caster.apply(instance), process, name);
         // not tested yet: can we use this to delegate
@@ -236,13 +258,13 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
      * @param method the method
      * @return a meta-data builder
      */
-    public MetaDataBuilder<T> addMethod(final String name, final JUnboundMethod<T> method) {
-        return put(name, instance ->new JBoundMethod<>(name, instance, method, new MetaDataRetriever() {
+    public MetaDataBuilder<T> addMethod(final @NotNull String name, final @NotNull JUnboundMethod<T> method) {
+        return put(name, instance -> new JBoundMethod<>(name, instance, method, new MetaDataRetriever() {
             @Override
             public <K> @Nullable K retrieveMetaData(final @NotNull MetaDataKey<K> key) {
                 return GenericDispatchTable.this.getMetaData(name, key);
             }
-        }), null);
+        }), null).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.METHOD);
     }
 
     /**
@@ -252,8 +274,8 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
      * @param method the method
      * @return a meta-data builder
      */
-    public MetaDataBuilder<T> addBuilderMethod(final String name, final JVoidMethod<T> method) {
-        return put(name, instance ->new JBoundMethod<>(name, instance, (self, p1, arguments) -> {
+    public MetaDataBuilder<T> addBuilderMethod(final @NotNull String name, final @NotNull JVoidMethod<T> method) {
+        return put(name, instance -> new JBoundMethod<>(name, instance, (self, p1, arguments) -> {
             method.call(instance, p1, arguments);
             return instance;
         }, new MetaDataRetriever() {
@@ -272,8 +294,8 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
      * @param method the method
      * @return a meta-data builder
      */
-    public MetaDataBuilder<T> addVoidMethod(final String name, final JVoidMethod<T> method) {
-        return put(name, instance ->new JBoundMethod<>(name, instance, (self, p1, arguments) -> {
+    public MetaDataBuilder<T> addVoidMethod(final @NotNull String name, final @NotNull JVoidMethod<T> method) {
+        return put(name, instance -> new JBoundMethod<>(name, instance, (self, p1, arguments) -> {
             method.call(instance, p1, arguments);
             return JNull.NULL;
         }, new MetaDataRetriever() {
@@ -291,9 +313,25 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
      * @param getter property getter
      * @return a meta-data builder for further configuration
      */
-    public MetaDataBuilder<T> addIntegerProperty(final String name, final Function<T, Integer> getter) {
-        return put(name, instance -> Janitor.getBuiltins().integer(getter.apply(instance)), adapt(JSON_INT, getter, null)).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.INTEGER);
+    public MetaDataBuilder<T> addIntegerProperty(final @NotNull String name, final Function<@NotNull T, @NotNull Integer> getter) {
+        return put(name, instance -> Janitor.getBuiltins().integer(getter.apply(instance)),
+                adapt(JSON_INT, getter, null)).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.INTEGER);
     }
+
+    /**
+     * Adds a read-only, nullable integer property.
+     *
+     * @param name   property name
+     * @param getter property getter
+     * @return a meta-data builder for further configuration
+     */
+    public MetaDataBuilder<T> addNullableIntegerProperty(final String name, final Function<@NotNull T, @Nullable Integer> getter) {
+        return put(name, instance -> Janitor.nullableInteger(getter.apply(instance)), adapt(JSON_INT, getter, null))
+                .setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.INTEGER)
+                .setMetaData(Janitor.MetaData.HOST_NULLABLE, true)
+                ;
+    }
+
 
     /**
      * Adds a read-write integer property.
@@ -303,16 +341,40 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
      * @param setter property setter
      * @return a meta-data builder for further configuration
      */
-    public MetaDataBuilder<T> addIntegerProperty(final String name, final Function<T, Integer> getter, final BiConsumer<T, Integer> setter) {
+    public MetaDataBuilder<T> addIntegerProperty(final String name, final Function<@NotNull T, @NotNull Integer> getter, final BiConsumer<@NotNull T, @NotNull Integer> setter) {
         return put(
                 name,
-                instance ->new TemporaryAssignable(
-                        Janitor.getBuiltins().integer(getter.apply(instance)),
+                instance -> new TemporaryAssignable(
+                        Janitor.integer(getter.apply(instance)),
                         value -> setter.accept(instance, Conversions.requireInt(value).janitorGetHostValue().intValue())
                 ),
                 adapt(JSON_INT, getter, setter)
         ).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.INTEGER);
     }
+
+    /**
+     * Adds a read-write, nullable integer property.
+     *
+     * @param name   property name
+     * @param getter property getter
+     * @param setter property setter
+     * @return a meta-data builder for further configuration
+     */
+    public MetaDataBuilder<T> addNullableIntegerProperty(final String name,
+                                                         final Function<@NotNull T, @Nullable Integer> getter,
+                                                         final BiConsumer<@NotNull T, @Nullable Integer> setter) {
+        return put(
+                name,
+                instance -> new TemporaryAssignable(
+                        Janitor.nullableInteger(getter.apply(instance)),
+                        value -> setter.accept(instance, Conversions.toNullableJavaInteger(value))
+                ),
+                adapt(JSON_INT, getter, setter))
+                .setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.INTEGER)
+                .setMetaData(Janitor.MetaData.HOST_NULLABLE, true)
+                ;
+    }
+
 
     /**
      * Adds a read-only long property.
@@ -321,9 +383,25 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
      * @param getter property getter
      * @return a meta-data builder for further configuration
      */
-    public MetaDataBuilder<T> addLongProperty(final String name, final Function<T, Long> getter) {
-        return put(name, instance -> Janitor.getBuiltins().integer(getter.apply(instance)), adapt(JSON_LONG, getter, null)).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.INTEGER);
+    public MetaDataBuilder<T> addLongProperty(final String name, final Function<@NotNull T, @NotNull Long> getter) {
+        return put(name, instance -> Janitor.getBuiltins().integer(getter.apply(instance)), adapt(JSON_LONG, getter, null))
+                .setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.INTEGER);
     }
+
+    /**
+     * Adds a read-only nullable long property.
+     *
+     * @param name   property name
+     * @param getter property getter
+     * @return a meta-data builder for further configuration
+     */
+    public MetaDataBuilder<T> addNullableLongProperty(final String name, final Function<@NotNull T, @Nullable Long> getter) {
+        return put(name, instance -> Janitor.nullableInteger(getter.apply(instance)), adapt(JSON_LONG, getter, null))
+                .setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.INTEGER)
+                .setMetaData(Janitor.MetaData.HOST_NULLABLE, true)
+                ;
+    }
+
 
     /**
      * Adds a read-write long property.
@@ -333,9 +411,29 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
      * @param setter property setter
      * @return a meta-data builder for further configuration
      */
-    public MetaDataBuilder<T> addLongProperty(final String name, final Function<T, Long> getter, final BiConsumer<T, Long> setter) {
-        return put(name, instance ->new TemporaryAssignable(Janitor.getBuiltins().integer(getter.apply(instance)), value -> setter.accept(instance, Conversions.requireInt(value).janitorGetHostValue())), adapt(JSON_LONG, getter, setter)).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.INTEGER);
+    public MetaDataBuilder<T> addLongProperty(final @NotNull String name, final Function<@NotNull T, @NotNull Long> getter, final BiConsumer<T, Long> setter) {
+        return put(name, instance -> new TemporaryAssignable(Janitor.getBuiltins().integer(getter.apply(instance)), value -> setter.accept(instance, Conversions.requireInt(value).janitorGetHostValue())), adapt(JSON_LONG, getter, setter)).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.INTEGER);
     }
+
+    /**
+     * Adds a read-write, nullable long property.
+     *
+     * @param name   property name
+     * @param getter property getter
+     * @param setter property setter
+     * @return a meta-data builder for further configuration
+     */
+    public MetaDataBuilder<T> addNullableLongProperty(final @NotNull String name,
+                                                      final Function<@NotNull T, @NotNull Long> getter,
+                                                      final BiConsumer<@NotNull T, @Nullable Long> setter) {
+        return put(name, instance -> new TemporaryAssignable(Janitor.getBuiltins().nullableInteger(getter.apply(instance)),
+                        value -> setter.accept(instance, Conversions.toNullableJavaLong(value))),
+                adapt(JSON_LONG, getter, setter))
+                .setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.INTEGER)
+                .setMetaData(Janitor.MetaData.HOST_NULLABLE, true)
+                ;
+    }
+
 
     /**
      * Adds a read-only double property.
@@ -344,7 +442,7 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
      * @param getter property getter
      * @return a meta-data builder for further configuration
      */
-    public MetaDataBuilder<T> addDoubleProperty(final String name, final Function<T, Double> getter) {
+    public MetaDataBuilder<T> addDoubleProperty(final @NotNull String name, final Function<@NotNull T, @NotNull Double> getter) {
         return put(name, instance -> Janitor.getBuiltins().nullableFloatingPoint(getter.apply(instance)), adapt(JSON_NULLABLE_DOUBLE, getter, null)).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.FLOAT);
     }
 
@@ -356,7 +454,9 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
      * @param setter property setter
      * @return a meta-data builder for further configuration
      */
-    public MetaDataBuilder<T> addDoubleProperty(final String name, final Function<T, Double> getter, final BiConsumer<T, Double> setter) {
+    public MetaDataBuilder<T> addDoubleProperty(final @NotNull String name,
+                                                final Function<@NotNull T, @NotNull Double> getter,
+                                                final BiConsumer<@NotNull T, @NotNull Double> setter) {
         return put(name, (instance) -> new TemporaryAssignable(Janitor.getBuiltins().floatingPoint(getter.apply(instance)), value -> setter.accept(instance, Conversions.requireFloat(value).janitorGetHostValue())), adapt(JSON_DOUBLE, getter, setter))
                 .setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.FLOAT);
     }
@@ -368,7 +468,7 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
      * @param getter property getter
      * @return a meta-data builder for further configuration
      */
-    public MetaDataBuilder<T> addListProperty(final String name, final Function<T, JList> getter) {
+    public MetaDataBuilder<T> addListProperty(final @NotNull String name, final Function<@NotNull T, @Nullable JList> getter) {
         return put(name, instance -> getter.apply(instance), new JsonAdapter<>() {
             @Override
             public void write(final JsonOutputStream stream, final T instance) throws JsonException {
@@ -385,7 +485,7 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
                 final JList list = getter.apply(instance);
                 // Reading the list from JSON will only have an effect if the (possibly temporary) list returned by the getter has an onUpdate listener.
                 // We assume that, if such a listener exists, the list will properly be written back to the instance. If not, fail.
-                if (list.countOnUpdateReceivers() == 0) {
+                if (list == null || list.countOnUpdateReceivers() == 0) {
                     throw new JsonException("Unexpected JSON read operation for readonly list property " + name + " on instance " + instance);
                 } else {
                     list.readJson(stream);
@@ -412,7 +512,7 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
      * @param <E> type of list
      */
     public <E> MetaDataBuilder<T> addListProperty(final String name, final Function<T, List<E>> getter, final BiConsumer<T, List<E>> setter, final TwoWayConverter<E> converter, final @Nullable JsonSupportDelegate<E> jsonSupportDelegate) {
-        return put(name, instance ->new TemporaryAssignable(Conversions.toJanitorList(getter.apply(instance), converter), value -> {
+        return put(name, instance -> new TemporaryAssignable(Conversions.toJanitorList(getter.apply(instance), converter), value -> {
                     if (!(value instanceof JList argList)) {
                         throw new IllegalArgumentException("Expected a list");
                     }
@@ -467,7 +567,7 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
      * @param getter property getter
      * @return
      */
-    public MetaDataBuilder<T> addBooleanProperty(final String name, final Function<T, Boolean> getter) {
+    public MetaDataBuilder<T> addBooleanProperty(final @NotNull String name, final Function<@NotNull T, @NotNull Boolean> getter) {
         return put(name, instance -> Janitor.toBool(getter.apply(instance)), adapt(JSON_BOOL, getter, null)).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.BOOLEAN);
     }
 
@@ -479,8 +579,11 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
      * @param getter property getter
      * @return
      */
-    public MetaDataBuilder<T> addNullableBooleanProperty(final String name, Function<T, Boolean> getter) {
-        return put(name, instance -> Janitor.nullableBooleanOf(getter.apply(instance)), adapt(JSON_BOOL_NULLABLE, getter, null)).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.BOOLEAN);
+    public MetaDataBuilder<T> addNullableBooleanProperty(final @NotNull String name, Function<@NotNull T, @Nullable Boolean> getter) {
+        return put(name, instance -> Janitor.nullableBooleanOf(getter.apply(instance)), adapt(JSON_BOOL_NULLABLE, getter, null))
+                .setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.BOOLEAN)
+                .setMetaData(Janitor.MetaData.HOST_NULLABLE, true)
+                ;
     }
 
     /**
@@ -491,8 +594,13 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
      * @param setter property setter
      * @return
      */
-    public MetaDataBuilder<T> addBooleanProperty(final String name, final Function<T, Boolean> getter, final BiConsumer<T, Boolean> setter) {
-        return put(name, instance ->new TemporaryAssignable(Janitor.toBool(getter.apply(instance)), value -> setter.accept(instance, Janitor.requireBool(value).janitorIsTrue())), adapt(JSON_BOOL, getter, setter)).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.BOOLEAN);
+    public MetaDataBuilder<T> addBooleanProperty(final @NotNull String name,
+                                                 final Function<@NotNull T, @NotNull Boolean> getter,
+                                                 final BiConsumer<@NotNull T, @NotNull Boolean> setter) {
+        return put(name, instance -> new TemporaryAssignable(Janitor.toBool(getter.apply(instance)), value -> setter.accept(instance, Janitor.requireBool(value).janitorIsTrue())), adapt(JSON_BOOL, getter, setter))
+                .setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.BOOLEAN)
+                .setMetaData(Janitor.MetaData.HOST_NULLABLE, true)
+                ;
     }
 
     /**
@@ -505,10 +613,15 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
      * @param setter property setter
      * @return
      */
-    public MetaDataBuilder<T> addNullableBooleanProperty(final String name, final Function<T, Boolean> getter, final BiConsumer<T, Boolean> setter) {
-        return put(name, instance ->new TemporaryAssignable(Janitor.nullableBooleanOf(getter.apply(instance)), value -> {
+    public MetaDataBuilder<T> addNullableBooleanProperty(final @NotNull String name,
+                                                         final Function<@NotNull T, @Nullable Boolean> getter,
+                                                         final BiConsumer<@NotNull T, @Nullable Boolean> setter) {
+        return put(name, instance -> new TemporaryAssignable(Janitor.nullableBooleanOf(getter.apply(instance)), value -> {
             setter.accept(instance, toNullableBoolean(value));
-        }), adapt(JSON_BOOL_NULLABLE, getter, setter)).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.BOOLEAN);
+        }), adapt(JSON_BOOL_NULLABLE, getter, setter))
+                .setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.BOOLEAN)
+                .setMetaData(Janitor.MetaData.HOST_NULLABLE, true)
+                ;
     }
 
     /**
@@ -533,7 +646,8 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
      * @param getter property getter
      * @return
      */
-    public MetaDataBuilder<T> addStringProperty(final String name, final Function<T, String> getter) {
+    public MetaDataBuilder<T> addStringProperty(final @NotNull String name,
+                                                final Function<@NotNull T, @Nullable String> getter) {
         return put(name, instance -> Janitor.getBuiltins().nullableString(getter.apply(instance)), adapt(JSON_STRING, getter, null)).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.STRING);
     }
 
@@ -545,8 +659,10 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
      * @param setter property setter
      * @return a meta-data builder
      */
-    public MetaDataBuilder<T> addStringProperty(final String name, final Function<T, String> getter, final BiConsumer<T, String> setter) {
-        return put(name, instance ->new TemporaryAssignable(Janitor.getBuiltins().nullableString(getter.apply(instance)), value -> setter.accept(instance, stringOrNull(value))), adapt(JSON_STRING, getter, setter)).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.STRING);
+    public MetaDataBuilder<T> addStringProperty(final @NotNull String name,
+                                                final Function<@NotNull T, @Nullable String> getter,
+                                                final BiConsumer<@NotNull T, @Nullable String> setter) {
+        return put(name, instance -> new TemporaryAssignable(Janitor.getBuiltins().nullableString(getter.apply(instance)), value -> setter.accept(instance, stringOrNull(value))), adapt(JSON_STRING, getter, setter)).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.STRING);
     }
 
     /**
@@ -556,7 +672,7 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
      * @param getter property getter
      * @return a meta-data builder
      */
-    public MetaDataBuilder<T> addDateProperty(final String name, final Function<T, LocalDate> getter) {
+    public MetaDataBuilder<T> addDateProperty(final @NotNull String name, final Function<@NotNull T, @Nullable LocalDate> getter) {
         return put(name, instance -> Janitor.getBuiltins().nullableDate(getter.apply(instance)), null).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.DATE);
     }
 
@@ -568,8 +684,8 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
      * @param setter property setter
      * @return a meta-data builder
      */
-    public MetaDataBuilder<T> addDateProperty(final String name, final Function<T, LocalDate> getter, final BiConsumer<T, LocalDate> setter) {
-        return put(name, instance ->new TemporaryAssignable(Janitor.getBuiltins().nullableDate(getter.apply(instance)), value -> setter.accept(instance, dateOrNull(value))), null).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.DATE); // TODO: support dates
+    public MetaDataBuilder<T> addDateProperty(final @NotNull String name, final Function<@NotNull T, @Nullable LocalDate> getter, final BiConsumer<@NotNull T, @Nullable LocalDate> setter) {
+        return put(name, instance -> new TemporaryAssignable(Janitor.getBuiltins().nullableDate(getter.apply(instance)), value -> setter.accept(instance, dateOrNull(value))), null).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.DATE); // TODO: support dates
     }
 
     private String stringOrNull(final JanitorObject value) throws JanitorGlueException {
@@ -623,7 +739,7 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
      * @return a meta-data builder
      */
     public MetaDataBuilder<T> addDateTimeProperty(final String name, final Function<T, LocalDateTime> getter, final BiConsumer<T, LocalDateTime> setter) {
-        return put(name, instance ->new TemporaryAssignable(Janitor.getBuiltins().nullableDateTime(getter.apply(instance)), value -> setter.accept(instance, dateTimeOrNull(value))), null).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.DATETIME);
+        return put(name, instance -> new TemporaryAssignable(Janitor.getBuiltins().nullableDateTime(getter.apply(instance)), value -> setter.accept(instance, dateTimeOrNull(value))), null).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.DATETIME);
     }
 
     /**
@@ -633,7 +749,7 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
      * @param getter property getter
      * @return a meta-data builder
      */
-    public <X extends JanitorObject> MetaDataBuilder<T> addObjectProperty(final String name, final Function<T, X> getter) {
+    public <X extends JanitorObject> MetaDataBuilder<T> addObjectProperty(final String name, final Function<T, @Nullable X> getter) {
         return put(name, getter::apply, adaptGetterOnly(name, getter)); // no jsonSupport when there's no setter!
     }
 
@@ -650,7 +766,7 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
             }
 
             @Override
-            public void read(final JsonInputStream stream, final T instance) throws JsonException {
+            public void read(final JsonInputStream stream, final @NotNull T instance) throws JsonException {
                 log.warn("the property {} cannot be read into {} because it has no setter", name, instance);
             }
 
@@ -670,12 +786,18 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
      * @param setter property setter
      * @return a meta-data builder
      */
-    public <X extends JanitorObject> MetaDataBuilder<T> addObjectProperty(final String name, final Function<T, X> getter, final BiConsumer<T, X> setter, final Supplier<X> constructor) {
+    public <X extends JanitorObject> MetaDataBuilder<T> addObjectProperty(final @NotNull String name,
+                                                                          final @NotNull Function<@NotNull T, @Nullable X> getter,
+                                                                          final @NotNull BiConsumer<@NotNull T, @Nullable X> setter,
+                                                                          final @NotNull Supplier<@NotNull X> constructor) {
         //noinspection unchecked
         return addObjectProperty(name, getter, setter, constructor, (self, v) -> (X) v);
     }
 
-    public <X extends JanitorObject> MetaDataBuilder<T> addObjectPropertyWithSingletonDefault(final String name, final Function<T, X> getter, final BiConsumer<T, X> setter, final X singletonDefault) {
+    public <X extends JanitorObject> MetaDataBuilder<T> addObjectPropertyWithSingletonDefault(final @NotNull String name,
+                                                                                              final @NotNull Function<@NotNull T, @Nullable X> getter,
+                                                                                              final @NotNull BiConsumer<@NotNull T, @Nullable X> setter,
+                                                                                              final @NotNull X singletonDefault) {
         //noinspection unchecked
         return addObjectPropertyWithSingletonDefault(name, getter, setter, singletonDefault, (self, v) -> (X) v);
     }
@@ -689,16 +811,16 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
      * @param setter property setter
      * @return a meta-data builder
      */
-    public <X extends JanitorObject> MetaDataBuilder<T> addObjectProperty(final String name, final Function<T, X> getter, final BiConsumer<T, X> setter, final Supplier<X> constructor, final ValueExpander<T, X> expander) {
+    public <X extends JanitorObject> MetaDataBuilder<T> addObjectProperty(final @NotNull String name, final @NotNull Function<T, X> getter, final @NotNull BiConsumer<T, X> setter, final @NotNull Supplier<X> constructor, final @NotNull ValueExpander<T, X> expander) {
         // because we'll turn a class cast exception into a script runtime error:
         // noinspection unchecked
-        return put(name, instance ->new TemporaryAssignable(getter.apply(instance), value -> setter.accept(instance, expander.expandValue(instance, value))), adapt(shim(constructor), getter, setter));
+        return put(name, instance -> new TemporaryAssignable(getter.apply(instance), value -> setter.accept(instance, expander.expandValue(instance, value))), adapt(shim(constructor), getter, setter));
     }
 
-    public <X extends JanitorObject> MetaDataBuilder<T> addObjectPropertyWithSingletonDefault(final String name, final Function<T, X> getter, final BiConsumer<T, X> setter, final X singletonDefault, final ValueExpander<T, X> expander) {
+    public <X extends JanitorObject> MetaDataBuilder<T> addObjectPropertyWithSingletonDefault(final @NotNull String name, final @NotNull Function<T, X> getter, final @NotNull BiConsumer<T, X> setter, final @NotNull X singletonDefault, final @NotNull ValueExpander<T, X> expander) {
         // because we'll turn a class cast exception into a script runtime error:
         // noinspection unchecked
-        return put(name, instance ->new TemporaryAssignable(getter.apply(instance), value -> setter.accept(instance, expander.expandValue(instance, value))), adapt(shim(() -> singletonDefault), getter, setter));
+        return put(name, instance -> new TemporaryAssignable(getter.apply(instance), value -> setter.accept(instance, expander.expandValue(instance, value))), adapt(shim(() -> singletonDefault), getter, setter));
     }
 
 
@@ -748,7 +870,6 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
         }
         return null;
     }
-
 
 
     /**
@@ -822,6 +943,29 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
                 list.getElementDispatchTable().readAsListElement(stream, readElement -> list.add(readElement));
             }
             stream.endArray();
+        } else if (instance instanceof JList list) {
+            stream.beginArray();
+            while (stream.hasNext()) {
+                final JsonTokenType token = stream.peek();
+                switch (token) {
+                    case BEGIN_ARRAY -> {
+                        final JList subList = Janitor.list();
+                        subList.readJson(stream);
+                        list.add(subList);
+                    }
+                    case BEGIN_OBJECT -> {
+                        final JMap object = Janitor.map();
+                        object.readJson(stream);
+                        list.add(object);
+                    }
+                    case STRING -> list.add(Janitor.string(stream.nextString()));
+                    case NUMBER -> list.add(Janitor.numeric(stream.nextDouble()));
+                    case BOOLEAN -> list.add(stream.nextBoolean() ? Janitor.TRUE : Janitor.FALSE);
+                    case NULL -> list.add(Janitor.NULL);
+                    case END_ARRAY, END_OBJECT, NAME, END_DOCUMENT -> throw new JsonException("Unexpected token while reading list: " + token);
+                }
+            }
+            stream.endArray();
         } else {
             stream.beginObject();
             while (stream.hasNext()) {
@@ -859,11 +1003,31 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
         return readFromJson(constructor, Janitor.current().getLenientJsonConsumer(json));
     }
 
+    @Override
+    public Stream<String> streamAttributeNames() {
+        if (parent != null) {
+            return Stream.concat(parent.streamAttributeNames(), attributeNames.stream());
+        } else {
+            return attributeNames.stream();
+        }
+    }
+
+    public void readAsListElement(final JsonInputStream stream, Consumer<JanitorObject> elementConsumer) throws JsonException {
+        if (javaDefaultConstructor == null) {
+            throw new JsonException("Error: you need to supply a Java constructor to read objects of this type from JSON as a list!");
+        }
+        elementConsumer.accept(readFromJson(javaDefaultConstructor, stream));
+    }
+
+    @Override
+    public @Nullable Supplier<T> getJavaDefaultConstructor() {
+        return javaDefaultConstructor;
+    }
+
     @FunctionalInterface
     private interface ParentAttributeReader<T> {
         boolean readAttribute(final JsonInputStream stream, final String key, final T instance) throws JsonException;
     }
-
 
     @FunctionalInterface
     private interface ParentAttributeWriter<T> {
@@ -890,24 +1054,6 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
         }
     }
 
-    @Override
-    public Stream<String> streamAttributeNames() {
-        if (parent != null) {
-            return Stream.concat(parent.streamAttributeNames(), attributeNames.stream());
-        } else {
-            return attributeNames.stream();
-        }
-    }
 
-    public void readAsListElement(final JsonInputStream stream, Consumer<JanitorObject> elementConsumer) throws JsonException {
-        if (javaDefaultConstructor == null) {
-            throw new JsonException("Error: you need to supply a Java constructor to read objects of this type from JSON as a list!");
-        }
-        elementConsumer.accept(readFromJson(javaDefaultConstructor, stream));
-    }
 
-    @Override
-    public @Nullable Supplier<T> getJavaDefaultConstructor() {
-        return javaDefaultConstructor;
-    }
 }

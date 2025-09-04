@@ -343,4 +343,28 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
         return new JMap(dispatch);
     }
 
+    public void readJson(final JsonInputStream stream) throws JsonException {
+        stream.beginObject();
+        while (stream.hasNext()) {
+            final String key = stream.nextKey();
+            final JsonTokenType token = stream.peek();
+            switch (token) {
+                case BEGIN_ARRAY -> {
+                    final JList subList = Janitor.list();
+                    subList.readJson(stream);
+                    put(key, subList);
+                }
+                case BEGIN_OBJECT -> {
+                    final JMap object = Janitor.map();
+                    object.readJson(stream);
+                }
+                case STRING -> put(key, Janitor.string(stream.nextString()));
+                case NUMBER -> put(key, Janitor.numeric(stream.nextDouble()));
+                case BOOLEAN -> put(key, stream.nextBoolean() ? Janitor.TRUE : Janitor.FALSE);
+                case NULL -> put(key, Janitor.NULL);
+                case END_ARRAY, END_OBJECT, NAME, END_DOCUMENT -> throw new JsonException("Unexpected token while reading map: " + token);
+            }
+        }
+        stream.endObject();
+    }
 }

@@ -2,7 +2,9 @@ package com.eischet.janitor.toolbox.i18n;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
 
+import java.util.List;
 import java.util.MissingResourceException;
 import java.util.Objects;
 import java.util.ResourceBundle;
@@ -28,12 +30,12 @@ public class TranslationService {
         TranslationService.defaultResourceBundle = defaultResourceBundle;
     }
 
-    public static void setThreadLocalResourceBundle(final ResourceBundle resourceBundle) {
-        resourceBundleThreadLocal.set(resourceBundle);
-    }
-
     public static ResourceBundle getThreadLocalResourceBundle() {
         return resourceBundleThreadLocal.get();
+    }
+
+    public static void setThreadLocalResourceBundle(final ResourceBundle resourceBundle) {
+        resourceBundleThreadLocal.set(resourceBundle);
     }
 
     /**
@@ -73,8 +75,41 @@ public class TranslationService {
             if (defaultValue != null) {
                 return defaultValue;
             } else {
-                return "["+key+"]";
+                return "[" + key + "]";
             }
+        }
+    }
+
+    /**
+     * Returns a translated text from the closest resource bundle, either for the local thread or a global one, for the first key that can be found.
+     * @param keys the resource keys
+     * @return a text translation from the resource bundle, or a placeholder text of the keys (in square brackets as a list)
+     * @throws NullPointerException when no resource bundle has been configured or the key is null
+     */
+    public static String translate(final @NotNull @Unmodifiable List<String> keys) {
+        return translate(keys, null);
+    }
+
+    /**
+     * Returns a translated text from the closest resource bundle, either for the local thread or a global one, for the first key that can be found.
+     * @param keys the resource keys
+     * @param defaultValue a default value that is returned in case the key cannot be found or points to the wrong king of entry
+     * @return a text translation from the resource bundle, or a nonnull defaultValue, or a placeholder text of the keys (in square brackets as a list)
+     * @throws NullPointerException when no resource bundle has been configured or the key is null
+     */
+    public static String translate(final @NotNull @Unmodifiable List<String> keys, final @Nullable String defaultValue) {
+        if (!keys.isEmpty()) {
+            @NotNull final ResourceBundle bundle = getResourceBundle();
+            for (String key : keys) {
+                if (bundle.containsKey(key)) {
+                    return bundle.getString(key);
+                }
+            }
+        }
+        if (defaultValue != null) {
+            return defaultValue;
+        } else {
+            return keys.toString();
         }
     }
 

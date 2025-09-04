@@ -35,4 +35,5 @@ public class DispatchTable<T extends JanitorObject> extends GenericDispatchTable
         super(parent, caster);
     }
 
+
 }

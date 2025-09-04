@@ -8,6 +8,7 @@ import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.builtin.*;
+import com.eischet.janitor.runtime.JanitorSemantics;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.api.types.functions.JCallable;
 import com.eischet.janitor.api.types.*;
@@ -141,7 +142,7 @@ public class JListClass {
     public static JBool __contains(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         final JanitorObject countable = arguments.require(1).get(0);
         for (final JanitorObject element : self.janitorGetHostValue()) {
-            if (Objects.equals(countable, element)) {
+            if (Janitor.Semantics.areEquals(countable, element).janitorIsTrue()) {
                 return JBool.TRUE;
             }
         }
@@ -175,18 +176,6 @@ public class JListClass {
         }
         return JNull.NULL;
     }
-
-    /*
-    TODO: add removeAll
-    TODO: make addAll and other *all methods access JIterable instead of JList only
-     */
-
-    /*
-    public static JList __removAll(final JanitorWrapper<List<JanitorObject>> self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
-        final JanitorObject
-    }
-        */
-
 
     public static JNull __sort(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);

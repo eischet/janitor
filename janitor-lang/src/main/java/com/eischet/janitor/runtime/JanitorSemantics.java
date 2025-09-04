@@ -81,36 +81,6 @@ public class JanitorSemantics {
         }
     }
 
-    /**
-     * Check two objects for equality.
-     *
-     * @param leftValue  the left value
-     * @param rightValue the right value
-     * @return TRUE if the values are equals, or FALSE if not.
-     */
-    public static @NotNull JBool areEquals(final JanitorObject leftValue, final JanitorObject rightValue) {
-        return Janitor.toBool(leftValue == rightValue
-                              || leftValue.janitorGetHostValue() == rightValue.janitorGetHostValue()
-                              || Objects.equals(leftValue.janitorGetHostValue(), rightValue.janitorGetHostValue())
-                              || (leftValue instanceof JNumber leftNumber && rightValue instanceof JNumber rightNumber && 0 == compareNumbers(leftNumber, rightNumber))
-
-        );
-    }
-
-    private static int compareNumbers(final JNumber leftNumber, final JNumber rightNumber) {
-        return Double.compare(leftNumber.toDouble(), rightNumber.toDouble());
-    }
-
-    /**
-     * Check two objects for equality.
-     *
-     * @param leftValue  the left value
-     * @param rightValue the right value
-     * @return FALSE if the values are equals, or TRUE if not.
-     */
-    public static @NotNull JBool areNotEquals(final JanitorObject leftValue, final JanitorObject rightValue) {
-        return areEquals(leftValue, rightValue).opposite();
-    }
 
     /**
      * Perform a logical "-" operation.

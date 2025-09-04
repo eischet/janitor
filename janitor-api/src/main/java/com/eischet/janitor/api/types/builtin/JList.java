@@ -1,5 +1,6 @@
 package com.eischet.janitor.api.types.builtin;
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.TemporaryAssignable;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
@@ -41,6 +42,9 @@ public class JList extends JanitorComposed<JList> implements JIterable, Iterable
     public DispatchTable<?> getElementDispatchTable() {
         return elementDispatchTable;
     }
+
+
+
 
     public @NotNull JList onUpdate(final @NotNull Consumer<JList> onUpdate) {
         if (updateReceivers == null) {
@@ -178,8 +182,8 @@ public class JList extends JanitorComposed<JList> implements JIterable, Iterable
      * @param value the value
      */
     public void remove(JanitorObject value) {
-        list.remove(value.janitorUnpack());
-        notifyUpdateReceivers();
+        final JanitorObject removing = value.janitorUnpack();
+        replaceAllElements(stream().filter(e -> !Janitor.Semantics.areEquals(e, removing).janitorIsTrue()).toList());
     }
 
     /**

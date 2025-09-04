@@ -1,6 +1,5 @@
 package com.eischet.janitor.api.types.dispatch;
 
-import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.metadata.HasMetaData;
@@ -22,6 +21,28 @@ import java.util.stream.Stream;
  * @param <T> the type of JanitorObject
  */
 public interface Dispatcher<T extends JanitorObject> extends HasMetaData {
+
+    /**
+     * Dispatches a method call to the appropriate method on the given JanitorObject.
+     *
+     * @param instance the JanitorObject to dispatch the method call to
+     * @param process  the running script
+     * @param name     the name of the method to call
+     * @return the result of the method call
+     */
+    JanitorObject dispatch(final T instance, final JanitorScriptProcess process, final String name) throws JanitorRuntimeException;
+
+    void writeToJson(JsonOutputStream stream, T instance) throws JsonException;
+
+    @Language("JSON") String writeToJson(T instance)  throws JsonException;
+
+    T readFromJson(Supplier<T> constructor, JsonInputStream stream) throws JsonException;
+
+    T readFromJson(Supplier<T> constructor, @Language("JSON") String json) throws JsonException;
+
+    Stream<String> streamAttributeNames();
+
+    @Nullable Supplier<T> getJavaDefaultConstructor();
 
     /**
      * Creates a combined dispatcher from a "parent" and a "child", or "superclass" and "subclass" if you prefer.
@@ -106,25 +127,14 @@ public interface Dispatcher<T extends JanitorObject> extends HasMetaData {
          */
     }
 
-    /**
-     * Dispatches a method call to the appropriate method on the given JanitorObject.
-     *
-     * @param instance the JanitorObject to dispatch the method call to
-     * @param process  the running script
-     * @param name     the name of the method to call
-     * @return the result of the method call
-     */
-    JanitorObject dispatch(final T instance, final JanitorScriptProcess process, final String name) throws JanitorRuntimeException;
+    // GPT suggestion: instead of static <P extends JanitorObject, C extends JanitorObject> Dispatcher<P> inherit(...) use
+    // static <P extends JanitorObject, C extends P> Dispatcher<P> inherit(...)
+    // because we know  C extends P.
+    // That is supposed to save a lot of casts
+    // TODO: try this, it it's not hallucinated this could improve inheritance
 
-    void writeToJson(JsonOutputStream stream, T instance) throws JsonException;
 
-    @Language("JSON") String writeToJson(T instance)  throws JsonException;
 
-    T readFromJson(Supplier<T> constructor, JsonInputStream stream) throws JsonException;
 
-    T readFromJson(Supplier<T> constructor, @Language("JSON") String json) throws JsonException;
 
-    Stream<String> streamAttributeNames();
-
-    @Nullable Supplier<T> getJavaDefaultConstructor();
 }

@@ -75,14 +75,11 @@ public abstract class AbstractScriptProcess implements JanitorScriptProcess {
 
     @Override
     public void pushClosureScope(final Scope closureScope) {
-        // do we really want to do this?
         closureScopes.add(closureScope);
-        trace(() -> "pushed closure scope " + getCurrentLocation().getColumn());
     }
 
     @Override
     public void popClosureScope(final Scope closureScope) {
-        // do we really want to do this?
         final Scope poppedScope = closureScopes.remove(closureScopes.size()-1);
         if (poppedScope != closureScope) {
             trace(() -> String.format("popClosureScope: poppedScope = %s, but expected %s", poppedScope, closureScope));
