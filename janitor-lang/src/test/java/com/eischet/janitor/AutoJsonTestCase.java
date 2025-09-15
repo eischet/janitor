@@ -1,6 +1,9 @@
 package com.eischet.janitor;
 
 import com.eischet.janitor.api.Janitor;
+import com.eischet.janitor.api.types.JanitorObject;
+import com.eischet.janitor.api.types.builtin.JDate;
+import com.eischet.janitor.api.types.builtin.JDateTime;
 import com.eischet.janitor.api.types.builtin.JList;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
@@ -9,8 +12,11 @@ import com.eischet.janitor.runtime.OutputCatchingTestRuntime;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonInputStream;
 import org.intellij.lang.annotations.Language;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -286,6 +292,97 @@ public class AutoJsonTestCase extends JanitorTest  {
         list.readJson(Janitor.current().getLenientJsonConsumer(JSON));
         assertEquals(5, list.size());
     }
+
+    @Test void dateOutput() throws JsonException {
+        @NotNull final JDate fifty = Janitor.date(LocalDate.of(2026, 1, 10));
+        final String jsonForm = Janitor.current().writeJson(fifty);
+        assertEquals("\"2026-01-10\"", jsonForm);
+
+        final JList list = Janitor.list();
+        list.add(fifty);
+        @Language("JSON") final String jsonListForm = Janitor.current().writeJson(list);
+        assertEquals("[\"2026-01-10\"]", jsonListForm);
+
+        @NotNull final JanitorObject parsed = Janitor.nullableDateFromJsonString("2026-01-10");
+        assertEquals(fifty, parsed);
+
+
+        final JList readingList = Janitor.list();
+        readingList.readJson(Janitor.current().getLenientJsonConsumer(jsonListForm));
+        assertEquals(1, readingList.size());
+        // cannot work: JSON does not have a Data type, so we must expect a string... assertEquals(fifty, readingList.get(0));
+        assertEquals("2026-01-10", readingList.get(0).toString());
+    }
+
+    @Test void dateTimeOutput() throws JsonException {
+        @NotNull final JDateTime fifty = Janitor.dateTime(LocalDateTime.of(2026, 1, 10, 12, 30, 45));
+        final String jsonForm = Janitor.current().writeJson(fifty);
+        assertEquals("\"2026-01-10T12:30:45\"", jsonForm);
+
+        @NotNull final JanitorObject parsed = Janitor.nullableDateTimeFromJsonString("2026-01-10T12:30:45");
+        assertEquals(fifty, parsed);
+
+
+        final JList list = Janitor.list();
+        list.add(fifty);
+        @Language("JSON") final String jsonListForm = Janitor.current().writeJson(list);
+        assertEquals("[\"2026-01-10T12:30:45\"]", jsonListForm);
+
+        final JList readingList = Janitor.list();
+        readingList.readJson(Janitor.current().getLenientJsonConsumer(jsonListForm));
+        assertEquals(1, readingList.size());
+        // cannot work: JSON does not have a Data type, so we must expect a string... assertEquals(fifty, readingList.get(0));
+        assertEquals("2026-01-10T12:30:45", readingList.get(0).toString());
+    }
+
+    private static class Person extends JanitorComposed<Person> {
+        private static final DispatchTable<Person> DISPATCH = new DispatchTable<>();
+        static {
+            DISPATCH.addDateProperty("birthday", Person::getBirthday, Person::setBirthday);
+            DISPATCH.addDateTimeProperty("nextAppointment", Person::getNextAppointment, Person::setNextAppointment);
+        }
+
+        public Person() {
+            super(DISPATCH);
+        }
+
+        private LocalDate birthday;
+        private LocalDateTime nextAppointment;
+
+        public LocalDate getBirthday() {
+            return birthday;
+        }
+
+        public void setBirthday(final LocalDate birthday) {
+            this.birthday = birthday;
+        }
+
+        public LocalDateTime getNextAppointment() {
+            return nextAppointment;
+        }
+
+        public void setNextAppointment(final LocalDateTime nextAppointment) {
+            this.nextAppointment = nextAppointment;
+        }
+    }
+
+    /**
+     * Make sure that Dates and DateTimes can be written to and read from JSON, by dispatch tables.
+     * @throws JsonException on errors
+     */
+    @Test void dateTimeOutputWithinAComposedObject() throws JsonException {
+        final Person stefan = new Person();
+        stefan.setBirthday(LocalDate.of(2026, 1, 10));
+        stefan.setNextAppointment(LocalDateTime.of(2026, 5, 11, 12, 30, 45));
+        @Language("JSON") final String jsonForm = Janitor.current().writeJson(stefan);
+        assertEquals("{\"birthday\":\"2026-01-10\",\"nextAppointment\":\"2026-05-11T12:30:45\"}", jsonForm);
+
+        final Person clone = new Person();
+        clone.readJson(Janitor.current().getLenientJsonConsumer(jsonForm));
+        assertEquals(stefan.birthday, clone.birthday);
+        assertEquals(stefan.nextAppointment, clone.nextAppointment);
+    }
+
 
 
 }

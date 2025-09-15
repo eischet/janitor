@@ -7,6 +7,9 @@ import com.eischet.janitor.api.types.JConstant;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
+import com.eischet.janitor.toolbox.json.api.JsonException;
+import com.eischet.janitor.toolbox.json.api.JsonInputStream;
+import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -14,6 +17,7 @@ import java.time.DateTimeException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.Objects;
 
 /**
  * A datetime object, representing a date and time in the Gregorian calendar.
@@ -24,7 +28,11 @@ public class JDateTime extends JanitorComposed<JDateTime> implements JConstant {
     public static final DateTimeFormatter DATE_FORMAT_LONG = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH:mm:ss");
     public static final DateTimeFormatter DATE_FORMAT_SHORT = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH:mm");
 
+    public static final DateTimeFormatter JSON_FORMAT = DateTimeFormatter.ISO_LOCAL_DATE_TIME; // yyyy-MM-dd'T'HH:mm:ss
+
     protected final long dateTime;
+
+
 
     /**
      * Create a new JDateTime.
@@ -151,5 +159,24 @@ public class JDateTime extends JanitorComposed<JDateTime> implements JConstant {
     }
 
 
+    @Override
+    public void writeJson(final JsonOutputStream producer) throws JsonException {
+        producer.value(JSON_FORMAT.format(janitorGetHostValue()));
+    }
 
+    @Override
+    public void readJson(final JsonInputStream stream) throws JsonException {
+        throw new JsonException("You cannot read a datetime from JSON like this because datetimes are immutable!");
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (!(o instanceof final JDateTime jDateTime)) return false;
+        return dateTime == jDateTime.dateTime;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(dateTime);
+    }
 }

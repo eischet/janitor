@@ -3,6 +3,9 @@ package com.eischet.janitor.api.types.builtin;
 import com.eischet.janitor.api.types.JConstant;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
+import com.eischet.janitor.toolbox.json.api.JsonException;
+import com.eischet.janitor.toolbox.json.api.JsonInputStream;
+import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDate;
@@ -28,6 +31,15 @@ public class JDate extends JanitorComposed<JDate> implements JConstant {
         return new JDate(dispatcher,  date);
     }
 
+    @Override
+    public void writeJson(final JsonOutputStream producer) throws JsonException {
+        producer.value(DATE_FORMAT.format(janitorGetHostValue()));
+    }
+
+    @Override
+    public void readJson(final JsonInputStream stream) throws JsonException {
+        throw new JsonException("You cannot read a date from JSON like this because dates are immutable!");
+    }
 
     /**
      * Unpack a date from a compact representation.

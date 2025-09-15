@@ -11,6 +11,7 @@ import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import com.eischet.janitor.compiler.JanitorAntlrCompiler;
 import com.eischet.janitor.runtime.DateTimeUtilities;
+import com.eischet.janitor.toolbox.json.api.JsonException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -18,6 +19,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.time.temporal.TemporalAccessor;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
@@ -481,6 +483,9 @@ public class DefaultBuiltinTypes implements BuiltinTypes {
 
     @Override
     public @NotNull JanitorObject nullableDateFromLiteral(@Nullable final String text) {
+        if (text == null || text.isBlank()) {
+            return Janitor.NULL;
+        }
         if ("today".equals(text)) {
             return date(LocalDate.now());
         } else {
@@ -488,9 +493,31 @@ public class DefaultBuiltinTypes implements BuiltinTypes {
         }
     }
 
+    @Override
+    public @NotNull JanitorObject nullableDateTimeFromJsonString(@Nullable final String jsonString) throws JsonException {
+        if (jsonString == null || jsonString.isBlank()) {
+            return Janitor.NULL;
+        }
+        try {
+            final LocalDateTime parsed = LocalDateTime.parse(jsonString, JDateTime.JSON_FORMAT);
+            return dateTime(parsed);
+        } catch (DateTimeParseException e) {
+            throw new JsonException("invalid datetime: '%s'".formatted(jsonString), e);
+        }
+    }
 
-
-
+    @Override
+    public @NotNull JanitorObject nullableDateFromJsonString(@Nullable final String jsonString) throws JsonException {
+        if (jsonString == null || jsonString.isBlank()) {
+            return Janitor.NULL;
+        }
+        try {
+            final LocalDate parsed = LocalDate.parse(jsonString, DATE_FORMAT);
+            return date(parsed);
+        } catch (DateTimeParseException e) {
+            throw new JsonException("invalid date: '%s'".formatted(jsonString), e);
+        }
+    }
 
     /**
      * Create a new JDate.

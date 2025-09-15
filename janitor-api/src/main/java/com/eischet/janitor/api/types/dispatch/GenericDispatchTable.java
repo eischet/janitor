@@ -673,7 +673,27 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
      * @return a meta-data builder
      */
     public MetaDataBuilder<T> addDateProperty(final @NotNull String name, final Function<@NotNull T, @Nullable LocalDate> getter) {
-        return put(name, instance -> Janitor.getBuiltins().nullableDate(getter.apply(instance)), null).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.DATE);
+        return put(name, instance -> Janitor.getBuiltins().nullableDate(getter.apply(instance)), new JsonAdapter<T>() {
+            @Override
+            public void write(final JsonOutputStream stream, final T instance) throws JsonException {
+                @Nullable final LocalDate value = getter.apply(instance);
+                if (value == null) {
+                    stream.nullValue();
+                } else {
+                    stream.value(JDate.DATE_FORMAT.format(value));
+                }
+            }
+
+            @Override
+            public void read(final JsonInputStream stream, final T instance) throws JsonException {
+                throw new JsonException("Unexpected JSON read operation for readonly date property " + name + " on instance " + instance);
+            }
+
+            @Override
+            public boolean isDefault(final T instance) {
+                return getter.apply(instance) == null;
+            }
+        }).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.DATE);
     }
 
     /**
@@ -685,7 +705,37 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
      * @return a meta-data builder
      */
     public MetaDataBuilder<T> addDateProperty(final @NotNull String name, final Function<@NotNull T, @Nullable LocalDate> getter, final BiConsumer<@NotNull T, @Nullable LocalDate> setter) {
-        return put(name, instance -> new TemporaryAssignable(Janitor.getBuiltins().nullableDate(getter.apply(instance)), value -> setter.accept(instance, dateOrNull(value))), null).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.DATE); // TODO: support dates
+        return put(name, instance -> new TemporaryAssignable(Janitor.getBuiltins().nullableDate(getter.apply(instance)), value -> setter.accept(instance, dateOrNull(value))), new JsonAdapter<T>() {
+            @Override
+            public void write(final JsonOutputStream stream, final T instance) throws JsonException {
+                @Nullable final LocalDate value = getter.apply(instance);
+                if (value == null) {
+                    stream.nullValue();
+                } else {
+                    stream.value(JDate.DATE_FORMAT.format(value));
+                }
+            }
+
+            @Override
+            public void read(final JsonInputStream stream, final T instance) throws JsonException {
+                if (stream.peek() == JsonTokenType.NULL) {
+                    setter.accept(instance, null);
+                } else {
+                    if (stream.peek() == JsonTokenType.NULL) {
+                        setter.accept(instance, null);
+                    } else {
+                        final String jsonString = stream.nextString();
+                        final JDate scriptValue = (JDate) Janitor.nullableDateFromJsonString(jsonString);
+                        setter.accept(instance, scriptValue.janitorGetHostValue());
+                    }
+                }
+            }
+
+            @Override
+            public boolean isDefault(final T instance) {
+                return getter.apply(instance) == null;
+            }
+        }).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.DATE); // TODO: support dates
     }
 
     private String stringOrNull(final JanitorObject value) throws JanitorGlueException {
@@ -704,6 +754,16 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
             return date.janitorGetHostValue().atStartOfDay();
         } else if (value instanceof JDateTime dateTime) {
             return dateTime.janitorGetHostValue();
+        } else if (value instanceof JString stringRep) {
+            try {
+                @NotNull final JanitorObject possibleDateTime = Janitor.nullableDateTimeFromJsonString(stringRep.janitorGetHostValue());
+                if (possibleDateTime instanceof JDateTime dateTime) {
+                    return dateTime.janitorGetHostValue();
+                }
+                log.warn("invalid datetime string: {}", stringRep);
+            } catch (JsonException e) {
+                log.warn("invalid datetime string: {}", stringRep, e);
+            }
         }
         throw new JanitorGlueException(JanitorArgumentException::fromGlue, "expected DateTime (or Date, or null), but received " + value + " [" + simpleClassNameOf(value) + "]");
     }
@@ -715,6 +775,16 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
             return date.janitorGetHostValue();
         } else if (value instanceof JDateTime dateTime) {
             return dateTime.toDate().janitorGetHostValue();
+        } else if (value instanceof JString stringRep) {
+            try {
+                @NotNull final JanitorObject possibleDate = Janitor.nullableDateFromJsonString(stringRep.janitorGetHostValue());
+                if (possibleDate instanceof JDate date) {
+                    return date.janitorGetHostValue();
+                }
+                log.warn("invalid date string: {}", stringRep);
+            } catch (JsonException e) {
+                log.warn("invalid date string: {}", stringRep, e);
+            }
         }
         throw new JanitorGlueException(JanitorArgumentException::fromGlue, "expected Date (or DateTime, or null), but received " + value + " [" + simpleClassNameOf(value) + "]");
     }
@@ -727,7 +797,28 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
      * @return a meta-data builder
      */
     public MetaDataBuilder<T> addDateTimeProperty(final String name, final Function<T, LocalDateTime> getter) {
-        return put(name, instance -> Janitor.getBuiltins().nullableDateTime(getter.apply(instance)), null).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.DATETIME); // TODO: support datetime
+        return put(name, instance -> Janitor.getBuiltins().nullableDateTime(getter.apply(instance)), new JsonAdapter<T>() {
+            @Override
+            public void write(final JsonOutputStream stream, final T instance) throws JsonException {
+                final LocalDateTime value = getter.apply(instance);
+                if (value == null) {
+                    stream.nullValue();
+                } else {
+                    stream.value(JDateTime.JSON_FORMAT.format(value));
+                }
+            }
+
+            @Override
+            public void read(final JsonInputStream stream, final T instance) throws JsonException {
+                throw new JsonException("Unexpected JSON read operation for readonly date-time property " + name + " on instance " + instance);
+            }
+
+            @Override
+            public boolean isDefault(final T instance) {
+                return getter.apply(instance) == null;
+            }
+        })
+        .setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.DATETIME); // TODO: support datetime
     }
 
     /**
@@ -739,7 +830,33 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
      * @return a meta-data builder
      */
     public MetaDataBuilder<T> addDateTimeProperty(final String name, final Function<T, LocalDateTime> getter, final BiConsumer<T, LocalDateTime> setter) {
-        return put(name, instance -> new TemporaryAssignable(Janitor.getBuiltins().nullableDateTime(getter.apply(instance)), value -> setter.accept(instance, dateTimeOrNull(value))), null).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.DATETIME);
+        return put(name, instance -> new TemporaryAssignable(Janitor.getBuiltins().nullableDateTime(getter.apply(instance)), value -> setter.accept(instance, dateTimeOrNull(value))), new JsonAdapter<T>() {
+            @Override
+            public void write(final JsonOutputStream stream, final T instance) throws JsonException {
+                final LocalDateTime value = getter.apply(instance);
+                if (value == null) {
+                    stream.nullValue();
+                } else {
+                    stream.value(JDateTime.JSON_FORMAT.format(value));
+                }
+            }
+
+            @Override
+            public void read(final JsonInputStream stream, final T instance) throws JsonException {
+                if (stream.peek() == JsonTokenType.NULL) {
+                    setter.accept(instance, null);
+                } else {
+                    final String jsonString = stream.nextString();
+                    final JDateTime scriptValue = (JDateTime) Janitor.nullableDateTimeFromJsonString(jsonString);
+                    setter.accept(instance, scriptValue.janitorGetHostValue());
+                }
+            }
+
+            @Override
+            public boolean isDefault(final T instance) {
+                return getter.apply(instance) == null;
+            }
+        }).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.DATETIME);
     }
 
     /**

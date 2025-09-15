@@ -3,6 +3,7 @@ package com.eischet.janitor.api.types;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.types.builtin.*;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
+import com.eischet.janitor.toolbox.json.api.JsonException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -109,6 +110,10 @@ public interface BuiltinTypes {
 
     @NotNull JanitorObject nullableDateFromLiteral(@Nullable String text);
 
+    @NotNull JanitorObject nullableDateFromJsonString(@Nullable String jsonString) throws JsonException;
+
+    @NotNull JanitorObject nullableDateTimeFromJsonString(@Nullable String jsonString) throws JsonException;
+
     @NotNull JDateTime now();
 
 
@@ -127,6 +132,7 @@ public interface BuiltinTypes {
      * RAM saver: intern a string.
      * Janitor uses Strings in lots of places, and an environment can choose to intern these strings
      * to save space.
+     *
      * @param string a string
      * @return the string, possible interned
      */

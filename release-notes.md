@@ -1,4 +1,4 @@
-# 0.9.29-SNAPSHOT 
+# 0.9.29, 2025-09-15
 
 Defend against null pointer exceptions coming from unset locations, as reported by an upstream project customer.
 
@@ -7,6 +7,10 @@ Lists without a specified element type can now be read from JSON. Objects within
 Generic Maps can now be read from JSON.
 
 Add factory methods for nullable ints and longs to the Janitor interface.
+
+JDateTime was missing equals/hashCode.
+
+JDateTime and JDate can now be properly written to JSON, and basic support for reading from JSON has been added.
 
 
 # 0.9.28, 2025-08-25
