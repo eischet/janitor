@@ -58,12 +58,7 @@ public final class Janitor {
      * discover <b>your</b> provider, which is nice to have.
      * There's also a userProvider setting that takes precedence.
      */
-    private static final JanitorEnvironmentProvider automaticProvider =
-            ServiceLoader.load(JanitorEnvironmentProvider.class)
-                    .stream()
-                    .map(ServiceLoader.Provider::get)
-                    .max(Comparator.comparingInt(JanitorEnvironmentProvider::priority))
-                    .orElse(null);
+    private static final JanitorEnvironmentProvider automaticProvider = ServiceLoader.load(JanitorEnvironmentProvider.class).stream().map(ServiceLoader.Provider::get).max(Comparator.comparingInt(JanitorEnvironmentProvider::priority)).orElse(null);
 
     /**
      * The userProvider takes precedence over discovered providers. If you want to simple use a single environment
@@ -680,39 +675,22 @@ public final class Janitor {
          * </p>
          */
         public static final MetaDataKey<Boolean> REQUIRED = new MetaDataKey<>("required", Boolean.class);
+
         /**
          * The class name for an object.
          */
         public static MetaDataKey<String> CLASS = new MetaDataKey<>("class", String.class);
+
         /**
          * Helper for emitting TS defs for Janutor objects: A property points to a class of this name.
          * To be used where type hints are not possible, because they refer to builtin types only.
          */
         public static MetaDataKey<String> REF = new MetaDataKey<>("ref", String.class);
+
         /**
          * Marks fields that are nullable on the Java side, without specifying anything about script-side nullability.
          */
         public static MetaDataKey<Boolean> HOST_NULLABLE = new MetaDataKey<>("host_nullable", Boolean.class);
-        /**
-         * The column name for an object property, in case you're working with a database.
-         */
-        public static MetaDataKey<String> COLUMN_NAME = new MetaDataKey<>("column_name", String.class);
-        /**
-         * The database table name for an object.
-         */
-        public static MetaDataKey<String> TABLE_NAME = new MetaDataKey<>("table_name", String.class);
-        /**
-         * The column name of an ID field for an object, e.g. "person_id".
-         */
-        public static MetaDataKey<String> ID_FIELD = new MetaDataKey<>("id_field", String.class);
-        /**
-         * The column name of a KEY field for an object, e.g. "person_key".
-         */
-        public static MetaDataKey<String> KEY_FIELD = new MetaDataKey<>("key_field", String.class);
-        /**
-         * The maximum length for an object property.
-         */
-        public static MetaDataKey<Integer> MAX_LENGTH = new MetaDataKey<>("max_length", Integer.class);
 
 
         /**
@@ -742,10 +720,7 @@ public final class Janitor {
          * @return TRUE if the values are equals, or FALSE if not.
          */
         public static @NotNull JBool areEquals(final JanitorObject leftValue, final JanitorObject rightValue) {
-            return Janitor.toBool(leftValue == rightValue
-                                  || leftValue.janitorGetHostValue() == rightValue.janitorGetHostValue()
-                                  || Objects.equals(leftValue.janitorGetHostValue(), rightValue.janitorGetHostValue())
-                                  || (leftValue instanceof JNumber leftNumber && rightValue instanceof JNumber rightNumber && 0 == compareNumbers(leftNumber, rightNumber))
+            return Janitor.toBool(leftValue == rightValue || leftValue.janitorGetHostValue() == rightValue.janitorGetHostValue() || Objects.equals(leftValue.janitorGetHostValue(), rightValue.janitorGetHostValue()) || (leftValue instanceof JNumber leftNumber && rightValue instanceof JNumber rightNumber && 0 == compareNumbers(leftNumber, rightNumber))
 
             );
         }
