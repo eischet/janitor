@@ -13,7 +13,7 @@
 
     <properties>
         <!-- project revision -->
-        <revision>0.9.29</revision>
+        <revision>0.9.30-SNAPSHOT</revision>
 
         <!-- project settings -->
         <maven.compiler.release>17</maven.compiler.release>
@@ -65,6 +65,13 @@
 
 
     <build>
+        <extensions>
+            <extension>
+                <groupId>com.eischet.mvn</groupId>
+                <artifactId>wagon-providers</artifactId>
+                <version>1.0-SNAPSHOT</version>
+            </extension>
+        </extensions>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -147,11 +154,30 @@
         </plugins>
     </build>
 
+
     <profiles>
         <!--
             first, publish to Github; later: to Maven Central (too)
             https://docs.github.com/en/enterprise-cloud@latest/actions/publishing-packages/publishing-java-packages-with-maven
         -->
+        <profile>
+            <id>deploy-public</id>
+            <distributionManagement>
+                <repository>
+                    <id>eischet-public-releases</id>
+                    <url>eischet-ftps:https://mvn.eischet.net/releases</url>
+                </repository>
+                <snapshotRepository>
+                    <id>eischet-public-snapshots</id>
+                    <url>eischet-ftps:https://mvn.eischet.net/snapshots</url>
+                </snapshotRepository>
+
+            </distributionManagement>
+
+        </profile>
+
+
+
         <profile>
             <id>deploy-github</id>
             <distributionManagement>
