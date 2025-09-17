@@ -1,3 +1,8 @@
+# 0.9.30, 2025-09-17
+
+Packaging changes only. Janitor is now deployed to a small public maven repo; see pom.xml if interested.
+
+
 # 0.9.29, 2025-09-15
 
 Defend against null pointer exceptions coming from unset locations, as reported by an upstream project customer.

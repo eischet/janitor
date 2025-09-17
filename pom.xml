@@ -13,7 +13,7 @@
 
     <properties>
         <!-- project revision -->
-        <revision>0.9.30-SNAPSHOT</revision>
+        <revision>0.9.30</revision>
 
         <!-- project settings -->
         <maven.compiler.release>17</maven.compiler.release>
@@ -69,7 +69,7 @@
             <extension>
                 <groupId>com.eischet.mvn</groupId>
                 <artifactId>wagon-providers</artifactId>
-                <version>1.0-SNAPSHOT</version>
+                <version>1.0.2</version>
             </extension>
         </extensions>
         <plugins>
@@ -154,47 +154,66 @@
         </plugins>
     </build>
 
+    <repositories>
+        <repository>
+            <id>eischet-public-releases</id>
+            <url>eischet-ftps:https://mvn.eischet.net/releases</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </repository>
+        <repository>
+            <id>eischet-public-snapshots</id>
+            <url>eischet-ftps:https://mvn.eischet.net/snapshots</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>eischet-public-releases</id>
+            <url>eischet-ftps:https://mvn.eischet.net/releases</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </pluginRepository>
+        <pluginRepository>
+            <id>eischet-public-snapshots</id>
+            <url>eischet-ftps:https://mvn.eischet.net/snapshots</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+        </pluginRepository>
+    </pluginRepositories>
 
-    <profiles>
-        <!--
-            first, publish to Github; later: to Maven Central (too)
-            https://docs.github.com/en/enterprise-cloud@latest/actions/publishing-packages/publishing-java-packages-with-maven
-        -->
-        <profile>
-            <id>deploy-public</id>
-            <distributionManagement>
-                <repository>
-                    <id>eischet-public-releases</id>
-                    <url>eischet-ftps:https://mvn.eischet.net/releases</url>
-                </repository>
-                <snapshotRepository>
-                    <id>eischet-public-snapshots</id>
-                    <url>eischet-ftps:https://mvn.eischet.net/snapshots</url>
-                </snapshotRepository>
-            </distributionManagement>
 
-        </profile>
+    <!-- new public repos, remove the prefix if you want to download from there -->
+    <distributionManagement>
+        <repository>
+            <id>eischet-public-releases</id>
+            <url>eischet-ftps:https://mvn.eischet.net/releases</url>
+        </repository>
+        <snapshotRepository>
+            <id>eischet-public-snapshots</id>
+            <url>eischet-ftps:https://mvn.eischet.net/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
 
+    <!-- TODO: add a profile for public maven central deployments! -->
 
-
-        <!-- profile for deploying to the internal repository -->
-        <profile>
-            <id>deploy-internal</id>
-            <distributionManagement>
-                <repository>
-                    <id>repo-eischet-releases</id>
-                    <name>Eischet Software Repository</name>
-                    <url>https://repo.srv.eischet.net/releases</url>
-                </repository>
-                <snapshotRepository>
-                    <id>repo-eischet-snapshots</id>
-                    <name>Eischet Software Repository</name>
-                    <url>https://repo.srv.eischet.net/snapshots</url>
-                </snapshotRepository>
-
-            </distributionManagement>
-        </profile>
-    </profiles>
 
     <dependencyManagement>
         <dependencies>
