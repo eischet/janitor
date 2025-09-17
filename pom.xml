@@ -171,28 +171,12 @@
                     <id>eischet-public-snapshots</id>
                     <url>eischet-ftps:https://mvn.eischet.net/snapshots</url>
                 </snapshotRepository>
-
             </distributionManagement>
 
         </profile>
 
 
 
-        <profile>
-            <id>deploy-github</id>
-            <distributionManagement>
-                <repository>
-                    <id>github</id>
-                    <name>Github Packages</name>
-                    <url>https://maven.pkg.github.com/eischet/janitor</url>
-                </repository>
-                <snapshotRepository>
-                    <id>repo-eischet-snapshots</id>
-                    <name>Eischet Software Repository</name>
-                    <url>https://repo.srv.eischet.net/snapshots</url>
-                </snapshotRepository>
-            </distributionManagement>
-        </profile>
         <!-- profile for deploying to the internal repository -->
         <profile>
             <id>deploy-internal</id>
