@@ -1,7 +1,8 @@
-# 0.9.30, 2025-09-17
+# 0.9.30-32, 2025-09-18
 
-Packaging changes only. Janitor is now deployed to a small public maven repo; see pom.xml if interested.
-
+0.9.30: Packaging changes only. Janitor is now deployed to a small public maven repo; see pom.xml if interested.
+0.9.31: moved the project under a new common parent POM for simpler dependency management.
+0.9.32: release with updated POM, no changes.
 
 # 0.9.29, 2025-09-15
 

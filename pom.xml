@@ -3,6 +3,13 @@
     <modelVersion>4.0.0</modelVersion>
     <packaging>pom</packaging>
 
+    <parent>
+        <groupId>com.eischet</groupId>
+        <artifactId>eischet-root-public</artifactId>
+        <version>1.0.2</version>
+    </parent>
+
+
     <groupId>com.eischet.janitor</groupId>
     <artifactId>janitor-project</artifactId>
     <version>${revision}</version>
@@ -13,12 +20,9 @@
 
     <properties>
         <!-- project revision -->
-        <revision>0.9.30</revision>
+        <revision>0.9.32-SNAPSHOT</revision>
 
         <!-- project settings -->
-        <maven.compiler.release>17</maven.compiler.release>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.plugin.validation>VERBOSE</maven.plugin.validation>
 
         <!-- dependency versions -->
@@ -69,7 +73,7 @@
             <extension>
                 <groupId>com.eischet.mvn</groupId>
                 <artifactId>wagon-providers</artifactId>
-                <version>1.0.2</version>
+                <version>1.0.3</version>
             </extension>
         </extensions>
         <plugins>
@@ -82,32 +86,6 @@
                         <id>attach-sources</id>
                         <goals>
                             <goal>jar-no-fork</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <!-- required for ${revision} to work in deployed/installed POMs generated from this build, and a good idea anyways -->
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>flatten-maven-plugin</artifactId>
-                <version>1.7.2</version>
-                <configuration>
-                    <updatePomFile>true</updatePomFile>
-                    <flattenMode>resolveCiFriendliesOnly</flattenMode>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>flatten</id>
-                        <phase>process-resources</phase>
-                        <goals>
-                            <goal>flatten</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>flatten.clean</id>
-                        <phase>clean</phase>
-                        <goals>
-                            <goal>clean</goal>
                         </goals>
                     </execution>
                 </executions>
@@ -157,7 +135,7 @@
     <repositories>
         <repository>
             <id>eischet-public-releases</id>
-            <url>eischet-ftps:https://mvn.eischet.net/releases</url>
+            <url>https://mvn.eischet.net/releases</url>
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
@@ -167,7 +145,7 @@
         </repository>
         <repository>
             <id>eischet-public-snapshots</id>
-            <url>eischet-ftps:https://mvn.eischet.net/snapshots</url>
+            <url>https://mvn.eischet.net/snapshots</url>
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
@@ -176,57 +154,13 @@
             </releases>
         </repository>
     </repositories>
-    <pluginRepositories>
-        <pluginRepository>
-            <id>eischet-public-releases</id>
-            <url>eischet-ftps:https://mvn.eischet.net/releases</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-        </pluginRepository>
-        <pluginRepository>
-            <id>eischet-public-snapshots</id>
-            <url>eischet-ftps:https://mvn.eischet.net/snapshots</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-        </pluginRepository>
-    </pluginRepositories>
 
-
-    <!-- new public repos, remove the prefix if you want to download from there -->
-    <distributionManagement>
-        <repository>
-            <id>eischet-public-releases</id>
-            <url>eischet-ftps:https://mvn.eischet.net/releases</url>
-        </repository>
-        <snapshotRepository>
-            <id>eischet-public-snapshots</id>
-            <url>eischet-ftps:https://mvn.eischet.net/snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
 
     <!-- TODO: add a profile for public maven central deployments! -->
 
 
     <dependencyManagement>
         <dependencies>
-            <dependency>
-                <groupId>org.jetbrains</groupId>
-                <artifactId>annotations</artifactId>
-                <version>${deps.jetbrains-annotations}</version>
-                <scope>provided</scope>
-                <!--
-                  provided is better than compile because these are compile-time only, see https://github.com/JetBrains/java-annotations;
-                  the official docs show it wrong at https://www.jetbrains.com/help/idea/annotating-source-code.html
-                -->
-            </dependency>
             <dependency>
                 <groupId>com.eischet.janitor</groupId>
                 <artifactId>janitor-api</artifactId>
@@ -246,12 +180,6 @@
                 <groupId>com.eischet.janitor</groupId>
                 <artifactId>janitor-toolbox</artifactId>
                 <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-api</artifactId>
-                <version>${deps.slf4j}</version>
-                <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>com.google.code.gson</groupId>
