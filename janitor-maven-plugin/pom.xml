@@ -38,6 +38,13 @@
         <skipTests>true</skipTests>
     </properties>
 
+    <!--
+        Note that all Maven components referenced as dependencies MUST BE "provided".
+        Putting them into "compile", for exmample, will have Maven load separate JARs into an isolated class loader.
+        This will have terrible effects, like for example breaking deployments because suddenly maven cannot see the contents
+        of settings.xml anymore when our plugin is only included in the build...
+    -->
+
     <dependencies>
         <dependency>
             <groupId>com.eischet.janitor</groupId>
@@ -104,31 +111,37 @@
             <groupId>org.apache.maven.resolver</groupId>
             <artifactId>maven-resolver-impl</artifactId>
             <version>${deps.maven-resolver}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.maven.resolver</groupId>
             <artifactId>maven-resolver-api</artifactId>
             <version>${deps.maven-resolver}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.maven.resolver</groupId>
             <artifactId>maven-resolver-spi</artifactId>
             <version>${deps.maven-resolver}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.maven.resolver</groupId>
             <artifactId>maven-resolver-util</artifactId>
             <version>${deps.maven-resolver}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.maven.resolver</groupId>
             <artifactId>maven-resolver-connector-basic</artifactId>
             <version>${deps.maven-resolver}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.maven.resolver</groupId>
             <artifactId>maven-resolver-transport-wagon</artifactId>
             <version>${deps.maven-resolver}</version>
+            <scope>provided</scope>
         </dependency>
 
         <!-- Thanks, IntelliJ, but there's nothing I can do about this -->
@@ -137,6 +150,7 @@
             <groupId>org.apache.maven.wagon</groupId>
             <artifactId>wagon-http</artifactId>
             <version>3.5.3</version>
+            <scope>provided</scope>
         </dependency>
 
 

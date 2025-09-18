@@ -26,7 +26,7 @@ import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.resolution.ArtifactResult;
 import org.jetbrains.annotations.NotNull;
-import org.apache.maven.plugins.annotations.Component;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -38,15 +38,17 @@ import org.eclipse.aether.resolution.DependencyRequest;
 import org.eclipse.aether.util.artifact.JavaScopes;
 import org.eclipse.aether.resolution.DependencyResult;
 
+import javax.inject.Inject;
+
 @Mojo(name = "run-script-file", defaultPhase = LifecyclePhase.PROCESS_SOURCES)
-public class RunScriptMojo extends AbstractMojo implements Lookups {
+public class RunScriptMojo extends AbstractMojo {
 
     /**
      * The Maven Session Object; copied this from the Maven Assembly Mojo
      * Might need later for all the fun stuff in the session!
      */
-    //@Parameter(defaultValue = "${session}", readonly = true, required = true)
-    //private MavenSession mavenSession;
+    @Parameter(defaultValue = "${session}", readonly = true, required = true)
+    private MavenSession mavenSession;
 
     @Parameter(defaultValue = "${project}", required = true, readonly = true)
     MavenProject project;
@@ -57,23 +59,27 @@ public class RunScriptMojo extends AbstractMojo implements Lookups {
     @Parameter(property = "script", required = false)
     private String script;
 
+    @Parameter(property = "skip", required = false)
+    private boolean skip;
 
     @Parameter(defaultValue = "${repositorySystemSession}", readonly = true, required = true)
     private RepositorySystemSession repoSession;
 
-    @Component
     private RepositorySystem repoSystem;
 
-
-    public RepositorySystem lookupRepositorySystem() {
-        return repoSystem;
+    @Inject
+    public void setRepoSystem(final RepositorySystem repoSystem) {
+        this.repoSystem = repoSystem;
     }
 
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
+        if (skip) {
+            getLog().info("Skipping execution");
+            return;
+        }
         Janitor.setUserProvider(new MavenScriptingEnvProvider()); // Workaround: the @AutoService should theoretically make this unnecessary, but does not work at the moment!?
-
         final String contents = pickContents(script, scriptFile);
         if (script != null && !script.isBlank()) {
             getLog().info("Running inline script");
@@ -96,9 +102,10 @@ public class RunScriptMojo extends AbstractMojo implements Lookups {
 
         } catch (JanitorCompilerException e) {
             throw new MojoExecutionException("Error compiling script", e);
-        } catch (JanitorRuntimeException e) {
+        } catch (JanitorRuntimeException | RuntimeException e) {
             throw new MojoExecutionException("Error running script", e);
         }
+
     }
 
     private String pickContents(final String script, final File scriptFile) throws MojoExecutionException {
@@ -136,8 +143,9 @@ public class RunScriptMojo extends AbstractMojo implements Lookups {
         collectRequest.setRepositories(project.getRemoteProjectRepositories());
         // Resolve dependencies
         DependencyRequest dependencyRequest = new DependencyRequest(collectRequest, null);
+
         DependencyResult dependencyResult = repoSystem.resolveDependencies(repoSession, dependencyRequest);
-        return MavenScriptingEnv.INSTANCE.getBuiltinTypes().list(
+        return Janitor.list(
                 dependencyResult.getArtifactResults().stream()
                         .map(ArtifactResult::getArtifact)
                         .map(AetherArtifactWrapper::of)
