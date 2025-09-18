@@ -7,6 +7,8 @@ import com.eischet.janitor.maven.env.MavenScriptingEnv;
 import org.apache.maven.project.MavenProject;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
+
 public class MavenProjectWrapper extends JanitorWrapper<MavenProject> {
 
     private static final WrapperDispatchTable<MavenProject> dispatcher = new WrapperDispatchTable<>();
@@ -34,7 +36,13 @@ public class MavenProjectWrapper extends JanitorWrapper<MavenProject> {
             return new MavenProjectWrapper(parent);
         });
 
-        dispatcher.addStringProperty("basedir", self -> self.janitorGetHostValue().getBasedir().getAbsolutePath());
+        dispatcher.addStringProperty("basedir", self -> {
+            final File basedir = self.janitorGetHostValue().getBasedir();
+            if (basedir == null) {
+                return null;
+            }
+            return basedir.getAbsolutePath();
+        });
         // LATER: dispatcher.addObjectProperty("properties", ); cannot automatically wrap this at the moment
 
         dispatcher.addStringProperty("revision", self -> self.janitorGetHostValue().getProperties().getProperty("revision"));
