@@ -353,7 +353,7 @@ public class JanitorSemantics {
         if (result != null) {
             return result.isLessThan();
         }
-        throw new JanitorNotImplementedException(process, String.format("the interpreter cannot compare these values at the moment: left=%s, right=%s.", leftValue, rightValue));
+        throw new JanitorNotImplementedException(process, String.format("cannot compare: left=%s [%s], right=%s [%s]", leftValue, ObjectUtilities.simpleClassNameOf(leftValue), rightValue, ObjectUtilities.simpleClassNameOf(rightValue)));
     }
 
     /**
@@ -388,7 +388,7 @@ public class JanitorSemantics {
         if (result != null) {
             return result.isLessThanOrEquals();
         }
-        throw new JanitorNotImplementedException(process, String.format("the interpreter cannot compare these values at the moment: left=%s, right=%s.", leftValue, rightValue));
+        throw new JanitorNotImplementedException(process, String.format("cannot compare: left=%s [%s], right=%s [%s]", leftValue, ObjectUtilities.simpleClassNameOf(leftValue), rightValue, ObjectUtilities.simpleClassNameOf(rightValue)));
     }
 
     /**
@@ -405,7 +405,7 @@ public class JanitorSemantics {
         if (result != null) {
             return result.isGreaterThan();
         }
-        throw new JanitorNotImplementedException(process, String.format("the interpreter cannot compare these values at the moment: left=%s, right=%s.", _leftValue, _rightValue));
+        throw new JanitorNotImplementedException(process, String.format("cannot compare: left=%s [%s], right=%s [%s]", _leftValue, ObjectUtilities.simpleClassNameOf(_leftValue), _rightValue, ObjectUtilities.simpleClassNameOf(_rightValue)));
     }
 
     /**
@@ -485,7 +485,7 @@ public class JanitorSemantics {
         if (result != null) {
             return result.isGreaterThanOrEquals();
         }
-        throw new JanitorNotImplementedException(process, String.format("the interpreter cannot compare these values at the moment: left=%s, right=%s.", leftValue, rightValue));
+        throw new JanitorNotImplementedException(process, String.format("cannot compare: left=%s [%s], right=%s [%s]", leftValue, ObjectUtilities.simpleClassNameOf(leftValue), rightValue, ObjectUtilities.simpleClassNameOf(rightValue)));
     }
 
     /**
