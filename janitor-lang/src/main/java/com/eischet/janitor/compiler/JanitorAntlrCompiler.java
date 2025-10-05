@@ -139,6 +139,12 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
     }
 
     @Override
+    public Ast visitEmptyStatement(final JanitorParser.EmptyStatementContext ctx) {
+        return new EmptyStatement(location(ctx.start, ctx.stop));
+    }
+
+
+    @Override
     public AstNode visitBreakStatement(final JanitorParser.BreakStatementContext ctx) {
         return new BreakStatement(location(ctx.start, ctx.stop));
     }
@@ -686,21 +692,20 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
 
         String identifierText = null;
 
-        // Wenn ein Keyword gleichzeitig auch ein Identifier sein darf, muss es hier und bei visitIdentifier aufgelistet werden!
         if (ctx.validIdentifier() != null) {
             identifierText = ctx.validIdentifier().getText();
-        } /*else if (ctx.FROM() != null) {
-            identifierText = ctx.FROM().getText();
-        } else if (ctx.TO() != null) {
-            identifierText = ctx.TO().getText();
-        } else if (ctx.IN() != null) {
-            identifierText = ctx.IN().getText();
-        }*/
+        }
 
+        // ⬇️ Ergänzung: Funktionsname aus functionCall holen
+        if (identifierText == null && ctx.functionCall() != null) {
+            final JanitorParser.FunctionCallContext fc = ctx.functionCall();
+            if (fc.validIdentifier() != null) {
+                identifierText = fc.validIdentifier().getText();
+            }
+        }
 
         if (identifierText == null) {
-            //log.error("*** invalid call expression {}", ctx.getText());
-            //System.out.println("    visitCallExpression: " + null + ", TO = " + ctx.TO() + ", FROM = " + ctx.FROM());
+            log.warn("*** invalid call expression {} (no identifier)", ctx.getText());
         }
 
         identifierText = env.getBuiltinTypes().intern(identifierText);
@@ -714,71 +719,41 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
             log.info("expression: {}", expr);
         }
 
-        // eigentlich ganz einfach: wenn wir functionCallContext haben, dann wird die Funktion tatsächlich aufgerufen.
-        // Haben wir ihn aber nicht, dann müssen wir die Funktion selbst als Variable holen.
-
         if (identifierText != null && functionCallContext != null) {
             if (verbose) log.info("case 1: call with identifier and function call context");
-            final JanitorParser.ExpressionListContext expList = ctx.functionCall().expressionList();
+            final JanitorParser.ExpressionListContext expList = functionCallContext.expressionList();
             return new FunctionCallStatement(
-                location(ctx.start, ctx.stop),
-                identifierText,
-                expr == null ? null : (Expression) visit(expr),
-                expList == null ? null : visitExpressionList(expList));
+                    location(ctx.start, ctx.stop),
+                    identifierText,
+                    expr == null ? null : (Expression) visit(expr),
+                    expList == null ? null : visitExpressionList(expList)
+            );
         }
 
         if (identifierText != null && expr != null) {
-            if (verbose) {
-                log.info("case 2: call with identifier and expression --> should be a function LOOKUP");
-                log.info("creating function lookup, lookup operator is: dot={}, qdot={}", ctx.DOT(), ctx.QDOT());
-            }
-
             final boolean guarded = ctx.QDOT() != null;
-
             return new FunctionLookup(
-                location(ctx.start, ctx.stop),
-                identifierText,
-                (Expression) visit(expr),
-                null,
-                guarded
+                    location(ctx.start, ctx.stop),
+                    identifierText,
+                    (Expression) visit(expr),
+                    null,
+                    guarded
             );
         }
 
         if (identifierText == null && expr != null && functionCallContext != null) {
-            if (verbose) {
-                log.info("case 3: call without identifier (?), with call context and expression");
-                log.info("expression: {}", expr.getText());
-                log.info("function call context: {}", functionCallContext.getText());
-                log.info("fcc identifier: {}", functionCallContext.validIdentifier().getText());
-            }
-
-            if (functionCallContext.expressionList() == null) {
-                if (verbose) log.info("3a: no expression list");
-                return new FunctionCallStatement(
-                    location(ctx.start, ctx.stop),
-                    functionCallContext.validIdentifier().getText(),
-                    (Expression) visit(expr),
-                    null
-                );
-            } else {
-                if (verbose) log.info("3b: with expression list");
-                final ExpressionList callExpr = visitExpressionList(functionCallContext.expressionList());
-                return new FunctionCallStatement(
+            final ExpressionList callExpr =
+                    functionCallContext.expressionList() == null ? null : visitExpressionList(functionCallContext.expressionList());
+            return new FunctionCallStatement(
                     location(ctx.start, ctx.stop),
                     functionCallContext.validIdentifier().getText(),
                     (Expression) visit(expr),
                     callExpr
-                );
-            }
-
-
-
+            );
         }
 
         log.warn("invalid call expression {}", ctx.getText());
         return null;
-        // LATER es gibt noch diverse weitere wege in der Grammar!
-        // return visit(ctx.expression());
     }
 
     @Override
@@ -924,6 +899,5 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
                 stop == null ? start.getLine() : stop.getLine(),
                 stop == null ? start.getCharPositionInLine() : stop.getCharPositionInLine());
     }
-
 
 }

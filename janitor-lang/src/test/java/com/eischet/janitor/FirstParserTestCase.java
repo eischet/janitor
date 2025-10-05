@@ -97,11 +97,15 @@ public class FirstParserTestCase extends JanitorTest {
         });
     }
 
-    private String getOutput(final @Language("Janitor") String scriptSource, final Consumer<Scope> prepareGlobals) throws JanitorCompilerException, JanitorRuntimeException {
+    private String getOutput(final @Language("Janitor") String scriptSource, final Consumer<Scope> prepareGlobals) throws JanitorRuntimeException, JanitorCompilerException {
+        return getOutput(scriptSource, prepareGlobals, false);
+    }
+
+    private String getOutput(final @Language("Janitor") String scriptSource, final Consumer<Scope> prepareGlobals, boolean verbose) throws JanitorCompilerException, JanitorRuntimeException {
         log.info("parsing: " + scriptSource + "\n");
         final JanitorParser.ScriptContext script = JanitorScript.parseScript(scriptSource);
         final ScriptModule module = ScriptModule.unnamed(scriptSource);
-        final Script scriptObject = JanitorCompiler.build(TestEnv.env, module, script, scriptSource);
+        final Script scriptObject = JanitorCompiler.build(TestEnv.env, module, script, scriptSource, verbose);
         final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
 
         final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), module); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
@@ -187,7 +191,7 @@ public class FirstParserTestCase extends JanitorTest {
 
     @Test
     public void booleans() throws JanitorCompilerException, JanitorRuntimeException {
-        assertEquals("true\n", getOutput("print(true);", TestEnv.NO_GLOBALS));
+        assertEquals("true\n", getOutput("print(true);", TestEnv.NO_GLOBALS, true));
         assertEquals("false\n", getOutput("print(false);", TestEnv.NO_GLOBALS));
         assertEquals("true\n", getOutput("print(true and true);", TestEnv.NO_GLOBALS));
         assertEquals("true\n", getOutput("print(not false);", TestEnv.NO_GLOBALS));
@@ -1226,12 +1230,11 @@ public class FirstParserTestCase extends JanitorTest {
         );
         assertEquals(
                 """
-                        found 3 issues compiling invalid_string_literal:\s
+                        found 2 issues compiling invalid_string_literal:\s
                           line 1:10 --> invalid string at: '"foo\\x'\s
                             failure = "foo\\xbar";
                           line 1:19 --> invalid string at: '";;\\n'\s
-                            failure = "foo\\xbar";
-                          line 2:0 --> missing ';' at end of file"""
+                            failure = "foo\\xbar";"""
                 , thrown.getMessage());
 
         final JanitorCompilerException thrown2 = assertThrows(JanitorCompilerException.class, () -> {
@@ -1239,12 +1242,11 @@ public class FirstParserTestCase extends JanitorTest {
         });
         assertEquals(
                 """
-                        found 3 issues compiling invalid_string_literal:\s
+                        found 2 issues compiling invalid_string_literal:\s
                           line 1:10 --> invalid string at: ''foo\\x'\s
                             failure = 'foo\\xbar';
                           line 1:19 --> invalid string at: '';;\\n'\s
-                            failure = 'foo\\xbar';
-                          line 2:0 --> missing ';' at end of file"""
+                            failure = 'foo\\xbar';"""
                 , thrown2.getMessage());
 
     }

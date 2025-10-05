@@ -1,3 +1,9 @@
+# 0.9.34, 2025-10-xx
+
+Updated grammar:
+- semicolons are now optional at the end of a statement, similar to JavaScript
+
+
 # 0.9.30-33, 2025-09-18
 
 0.9.30: Packaging changes only. Janitor is now deployed to a small public maven repo; see pom.xml if interested.

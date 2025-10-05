@@ -2,7 +2,29 @@
 
 grammar Janitor;
 
-script: topLevelStatement*; // A script consists of a number of top-level statements
+@parser::members {
+    private boolean isLineTerminatorAhead() {
+        Token next = _input.LT(1);
+        int t = next.getType();
+        if (t == JanitorLexer.RBRACE) return false;
+        if (t == Token.EOF) return true;
+        CommonTokenStream stream = (CommonTokenStream) getInputStream();
+        java.util.List<Token> hidden = stream.getHiddenTokensToLeft(next.getTokenIndex());
+        if (hidden == null) return false;
+        for (Token h : hidden) {
+            if (h.getType() == JanitorLexer.NEWLINE) return true;
+        }
+        return false;
+    }
+}
+
+script: topLevelStatement* EOF; // A script consists of a number of top-level statements
+
+stmtTerminator
+    : SEMICOLON
+    | { _input.LT(1).getType() != JanitorLexer.SEMICOLON
+        && isLineTerminatorAhead() }?
+    ;
 
 topLevelStatement
     : importStatement                                         # topLevelImportStatement
@@ -10,7 +32,7 @@ topLevelStatement
     ;
 
 importStatement
-    : IMPORT importClause (COMMA importClause)* STMT_TERM
+    : IMPORT importClause (COMMA importClause)* stmtTerminator
     ;
 
 importClause
@@ -25,14 +47,15 @@ blockStatement
     | FOR LPAREN validIdentifier IN expression RPAREN block                                 # forStatement
     | FOR LPAREN validIdentifier FROM expression TO expression RPAREN block                 # forRangeStatement
     | WHILE LPAREN expression RPAREN block                                                  # whileStatement
-    | DO block WHILE LPAREN expression RPAREN STMT_TERM                                     # doWhileStatement
+    | DO block WHILE LPAREN expression RPAREN stmtTerminator                                     # doWhileStatement
     | TRY block (catchClause? finallyBlock? | finallyBlock)                                 # tryCatchStatement
-    | RETURN expression? STMT_TERM                                                          # returnStatement
-    | THROW expression STMT_TERM                                                            # throwStatement
-    | BREAK STMT_TERM                                                                       # breakStatement
-    | CONTINUE STMT_TERM                                                                    # continueStatement
-    | statementExpression=expression STMT_TERM                                              # expressionStatement
+    | RETURN expression? stmtTerminator                                                          # returnStatement
+    | THROW expression stmtTerminator                                                            # throwStatement
+    | BREAK stmtTerminator                                                                       # breakStatement
+    | CONTINUE stmtTerminator                                                                    # continueStatement
+    | statementExpression=expression stmtTerminator                                              # expressionStatement
     | functionDeclaration                                                                   # functionDeclarationStatement
+    | SEMICOLON                                                                        # emptyStatement
     ;
 
 ifStatementDef: IF LPAREN expression RPAREN block (ELSE block | ELSE ifStatementDef)?;
@@ -40,7 +63,9 @@ ifStatementDef: IF LPAREN expression RPAREN block (ELSE block | ELSE ifStatement
 block: LBRACE blockStatement* RBRACE;
 
 expression
-    : LPAREN expression RPAREN                                                                                                      # parensExpression
+    : functionCall                                                                                                                  # callExpression
+    | expression bop=(DOT|QDOT) ( validIdentifier | functionCall | explicitGenericInvocation )                                 # callExpression
+    | LPAREN expression RPAREN                                                                                                      # parensExpression
     | (DECIMAL_LITERAL | HEX_LITERAL | BINARY_LITERAL)                                                                              # integerLiteral
     | FLOAT_LITERAL                                                                                                                 # floatLiteral
     | (YEARS_LITERAL | MONTHS_LITERAL | DAYS_LITERAL | WEEKS_LITERAL | HOURS_LITERAL | MINUTES_LITERAL | SECONDS_LITERAL )          # durationLiteral
@@ -55,14 +80,12 @@ expression
     | NULL                                                                                                                          # nullLiteral
     | validIdentifier                                                                                                               # identifier
     | explicitGenericInvocationSuffix                                                                                               # genericInvocationExpression
-    | expression bop=(DOT|QDOT|HASH) ( validIdentifier | functionCall | explicitGenericInvocation )                                 # callExpression
     | expression LBRACK expression? COLON expression? COLON expression RBRACK                                                       # indexExpressionSteppedRange
     | expression LBRACK expression COLON RBRACK                                                                                     # indexExpressionRangeHead
     | expression LBRACK COLON expression RBRACK                                                                                     # indexExpressionRangeTail
     | expression LBRACK expression COLON expression RBRACK                                                                          # indexExpressionRange
     | expression LBRACK COLON RBRACK                                                                                                # indexExpressionFullRange
     | expression LBRACK expression RBRACK                                                                                           # indexExpression
-    | functionCall                                                                                                                  # callExpression
     | expression postfix=( INC | DEC )                                                                                              # postfixExpression
     | prefix=( ADD | SUB | INC | DEC ) expression                                                                                   # prefixExpression
     | prefix=( NOT | ALT_NOT ) expression                                                                                           # notExpression
@@ -174,9 +197,6 @@ STRING_LITERAL_TRIPLE_DOUBLE: '"""' (~[\\] | EscapeSequence)*? '"""';
 LPAREN: '('; RPAREN: ')';
 LBRACE: '{'; RBRACE: '}';
 LBRACK: '['; RBRACK: ']';
-
-STMT_TERM: SEMICOLON | EOF;
-
 
 SEMICOLON:          ';';
 COMMA:              ',';
