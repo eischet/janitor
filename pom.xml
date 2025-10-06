@@ -20,7 +20,7 @@
 
     <properties>
         <!-- project revision -->
-        <revision>0.9.34-SNAPSHOT</revision>
+        <revision>0.9.34</revision>
 
         <!-- project settings -->
         <maven.plugin.validation>VERBOSE</maven.plugin.validation>

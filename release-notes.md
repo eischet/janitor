@@ -1,3 +1,10 @@
+# 0.9.34, 2025-10-06
+
+* improve error messages for some comparison problems
+* comment out the currently unused c# code generation
+* fix a null pointere exception
+
+
 # 0.9.30-33, 2025-09-18
 
 0.9.30: Packaging changes only. Janitor is now deployed to a small public maven repo; see pom.xml if interested.
