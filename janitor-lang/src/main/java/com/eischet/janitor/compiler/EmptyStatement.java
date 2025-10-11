@@ -36,6 +36,6 @@ public class EmptyStatement extends Statement implements Ast {
 
     @Override
     public void writeJson(final JsonOutputStream producer) throws JsonException {
-        producer.value(";");
+        // producer.value(";");
     }
 }

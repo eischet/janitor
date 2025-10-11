@@ -26,7 +26,7 @@ public class CallbackTestCase  extends JanitorTest {
         final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
 
         final RunnableScript firstScript = rt.compile("first", "callback = it -> it * 2;");
-        final ResultAndScope ras = firstScript.runAndKeepGlobals(TestEnv.NO_GLOBALS);
+        final ResultAndScope ras = firstScript.runAndKeepGlobals(JanitorTest.NO_GLOBALS);
         JCallable callback = (JCallable) ras.getScope().retrieveLocal("callback");
 
         final JanitorObject thirtyFour = rt.executeCallback(ras.getScope(), callback, List.of(TestEnv.env.getBuiltinTypes().integer(17)));

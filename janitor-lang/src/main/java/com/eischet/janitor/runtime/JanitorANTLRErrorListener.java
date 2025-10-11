@@ -1,10 +1,8 @@
 package com.eischet.janitor.runtime;
 
 import com.eischet.janitor.api.scopes.ScriptModule;
-import org.antlr.v4.runtime.ANTLRErrorListener;
-import org.antlr.v4.runtime.Parser;
-import org.antlr.v4.runtime.RecognitionException;
-import org.antlr.v4.runtime.Recognizer;
+import com.eischet.janitor.lang.JanitorLexer;
+import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.jetbrains.annotations.Unmodifiable;
@@ -36,6 +34,28 @@ class JanitorANTLRErrorListener implements ANTLRErrorListener {
                             final RecognitionException e) {
         if (lines == null) {
             lines = splitSource();
+        }
+
+        // Typischer "fehlendes Semikolon" Fall:
+        if (offendingSymbol instanceof Token token) {
+            int type = token.getType();
+            // 1. Nur ignorieren, wenn das nächste Token eine '}' ist
+            // 2. Und der Fehlertext das typische "no viable alternative" enthält
+            if (type == JanitorLexer.RBRACE && msg.contains("no viable alternative")) {
+                // optionale Debug-Ausgabe, falls du nachvollziehen willst:
+                // System.out.println("Ignored semicolon warning at line " + line);
+                issues.add("yodel");
+                return;
+            }
+        }
+        // TODO: make this actually work...
+        // Since semicolons are optional, we get a parser warning at code like this:
+        //      ... print("hello") }
+        //                         ^ here at the closing brace.
+        if (e == null && offendingSymbol instanceof Token t && t.getText().equals("}")) {
+            if ("no viable alternative at input '}'".equals(msg)) {
+                return;
+            }
         }
 
         final String improvedMessage = improveAntlrMessage(msg);

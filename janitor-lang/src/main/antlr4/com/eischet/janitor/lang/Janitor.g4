@@ -2,6 +2,8 @@
 
 grammar Janitor;
 
+script: topLevelStatement* EOF; // A script consists of a number of top-level statements
+
 @parser::members {
     private boolean isLineTerminatorAhead() {
         Token next = _input.LT(1);
@@ -18,12 +20,10 @@ grammar Janitor;
     }
 }
 
-script: topLevelStatement* EOF; // A script consists of a number of top-level statements
 
 stmtTerminator
     : SEMICOLON
-    | { _input.LT(1).getType() != JanitorLexer.SEMICOLON
-        && isLineTerminatorAhead() }?
+    | { _input.LT(1).getType() != JanitorLexer.SEMICOLON && isLineTerminatorAhead() }?
     ;
 
 topLevelStatement
@@ -63,8 +63,12 @@ ifStatementDef: IF LPAREN expression RPAREN block (ELSE block | ELSE ifStatement
 block: LBRACE blockStatement* RBRACE;
 
 expression
-    : functionCall                                                                                                                  # callExpression
-    | expression bop=(DOT|QDOT) ( validIdentifier | functionCall | explicitGenericInvocation )                                 # callExpression
+    : expression DOT validIdentifier LPAREN expressionList? RPAREN                                                                  # memberCall
+    | expression QDOT validIdentifier LPAREN expressionList? RPAREN                                                                 # optionalMemberCall
+    | expression DOT validIdentifier                                                                                                # memberAccess
+    | expression QDOT validIdentifier                                                                                               # optionalMemberAccess
+    | functionCall                                                                                                                  # callExpression
+    | expression bop=(DOT|QDOT) ( validIdentifier | functionCall | explicitGenericInvocation )                                      # callExpression
     | LPAREN expression RPAREN                                                                                                      # parensExpression
     | (DECIMAL_LITERAL | HEX_LITERAL | BINARY_LITERAL)                                                                              # integerLiteral
     | FLOAT_LITERAL                                                                                                                 # floatLiteral

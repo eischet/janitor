@@ -98,12 +98,12 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
         if (value != null) {
             return value;
         }
-
+        /*
         if ("missingKey".equals(name)) {
             return null;
             // throw new RuntimeException("missingKey, required = " + required);
         }
-
+        */
         if (required) {
             return JNull.NULL; // required lookup: return "Janitor null" for maps
         } else {

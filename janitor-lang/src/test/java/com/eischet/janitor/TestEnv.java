@@ -1,13 +1,10 @@
 package com.eischet.janitor;
 
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
-import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.env.JanitorDefaultEnvironment;
 import com.eischet.janitor.runtime.JanitorFormattingGerman;
 import com.eischet.janitor.runtime.modules.CollectionsModule;
 import org.intellij.lang.annotations.Language;
-
-import java.util.function.Consumer;
 
 public class TestEnv {
     public static final JanitorDefaultEnvironment env = new JanitorDefaultEnvironment(new JanitorFormattingGerman()) {
@@ -15,8 +12,6 @@ public class TestEnv {
         public void warn(final String message) {
             System.err.println("WARN: " + message);
         }
-    };
-    public static final Consumer<Scope> NO_GLOBALS = globals -> {
     };
 
     static {

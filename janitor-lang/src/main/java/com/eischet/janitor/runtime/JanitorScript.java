@@ -111,7 +111,13 @@ public class JanitorScript implements RunnableScript, JsonExportableObject {
     }
 
     public static JanitorParser.ScriptContext parseScript(final @NotNull String text, final ANTLRErrorListener listener) throws JanitorCompilerException {
-        final String modText = text.endsWith(";\n") ? text : text + ";\n";
+        String modText = text;
+        if (text == null || text.isBlank()) {
+            modText = "";
+        }
+
+
+        //final String modText = text.endsWith(";\n") ? text : text + ";\n";
         try {
             final CharStream stream = CharStreams.fromString(modText);
             final JanitorLexer lexer = new JanitorLexer(stream);

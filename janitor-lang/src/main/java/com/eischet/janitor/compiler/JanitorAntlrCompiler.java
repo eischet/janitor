@@ -33,6 +33,7 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -683,6 +684,50 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
             );
         }
 
+    }
+
+    public Expression visitExpression(final JanitorParser.ExpressionContext ctx) {
+        return (Expression) visit(ctx);
+    }
+
+    /**
+     * "expression.identifier"
+     * @param ctx the parse tree
+     * @return the expression
+     */
+    @Override
+    public MemberAccessExpression visitMemberAccess(final JanitorParser.MemberAccessContext ctx) {
+        final Expression expression = visitExpression(ctx.expression());
+        final String identifier = ctx.validIdentifier().getText();
+        return new MemberAccessExpression(location(ctx.start, ctx.stop), expression, identifier, false);
+    }
+
+    /**
+     * "expression?.identifier"
+     * @param ctx the parse tree
+     * @return the expression
+     */
+    @Override
+    public MemberAccessExpression visitOptionalMemberAccess(final JanitorParser.OptionalMemberAccessContext ctx) {
+        final Expression expression = visitExpression(ctx.expression());
+        final String identifier = ctx.validIdentifier().getText();
+        return new MemberAccessExpression(location(ctx.start, ctx.stop), expression, identifier, true);
+    }
+
+    @Override
+    public Ast visitMemberCall(final JanitorParser.MemberCallContext ctx) {
+        final Expression expression = visitExpression(ctx.expression());
+        final String identifier = ctx.validIdentifier().getText();
+        final @Nullable ExpressionList args = ctx.expressionList() == null ? null : visitExpressionList(ctx.expressionList());
+        return new MemberCallExpression(location(ctx.start, ctx.stop), expression, identifier, args, false);
+    }
+
+    @Override
+    public Ast visitOptionalMemberCall(final JanitorParser.OptionalMemberCallContext ctx) {
+        final Expression expression = visitExpression(ctx.expression());
+        final String identifier = ctx.validIdentifier().getText();
+        final @Nullable ExpressionList args = ctx.expressionList() == null ? null : visitExpressionList(ctx.expressionList());
+        return new MemberCallExpression(location(ctx.start, ctx.stop), expression, identifier, args, true);
     }
 
 
