@@ -49,6 +49,20 @@
             <artifactId>junit-jupiter-engine</artifactId>
         </dependency>
 
+        <!-- JUnit Platform Suite (JUnit 5) for aggregated test suite -->
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-suite-api</artifactId>
+            <version>1.13.4</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-suite-engine</artifactId>
+            <version>1.13.4</version>
+            <scope>test</scope>
+        </dependency>
+
         <!-- Logging stubs for unit testing -->
         <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-jdk14 -->
         <dependency>
