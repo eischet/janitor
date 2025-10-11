@@ -2,6 +2,7 @@ package com.eischet.janitor.json.impl;
 
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
+import com.google.gson.FormattingStyle;
 import com.google.gson.stream.JsonWriter;
 import org.jetbrains.annotations.NotNull;
 
@@ -34,6 +35,7 @@ public abstract class GsonOutputStream implements JsonOutputStream {
         this.jsonExportControls = jsonExportControls != null ? jsonExportControls : JsonExportControls.standard();
         this.sw = sw;
         this.jw = new JsonWriter(sw);
+
         if (jsonExportControls != null && jsonExportControls.isPretty()) {
             jw.setIndent("  ");
         }

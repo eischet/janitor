@@ -1,5 +1,6 @@
 package com.eischet.janitor;
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.RunnableScript;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
@@ -49,6 +50,8 @@ import static org.junit.jupiter.api.Assertions.*;
 public class FirstParserTestCase extends JanitorTest {
 
     private static final Logger log = LoggerFactory.getLogger(FirstParserTestCase.class);
+
+    private static final Consumer<Scope> NO_GLOBALS = s -> {};
 
     @Test
     public void testLogging() {
@@ -1166,6 +1169,7 @@ public class FirstParserTestCase extends JanitorTest {
         script.run(g -> g.bind("from", 18));
     }
 
+
     @Test
     public void partialParsing() throws JanitorControlFlowException, JanitorRuntimeException {
         final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
@@ -1259,6 +1263,8 @@ public class FirstParserTestCase extends JanitorTest {
         assertEquals("[{\"a\":\"b\"}]\n", getOutput("print([{a:'b'}].toJson());"));
 
     }
+
+
 
     @Test
     public void base64decodeStrings() throws JanitorRuntimeException, JanitorCompilerException {
@@ -1432,5 +1438,9 @@ public class FirstParserTestCase extends JanitorTest {
         }
     }
 
+    @Test void ifThenExpressions1() throws JanitorRuntimeException, JanitorCompilerException {
+        assertEquals(Janitor.integer(17), evaluate("x = if true then 17; return x;", NO_GLOBALS));
+        assertEquals(Janitor.NULL, evaluate("x = if false then 17; return x;", NO_GLOBALS));
+    }
 
 }
