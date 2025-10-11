@@ -47,15 +47,15 @@ blockStatement
     | FOR LPAREN validIdentifier IN expression RPAREN block                                 # forStatement
     | FOR LPAREN validIdentifier FROM expression TO expression RPAREN block                 # forRangeStatement
     | WHILE LPAREN expression RPAREN block                                                  # whileStatement
-    | DO block WHILE LPAREN expression RPAREN stmtTerminator                                     # doWhileStatement
+    | DO block WHILE LPAREN expression RPAREN stmtTerminator                                # doWhileStatement
     | TRY block (catchClause? finallyBlock? | finallyBlock)                                 # tryCatchStatement
-    | RETURN expression? stmtTerminator                                                          # returnStatement
-    | THROW expression stmtTerminator                                                            # throwStatement
-    | BREAK stmtTerminator                                                                       # breakStatement
-    | CONTINUE stmtTerminator                                                                    # continueStatement
-    | statementExpression=expression stmtTerminator                                              # expressionStatement
+    | RETURN expression? stmtTerminator                                                     # returnStatement
+    | THROW expression stmtTerminator                                                       # throwStatement
+    | BREAK stmtTerminator                                                                  # breakStatement
+    | CONTINUE stmtTerminator                                                               # continueStatement
+    | statementExpression=expression stmtTerminator                                         # expressionStatement
     | functionDeclaration                                                                   # functionDeclarationStatement
-    | SEMICOLON                                                                        # emptyStatement
+    | SEMICOLON                                                                             # emptyStatement
     ;
 
 ifStatementDef: IF LPAREN expression RPAREN block (ELSE block | ELSE ifStatementDef)?;
@@ -63,8 +63,8 @@ ifStatementDef: IF LPAREN expression RPAREN block (ELSE block | ELSE ifStatement
 block: LBRACE blockStatement* RBRACE;
 
 expression
-    : expression DOT validIdentifier LPAREN expressionList? RPAREN                                                                  # memberCall
-    | expression QDOT validIdentifier LPAREN expressionList? RPAREN                                                                 # optionalMemberCall
+    : expression DOT validIdentifier LPAREN argumentList? RPAREN                                                                  # memberCall
+    | expression QDOT validIdentifier LPAREN argumentList? RPAREN                                                                 # optionalMemberCall
     | expression DOT validIdentifier                                                                                                # memberAccess
     | expression QDOT validIdentifier                                                                                               # optionalMemberAccess
     | functionCall                                                                                                                  # callExpression
@@ -166,9 +166,33 @@ catchClause: CATCH LPAREN validIdentifier RPAREN block;
 
 finallyBlock: FINALLY block;
 
-expressionList: expression (COMMA expression)*;
 
-functionCall: validIdentifier LPAREN expressionList? RPAREN;
+argumentList
+    : positionalArgs (COMMA keywordArgs)?
+    | keywordArgs
+    ;
+
+positionalArgs
+    : argument (COMMA argument)*
+    ;
+
+keywordArgs
+    : keywordArg (COMMA keywordArg)*
+    ;
+
+argument
+    : expression
+    ;
+
+keywordArg
+    : validIdentifier '=' expression
+    ;
+
+/* outdated variant of argumentList
+expressionList: expression (COMMA expression)*;
+*/
+
+functionCall: validIdentifier LPAREN argumentList? RPAREN;
 
 lambdaParameters: validIdentifier | LPAREN formalParameterList? RPAREN | LPAREN validIdentifier (COMMA validIdentifier)* RPAREN;
 
@@ -181,7 +205,7 @@ explicitGenericInvocation: explicitGenericInvocationSuffix;
 explicitGenericInvocationSuffix: validIdentifier arguments;
 
 
-arguments: LPAREN expressionList? RPAREN;
+arguments: LPAREN argumentList? RPAREN;
 
 REGEX_LITERAL: 're/' ('\\/' | ~[\r\n] | .  )*? '/';
 

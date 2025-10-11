@@ -9,9 +9,8 @@ import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.types.functions.JCallable;
-import com.eischet.janitor.compiler.ast.AstNode;
 import com.eischet.janitor.compiler.ast.expression.Expression;
-import com.eischet.janitor.compiler.ast.expression.ExpressionList;
+import com.eischet.janitor.compiler.ast.expression.ArgumentList;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
 import org.jetbrains.annotations.NotNull;
@@ -28,9 +27,9 @@ public class MemberCallExpression extends Statement implements Expression {
     private final boolean guarded;
     private final Expression expression;
     private final String identifier;
-    private final ExpressionList args;
+    private final ArgumentList args;
 
-    public MemberCallExpression(final Location location, final Expression expression, final String identifier, final ExpressionList args, final boolean guarded) {
+    public MemberCallExpression(final Location location, final Expression expression, final String identifier, final ArgumentList args, final boolean guarded) {
         super(location);
         this.guarded = guarded;
         this.expression = expression;

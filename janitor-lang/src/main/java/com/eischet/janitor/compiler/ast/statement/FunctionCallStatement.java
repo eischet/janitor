@@ -11,7 +11,7 @@ import com.eischet.janitor.api.types.JAssignable;
 import com.eischet.janitor.api.types.functions.JCallable;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.compiler.ast.expression.Expression;
-import com.eischet.janitor.compiler.ast.expression.ExpressionList;
+import com.eischet.janitor.compiler.ast.expression.ArgumentList;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonExportableObject;
 import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
@@ -31,7 +31,7 @@ import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 public class FunctionCallStatement extends Statement implements Expression, JsonExportableObject {
     private final String functionName;
     private final Expression onExpression;
-    private final ExpressionList expressionList;
+    private final ArgumentList expressionList;
 
     /**
      * Constructor.
@@ -40,7 +40,7 @@ public class FunctionCallStatement extends Statement implements Expression, Json
      * @param onExpression preceding expression
      * @param expressionList list of arguments
      */
-    public FunctionCallStatement(final Location location, final String functionName, final Expression onExpression, final ExpressionList expressionList) {
+    public FunctionCallStatement(final Location location, final String functionName, final Expression onExpression, final ArgumentList expressionList) {
         super(location);
         this.functionName = functionName;
         this.onExpression = onExpression;

@@ -12,7 +12,7 @@ import com.eischet.janitor.api.types.builtin.JString;
 import com.eischet.janitor.compiler.ast.Ast;
 import com.eischet.janitor.compiler.ast.AstNode;
 import com.eischet.janitor.compiler.ast.expression.Expression;
-import com.eischet.janitor.compiler.ast.expression.ExpressionList;
+import com.eischet.janitor.compiler.ast.expression.ArgumentList;
 import com.eischet.janitor.compiler.ast.expression.Identifier;
 import com.eischet.janitor.compiler.ast.expression.QualifiedName;
 import com.eischet.janitor.compiler.ast.expression.binary.*;
@@ -156,22 +156,35 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
         return new ContinueStatement(location(ctx.start, ctx.stop));
     }
 
+
     @Override
-    public ExpressionList visitExpressionList(final JanitorParser.ExpressionListContext ctx) {
-        if (verbose) log.info("visitExpressionList: {}", ctx);
-        if (ctx.isEmpty()) {
-            if (verbose) log.info("empty expression list");
-        }
-        final ExpressionList el = new ExpressionList(location(ctx.start, ctx.stop));
-        final List<JanitorParser.ExpressionContext> expr = ctx.expression();
-        if (expr != null) {
-            for (final JanitorParser.ExpressionContext expressionContext : expr) {
-                final Ast result = visit(expressionContext);
-                if (verbose) log.info("child: {}", result);
-                el.addExpression((Expression) result);
+    public ArgumentList visitArgumentList(final JanitorParser.ArgumentListContext ctx) {
+        final ArgumentList argumentList = new ArgumentList(location(ctx.start, ctx.stop));
+        if (ctx.positionalArgs() != null) {
+            for (final JanitorParser.ArgumentContext argumentContext : ctx.positionalArgs().argument()) {
+                final Ast construct = visit(argumentContext);
+                if (construct instanceof final Expression expression) {
+                    argumentList.addExpression((Expression) expression);
+                } else {
+                    throw new RuntimeException("invalid argument: " + construct);
+                }
             }
         }
-        return el;
+        // LATER: keywordArgContext.validIdentifier().getText() cannot be *args or **kwargs, because they are not
+        // validIdentifier. However, I could put in an intermediate rule that allows the prefixes, enabling people
+        // to use *args and *kwargs like in Python when calling functions. Not sure if that's ever needed in reality.
+        if (ctx.keywordArgs() != null) {
+            for (final JanitorParser.KeywordArgContext keywordArgContext : ctx.keywordArgs().keywordArg()) {
+                final String parameterName = keywordArgContext.validIdentifier().getText();
+                final Ast construct = visit(keywordArgContext.expression());
+                if (construct instanceof final Expression expression) {
+                    argumentList.addNamedExpression(parameterName, (Expression) expression);
+                } else {
+                    throw new RuntimeException("invalid argument: " + construct);
+                }
+            }
+        }
+        return argumentList;
     }
 
     @Override
@@ -335,13 +348,11 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
     public Ast visitPostfixExpression(final JanitorParser.PostfixExpressionContext ctx) {
         if (verbose) log.info("postfixExpression");
         final Expression expr = (Expression) visit(ctx.expression());
-        switch (ctx.postfix.getType()) {
-            case JanitorLexer.INC:
-                return new PostfixIncrement(location(ctx.start, ctx.stop), expr);
-            case JanitorLexer.DEC:
-                return new PostfixDecrement(location(ctx.start, ctx.stop), expr);
-        }
-        throw new RuntimeException("unimplemented postfix expression: " + ctx.getText());
+        return switch (ctx.postfix.getType()) {
+            case JanitorLexer.INC -> new PostfixIncrement(location(ctx.start, ctx.stop), expr);
+            case JanitorLexer.DEC -> new PostfixDecrement(location(ctx.start, ctx.stop), expr);
+            default -> throw new RuntimeException("unimplemented postfix expression: " + ctx.getText());
+        };
     }
 
     @Override
@@ -634,9 +645,9 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
     }
 
     @Override
-    public ExpressionList visitArguments(final JanitorParser.ArgumentsContext ctx) {
-        final JanitorParser.ExpressionListContext expList = ctx.expressionList();
-        return expList == null ? null : visitExpressionList(ctx.expressionList());
+    public ArgumentList visitArguments(final JanitorParser.ArgumentsContext ctx) {
+        final JanitorParser.ArgumentListContext expList = ctx.argumentList();
+        return expList == null ? null : visitArgumentList(expList);
     }
 
     @Override
@@ -653,7 +664,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
                 location(ctx.start, ctx.stop),
                 INDEXED_GET_METHOD,
                 (Expression) visit(ctx.expression(0)),
-                new ExpressionList(location(index.start, index.stop)).addExpression((Expression) visit(index))
+                new ArgumentList(location(index.start, index.stop)).addExpression((Expression) visit(index))
         );
     }
 
@@ -682,7 +693,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
                 location(ctx.start, ctx.stop),
                 INDEXED_GET_METHOD,
                 (Expression) visit(ctx.expression()),
-                new ExpressionList(location(ctx.start, ctx.stop))
+                new ArgumentList(location(ctx.start, ctx.stop))
                         .addExpression(NullLiteral.NULL)
                         .addExpression(NullLiteral.NULL)
         );
@@ -698,7 +709,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
                     location(start, stop),
                     INDEXED_GET_METHOD,
                     (Expression) visit(main),
-                    new ExpressionList(location(start, stop))
+                    new ArgumentList(location(start, stop))
                             .addExpression(NullLiteral.NULL)
                             .addExpression(NullLiteral.NULL)
             );
@@ -707,7 +718,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
                     location(start, stop),
                     INDEXED_GET_METHOD,
                     (Expression) visit(main),
-                    new ExpressionList(location(head.start, head.stop))
+                    new ArgumentList(location(head.start, head.stop))
                             .addExpression((Expression) visit(head))
                             .addExpression(NullLiteral.NULL)
             );
@@ -716,7 +727,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
                     location(start, stop),
                     INDEXED_GET_METHOD,
                     (Expression) visit(main),
-                    new ExpressionList(location(tail.start, tail.stop))
+                    new ArgumentList(location(tail.start, tail.stop))
                             .addExpression(NullLiteral.NULL)
                             .addExpression((Expression) visit(tail))
             );
@@ -725,7 +736,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
                     location(start, stop),
                     INDEXED_GET_METHOD,
                     (Expression) visit(main),
-                    new ExpressionList(location(head.start, head.stop))
+                    new ArgumentList(location(head.start, head.stop))
                             .addExpression((Expression) visit(head))
                             .addExpression((Expression) visit(tail))
             );
@@ -767,7 +778,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
     public Ast visitMemberCall(final JanitorParser.MemberCallContext ctx) {
         final Expression expression = visitExpression(ctx.expression());
         final String identifier = ctx.validIdentifier().getText();
-        final @Nullable ExpressionList args = ctx.expressionList() == null ? null : visitExpressionList(ctx.expressionList());
+        final @Nullable ArgumentList args = ctx.argumentList() == null ? null : visitArgumentList(ctx.argumentList());
         return new MemberCallExpression(location(ctx.start, ctx.stop), expression, identifier, args, false);
     }
 
@@ -775,7 +786,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
     public Ast visitOptionalMemberCall(final JanitorParser.OptionalMemberCallContext ctx) {
         final Expression expression = visitExpression(ctx.expression());
         final String identifier = ctx.validIdentifier().getText();
-        final @Nullable ExpressionList args = ctx.expressionList() == null ? null : visitExpressionList(ctx.expressionList());
+        final @Nullable ArgumentList args = ctx.argumentList() == null ? null : visitArgumentList(ctx.argumentList());
         return new MemberCallExpression(location(ctx.start, ctx.stop), expression, identifier, args, true);
     }
 
@@ -815,12 +826,12 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
 
         if (identifierText != null && functionCallContext != null) {
             if (verbose) log.info("case 1: call with identifier and function call context");
-            final JanitorParser.ExpressionListContext expList = functionCallContext.expressionList();
+            final JanitorParser.ArgumentListContext expList = functionCallContext.argumentList();
             return new FunctionCallStatement(
                     location(ctx.start, ctx.stop),
                     identifierText,
                     expr == null ? null : (Expression) visit(expr),
-                    expList == null ? null : visitExpressionList(expList)
+                    expList == null ? null : visitArgumentList(expList)
             );
         }
 
@@ -836,8 +847,8 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
         }
 
         if (identifierText == null && expr != null && functionCallContext != null) {
-            final ExpressionList callExpr =
-                    functionCallContext.expressionList() == null ? null : visitExpressionList(functionCallContext.expressionList());
+            final ArgumentList callExpr =
+                    functionCallContext.argumentList() == null ? null : visitArgumentList(functionCallContext.argumentList());
             return new FunctionCallStatement(
                     location(ctx.start, ctx.stop),
                     functionCallContext.validIdentifier().getText(),

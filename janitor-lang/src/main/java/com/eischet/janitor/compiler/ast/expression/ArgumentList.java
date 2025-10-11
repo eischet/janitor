@@ -3,12 +3,10 @@ package com.eischet.janitor.compiler.ast.expression;
 import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.compiler.ast.AstNode;
 import com.eischet.janitor.toolbox.json.api.JsonException;
-import com.eischet.janitor.toolbox.json.api.JsonExportableList;
 import com.eischet.janitor.toolbox.json.api.JsonExportableObject;
 import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
@@ -16,15 +14,16 @@ import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
  * List of expressions.
  * Used in function calls and array literals, for example.
  */
-public class ExpressionList extends AstNode implements JsonExportableObject {
+public class ArgumentList extends AstNode implements JsonExportableObject {
 
-    private final List<Expression> expressionList = new ArrayList<>(4);
+    private final List<Expression> expressionList = new LinkedList<>();
+    private final Map<String, Expression> namedExpressions = new HashMap<>();
 
     /**
      * Constructor.
      * @param location where
      */
-    public ExpressionList(final Location location) {
+    public ArgumentList(final Location location) {
         super(location);
     }
 
@@ -33,8 +32,13 @@ public class ExpressionList extends AstNode implements JsonExportableObject {
      * @param expression what
      * @return this
      */
-    public ExpressionList addExpression(final Expression expression) {
+    public ArgumentList addExpression(final Expression expression) {
         expressionList.add(expression);
+        return this;
+    }
+
+    public ArgumentList addNamedExpression(final String name, final Expression expression) {
+        namedExpressions.put(name, expression);
         return this;
     }
 
@@ -59,7 +63,7 @@ public class ExpressionList extends AstNode implements JsonExportableObject {
     public void writeJson(JsonOutputStream producer) throws JsonException {
         producer.beginObject()
                 .optional("type", simpleClassNameOf(this))
-                .optional("expressions", expressionList)
+                .optional("args", expressionList)
                 .endObject();
 
     }

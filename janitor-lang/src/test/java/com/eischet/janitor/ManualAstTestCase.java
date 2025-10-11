@@ -6,7 +6,7 @@ import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.scopes.ScriptModule;
 import com.eischet.janitor.api.types.JanitorObject;
-import com.eischet.janitor.compiler.ast.expression.ExpressionList;
+import com.eischet.janitor.compiler.ast.expression.ArgumentList;
 import com.eischet.janitor.compiler.ast.expression.VariableLookupExpression;
 import com.eischet.janitor.compiler.ast.expression.binary.Addition;
 import com.eischet.janitor.compiler.ast.expression.literal.IntegerLiteral;
@@ -71,7 +71,7 @@ public class ManualAstTestCase extends JanitorTest  {
     @Test
     public void manualAstWithPrint() throws JanitorRuntimeException {
         final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
-        final ExpressionList expressionList = new ExpressionList(null);
+        final ArgumentList expressionList = new ArgumentList(null);
         expressionList.addExpression(new VariableLookupExpression(null, "x"));
         //final IR.Statement.PrintStatement printStatement = new IR.Statement.PrintStatement(null, expressionList);
         //final IR.Script script = new IR.Script(null, Lists.immutable.of(printStatement), null);
@@ -99,7 +99,7 @@ public class ManualAstTestCase extends JanitorTest  {
         final Addition addition = new Addition(null,
             new VariableLookupExpression(null, "a"),
             new IntegerLiteral(null,  runtime.getEnvironment().getBuiltinTypes().integer(4)));
-        final ExpressionList expressionList = new ExpressionList(null);
+        final ArgumentList expressionList = new ArgumentList(null);
         expressionList.addExpression(addition);
         //final IR.Statement.PrintStatement printStatement = new IR.Statement.PrintStatement(null, expressionList);
         //final IR.Script script = new IR.Script(null, Lists.immutable.of(printStatement), null);
@@ -122,7 +122,7 @@ public class ManualAstTestCase extends JanitorTest  {
         final Addition addition = new Addition(null,
             new VariableLookupExpression(null, "a"),
             new VariableLookupExpression(null, "b"));
-        final ExpressionList expressionList = new ExpressionList(null);
+        final ArgumentList expressionList = new ArgumentList(null);
         expressionList.addExpression(addition);
         final FunctionCallStatement printCall = new FunctionCallStatement(null, "print", null, expressionList);
         final Script script = new Script(null, List.of(printCall), null);

@@ -91,19 +91,13 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
             return attr;
         }
         // this is very important for cases where the map is supposed to be used as an implicit object and for map.key access within scripts: return the map key by name
-        @NotNull final JString nameAsString = process.getEnvironment().getBuiltinTypes().string(name);
+        @NotNull final JString nameAsString = Janitor.string(name);
         // return wrapped.get(nameAsString); -- wrong, this returns Java null when the key is missing, but we want Janitor null instead!
 
         final JanitorObject value = wrapped.get(nameAsString);
         if (value != null) {
             return value;
         }
-        /*
-        if ("missingKey".equals(name)) {
-            return null;
-            // throw new RuntimeException("missingKey, required = " + required);
-        }
-        */
         if (required) {
             return JNull.NULL; // required lookup: return "Janitor null" for maps
         } else {

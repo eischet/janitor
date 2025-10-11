@@ -33,7 +33,7 @@ public class ScriptJsonExportTestCase extends JanitorTest  {
      */
     @Test
     public void exportScriptToJson() throws JanitorCompilerException, JsonException {
-        final String SAMPLE = "{\"script\":[{\"type\":\"ExpressionStatement\",\"expression\":{\"type\":\"FunctionCallStatement\",\"name\":\"print\",\"expressionList\":{\"type\":\"ExpressionList\",\"expressions\":[\"hello, world\"]}}}]}";
+        final String SAMPLE = "{\"script\":[{\"type\":\"ExpressionStatement\",\"expression\":{\"type\":\"FunctionCallStatement\",\"name\":\"print\",\"expressionList\":{\"type\":\"ArgumentList\",\"args\":[\"hello, world\"]}}}]}";
         final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         final JanitorScript script = (JanitorScript) rt.compile("test", "print('hello, world');");
         final String json = script.exportToJson(rt.getEnvironment());

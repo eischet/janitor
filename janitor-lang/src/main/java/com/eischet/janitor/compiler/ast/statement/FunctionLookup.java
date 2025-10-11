@@ -12,7 +12,7 @@ import com.eischet.janitor.api.types.JConstant;
 import com.eischet.janitor.api.types.builtin.JNull;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.compiler.ast.expression.Expression;
-import com.eischet.janitor.compiler.ast.expression.ExpressionList;
+import com.eischet.janitor.compiler.ast.expression.ArgumentList;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonExportableObject;
 import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
@@ -31,7 +31,7 @@ import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 public class FunctionLookup extends Statement implements Expression, JsonExportableObject {
     private final String functionName;
     private final Expression onExpression;
-    private final ExpressionList expressionList;
+    private final ArgumentList expressionList;
     private final boolean guarded;
 
 
@@ -44,7 +44,7 @@ public class FunctionLookup extends Statement implements Expression, JsonExporta
      * @param expressionList list of arguments
      * @param guarded        whether to return null if the function is not found
      */
-    public FunctionLookup(final Location location, final String functionName, final Expression onExpression, final ExpressionList expressionList, final boolean guarded) {
+    public FunctionLookup(final Location location, final String functionName, final Expression onExpression, final ArgumentList expressionList, final boolean guarded) {
         super(location);
         this.functionName = functionName;
         this.onExpression = onExpression;
