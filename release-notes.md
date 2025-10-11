@@ -2,6 +2,9 @@
 
 Updated grammar:
 - semicolons are now optional at the end of a statement, similar to JavaScript
+- unused lexer symbols were remove: "|", "#".
+- function calls were simplified in the "compiler"
+- syntax is prepared for *args and **kwargs, but they are not implemented yet
 
 
 # 0.9.30-33, 2025-09-18

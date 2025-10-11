@@ -10,6 +10,7 @@ import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.types.functions.JCallable;
 import com.eischet.janitor.api.types.builtin.JNull;
 import com.eischet.janitor.api.types.JanitorObject;
+import com.eischet.janitor.compiler.FormalParameters;
 import com.eischet.janitor.compiler.ast.AstNode;
 import com.eischet.janitor.compiler.ast.expression.Expression;
 import com.eischet.janitor.compiler.ast.statement.controlflow.Block;
@@ -34,7 +35,7 @@ public class ScriptFunction extends AstNode implements Expression, JanitorObject
     private static final Logger log = LoggerFactory.getLogger(ScriptFunction.class);
 
     private final String name;
-    private final List<String> parameterNames;
+    private final FormalParameters parameterNames;
     private final Block block;
     private Scope moduleScope;
     private Scope closureScope;
@@ -47,7 +48,7 @@ public class ScriptFunction extends AstNode implements Expression, JanitorObject
      * @param parameterNames names of the parameters
      * @param block          inner code of the function
      */
-    public ScriptFunction(final Location location, final String name, final List<String> parameterNames, final Block block) {
+    public ScriptFunction(final Location location, final String name, final FormalParameters parameterNames, final Block block) {
         super(location);
         this.name = name;
         this.parameterNames = parameterNames;
@@ -83,13 +84,15 @@ public class ScriptFunction extends AstNode implements Expression, JanitorObject
 
     @Override
     public String janitorToString() {
-        return "function " + name + "(" + String.join(", ", parameterNames) + ")";
+        return "function " + name + "(" + parameterNames + ")";
     }
 
     @Override
     public JanitorObject call(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         try {
-            arguments.require(parameterNames.size());
+
+            arguments.requireAtLeast(parameterNames.minSize());
+
             try {
                 if (moduleScope != null) {
                     process.pushModuleScope(moduleScope);
@@ -100,8 +103,9 @@ public class ScriptFunction extends AstNode implements Expression, JanitorObject
                     process.enterBlock(null); // anonyme Blöcke NICHT in den Stacktrace packen
                 }
                 process.pushClosureScope(closureScope);
-                for (int i = 0; i < parameterNames.size(); i++) {
-                    process.getCurrentScope().bind(process, parameterNames.get(i), arguments.get(i).janitorUnpack());
+                final int nonDefaultSize = parameterNames.minSize();
+                for (int i = 0; i < nonDefaultSize; i++) {
+                    process.getCurrentScope().bind(process, parameterNames.get(i).getName(), arguments.get(i).janitorUnpack());
                     /*
                     if (closureScope != null) {
                         // Bind this to the closure scope, too, so it can later be referenced.
@@ -111,6 +115,10 @@ public class ScriptFunction extends AstNode implements Expression, JanitorObject
 
                      */
                 }
+                // TODO: bind additional parameters to *args, if that is available
+                // TODO: bind **kwargs, as soon as they are in the Grammar for calling
+
+
                 block.executeFunctionCall(process);
             } finally {
                 process.popClosureScope(closureScope);
@@ -135,8 +143,8 @@ public class ScriptFunction extends AstNode implements Expression, JanitorObject
                 .optional("name", name)
                 .optional("block", block);
         producer.key("parameterNames").beginArray();
-        for (String parameterName : parameterNames) {
-            producer.value(parameterName);
+        for (var parameterName : parameterNames) {
+            producer.value(parameterName.toString());
         }
         producer.endArray();
         producer.endObject();

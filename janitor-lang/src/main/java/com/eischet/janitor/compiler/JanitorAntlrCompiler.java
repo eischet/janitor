@@ -1,11 +1,14 @@
 package com.eischet.janitor.compiler;
 
-import com.eischet.janitor.api.types.BuiltinTypes;
 import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.api.scopes.ScriptModule;
+import com.eischet.janitor.api.types.BuiltinTypes;
 import com.eischet.janitor.api.types.JanitorObject;
-import com.eischet.janitor.api.types.builtin.*;
+import com.eischet.janitor.api.types.builtin.JBool;
+import com.eischet.janitor.api.types.builtin.JDate;
+import com.eischet.janitor.api.types.builtin.JDateTime;
+import com.eischet.janitor.api.types.builtin.JString;
 import com.eischet.janitor.compiler.ast.Ast;
 import com.eischet.janitor.compiler.ast.AstNode;
 import com.eischet.janitor.compiler.ast.expression.Expression;
@@ -49,9 +52,8 @@ import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
  */
 public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements JanitorCompiler {
 
-    private static final Logger log = LoggerFactory.getLogger(JanitorAntlrCompiler.class);
     public static final String INDEXED_GET_METHOD = "__get__";
-
+    private static final Logger log = LoggerFactory.getLogger(JanitorAntlrCompiler.class);
     private static final BooleanLiteral LITERAL_TRUE = new BooleanLiteral(null, JBool.TRUE);
     private static final BooleanLiteral LITERAL_FALSE = new BooleanLiteral(null, JBool.FALSE);
     private final ScriptModule module;
@@ -113,7 +115,6 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
     }
 
 
-
     @Override
     public Block visitBlock(final JanitorParser.BlockContext ctx) {
         if (ctx == null) {
@@ -130,7 +131,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
 
     @Override
     public Ast visitTopLevelBlockStatement(final JanitorParser.TopLevelBlockStatementContext ctx) {
-        if (verbose)  log.info("visitTopLevelBlockStatement");
+        if (verbose) log.info("visitTopLevelBlockStatement");
         return visit(ctx.blockStatement());
     }
 
@@ -335,8 +336,10 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
         if (verbose) log.info("postfixExpression");
         final Expression expr = (Expression) visit(ctx.expression());
         switch (ctx.postfix.getType()) {
-            case JanitorLexer.INC: return new PostfixIncrement(location(ctx.start, ctx.stop), expr);
-            case JanitorLexer.DEC: return new PostfixDecrement(location(ctx.start, ctx.stop), expr);
+            case JanitorLexer.INC:
+                return new PostfixIncrement(location(ctx.start, ctx.stop), expr);
+            case JanitorLexer.DEC:
+                return new PostfixDecrement(location(ctx.start, ctx.stop), expr);
         }
         throw new RuntimeException("unimplemented postfix expression: " + ctx.getText());
     }
@@ -346,9 +349,12 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
         if (verbose) log.info("prefixExpression");
         final Expression expr = (Expression) visit(ctx.expression());
         switch (ctx.prefix.getType()) {
-            case JanitorLexer.INC: return new PrefixIncrement(location(ctx.start, ctx.stop), expr);
-            case JanitorLexer.DEC: return new PrefixDecrement(location(ctx.start, ctx.stop), expr);
-            case JanitorLexer.SUB: return new Negation(location(ctx.start, ctx.stop), expr);
+            case JanitorLexer.INC:
+                return new PrefixIncrement(location(ctx.start, ctx.stop), expr);
+            case JanitorLexer.DEC:
+                return new PrefixDecrement(location(ctx.start, ctx.stop), expr);
+            case JanitorLexer.SUB:
+                return new Negation(location(ctx.start, ctx.stop), expr);
         }
         throw new RuntimeException("unimplemented prefix expression: " + ctx.getText());
     }
@@ -365,8 +371,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
             case JanitorLexer.DIV_ASSIGN -> new DivAssignment(location(ctx.start, ctx.stop), left, right);
             case JanitorLexer.MOD_ASSIGN -> new ModAssignment(location(ctx.start, ctx.stop), left, right);
             case JanitorLexer.MUL_ASSIGN -> new MulAssignment(location(ctx.start, ctx.stop), left, right);
-            default ->
-                    throw new RuntimeException("unimplemented assignment operation: " + ctx.getText() + " (" + ctx.bop.getText() + ")");
+            default -> throw new RuntimeException("unimplemented assignment operation: " + ctx.getText() + " (" + ctx.bop.getText() + ")");
         };
     }
 
@@ -488,8 +493,8 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
     @Override
     public Ast visitImportPlain(final JanitorParser.ImportPlainContext ctx) {
         return new ImportClause(location(ctx.start, ctx.stop),
-            visitQualifiedName(ctx.qualifiedName()),
-            (Identifier) visitImportAlias(ctx.importAlias()));
+                visitQualifiedName(ctx.qualifiedName()),
+                (Identifier) visitImportAlias(ctx.importAlias()));
     }
 
     @Override
@@ -540,35 +545,77 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
     public AstNode visitFunctionDeclaration(final JanitorParser.FunctionDeclarationContext ctx) {
         if (verbose) log.info("functionDeclaration");
         final JanitorParser.FormalParametersContext formalParameters = ctx.formalParameters();
-        final List<String> finishedParams = helpExtractFormalParameters(formalParameters);
+        final FormalParameters finishedParams = helpExtractFormalParameters(formalParameters);
 
         final Location loc = location(ctx.start, ctx.stop);
 
         return new RegularAssignment(loc,
-            new Identifier(loc, ctx.validIdentifier().getText()),
-            new ScriptFunction(loc, ctx.validIdentifier().getText(), finishedParams, visitBlock(ctx.block()))
+                new Identifier(loc, ctx.validIdentifier().getText()),
+                new ScriptFunction(loc, ctx.validIdentifier().getText(), finishedParams, visitBlock(ctx.block()))
         );
     }
 
-    private List<String> helpExtractFormalParameters(final JanitorParser.FormalParametersContext formalParameters) {
+    private FormalParameters helpExtractFormalParameters(final JanitorParser.FormalParametersContext formalParameters) {
         if (verbose) log.info("formal parameters: {}", formalParameters);
         if (formalParameters != null) {
             return helpExtractFormalParametersList(formalParameters.formalParameterList());
         } else {
-            return Collections.emptyList();
+            return FormalParameters.empty();
         }
     }
 
-    private List<String> helpExtractFormalParametersList(final JanitorParser.FormalParameterListContext fpl) {
+    private FormalParameters helpExtractFormalParametersList(final JanitorParser.FormalParameterListContext fpl) {
         if (verbose) log.info("fpl: {}", fpl);
         if (fpl != null) {
-            final List<String> parameterNames = new ArrayList<>();
-            for (final JanitorParser.FormalParameterContext formalParameterContext : fpl.formalParameter()) {
-                parameterNames.add(formalParameterContext.validIdentifier().getText());
+            @Nullable JanitorParser.NonDefaultParamListContext nonDefaultParameters = null;
+            @Nullable JanitorParser.DefaultParamListContext defaultParameters = null;
+            @Nullable JanitorParser.VarArgListContext varArgParameters = null;
+            @Nullable JanitorParser.KwArgListContext kwArgParameters = null;
+
+            final List<FormalParameter> parameters = new ArrayList<>();
+            if (fpl instanceof JanitorParser.FormalParameterList1Context f1) {
+                nonDefaultParameters = f1.nonDefaultParamList();
+            } else if (fpl instanceof JanitorParser.FormalParameterList2Context f2) {
+                nonDefaultParameters = f2.nonDefaultParamList();
+                kwArgParameters = f2.kwArgList();
+            } else if (fpl instanceof JanitorParser.FormalParameterList3Context f3) {
+                nonDefaultParameters = f3.nonDefaultParamList();
+                kwArgParameters = f3.kwArgList();
+                varArgParameters = f3.varArgList();
+            } else if (fpl instanceof JanitorParser.FormalParameterList4Context f4) {
+                nonDefaultParameters = f4.nonDefaultParamList();
+                kwArgParameters = f4.kwArgList();
+                varArgParameters = f4.varArgList();
+                defaultParameters = f4.defaultParamList();
+            } else if (fpl instanceof JanitorParser.FormalParameterList5Context f5) {
+                nonDefaultParameters = f5.nonDefaultParamList();
+                kwArgParameters = f5.kwArgList();
+                varArgParameters = f5.varArgList();
+                defaultParameters = f5.defaultParamList();
             }
-            return parameterNames;
+            if (nonDefaultParameters != null) {
+                for (final JanitorParser.FormalParameterContext formalParameterContext : nonDefaultParameters.formalParameter()) {
+                    parameters.add(FormalParameter.nonDefault(formalParameterContext.validIdentifier().getText()));
+                }
+            }
+            if (defaultParameters != null) {
+                for (final JanitorParser.FormalParameterWithDefaultContext formalParameterWithDefaultContext : defaultParameters.formalParameterWithDefault()) {
+                    parameters.add(FormalParameter.defaulted(formalParameterWithDefaultContext.validIdentifier().getText(), visitExpression(formalParameterWithDefaultContext.expression())));
+                }
+            }
+            if (varArgParameters != null) {
+                if (varArgParameters != null) {
+                    parameters.add(FormalParameter.varargs(varArgParameters.validIdentifier().getText()));
+                }
+            }
+            if (kwArgParameters != null) {
+                if (kwArgParameters != null) {
+                    parameters.add(FormalParameter.kwargs(kwArgParameters.validIdentifier().getText()));
+                }
+            }
+            return FormalParameters.of(parameters);
         } else {
-            return Collections.emptyList();
+            return FormalParameters.empty();
         }
     }
 
@@ -603,10 +650,10 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
     public Ast visitIndexExpression(final JanitorParser.IndexExpressionContext ctx) {
         final JanitorParser.ExpressionContext index = ctx.expression(1);
         return new FunctionCallStatement(
-            location(ctx.start, ctx.stop),
-            INDEXED_GET_METHOD,
-            (Expression) visit(ctx.expression(0)),
-            new ExpressionList(location(index.start, index.stop)).addExpression((Expression) visit(index))
+                location(ctx.start, ctx.stop),
+                INDEXED_GET_METHOD,
+                (Expression) visit(ctx.expression(0)),
+                new ExpressionList(location(index.start, index.stop)).addExpression((Expression) visit(index))
         );
     }
 
@@ -632,12 +679,12 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
     @Override
     public Ast visitIndexExpressionFullRange(final JanitorParser.IndexExpressionFullRangeContext ctx) {
         return new FunctionCallStatement(
-            location(ctx.start, ctx.stop),
-            INDEXED_GET_METHOD,
-            (Expression) visit(ctx.expression()),
-            new ExpressionList(location(ctx.start, ctx.stop))
-                .addExpression(NullLiteral.NULL)
-                .addExpression(NullLiteral.NULL)
+                location(ctx.start, ctx.stop),
+                INDEXED_GET_METHOD,
+                (Expression) visit(ctx.expression()),
+                new ExpressionList(location(ctx.start, ctx.stop))
+                        .addExpression(NullLiteral.NULL)
+                        .addExpression(NullLiteral.NULL)
         );
     }
 
@@ -648,39 +695,39 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
                                      JanitorParser.ExpressionContext tail) {
         if (head == null && tail == null) {
             return new FunctionCallStatement(
-                location(start, stop),
-                INDEXED_GET_METHOD,
-                (Expression) visit(main),
-                new ExpressionList(location(start, stop))
-                    .addExpression(NullLiteral.NULL)
-                    .addExpression(NullLiteral.NULL)
+                    location(start, stop),
+                    INDEXED_GET_METHOD,
+                    (Expression) visit(main),
+                    new ExpressionList(location(start, stop))
+                            .addExpression(NullLiteral.NULL)
+                            .addExpression(NullLiteral.NULL)
             );
         } else if (tail == null) {
             return new FunctionCallStatement(
-                location(start, stop),
-                INDEXED_GET_METHOD,
-                (Expression) visit(main),
-                new ExpressionList(location(head.start, head.stop))
-                    .addExpression((Expression) visit(head))
-                    .addExpression(NullLiteral.NULL)
+                    location(start, stop),
+                    INDEXED_GET_METHOD,
+                    (Expression) visit(main),
+                    new ExpressionList(location(head.start, head.stop))
+                            .addExpression((Expression) visit(head))
+                            .addExpression(NullLiteral.NULL)
             );
         } else if (head == null) {
             return new FunctionCallStatement(
-                location(start, stop),
-                INDEXED_GET_METHOD,
-                (Expression) visit(main),
-                new ExpressionList(location(tail.start, tail.stop))
-                    .addExpression(NullLiteral.NULL)
-                    .addExpression((Expression) visit(tail))
+                    location(start, stop),
+                    INDEXED_GET_METHOD,
+                    (Expression) visit(main),
+                    new ExpressionList(location(tail.start, tail.stop))
+                            .addExpression(NullLiteral.NULL)
+                            .addExpression((Expression) visit(tail))
             );
         } else {
             return new FunctionCallStatement(
-                location(start, stop),
-                INDEXED_GET_METHOD,
-                (Expression) visit(main),
-                new ExpressionList(location(head.start, head.stop))
-                    .addExpression((Expression) visit(head))
-                    .addExpression((Expression) visit(tail))
+                    location(start, stop),
+                    INDEXED_GET_METHOD,
+                    (Expression) visit(main),
+                    new ExpressionList(location(head.start, head.stop))
+                            .addExpression((Expression) visit(head))
+                            .addExpression((Expression) visit(tail))
             );
         }
 
@@ -692,6 +739,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
 
     /**
      * "expression.identifier"
+     *
      * @param ctx the parse tree
      * @return the expression
      */
@@ -704,6 +752,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
 
     /**
      * "expression?.identifier"
+     *
      * @param ctx the parse tree
      * @return the expression
      */
@@ -805,7 +854,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
     public Ast visitLambdaExpression(final JanitorParser.LambdaExpressionContext ctx) {
         if (verbose) log.info("lambdaExpression");
 
-        final List<String> lambdaParameters = helpExtractLambdaParameters(ctx.lambdaParameters());
+        final FormalParameters lambdaParameters = helpExtractLambdaParameters(ctx.lambdaParameters());
         if (verbose) log.info("lambda parameters: {}", lambdaParameters);
 
         final JanitorParser.LambdaBodyContext lambdaBodyContext = ctx.lambdaBody();
@@ -818,41 +867,41 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
             if (verbose) log.info("it's an expression lambda");
 
             return new ScriptFunction(loc, "lambda", lambdaParameters,
-                new Block(loc, List.of(
-                    new ReturnStatement(loc, (Expression) visit(lambdaExpressionContext))
-                ))
-                );
+                    new Block(loc, List.of(
+                            new ReturnStatement(loc, (Expression) visit(lambdaExpressionContext))
+                    ))
+            );
 
         }
         if (lambdaBlockContext != null) {
             if (verbose) log.info("it's a block lambda");
             return new ScriptFunction(loc, "lambda", lambdaParameters,
-                visitBlock(lambdaBlockContext));
+                    visitBlock(lambdaBlockContext));
         }
 
         log.error("unknown lambda construction at {}: {}", loc, ctx.getText());
         return super.visitLambdaExpression(ctx);
     }
 
-    private List<String> helpExtractLambdaParameters(final JanitorParser.LambdaParametersContext ctx) {
+    private FormalParameters helpExtractLambdaParameters(final JanitorParser.LambdaParametersContext ctx) {
         if (verbose) log.info("lambdaParameters");
         final List<JanitorParser.ValidIdentifierContext> identifiers = ctx.validIdentifier();
         final JanitorParser.FormalParameterListContext formalParams = ctx.formalParameterList();
         if (formalParams != null) {
             if (verbose) log.info("this lambda uses formal params");
-            final List<String> fp = helpExtractFormalParametersList(formalParams);
+            final FormalParameters fp = helpExtractFormalParametersList(formalParams);
             if (verbose) log.info("names: {}", fp);
             return fp;
         }
         if (identifiers != null) {
             if (verbose) log.info("this lambda uses identifiers");
 
-            final List<String> names = new ArrayList<>(identifiers.size());
+            final List<FormalParameter> names = new ArrayList<>(identifiers.size());
             for (final var identifier : identifiers) {
-                names.add(identifier.getText());
+                names.add(FormalParameter.nonDefault(identifier.getText()));
             }
             if (verbose) log.info("names: {}", names);
-            return names;
+            return FormalParameters.of(names);
             //para
         }
         if (verbose) log.warn("unable to extract parameters!");
@@ -918,7 +967,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
                 } else if (litTS != null) {
                     final String text = litTS.getText();
                     lit = new StringLiteral(location(prop.start, ctx.stop), parseLiteral(env, text.substring(3, text.length() - 3)));
-                }  else if (litTD != null) {
+                } else if (litTD != null) {
                     final String text = litTD.getText();
                     lit = new StringLiteral(location(prop.start, ctx.stop), parseLiteral(env, text.substring(3, text.length() - 3)));
                 } else if (litIdent != null) {

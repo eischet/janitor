@@ -1,5 +1,9 @@
 # Things to do
 
+TODO: The Grammar was updated to accomodate default parameters in formalParameter, but the compiler/listener does not know that yet.
+
+
+
 The "Toolbox" contains some leftover code that is not actually used here, but by the original mother app. Remove.
 
 Some chained .getEnviroment().getFoo().getBar() calls should be untangled. Those are left over from some

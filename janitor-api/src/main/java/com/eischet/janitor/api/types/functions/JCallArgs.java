@@ -81,6 +81,13 @@ public class JCallArgs {
         return this;
     }
 
+    public JCallArgs requireAtLeast(final int minSize) throws JanitorRuntimeException {
+        if (size() < minSize) {
+            throw new JanitorArgumentException(process, "%s: requires at least %s arguments, but got: %s".formatted(functionName, minSize, args));
+        }
+        return this;
+    }
+
     /**
      * Require that the number of arguments in the call is exactly size.
      *

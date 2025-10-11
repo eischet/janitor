@@ -2,7 +2,6 @@
 
 grammar Janitor;
 
-script: topLevelStatement* EOF; // A script consists of a number of top-level statements
 
 @parser::members {
     private boolean isLineTerminatorAhead() {
@@ -20,6 +19,7 @@ script: topLevelStatement* EOF; // A script consists of a number of top-level st
     }
 }
 
+script: topLevelStatement* EOF; // A script consists of a number of top-level statements
 
 stmtTerminator
     : SEMICOLON
@@ -116,11 +116,49 @@ functionDeclaration: FUNCTION validIdentifier formalParameters block;
 
 formalParameters: LPAREN formalParameterList? RPAREN;
 
+/*
+
 formalParameterList: formalParameter (COMMA formalParameter)*;
+formalParameter: validIdentifier;
+*/
+
+// foo
+
+formalParameterList
+    : (nonDefaultParamList COMMA)? defaultParamList (COMMA varArgList)? (COMMA kwArgList)?   # formalParameterList5
+    | (nonDefaultParamList COMMA)? defaultParamList? (COMMA varArgList)? (COMMA kwArgList)?  # formalParameterList4
+    | (nonDefaultParamList COMMA)? varArgList (COMMA kwArgList)?                             # formalParameterList3
+    | (nonDefaultParamList COMMA)? kwArgList                                                 # formalParameterList2
+    | nonDefaultParamList                                                                    # formalParameterList1
+    ;
+
+nonDefaultParamList
+    : formalParameter (COMMA formalParameter)*
+    ;
+
+defaultParamList
+    : formalParameterWithDefault (COMMA formalParameterWithDefault)*
+    ;
+
+varArgList
+    : '*' validIdentifier
+    ;
+
+kwArgList
+    : '**' validIdentifier
+    ;
+
+formalParameter
+    : validIdentifier
+    ;
+
+formalParameterWithDefault
+    : validIdentifier '=' expression
+    ;
+
+// foo
 
 importAlias: validIdentifier;
-
-formalParameter: validIdentifier;
 
 qualifiedName: validIdentifier (DOT validIdentifier)*;
 
@@ -207,8 +245,6 @@ COMMA:              ',';
 DOUBLE_DOT:         '..';
 DOT:                '.';
 QDOT:               '?.';
-HASH:               '#';
-ALT_CATCH:          '|';
 ASSIGN:             '=';
 PLUS_ASSIGN:        '+=';
 MINUS_ASSIGN:       '-=';
