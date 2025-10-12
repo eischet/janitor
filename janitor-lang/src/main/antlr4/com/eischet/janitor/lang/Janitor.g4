@@ -100,7 +100,7 @@ expression
     | expression bop=(AND | CAND) expression                                                                                        # binaryExpression
     | expression bop=(OR | COR) expression                                                                                          # binaryExpression
     | <assoc=right> expression bop=QUESTION expression COLON expression                                                             # ternaryExpression
-    | <assoc=right> expression bop=(ASSIGN | PLUS_ASSIGN | MINUS_ASSIGN | MUL_ASSIGN | DIV_ASSIGN | MOD_ASSIGN )  expression        # assignmentExpression
+    | <assoc=right> expression bop=(ASSIGN | PLUS_ASSIGN | MINUS_ASSIGN | MUL_ASSIGN | DIV_ASSIGN | MOD_ASSIGN )  expression        # assignmentExpressiom
     | lambdaParameters ARROW lambdaBody                                                                                             # lambdaExpression
     | IF expression THEN expression (ELSE expression)?                                                                              # ifThenElseExpression
     | LBRACE (propertyAssignment (',' propertyAssignment)* ','?)? RBRACE                                                            # mapExpression
@@ -125,12 +125,27 @@ formalParameter: validIdentifier;
 // foo
 
 formalParameterList
+    // 1) nonDefault (optional) + default (mind. einer) [+ *args] [+ **kwargs]
+    : (nonDefaultParamList COMMA)? defaultParamList (COMMA varArgList)? (COMMA kwArgList)?   # formalParameterList4
+
+    // 2) nur nonDefault [+ *args] [+ **kwargs]
+    | nonDefaultParamList (COMMA varArgList)? (COMMA kwArgList)?                             # formalParameterList3
+
+    // 3) nur *args [+ **kwargs]
+    | varArgList (COMMA kwArgList)?                                                          # formalParameterList2
+
+    // 4) nur **kwargs
+    | kwArgList                                                                              # formalParameterList1
+    ;
+/*
+formalParameterList
     : (nonDefaultParamList COMMA)? defaultParamList (COMMA varArgList)? (COMMA kwArgList)?   # formalParameterList5
     | (nonDefaultParamList COMMA)? defaultParamList? (COMMA varArgList)? (COMMA kwArgList)?  # formalParameterList4
     | (nonDefaultParamList COMMA)? varArgList (COMMA kwArgList)?                             # formalParameterList3
     | (nonDefaultParamList COMMA)? kwArgList                                                 # formalParameterList2
     | nonDefaultParamList                                                                    # formalParameterList1
     ;
+*/
 
 nonDefaultParamList
     : formalParameter (COMMA formalParameter)*
@@ -141,11 +156,11 @@ defaultParamList
     ;
 
 varArgList
-    : '*' validIdentifier
+    : MUL validIdentifier
     ;
 
 kwArgList
-    : '**' validIdentifier
+    : DOUBLE_STAR validIdentifier
     ;
 
 formalParameter
@@ -297,6 +312,7 @@ DEC:                '--';
 ADD:                '+';
 SUB:                '-';
 MUL:                '*';
+DOUBLE_STAR:        '**';
 DIV:                '/';
 MOD:                '%';
 ARROW:              '->';

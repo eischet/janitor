@@ -8,6 +8,7 @@ import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.scopes.ScriptModule;
 import com.eischet.janitor.api.types.JanitorObject;
+import com.eischet.janitor.compiler.CompilerError;
 import com.eischet.janitor.compiler.JanitorCompiler;
 import com.eischet.janitor.compiler.ast.statement.Script;
 import com.eischet.janitor.json.impl.DateTimeUtils;
@@ -84,13 +85,17 @@ public abstract class JanitorTest {
         log.info("evaluating: " + expressionSource + "\n");
         final JanitorParser.ScriptContext script = JanitorScript.parseScript(expressionSource);
         final ScriptModule module = ScriptModule.unnamed(expressionSource);
-        final Script scriptObject = JanitorCompiler.build(TestEnv.env, module, script, expressionSource);
-        final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
+        try {
+            final Script scriptObject = JanitorCompiler.build(TestEnv.env, module, script, expressionSource);
+            final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
 
-        final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), module); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
-        prepareGlobals.accept(globalScope);
-        final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, "manual", scriptObject);
-        return process.run();
+            final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), module); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
+            prepareGlobals.accept(globalScope);
+            final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, "manual", scriptObject);
+            return process.run();
+        } catch (CompilerError e) {
+            throw new JanitorCompilerException(e); // TODO: this should not be done manually, but included in e.g. JanitorCompiler.build!
+        }
     }
 
 }

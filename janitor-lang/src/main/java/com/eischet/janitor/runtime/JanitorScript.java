@@ -9,6 +9,7 @@ import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.scopes.ScriptModule;
 import com.eischet.janitor.api.types.builtin.JNull;
 import com.eischet.janitor.api.types.JanitorObject;
+import com.eischet.janitor.compiler.CompilerError;
 import com.eischet.janitor.compiler.JanitorCompiler;
 import com.eischet.janitor.compiler.ast.statement.Script;
 import com.eischet.janitor.lang.JanitorLexer;
@@ -65,15 +66,19 @@ public class JanitorScript implements RunnableScript, JsonExportableObject {
         this.module = new ScriptModule(moduleName, source);
 
         final JanitorANTLRErrorListener recorder = new JanitorANTLRErrorListener(source);
-        final JanitorParser.ScriptContext script = parseScript(source, recorder);
+
+        JanitorParser.ScriptContext script;
+        try {
+            script = parseScript(source, recorder);
+        } catch (CompilerError e) {
+            throw new JanitorCompilerException(e);
+        }
         issues = recorder.getIssues();
 
 
 
         if (!issues.isEmpty()) {
             final String errorMessage = String.format("found %s issues compiling %s: \n  %s", issues.size(), moduleName, String.join("\n  ", issues));
-
-
             // log.error("found {} issues compiling {}: \n  {}", issues.size(), moduleName, errorMessage);
             if (checking) {
                 this.compilerException = new JanitorCompilerException(errorMessage);

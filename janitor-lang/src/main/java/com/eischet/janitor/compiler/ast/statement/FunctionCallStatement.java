@@ -80,19 +80,7 @@ public class FunctionCallStatement extends Statement implements Expression, Json
         final JanitorObject finalFunction = function;
         process.trace(() -> "1 trying to call function: " + finalFunction);
 
-
-        final List<JanitorObject> finishedArgs;
-        if (expressionList != null) {
-            final List<JanitorObject> args = new ArrayList<>(expressionList.length());
-            for (int i = 0; i < expressionList.length(); i++) {
-                args.add(expressionList.get(i).evaluate(process).janitorUnpack());
-            }
-            finishedArgs = args;
-        } else {
-            finishedArgs = Collections.emptyList();
-        }
-        process.trace(() -> "args: " + finishedArgs);
-        final JCallArgs args = new JCallArgs(functionName, process, finishedArgs);
+        final JCallArgs args = expressionList == null ? JCallArgs.empty(functionName, process) : expressionList.toCallArguments(functionName, process);
 
         //for (int i = 0; i < expressionList.length(); i++) {
         //    argumentList.bind("#"+i, expressionList.get(i).evaluate(process));

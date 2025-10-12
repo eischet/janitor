@@ -10,8 +10,10 @@ public class FormalParameters implements Iterable<FormalParameter> {
 
     private final List<FormalParameter> parameters;
 
-    protected FormalParameters(final List<FormalParameter> parameters) throws RuntimeException {
+    protected FormalParameters(final List<FormalParameter> parameters) throws CompilerError {
         this.parameters = parameters;
+
+        System.err.println("FormalParameters: " + parameters);
 
         final Set<String> seen = new HashSet<>();
         // check for plausibility
@@ -20,13 +22,13 @@ public class FormalParameters implements Iterable<FormalParameter> {
             System.out.println(parameter + " (" + parameter.getKind().title() + ")");
             // fail on any duplicate names
             if (seen.contains(parameter.getName())) {
-                throw new RuntimeException("duplicate parameter name: " + parameter.getName());
+                throw new CompilerError("duplicate parameter name: " + parameter.getName());
             }
             seen.add(parameter.getName());
             // fail when the order of paramters types is not correct
             final FormalParameter.Kind nextKind = parameter.getKind();
             if (!mayTransition(previousKind, nextKind)) {
-                throw new RuntimeException("invalid parameter order: " + parameter.getName() + " is " + nextKind.title() + " but this is not allowed after " + previousKind.title());
+                throw new CompilerError("invalid parameter order: " + parameter.getName() + " is " + nextKind.title() + " but this is not allowed after " + previousKind.title());
             }
             previousKind = nextKind;
         }
@@ -42,10 +44,10 @@ public class FormalParameters implements Iterable<FormalParameter> {
         } else if (currentKind == FormalParameter.Kind.KWARGS) {
             return false; // nothing may follow a kwargs parameter
         }
-        throw new RuntimeException("unknown parameter kind: " + currentKind);
+        throw new CompilerError("unknown parameter kind: " + currentKind);
     }
 
-    public static FormalParameters of(final List<FormalParameter> parameters) throws RuntimeException {
+    public static FormalParameters of(final List<FormalParameter> parameters) throws CompilerError {
         return new FormalParameters(List.copyOf(parameters));
     }
 

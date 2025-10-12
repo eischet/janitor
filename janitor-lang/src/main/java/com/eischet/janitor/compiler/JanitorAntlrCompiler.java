@@ -80,7 +80,6 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
         return literal.translateEscapes();
     }
 
-
     @Override
     public Script visitScript(final JanitorParser.ScriptContext ctx) {
         if (verbose) log.info("visitScript");
@@ -166,7 +165,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
                 if (construct instanceof final Expression expression) {
                     argumentList.addExpression((Expression) expression);
                 } else {
-                    throw new RuntimeException("invalid argument: " + construct);
+                    throw new CompilerError("invalid argument: " + construct);
                 }
             }
         }
@@ -180,7 +179,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
                 if (construct instanceof final Expression expression) {
                     argumentList.addNamedExpression(parameterName, (Expression) expression);
                 } else {
-                    throw new RuntimeException("invalid argument: " + construct);
+                    throw new CompilerError("invalid argument: " + construct);
                 }
             }
         }
@@ -223,7 +222,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
         if (litConst instanceof JDate date) {
             return new DateLiteral(location(ctx.start, ctx.stop), date);
         } else {
-            throw new RuntimeException("invalid date literal: " + text);
+            throw new CompilerError("invalid date literal: " + text);
         }
     }
 
@@ -237,7 +236,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
         if (literalValue instanceof JDateTime dt) {
             return new DateTimeLiteral(location(ctx.start, ctx.stop), dt);
         } else {
-            throw new RuntimeException("invalid datetime literal: " + text);
+            throw new CompilerError("invalid datetime literal: " + text);
         }
     }
 
@@ -328,7 +327,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
                         visitBlock(ctx.block(0)),
                         elseBlock);
             } else {
-                throw new RuntimeException("invalid if clause " + nested + " ; expected an expression but got " + simpleClassNameOf(nested));
+                throw new CompilerError("invalid if clause " + nested + " ; expected an expression but got " + simpleClassNameOf(nested));
             }
         } else {
             final Ast nested = visit(ctx.expression());
@@ -338,7 +337,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
                         visitBlock(ctx.block(0)),
                         visitBlock(ctx.block(1)));
             } else {
-                throw new RuntimeException("invalid if clause " + nested + " ; expected an expression but got " + simpleClassNameOf(nested));
+                throw new CompilerError("invalid if clause " + nested + " ; expected an expression but got " + simpleClassNameOf(nested));
             }
 
         }
@@ -351,7 +350,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
         return switch (ctx.postfix.getType()) {
             case JanitorLexer.INC -> new PostfixIncrement(location(ctx.start, ctx.stop), expr);
             case JanitorLexer.DEC -> new PostfixDecrement(location(ctx.start, ctx.stop), expr);
-            default -> throw new RuntimeException("unimplemented postfix expression: " + ctx.getText());
+            default -> throw new CompilerError("unimplemented postfix expression: " + ctx.getText());
         };
     }
 
@@ -367,7 +366,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
             case JanitorLexer.SUB:
                 return new Negation(location(ctx.start, ctx.stop), expr);
         }
-        throw new RuntimeException("unimplemented prefix expression: " + ctx.getText());
+        throw new CompilerError("unimplemented prefix expression: " + ctx.getText());
     }
 
     @Override
@@ -382,7 +381,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
             case JanitorLexer.DIV_ASSIGN -> new DivAssignment(location(ctx.start, ctx.stop), left, right);
             case JanitorLexer.MOD_ASSIGN -> new ModAssignment(location(ctx.start, ctx.stop), left, right);
             case JanitorLexer.MUL_ASSIGN -> new MulAssignment(location(ctx.start, ctx.stop), left, right);
-            default -> throw new RuntimeException("unimplemented assignment operation: " + ctx.getText() + " (" + ctx.bop.getText() + ")");
+            default -> throw new CompilerError("unimplemented assignment operation: " + ctx.getText() + " (" + ctx.bop.getText() + ")");
         };
     }
 
@@ -412,7 +411,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
             case JanitorLexer.ALT_NOTEQUAL, JanitorLexer.NOTEQUAL -> new NonEquality(location(ctx.start, ctx.stop), left, right);
             case JanitorLexer.MATCH -> new MatchesGlob(location(ctx.start, ctx.stop), left, right);
             case JanitorLexer.MATCH_NOT -> new MatchesNotGlob(location(ctx.start, ctx.stop), left, right);
-            default -> throw new RuntimeException("unimplemented binary operation: " + ctx.getText() + " (" + ctx.bop.getText() + ")");
+            default -> throw new CompilerError("unimplemented binary operation: " + ctx.getText() + " (" + ctx.bop.getText() + ")");
         };
     }
 
@@ -456,7 +455,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
         if ("false".equals(text)) {
             return LITERAL_FALSE;
         }
-        throw new RuntimeException("invalid bool literal: " + text);
+        throw new CompilerError("invalid bool literal: " + text);
     }
 
 
@@ -492,7 +491,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
             if (ast instanceof ImportClause clause) {
                 clauses.add(clause);
             } else {
-                throw new RuntimeException("invalid import clause: " + ast);
+                throw new CompilerError("invalid import clause: " + ast);
             }
         }
         return new ImportStatement(location(ctx.start, ctx.stop), clauses);
@@ -585,9 +584,9 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
 
             final List<FormalParameter> parameters = new ArrayList<>();
             if (fpl instanceof JanitorParser.FormalParameterList1Context f1) {
-                nonDefaultParameters = f1.nonDefaultParamList();
+                kwArgParameters = f1.kwArgList();
             } else if (fpl instanceof JanitorParser.FormalParameterList2Context f2) {
-                nonDefaultParameters = f2.nonDefaultParamList();
+                varArgParameters = f2.varArgList();
                 kwArgParameters = f2.kwArgList();
             } else if (fpl instanceof JanitorParser.FormalParameterList3Context f3) {
                 nonDefaultParameters = f3.nonDefaultParamList();
@@ -598,11 +597,6 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
                 kwArgParameters = f4.kwArgList();
                 varArgParameters = f4.varArgList();
                 defaultParameters = f4.defaultParamList();
-            } else if (fpl instanceof JanitorParser.FormalParameterList5Context f5) {
-                nonDefaultParameters = f5.nonDefaultParamList();
-                kwArgParameters = f5.kwArgList();
-                varArgParameters = f5.varArgList();
-                defaultParameters = f5.defaultParamList();
             }
             if (nonDefaultParameters != null) {
                 for (final JanitorParser.FormalParameterContext formalParameterContext : nonDefaultParameters.formalParameter()) {
@@ -621,6 +615,9 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
             }
             if (kwArgParameters != null) {
                 if (kwArgParameters != null) {
+                    if (!"**".equals(kwArgParameters.DOUBLE_STAR().getText())) {
+                        throw new CompilerError("invalid kwargs parameter not annotated with **: " + kwArgParameters.getText());
+                    }
                     parameters.add(FormalParameter.kwargs(kwArgParameters.validIdentifier().getText()));
                 }
             }
@@ -987,7 +984,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
                     lit = new StringLiteral(location(prop.start, ctx.stop), env.getBuiltinTypes().string(text));
                 }
                 if (lit == null) {
-                    throw new RuntimeException("map literal: keys must be single or double quoted strings, instead of: " + prop.getText());
+                    throw new CompilerError("map literal: keys must be single or double quoted strings, instead of: " + prop.getText());
                 }
                 final Expression expr = (Expression) visit(prop.expression());
                 // log.info("map, property assignment: {} = {}", lit, expr);

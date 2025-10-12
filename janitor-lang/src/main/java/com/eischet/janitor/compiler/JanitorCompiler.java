@@ -34,7 +34,7 @@ public interface JanitorCompiler {
      * @param verbose          turn on verbose / debugging compiler output
      * @return the script
      */
-    static Script build(JanitorEnvironment env, ScriptModule module, JanitorParser.ScriptContext root, String source, boolean verbose) {
+    static Script build(JanitorEnvironment env, ScriptModule module, JanitorParser.ScriptContext root, String source, boolean verbose) throws CompilerError {
         final JanitorAntlrCompiler compiler = new JanitorAntlrCompiler(env, module, verbose, source);
         final RuleContext parseTree = root.getRuleContext();
         return (Script) compiler.visit(parseTree);

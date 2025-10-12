@@ -17,10 +17,6 @@ import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonExportableObject;
 import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
 /**
@@ -120,18 +116,6 @@ public class FunctionLookup extends Statement implements Expression, JsonExporta
         final JanitorObject finalFunction = function;
         process.trace(() -> "2 trying to call function: " + finalFunction);
 
-
-        final List<JanitorObject> finishedArgs;
-        if (expressionList != null) {
-            final List<JanitorObject> args = new ArrayList<>(expressionList.length());
-            for (int i = 0; i < expressionList.length(); i++) {
-                args.add(expressionList.get(i).evaluate(process));
-            }
-            finishedArgs = args;
-        } else {
-            finishedArgs = Collections.emptyList();
-        }
-        process.trace(() -> "args: " + finishedArgs);
 
         //for (int i = 0; i < expressionList.length(); i++) {
         //    argumentList.bind("#"+i, expressionList.get(i).evaluate(runningScript));

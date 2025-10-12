@@ -8,6 +8,7 @@ import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.scopes.ScriptModule;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.JNull;
+import com.eischet.janitor.compiler.CompilerError;
 import com.eischet.janitor.compiler.JanitorAntlrCompiler;
 import com.eischet.janitor.compiler.ast.Ast;
 import com.eischet.janitor.compiler.ast.statement.Script;
@@ -143,7 +144,7 @@ public class JanitorRepl {
         return new Fragment(scriptContext);
     }
 
-    public PartialParseResult parse(final String text) throws JanitorControlFlowException, JanitorRuntimeException {
+    public PartialParseResult parse(final String text) throws JanitorControlFlowException, JanitorRuntimeException, CompilerError {
         if (hasUnclosedMultilineString(text) || hasUnclosedBrackets(text)) {
             io.verbose("looks incomplete");
             return PartialParseResult.INCOMPLETE;

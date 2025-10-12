@@ -16,6 +16,7 @@ import com.eischet.janitor.api.types.functions.JCallable;
 import com.eischet.janitor.compiler.FormalParameter;
 import com.eischet.janitor.compiler.FormalParameters;
 import com.eischet.janitor.compiler.ast.AstNode;
+import com.eischet.janitor.compiler.ast.expression.ArgumentList;
 import com.eischet.janitor.compiler.ast.expression.Expression;
 import com.eischet.janitor.compiler.ast.statement.controlflow.Block;
 import com.eischet.janitor.compiler.ast.statement.controlflow.ReturnStatement;
@@ -25,6 +26,9 @@ import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
@@ -121,7 +125,30 @@ public class ScriptFunction extends AstNode implements Expression, JanitorObject
                             }
                             process.getCurrentScope().bind(process, parameter.getName(), list);
                         } else if (parameter.getKind() == FormalParameter.Kind.DEFAULTED) {
-                            throw new JanitorArgumentException(process, "Default parameters are not yet implemented");
+                            // these are a bit tricky, because (stealing the idea from Python without thinking it through first ;-) )
+                            // these can be positional or named, but not both.
+
+                            // Get the possible named argument, but don't use it yet:
+                            JanitorObject valueByName = arguments.getByName(parameter.getName());
+
+                            // First, check if there is a named argument matching our name
+                            JanitorObject valueByPosition = null;
+                            if (argPos < arguments.size()) {
+                                valueByPosition = arguments.get(argPos++).janitorUnpack();
+                            }
+
+                            JanitorObject defaultValue = parameter.getDefaultValue().evaluate(process).janitorUnpack();
+
+                            if (valueByName == null && valueByPosition == null) {
+                                // Simple: neither matching position nor name is found, use the default value.
+                                System.out.println("using default value for parameter " + parameter.getName());
+                                process.getCurrentScope().bind(process, parameter.getName(), defaultValue);
+                            } else if (valueByName == null && valueByPosition != null) {
+                                // Simple, too: only a matching positional argument is found, use that
+                                process.getCurrentScope().bind(process, parameter.getName(), valueByPosition);
+                            } else {
+                                throw new JanitorArgumentException(process, "Default parameters are not yet implemented");
+                            }
                         } else if (parameter.getKind() == FormalParameter.Kind.KWARGS) {
                             throw new JanitorArgumentException(process, "kwargs parameters are not yet implemented");
                         }

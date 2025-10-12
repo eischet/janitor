@@ -16,10 +16,6 @@ import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
 public class MemberCallExpression extends Statement implements Expression {
@@ -54,18 +50,8 @@ public class MemberCallExpression extends Statement implements Expression {
             throw new JanitorNameException(process, "member not found: " + identifier + "; on: " + object + "[" + simpleClassNameOf(object) + "]");
         }
         @NotNull final JanitorObject existingAttribute = attribute;
-        final List<JanitorObject> finishedArgs;
-        if (args != null) {
-            final List<JanitorObject> buildArgs = new ArrayList<>(args.length());
-            for (int i = 0; i < args.length(); i++) {
-                buildArgs.add(args.get(i).evaluate(process));
-            }
-            finishedArgs = buildArgs;
-        } else {
-            finishedArgs = Collections.emptyList();
-        }
         if (existingAttribute instanceof JCallable callable) {
-            return callable.call(process, new JCallArgs(identifier, process, finishedArgs));
+            return callable.call(process, args == null ? JCallArgs.empty(identifier, process) : args.toCallArguments(identifier, process));
         }
         throw new JanitorNameException(process, "member is not callable: " + identifier +
                                                 "; on: " + object + "[" + simpleClassNameOf(object) + "] = " +

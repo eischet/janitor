@@ -3,6 +3,7 @@ package com.eischet.janitor.internals;
 import com.eischet.janitor.JanitorTest;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
+import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -123,6 +124,49 @@ public class VarArgsTestCase extends JanitorTest {
         assertThrows(JanitorCompilerException.class, () -> evaluate(script));
     }
 
+    /*
+    @Test
+    void preventKwargsBeforeRegular() {
+        final String script = """
+                function func(**kwargs, x) {
+                }
+                """;
+        assertThrows(JanitorCompilerException.class, () -> evaluate(script));
+    }
+    TODO: at the moment, this somehow throws a class cast exception.... needs further work.
+     */
 
+    @Test
+    void oneDefaultedArg() throws JanitorRuntimeException, JanitorCompilerException {
+        @Language("Janitor") final String script = """
+                function move(dir0, dir1="down") {
+                    return dir0 + " & " + dir1
+                }
+                return move("up")
+                """;
+        assertEquals("up & down", evaluate(script).janitorGetHostValue());
+    }
+
+    @Test
+    void oneDefaultedArgWithActualValueByPosition() throws JanitorRuntimeException, JanitorCompilerException {
+        @Language("Janitor") final String script = """
+                function move(dir0, dir1="down") {
+                    return dir0 + " & " + dir1
+                }
+                return move("up", "down")
+                """;
+        assertEquals("up & down", evaluate(script).janitorGetHostValue());
+    }
+
+    @Test
+    void oneDefaultedArgWithActualValueByName() throws JanitorRuntimeException, JanitorCompilerException {
+        @Language("Janitor") final String script = """
+                function move(dir0, dir1="down") {
+                    return dir0 + " & " + dir1
+                }
+                return move("down", dir1="out")
+                """;
+        assertEquals("down & out", evaluate(script).janitorGetHostValue());
+    }
 
 }
