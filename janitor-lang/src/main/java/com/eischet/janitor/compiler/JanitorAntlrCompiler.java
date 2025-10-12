@@ -1,15 +1,18 @@
 package com.eischet.janitor.compiler;
 
-import com.eischet.janitor.api.types.BuiltinTypes;
 import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.api.scopes.ScriptModule;
+import com.eischet.janitor.api.types.BuiltinTypes;
 import com.eischet.janitor.api.types.JanitorObject;
-import com.eischet.janitor.api.types.builtin.*;
+import com.eischet.janitor.api.types.builtin.JBool;
+import com.eischet.janitor.api.types.builtin.JDate;
+import com.eischet.janitor.api.types.builtin.JDateTime;
+import com.eischet.janitor.api.types.builtin.JString;
 import com.eischet.janitor.compiler.ast.Ast;
 import com.eischet.janitor.compiler.ast.AstNode;
 import com.eischet.janitor.compiler.ast.expression.Expression;
-import com.eischet.janitor.compiler.ast.expression.ExpressionList;
+import com.eischet.janitor.compiler.ast.expression.ArgumentList;
 import com.eischet.janitor.compiler.ast.expression.Identifier;
 import com.eischet.janitor.compiler.ast.expression.QualifiedName;
 import com.eischet.janitor.compiler.ast.expression.binary.*;
@@ -33,6 +36,7 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,9 +52,8 @@ import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
  */
 public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements JanitorCompiler {
 
-    private static final Logger log = LoggerFactory.getLogger(JanitorAntlrCompiler.class);
     public static final String INDEXED_GET_METHOD = "__get__";
-
+    private static final Logger log = LoggerFactory.getLogger(JanitorAntlrCompiler.class);
     private static final BooleanLiteral LITERAL_TRUE = new BooleanLiteral(null, JBool.TRUE);
     private static final BooleanLiteral LITERAL_FALSE = new BooleanLiteral(null, JBool.FALSE);
     private final ScriptModule module;
@@ -77,7 +80,6 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
         return literal.translateEscapes();
     }
 
-
     @Override
     public Script visitScript(final JanitorParser.ScriptContext ctx) {
         if (verbose) log.info("visitScript");
@@ -87,7 +89,8 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
             if (construct == null) {
                 log.warn("null statement from: {}, parent {}, children {}", topLevelStatementContext.getText(), topLevelStatementContext.getParent(), topLevelStatementContext.getChildCount());
                 for (int i = 0; i < topLevelStatementContext.getChildCount(); i++) {
-                    log.warn("child #{}: {}", i, topLevelStatementContext.getChild(i).getClass());
+                    final ParseTree element = topLevelStatementContext.getChild(i);
+                    log.warn("child #{}: {} = {}", i, element.getClass().getSimpleName(), element.getText());
                 }
             }
             if (construct instanceof final Expression expression) {
@@ -99,7 +102,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
                 if (verbose) log.info("top level statement: {}", stmt);
                 topLevelStatements.add(stmt);
             } else {
-                log.warn("invalid top level construct: {} at {}", construct, ctx.getText());
+                log.warn("invalid top level construct: {} in {} at {}, built from {} [{}]", construct, ctx.getText(), location(ctx.start, ctx.stop), topLevelStatementContext, simpleClassNameOf(topLevelStatementContext));
             }
         }
         return new Script(location(ctx.start, ctx.stop), topLevelStatements, source);
@@ -112,7 +115,6 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
     }
 
 
-
     @Override
     public Block visitBlock(final JanitorParser.BlockContext ctx) {
         if (ctx == null) {
@@ -120,23 +122,39 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
         }
         final List<Statement> statements = new ArrayList<>(ctx.blockStatement().size());
         for (final JanitorParser.BlockStatementContext blockStatementContext : ctx.blockStatement()) {
-            final Statement stmt = (Statement) visit(blockStatementContext);
-            if (verbose) log.info("block statement: {}", stmt);
-            statements.add(stmt);
+            final Ast blockStatementCandidate = visit(blockStatementContext);
+            if (blockStatementCandidate instanceof final Statement stmt) {
+                if (verbose) log.info("block statement: {}", stmt);
+                statements.add(stmt);
+            } else {
+                throw new CompilerError("invalid block statement: " + blockStatementCandidate + " at " + blockStatementCandidate.getLocation());
+            }
+
+
         }
         return new Block(location(ctx.start, ctx.stop), statements);
     }
 
     @Override
     public Ast visitTopLevelBlockStatement(final JanitorParser.TopLevelBlockStatementContext ctx) {
-        if (verbose)  log.info("visitTopLevelBlockStatement");
-        return visit(ctx.blockStatement());
+        if (verbose) log.info("visitTopLevelBlockStatement");
+        final Ast result = visit(ctx.blockStatement());
+        if (result == null) {
+            log.warn("generated no code from statement {} at {}", ctx.getText(), location(ctx.start, ctx.stop));
+        }
+        return result;
     }
 
     @Override
     public AstNode visitReturnStatement(final JanitorParser.ReturnStatementContext ctx) {
         return new ReturnStatement(location(ctx.start, ctx.stop), ctx.expression() == null ? null : (Expression) visit(ctx.expression()));
     }
+
+    @Override
+    public Ast visitEmptyStatement(final JanitorParser.EmptyStatementContext ctx) {
+        return new EmptyStatement(location(ctx.start, ctx.stop));
+    }
+
 
     @Override
     public AstNode visitBreakStatement(final JanitorParser.BreakStatementContext ctx) {
@@ -148,22 +166,35 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
         return new ContinueStatement(location(ctx.start, ctx.stop));
     }
 
+
     @Override
-    public ExpressionList visitExpressionList(final JanitorParser.ExpressionListContext ctx) {
-        if (verbose) log.info("visitExpressionList: {}", ctx);
-        if (ctx.isEmpty()) {
-            if (verbose) log.info("empty expression list");
-        }
-        final ExpressionList el = new ExpressionList(location(ctx.start, ctx.stop));
-        final List<JanitorParser.ExpressionContext> expr = ctx.expression();
-        if (expr != null) {
-            for (final JanitorParser.ExpressionContext expressionContext : expr) {
-                final Ast result = visit(expressionContext);
-                if (verbose) log.info("child: {}", result);
-                el.addExpression((Expression) result);
+    public ArgumentList visitArgumentList(final JanitorParser.ArgumentListContext ctx) {
+        final ArgumentList argumentList = new ArgumentList(location(ctx.start, ctx.stop));
+        if (ctx.positionalArgs() != null) {
+            for (final JanitorParser.ArgumentContext argumentContext : ctx.positionalArgs().argument()) {
+                final Ast construct = visit(argumentContext);
+                if (construct instanceof final Expression expression) {
+                    argumentList.addExpression((Expression) expression);
+                } else {
+                    throw new CompilerError("invalid argument: " + construct);
+                }
             }
         }
-        return el;
+        // LATER: keywordArgContext.validIdentifier().getText() cannot be *args or **kwargs, because they are not
+        // validIdentifier. However, I could put in an intermediate rule that allows the prefixes, enabling people
+        // to use *args and *kwargs like in Python when calling functions. Not sure if that's ever needed in reality.
+        if (ctx.keywordArgs() != null) {
+            for (final JanitorParser.KeywordArgContext keywordArgContext : ctx.keywordArgs().keywordArg()) {
+                final String parameterName = keywordArgContext.validIdentifier().getText();
+                final Ast construct = visit(keywordArgContext.expression());
+                if (construct instanceof final Expression expression) {
+                    argumentList.addNamedExpression(parameterName, (Expression) expression);
+                } else {
+                    throw new CompilerError("invalid argument: " + construct);
+                }
+            }
+        }
+        return argumentList;
     }
 
     @Override
@@ -202,7 +233,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
         if (litConst instanceof JDate date) {
             return new DateLiteral(location(ctx.start, ctx.stop), date);
         } else {
-            throw new RuntimeException("invalid date literal: " + text);
+            throw new CompilerError("invalid date literal: " + text);
         }
     }
 
@@ -216,7 +247,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
         if (literalValue instanceof JDateTime dt) {
             return new DateTimeLiteral(location(ctx.start, ctx.stop), dt);
         } else {
-            throw new RuntimeException("invalid datetime literal: " + text);
+            throw new CompilerError("invalid datetime literal: " + text);
         }
     }
 
@@ -307,7 +338,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
                         visitBlock(ctx.block(0)),
                         elseBlock);
             } else {
-                throw new RuntimeException("invalid if clause " + nested + " ; expected an expression but got " + simpleClassNameOf(nested));
+                throw new CompilerError("invalid if clause " + nested + " ; expected an expression but got " + simpleClassNameOf(nested));
             }
         } else {
             final Ast nested = visit(ctx.expression());
@@ -317,7 +348,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
                         visitBlock(ctx.block(0)),
                         visitBlock(ctx.block(1)));
             } else {
-                throw new RuntimeException("invalid if clause " + nested + " ; expected an expression but got " + simpleClassNameOf(nested));
+                throw new CompilerError("invalid if clause " + nested + " ; expected an expression but got " + simpleClassNameOf(nested));
             }
 
         }
@@ -327,11 +358,11 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
     public Ast visitPostfixExpression(final JanitorParser.PostfixExpressionContext ctx) {
         if (verbose) log.info("postfixExpression");
         final Expression expr = (Expression) visit(ctx.expression());
-        switch (ctx.postfix.getType()) {
-            case JanitorLexer.INC: return new PostfixIncrement(location(ctx.start, ctx.stop), expr);
-            case JanitorLexer.DEC: return new PostfixDecrement(location(ctx.start, ctx.stop), expr);
-        }
-        throw new RuntimeException("unimplemented postfix expression: " + ctx.getText());
+        return switch (ctx.postfix.getType()) {
+            case JanitorLexer.INC -> new PostfixIncrement(location(ctx.start, ctx.stop), expr);
+            case JanitorLexer.DEC -> new PostfixDecrement(location(ctx.start, ctx.stop), expr);
+            default -> throw new CompilerError("unimplemented postfix expression: " + ctx.getText());
+        };
     }
 
     @Override
@@ -339,15 +370,18 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
         if (verbose) log.info("prefixExpression");
         final Expression expr = (Expression) visit(ctx.expression());
         switch (ctx.prefix.getType()) {
-            case JanitorLexer.INC: return new PrefixIncrement(location(ctx.start, ctx.stop), expr);
-            case JanitorLexer.DEC: return new PrefixDecrement(location(ctx.start, ctx.stop), expr);
-            case JanitorLexer.SUB: return new Negation(location(ctx.start, ctx.stop), expr);
+            case JanitorLexer.INC:
+                return new PrefixIncrement(location(ctx.start, ctx.stop), expr);
+            case JanitorLexer.DEC:
+                return new PrefixDecrement(location(ctx.start, ctx.stop), expr);
+            case JanitorLexer.SUB:
+                return new Negation(location(ctx.start, ctx.stop), expr);
         }
-        throw new RuntimeException("unimplemented prefix expression: " + ctx.getText());
+        throw new CompilerError("unimplemented prefix expression: " + ctx.getText());
     }
 
     @Override
-    public AstNode visitAssignmentExpression(final JanitorParser.AssignmentExpressionContext ctx) {
+    public AstNode visitAssignmentStatement(final JanitorParser.AssignmentStatementContext ctx) {
         if (verbose) log.info("visitAssignmentExpression");
         final Expression left = (Expression) visit(ctx.expression(0));
         final Expression right = (Expression) visit(ctx.expression(1));
@@ -358,8 +392,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
             case JanitorLexer.DIV_ASSIGN -> new DivAssignment(location(ctx.start, ctx.stop), left, right);
             case JanitorLexer.MOD_ASSIGN -> new ModAssignment(location(ctx.start, ctx.stop), left, right);
             case JanitorLexer.MUL_ASSIGN -> new MulAssignment(location(ctx.start, ctx.stop), left, right);
-            default ->
-                    throw new RuntimeException("unimplemented assignment operation: " + ctx.getText() + " (" + ctx.bop.getText() + ")");
+            default -> throw new CompilerError("unimplemented assignment operation: " + ctx.getText() + " (" + ctx.bop.getText() + ")");
         };
     }
 
@@ -389,7 +422,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
             case JanitorLexer.ALT_NOTEQUAL, JanitorLexer.NOTEQUAL -> new NonEquality(location(ctx.start, ctx.stop), left, right);
             case JanitorLexer.MATCH -> new MatchesGlob(location(ctx.start, ctx.stop), left, right);
             case JanitorLexer.MATCH_NOT -> new MatchesNotGlob(location(ctx.start, ctx.stop), left, right);
-            default -> throw new RuntimeException("unimplemented binary operation: " + ctx.getText() + " (" + ctx.bop.getText() + ")");
+            default -> throw new CompilerError("unimplemented binary operation: " + ctx.getText() + " (" + ctx.bop.getText() + ")");
         };
     }
 
@@ -433,7 +466,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
         if ("false".equals(text)) {
             return LITERAL_FALSE;
         }
-        throw new RuntimeException("invalid bool literal: " + text);
+        throw new CompilerError("invalid bool literal: " + text);
     }
 
 
@@ -469,7 +502,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
             if (ast instanceof ImportClause clause) {
                 clauses.add(clause);
             } else {
-                throw new RuntimeException("invalid import clause: " + ast);
+                throw new CompilerError("invalid import clause: " + ast);
             }
         }
         return new ImportStatement(location(ctx.start, ctx.stop), clauses);
@@ -481,8 +514,8 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
     @Override
     public Ast visitImportPlain(final JanitorParser.ImportPlainContext ctx) {
         return new ImportClause(location(ctx.start, ctx.stop),
-            visitQualifiedName(ctx.qualifiedName()),
-            (Identifier) visitImportAlias(ctx.importAlias()));
+                visitQualifiedName(ctx.qualifiedName()),
+                (Identifier) visitImportAlias(ctx.importAlias()));
     }
 
     @Override
@@ -533,35 +566,75 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
     public AstNode visitFunctionDeclaration(final JanitorParser.FunctionDeclarationContext ctx) {
         if (verbose) log.info("functionDeclaration");
         final JanitorParser.FormalParametersContext formalParameters = ctx.formalParameters();
-        final List<String> finishedParams = helpExtractFormalParameters(formalParameters);
+        final FormalParameters finishedParams = helpExtractFormalParameters(formalParameters);
 
         final Location loc = location(ctx.start, ctx.stop);
 
         return new RegularAssignment(loc,
-            new Identifier(loc, ctx.validIdentifier().getText()),
-            new ScriptFunction(loc, ctx.validIdentifier().getText(), finishedParams, visitBlock(ctx.block()))
+                new Identifier(loc, ctx.validIdentifier().getText()),
+                new ScriptFunction(loc, ctx.validIdentifier().getText(), finishedParams, visitBlock(ctx.block()))
         );
     }
 
-    private List<String> helpExtractFormalParameters(final JanitorParser.FormalParametersContext formalParameters) {
+    private FormalParameters helpExtractFormalParameters(final JanitorParser.FormalParametersContext formalParameters) {
         if (verbose) log.info("formal parameters: {}", formalParameters);
         if (formalParameters != null) {
             return helpExtractFormalParametersList(formalParameters.formalParameterList());
         } else {
-            return Collections.emptyList();
+            return FormalParameters.empty();
         }
     }
 
-    private List<String> helpExtractFormalParametersList(final JanitorParser.FormalParameterListContext fpl) {
+    private FormalParameters helpExtractFormalParametersList(final JanitorParser.FormalParameterListContext fpl) {
         if (verbose) log.info("fpl: {}", fpl);
         if (fpl != null) {
-            final List<String> parameterNames = new ArrayList<>();
-            for (final JanitorParser.FormalParameterContext formalParameterContext : fpl.formalParameter()) {
-                parameterNames.add(formalParameterContext.validIdentifier().getText());
+            @Nullable JanitorParser.NonDefaultParamListContext nonDefaultParameters = null;
+            @Nullable JanitorParser.DefaultParamListContext defaultParameters = null;
+            @Nullable JanitorParser.VarArgListContext varArgParameters = null;
+            @Nullable JanitorParser.KwArgListContext kwArgParameters = null;
+
+            final List<FormalParameter> parameters = new ArrayList<>();
+            if (fpl instanceof JanitorParser.FormalParameterList1Context f1) {
+                kwArgParameters = f1.kwArgList();
+            } else if (fpl instanceof JanitorParser.FormalParameterList2Context f2) {
+                varArgParameters = f2.varArgList();
+                kwArgParameters = f2.kwArgList();
+            } else if (fpl instanceof JanitorParser.FormalParameterList3Context f3) {
+                nonDefaultParameters = f3.nonDefaultParamList();
+                kwArgParameters = f3.kwArgList();
+                varArgParameters = f3.varArgList();
+            } else if (fpl instanceof JanitorParser.FormalParameterList4Context f4) {
+                nonDefaultParameters = f4.nonDefaultParamList();
+                kwArgParameters = f4.kwArgList();
+                varArgParameters = f4.varArgList();
+                defaultParameters = f4.defaultParamList();
             }
-            return parameterNames;
+            if (nonDefaultParameters != null) {
+                for (final JanitorParser.FormalParameterContext formalParameterContext : nonDefaultParameters.formalParameter()) {
+                    parameters.add(FormalParameter.nonDefault(formalParameterContext.validIdentifier().getText()));
+                }
+            }
+            if (defaultParameters != null) {
+                for (final JanitorParser.FormalParameterWithDefaultContext formalParameterWithDefaultContext : defaultParameters.formalParameterWithDefault()) {
+                    parameters.add(FormalParameter.defaulted(formalParameterWithDefaultContext.validIdentifier().getText(), visitExpression(formalParameterWithDefaultContext.expression())));
+                }
+            }
+            if (varArgParameters != null) {
+                if (varArgParameters != null) {
+                    parameters.add(FormalParameter.varargs(varArgParameters.validIdentifier().getText()));
+                }
+            }
+            if (kwArgParameters != null) {
+                if (kwArgParameters != null) {
+                    if (!"**".equals(kwArgParameters.DOUBLE_STAR().getText())) {
+                        throw new CompilerError("invalid kwargs parameter not annotated with **: " + kwArgParameters.getText());
+                    }
+                    parameters.add(FormalParameter.kwargs(kwArgParameters.validIdentifier().getText()));
+                }
+            }
+            return FormalParameters.of(parameters);
         } else {
-            return Collections.emptyList();
+            return FormalParameters.empty();
         }
     }
 
@@ -580,26 +653,26 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
     }
 
     @Override
-    public ExpressionList visitArguments(final JanitorParser.ArgumentsContext ctx) {
-        final JanitorParser.ExpressionListContext expList = ctx.expressionList();
-        return expList == null ? null : visitExpressionList(ctx.expressionList());
+    public ArgumentList visitArguments(final JanitorParser.ArgumentsContext ctx) {
+        final JanitorParser.ArgumentListContext expList = ctx.argumentList();
+        return expList == null ? null : visitArgumentList(expList);
     }
 
     @Override
     public AstNode visitFunctionCall(final JanitorParser.FunctionCallContext ctx) {
         if (verbose) log.info("functionCall");
-        // ctx.expressionList()
-        return null;
+        throw new CompilerError("function call not implemented yet, at " + location(ctx.start, ctx.stop) + ": " + ctx.getText());
+        // return null;
     }
 
     @Override
     public Ast visitIndexExpression(final JanitorParser.IndexExpressionContext ctx) {
         final JanitorParser.ExpressionContext index = ctx.expression(1);
         return new FunctionCallStatement(
-            location(ctx.start, ctx.stop),
-            INDEXED_GET_METHOD,
-            (Expression) visit(ctx.expression(0)),
-            new ExpressionList(location(index.start, index.stop)).addExpression((Expression) visit(index))
+                location(ctx.start, ctx.stop),
+                INDEXED_GET_METHOD,
+                (Expression) visit(ctx.expression(0)),
+                new ArgumentList(location(index.start, index.stop)).addExpression((Expression) visit(index))
         );
     }
 
@@ -625,12 +698,12 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
     @Override
     public Ast visitIndexExpressionFullRange(final JanitorParser.IndexExpressionFullRangeContext ctx) {
         return new FunctionCallStatement(
-            location(ctx.start, ctx.stop),
-            INDEXED_GET_METHOD,
-            (Expression) visit(ctx.expression()),
-            new ExpressionList(location(ctx.start, ctx.stop))
-                .addExpression(NullLiteral.NULL)
-                .addExpression(NullLiteral.NULL)
+                location(ctx.start, ctx.stop),
+                INDEXED_GET_METHOD,
+                (Expression) visit(ctx.expression()),
+                new ArgumentList(location(ctx.start, ctx.stop))
+                        .addExpression(NullLiteral.NULL)
+                        .addExpression(NullLiteral.NULL)
         );
     }
 
@@ -641,42 +714,88 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
                                      JanitorParser.ExpressionContext tail) {
         if (head == null && tail == null) {
             return new FunctionCallStatement(
-                location(start, stop),
-                INDEXED_GET_METHOD,
-                (Expression) visit(main),
-                new ExpressionList(location(start, stop))
-                    .addExpression(NullLiteral.NULL)
-                    .addExpression(NullLiteral.NULL)
+                    location(start, stop),
+                    INDEXED_GET_METHOD,
+                    (Expression) visit(main),
+                    new ArgumentList(location(start, stop))
+                            .addExpression(NullLiteral.NULL)
+                            .addExpression(NullLiteral.NULL)
             );
         } else if (tail == null) {
             return new FunctionCallStatement(
-                location(start, stop),
-                INDEXED_GET_METHOD,
-                (Expression) visit(main),
-                new ExpressionList(location(head.start, head.stop))
-                    .addExpression((Expression) visit(head))
-                    .addExpression(NullLiteral.NULL)
+                    location(start, stop),
+                    INDEXED_GET_METHOD,
+                    (Expression) visit(main),
+                    new ArgumentList(location(head.start, head.stop))
+                            .addExpression((Expression) visit(head))
+                            .addExpression(NullLiteral.NULL)
             );
         } else if (head == null) {
             return new FunctionCallStatement(
-                location(start, stop),
-                INDEXED_GET_METHOD,
-                (Expression) visit(main),
-                new ExpressionList(location(tail.start, tail.stop))
-                    .addExpression(NullLiteral.NULL)
-                    .addExpression((Expression) visit(tail))
+                    location(start, stop),
+                    INDEXED_GET_METHOD,
+                    (Expression) visit(main),
+                    new ArgumentList(location(tail.start, tail.stop))
+                            .addExpression(NullLiteral.NULL)
+                            .addExpression((Expression) visit(tail))
             );
         } else {
             return new FunctionCallStatement(
-                location(start, stop),
-                INDEXED_GET_METHOD,
-                (Expression) visit(main),
-                new ExpressionList(location(head.start, head.stop))
-                    .addExpression((Expression) visit(head))
-                    .addExpression((Expression) visit(tail))
+                    location(start, stop),
+                    INDEXED_GET_METHOD,
+                    (Expression) visit(main),
+                    new ArgumentList(location(head.start, head.stop))
+                            .addExpression((Expression) visit(head))
+                            .addExpression((Expression) visit(tail))
             );
         }
 
+    }
+
+    public Expression visitExpression(final JanitorParser.ExpressionContext ctx) {
+        return (Expression) visit(ctx);
+    }
+
+    /**
+     * "expression.identifier"
+     *
+     * @param ctx the parse tree
+     * @return the expression
+     */
+    @Override
+    public MemberAccessExpression visitMemberAccess(final JanitorParser.MemberAccessContext ctx) {
+        final Expression expression = visitExpression(ctx.expression());
+        final String identifier = ctx.validIdentifier().getText();
+        return new MemberAccessExpression(location(ctx.start, ctx.stop), expression, identifier, false);
+    }
+
+    /**
+     * "expression?.identifier"
+     *
+     * @param ctx the parse tree
+     * @return the expression
+     */
+    @Override
+    public MemberAccessExpression visitOptionalMemberAccess(final JanitorParser.OptionalMemberAccessContext ctx) {
+        final Expression expression = visitExpression(ctx.expression());
+        final String identifier = ctx.validIdentifier().getText();
+        return new MemberAccessExpression(location(ctx.start, ctx.stop), expression, identifier, true);
+    }
+
+    @Override
+    public Ast visitMemberCall(final JanitorParser.MemberCallContext ctx) {
+        final Expression expression = visitExpression(ctx.expression());
+        final String identifier = ctx.validIdentifier().getText();
+        final @Nullable ArgumentList args = ctx.argumentList() == null ? null : visitArgumentList(ctx.argumentList());
+        return new MemberCallExpression(location(ctx.start, ctx.stop), expression, identifier, args, false);
+    }
+
+    @Override
+    public Ast visitOptionalMemberCall(final JanitorParser.OptionalMemberCallContext ctx) {
+        final Expression expression = visitExpression(ctx.expression());
+        final String identifier = ctx.validIdentifier().getText();
+        final @Nullable ArgumentList args = ctx.argumentList() == null ? null : visitArgumentList(ctx.argumentList());
+        return new MemberCallExpression(location(ctx.start, ctx.stop), expression, identifier, args, true);
     }
 
 
@@ -686,21 +805,20 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
 
         String identifierText = null;
 
-        // Wenn ein Keyword gleichzeitig auch ein Identifier sein darf, muss es hier und bei visitIdentifier aufgelistet werden!
         if (ctx.validIdentifier() != null) {
             identifierText = ctx.validIdentifier().getText();
-        } /*else if (ctx.FROM() != null) {
-            identifierText = ctx.FROM().getText();
-        } else if (ctx.TO() != null) {
-            identifierText = ctx.TO().getText();
-        } else if (ctx.IN() != null) {
-            identifierText = ctx.IN().getText();
-        }*/
+        }
 
+        // ⬇️ Ergänzung: Funktionsname aus functionCall holen
+        if (identifierText == null && ctx.functionCall() != null) {
+            final JanitorParser.FunctionCallContext fc = ctx.functionCall();
+            if (fc.validIdentifier() != null) {
+                identifierText = fc.validIdentifier().getText();
+            }
+        }
 
         if (identifierText == null) {
-            //log.error("*** invalid call expression {}", ctx.getText());
-            //System.out.println("    visitCallExpression: " + null + ", TO = " + ctx.TO() + ", FROM = " + ctx.FROM());
+            log.warn("*** invalid call expression {} (no identifier)", ctx.getText());
         }
 
         identifierText = env.getBuiltinTypes().intern(identifierText);
@@ -714,78 +832,48 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
             log.info("expression: {}", expr);
         }
 
-        // eigentlich ganz einfach: wenn wir functionCallContext haben, dann wird die Funktion tatsächlich aufgerufen.
-        // Haben wir ihn aber nicht, dann müssen wir die Funktion selbst als Variable holen.
-
         if (identifierText != null && functionCallContext != null) {
             if (verbose) log.info("case 1: call with identifier and function call context");
-            final JanitorParser.ExpressionListContext expList = ctx.functionCall().expressionList();
+            final JanitorParser.ArgumentListContext expList = functionCallContext.argumentList();
             return new FunctionCallStatement(
-                location(ctx.start, ctx.stop),
-                identifierText,
-                expr == null ? null : (Expression) visit(expr),
-                expList == null ? null : visitExpressionList(expList));
+                    location(ctx.start, ctx.stop),
+                    identifierText,
+                    expr == null ? null : (Expression) visit(expr),
+                    expList == null ? null : visitArgumentList(expList)
+            );
         }
 
         if (identifierText != null && expr != null) {
-            if (verbose) {
-                log.info("case 2: call with identifier and expression --> should be a function LOOKUP");
-                log.info("creating function lookup, lookup operator is: dot={}, qdot={}", ctx.DOT(), ctx.QDOT());
-            }
-
             final boolean guarded = ctx.QDOT() != null;
-
             return new FunctionLookup(
-                location(ctx.start, ctx.stop),
-                identifierText,
-                (Expression) visit(expr),
-                null,
-                guarded
+                    location(ctx.start, ctx.stop),
+                    identifierText,
+                    (Expression) visit(expr),
+                    null,
+                    guarded
             );
         }
 
         if (identifierText == null && expr != null && functionCallContext != null) {
-            if (verbose) {
-                log.info("case 3: call without identifier (?), with call context and expression");
-                log.info("expression: {}", expr.getText());
-                log.info("function call context: {}", functionCallContext.getText());
-                log.info("fcc identifier: {}", functionCallContext.validIdentifier().getText());
-            }
-
-            if (functionCallContext.expressionList() == null) {
-                if (verbose) log.info("3a: no expression list");
-                return new FunctionCallStatement(
-                    location(ctx.start, ctx.stop),
-                    functionCallContext.validIdentifier().getText(),
-                    (Expression) visit(expr),
-                    null
-                );
-            } else {
-                if (verbose) log.info("3b: with expression list");
-                final ExpressionList callExpr = visitExpressionList(functionCallContext.expressionList());
-                return new FunctionCallStatement(
+            final ArgumentList callExpr =
+                    functionCallContext.argumentList() == null ? null : visitArgumentList(functionCallContext.argumentList());
+            return new FunctionCallStatement(
                     location(ctx.start, ctx.stop),
                     functionCallContext.validIdentifier().getText(),
                     (Expression) visit(expr),
                     callExpr
-                );
-            }
-
-
-
+            );
         }
 
         log.warn("invalid call expression {}", ctx.getText());
         return null;
-        // LATER es gibt noch diverse weitere wege in der Grammar!
-        // return visit(ctx.expression());
     }
 
     @Override
     public Ast visitLambdaExpression(final JanitorParser.LambdaExpressionContext ctx) {
         if (verbose) log.info("lambdaExpression");
 
-        final List<String> lambdaParameters = helpExtractLambdaParameters(ctx.lambdaParameters());
+        final FormalParameters lambdaParameters = helpExtractLambdaParameters(ctx.lambdaParameters());
         if (verbose) log.info("lambda parameters: {}", lambdaParameters);
 
         final JanitorParser.LambdaBodyContext lambdaBodyContext = ctx.lambdaBody();
@@ -798,41 +886,41 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
             if (verbose) log.info("it's an expression lambda");
 
             return new ScriptFunction(loc, "lambda", lambdaParameters,
-                new Block(loc, List.of(
-                    new ReturnStatement(loc, (Expression) visit(lambdaExpressionContext))
-                ))
-                );
+                    new Block(loc, List.of(
+                            new ReturnStatement(loc, (Expression) visit(lambdaExpressionContext))
+                    ))
+            );
 
         }
         if (lambdaBlockContext != null) {
             if (verbose) log.info("it's a block lambda");
             return new ScriptFunction(loc, "lambda", lambdaParameters,
-                visitBlock(lambdaBlockContext));
+                    visitBlock(lambdaBlockContext));
         }
 
         log.error("unknown lambda construction at {}: {}", loc, ctx.getText());
         return super.visitLambdaExpression(ctx);
     }
 
-    private List<String> helpExtractLambdaParameters(final JanitorParser.LambdaParametersContext ctx) {
+    private FormalParameters helpExtractLambdaParameters(final JanitorParser.LambdaParametersContext ctx) {
         if (verbose) log.info("lambdaParameters");
         final List<JanitorParser.ValidIdentifierContext> identifiers = ctx.validIdentifier();
         final JanitorParser.FormalParameterListContext formalParams = ctx.formalParameterList();
         if (formalParams != null) {
             if (verbose) log.info("this lambda uses formal params");
-            final List<String> fp = helpExtractFormalParametersList(formalParams);
+            final FormalParameters fp = helpExtractFormalParametersList(formalParams);
             if (verbose) log.info("names: {}", fp);
             return fp;
         }
         if (identifiers != null) {
             if (verbose) log.info("this lambda uses identifiers");
 
-            final List<String> names = new ArrayList<>(identifiers.size());
+            final List<FormalParameter> names = new ArrayList<>(identifiers.size());
             for (final var identifier : identifiers) {
-                names.add(identifier.getText());
+                names.add(FormalParameter.nonDefault(identifier.getText()));
             }
             if (verbose) log.info("names: {}", names);
-            return names;
+            return FormalParameters.of(names);
             //para
         }
         if (verbose) log.warn("unable to extract parameters!");
@@ -898,7 +986,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
                 } else if (litTS != null) {
                     final String text = litTS.getText();
                     lit = new StringLiteral(location(prop.start, ctx.stop), parseLiteral(env, text.substring(3, text.length() - 3)));
-                }  else if (litTD != null) {
+                } else if (litTD != null) {
                     final String text = litTD.getText();
                     lit = new StringLiteral(location(prop.start, ctx.stop), parseLiteral(env, text.substring(3, text.length() - 3)));
                 } else if (litIdent != null) {
@@ -907,7 +995,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
                     lit = new StringLiteral(location(prop.start, ctx.stop), env.getBuiltinTypes().string(text));
                 }
                 if (lit == null) {
-                    throw new RuntimeException("map literal: keys must be single or double quoted strings, instead of: " + prop.getText());
+                    throw new CompilerError("map literal: keys must be single or double quoted strings, instead of: " + prop.getText());
                 }
                 final Expression expr = (Expression) visit(prop.expression());
                 // log.info("map, property assignment: {} = {}", lit, expr);
@@ -924,6 +1012,5 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
                 stop == null ? start.getLine() : stop.getLine(),
                 stop == null ? start.getCharPositionInLine() : stop.getCharPositionInLine());
     }
-
 
 }

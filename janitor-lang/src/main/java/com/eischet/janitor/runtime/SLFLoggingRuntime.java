@@ -17,6 +17,10 @@ public class SLFLoggingRuntime extends BaseRuntime {
         this.log = log;
     }
 
+    public Logger getLog() {
+        return log;
+    }
+
     @Override
     public void warn(String warning) {
         log.warn(warning);

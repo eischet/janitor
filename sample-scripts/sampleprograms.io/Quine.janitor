@@ -1,21 +1,25 @@
-// A quine, in Janitor. Go figure. ;-)
+// A quine, in Janitor. Go figure. We're only cheating a little here. ;-)
 
 function foo(bar, baz) {
-    does_not(make, a.difference);
+    does_not(make, a.difference)
 }
 
 sum = 0;
 for (i from 1 to 1000) {
     sum += i;
 }
-assert(sum == 500500);
+assert(sum == 500500)
 
-print(quine());
+print(quine())
 
-failed = false;
+failed = false
 try {
-    foo(1, 2);
+    foo(1, 2)
 } catch (err) {
-    failed = true;
+    failed = true
 }
-assert(failed);
+assert(failed)
+
+// Jokes aside, there'a a very real case for this: Janitor is *supposed* to have a rich runtime
+// environment, which is going to be close to the application you're writing.
+// Providing a quine() callable is trivial in such a scenario, because the runtime can do it for us.

@@ -1,44 +1,44 @@
 // https://sampleprograms.io/projects/binary-search/
 
 function contains(list, search) {
-    left = 0;
-    right = list.size() - 1;
+    left = 0
+    right = list.size() - 1
     while (left <= right) {
-        mid = left + (right - left) / 2;
+        mid = left + (right - left) / 2
         if (list[mid] == search) {
-            return true;
+            return true
         }
         if (list[mid] < search) {
-            left = mid + 1;
+            left = mid + 1
         } else {
-            right = mid - 1;
+            right = mid - 1
         }
     }
-    return false;
+    return false
 }
 
 function is_sorted(list) {
     for (i from 1 to list.size() - 1) {
         if (list[i] < list[i - 1]) {
-            return false;
+            return false
         }
     }
-    return true;
+    return true
 }
 
-success = null;
+success = null
 
 
 try {
     if (args.size() == 2) {
-        list = re/,/.split(args[0] or "").filter(it -> it != "").map(arg -> arg.trim().int());
-        search = (args[1] or "").int();
+        list = re/,/.split(args[0] or "").filter(it -> it != "").map(arg -> arg.trim().int())
+        search = (args[1] or "").int()
         if (list and search and args[1] and is_sorted(list)) {
-            success = contains(list, search);
+            success = contains(list, search)
         }
     }
 } catch (ignored) {
-    print(ignored);
+    print(ignored)
 }
 
-print(if success == null then 'Usage: please provide a list of sorted integers ("1, 4, 5, 11, 12") and the integer to find ("11")' else success);
+print(if success == null then 'Usage: please provide a list of sorted integers ("1, 4, 5, 11, 12") and the integer to find ("11")' else success)

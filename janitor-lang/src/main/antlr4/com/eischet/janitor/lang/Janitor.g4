@@ -2,7 +2,29 @@
 
 grammar Janitor;
 
-script: topLevelStatement*; // A script consists of a number of top-level statements
+
+@parser::members {
+    private boolean isLineTerminatorAhead() {
+        Token next = _input.LT(1);
+        int t = next.getType();
+        if (t == JanitorLexer.RBRACE) return false;
+        if (t == Token.EOF) return true;
+        CommonTokenStream stream = (CommonTokenStream) getInputStream();
+        java.util.List<Token> hidden = stream.getHiddenTokensToLeft(next.getTokenIndex());
+        if (hidden == null) return false;
+        for (Token h : hidden) {
+            if (h.getType() == JanitorLexer.NEWLINE) return true;
+        }
+        return false;
+    }
+}
+
+script: topLevelStatement* EOF; // A script consists of a number of top-level statements
+
+stmtTerminator
+    : SEMICOLON
+    | { _input.LT(1).getType() != JanitorLexer.SEMICOLON && isLineTerminatorAhead() }?
+    ;
 
 topLevelStatement
     : importStatement                                         # topLevelImportStatement
@@ -10,7 +32,7 @@ topLevelStatement
     ;
 
 importStatement
-    : IMPORT importClause (COMMA importClause)* STMT_TERM
+    : IMPORT importClause (COMMA importClause)* stmtTerminator
     ;
 
 importClause
@@ -25,14 +47,16 @@ blockStatement
     | FOR LPAREN validIdentifier IN expression RPAREN block                                 # forStatement
     | FOR LPAREN validIdentifier FROM expression TO expression RPAREN block                 # forRangeStatement
     | WHILE LPAREN expression RPAREN block                                                  # whileStatement
-    | DO block WHILE LPAREN expression RPAREN STMT_TERM                                     # doWhileStatement
+    | DO block WHILE LPAREN expression RPAREN stmtTerminator                                # doWhileStatement
     | TRY block (catchClause? finallyBlock? | finallyBlock)                                 # tryCatchStatement
-    | RETURN expression? STMT_TERM                                                          # returnStatement
-    | THROW expression STMT_TERM                                                            # throwStatement
-    | BREAK STMT_TERM                                                                       # breakStatement
-    | CONTINUE STMT_TERM                                                                    # continueStatement
-    | statementExpression=expression STMT_TERM                                              # expressionStatement
+    | RETURN expression? stmtTerminator                                                     # returnStatement
+    | THROW expression stmtTerminator                                                       # throwStatement
+    | BREAK stmtTerminator                                                                  # breakStatement
+    | CONTINUE stmtTerminator                                                               # continueStatement
+    | <assoc=right> expression bop=(ASSIGN | PLUS_ASSIGN | MINUS_ASSIGN | MUL_ASSIGN | DIV_ASSIGN | MOD_ASSIGN )  expression        # assignmentStatement
+    | statementExpression=expression stmtTerminator                                         # expressionStatement
     | functionDeclaration                                                                   # functionDeclarationStatement
+    | SEMICOLON                                                                             # emptyStatement
     ;
 
 ifStatementDef: IF LPAREN expression RPAREN block (ELSE block | ELSE ifStatementDef)?;
@@ -40,7 +64,13 @@ ifStatementDef: IF LPAREN expression RPAREN block (ELSE block | ELSE ifStatement
 block: LBRACE blockStatement* RBRACE;
 
 expression
-    : LPAREN expression RPAREN                                                                                                      # parensExpression
+    : expression DOT validIdentifier LPAREN argumentList? RPAREN                                                                  # memberCall
+    | expression QDOT validIdentifier LPAREN argumentList? RPAREN                                                                 # optionalMemberCall
+    | expression DOT validIdentifier                                                                                                # memberAccess
+    | expression QDOT validIdentifier                                                                                               # optionalMemberAccess
+    | functionCall                                                                                                                  # callExpression
+    | expression bop=(DOT|QDOT) ( validIdentifier | functionCall | explicitGenericInvocation )                                      # callExpression
+    | LPAREN expression RPAREN                                                                                                      # parensExpression
     | (DECIMAL_LITERAL | HEX_LITERAL | BINARY_LITERAL)                                                                              # integerLiteral
     | FLOAT_LITERAL                                                                                                                 # floatLiteral
     | (YEARS_LITERAL | MONTHS_LITERAL | DAYS_LITERAL | WEEKS_LITERAL | HOURS_LITERAL | MINUTES_LITERAL | SECONDS_LITERAL )          # durationLiteral
@@ -55,14 +85,12 @@ expression
     | NULL                                                                                                                          # nullLiteral
     | validIdentifier                                                                                                               # identifier
     | explicitGenericInvocationSuffix                                                                                               # genericInvocationExpression
-    | expression bop=(DOT|QDOT|HASH) ( validIdentifier | functionCall | explicitGenericInvocation )                                 # callExpression
     | expression LBRACK expression? COLON expression? COLON expression RBRACK                                                       # indexExpressionSteppedRange
     | expression LBRACK expression COLON RBRACK                                                                                     # indexExpressionRangeHead
     | expression LBRACK COLON expression RBRACK                                                                                     # indexExpressionRangeTail
     | expression LBRACK expression COLON expression RBRACK                                                                          # indexExpressionRange
     | expression LBRACK COLON RBRACK                                                                                                # indexExpressionFullRange
     | expression LBRACK expression RBRACK                                                                                           # indexExpression
-    | functionCall                                                                                                                  # callExpression
     | expression postfix=( INC | DEC )                                                                                              # postfixExpression
     | prefix=( ADD | SUB | INC | DEC ) expression                                                                                   # prefixExpression
     | prefix=( NOT | ALT_NOT ) expression                                                                                           # notExpression
@@ -73,7 +101,6 @@ expression
     | expression bop=(AND | CAND) expression                                                                                        # binaryExpression
     | expression bop=(OR | COR) expression                                                                                          # binaryExpression
     | <assoc=right> expression bop=QUESTION expression COLON expression                                                             # ternaryExpression
-    | <assoc=right> expression bop=(ASSIGN | PLUS_ASSIGN | MINUS_ASSIGN | MUL_ASSIGN | DIV_ASSIGN | MOD_ASSIGN )  expression        # assignmentExpression
     | lambdaParameters ARROW lambdaBody                                                                                             # lambdaExpression
     | IF expression THEN expression (ELSE expression)?                                                                              # ifThenElseExpression
     | LBRACE (propertyAssignment (',' propertyAssignment)* ','?)? RBRACE                                                            # mapExpression
@@ -89,11 +116,64 @@ functionDeclaration: FUNCTION validIdentifier formalParameters block;
 
 formalParameters: LPAREN formalParameterList? RPAREN;
 
+/*
+
 formalParameterList: formalParameter (COMMA formalParameter)*;
+formalParameter: validIdentifier;
+*/
+
+// foo
+
+formalParameterList
+    // 1) nonDefault (optional) + default (mind. einer) [+ *args] [+ **kwargs]
+    : (nonDefaultParamList COMMA)? defaultParamList (COMMA varArgList)? (COMMA kwArgList)?   # formalParameterList4
+
+    // 2) nur nonDefault [+ *args] [+ **kwargs]
+    | nonDefaultParamList (COMMA varArgList)? (COMMA kwArgList)?                             # formalParameterList3
+
+    // 3) nur *args [+ **kwargs]
+    | varArgList (COMMA kwArgList)?                                                          # formalParameterList2
+
+    // 4) nur **kwargs
+    | kwArgList                                                                              # formalParameterList1
+    ;
+/*
+formalParameterList
+    : (nonDefaultParamList COMMA)? defaultParamList (COMMA varArgList)? (COMMA kwArgList)?   # formalParameterList5
+    | (nonDefaultParamList COMMA)? defaultParamList? (COMMA varArgList)? (COMMA kwArgList)?  # formalParameterList4
+    | (nonDefaultParamList COMMA)? varArgList (COMMA kwArgList)?                             # formalParameterList3
+    | (nonDefaultParamList COMMA)? kwArgList                                                 # formalParameterList2
+    | nonDefaultParamList                                                                    # formalParameterList1
+    ;
+*/
+
+nonDefaultParamList
+    : formalParameter (COMMA formalParameter)*
+    ;
+
+defaultParamList
+    : formalParameterWithDefault (COMMA formalParameterWithDefault)*
+    ;
+
+varArgList
+    : MUL validIdentifier
+    ;
+
+kwArgList
+    : DOUBLE_STAR validIdentifier
+    ;
+
+formalParameter
+    : validIdentifier
+    ;
+
+formalParameterWithDefault
+    : validIdentifier '=' expression
+    ;
+
+// foo
 
 importAlias: validIdentifier;
-
-formalParameter: validIdentifier;
 
 qualifiedName: validIdentifier (DOT validIdentifier)*;
 
@@ -101,9 +181,33 @@ catchClause: CATCH LPAREN validIdentifier RPAREN block;
 
 finallyBlock: FINALLY block;
 
-expressionList: expression (COMMA expression)*;
 
-functionCall: validIdentifier LPAREN expressionList? RPAREN;
+argumentList
+    : positionalArgs (COMMA keywordArgs)?
+    | keywordArgs
+    ;
+
+positionalArgs
+    : argument (COMMA argument)*
+    ;
+
+keywordArgs
+    : keywordArg (COMMA keywordArg)*
+    ;
+
+argument
+    : expression
+    ;
+
+keywordArg
+    : validIdentifier '=' expression
+    ;
+
+/* outdated variant of argumentList
+expressionList: expression (COMMA expression)*;
+*/
+
+functionCall: validIdentifier LPAREN argumentList? RPAREN;
 
 lambdaParameters: validIdentifier | LPAREN formalParameterList? RPAREN | LPAREN validIdentifier (COMMA validIdentifier)* RPAREN;
 
@@ -116,7 +220,7 @@ explicitGenericInvocation: explicitGenericInvocationSuffix;
 explicitGenericInvocationSuffix: validIdentifier arguments;
 
 
-arguments: LPAREN expressionList? RPAREN;
+arguments: LPAREN argumentList? RPAREN;
 
 REGEX_LITERAL: 're/' ('\\/' | ~[\r\n] | .  )*? '/';
 
@@ -175,16 +279,11 @@ LPAREN: '('; RPAREN: ')';
 LBRACE: '{'; RBRACE: '}';
 LBRACK: '['; RBRACK: ']';
 
-STMT_TERM: SEMICOLON | EOF;
-
-
 SEMICOLON:          ';';
 COMMA:              ',';
 DOUBLE_DOT:         '..';
 DOT:                '.';
 QDOT:               '?.';
-HASH:               '#';
-ALT_CATCH:          '|';
 ASSIGN:             '=';
 PLUS_ASSIGN:        '+=';
 MINUS_ASSIGN:       '-=';
@@ -213,6 +312,7 @@ DEC:                '--';
 ADD:                '+';
 SUB:                '-';
 MUL:                '*';
+DOUBLE_STAR:        '**';
 DIV:                '/';
 MOD:                '%';
 ARROW:              '->';

@@ -1,23 +1,23 @@
 // https://sampleprograms.io/projects/rot13/
 
-PLAIN = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-ROTATED = "NOPQRSTUVWXYZABCDEFGHIJKLMnopqrstuvwxyzabcdefghijklm";
+PLAIN = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+ROTATED = "NOPQRSTUVWXYZABCDEFGHIJKLMnopqrstuvwxyzabcdefghijklm"
 
 function rot13(input, source, target) {
-    output = "";
+    output = ""
     for (i from 0 to input.length() - 1) {
-        pos = source.indexOf(input[i]);
+        pos = source.indexOf(input[i])
         if (pos >= 0) {
-            output += target[pos];
+            output += target[pos]
         } else {
-            output += input[i];
+            output += input[i]
         }
     }
-    return output;
+    return output
 }
 
 if (args and args[0]) {
-    print(rot13(args[0], PLAIN, ROTATED));
+    print(rot13(args[0], PLAIN, ROTATED))
 } else {
-    print("Usage: please provide a string to encrypt");
+    print("Usage: please provide a string to encrypt")
 }

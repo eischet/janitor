@@ -36,19 +36,19 @@ public class JSetClass {
     public static JSet __toSet(final JanitorWrapper<Set<JanitorObject>> _self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         final JSet self = ((JSet) _self);
         arguments.require(0);
-        return process.getEnvironment().getBuiltinTypes().set(self.janitorGetHostValue().stream());
+        return process.getBuiltins().set(self.janitorGetHostValue().stream());
     }
 
     public static JList __toList(final JanitorWrapper<Set<JanitorObject>> _self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         final JSet self = ((JSet) _self);
         arguments.require(0);
-        return process.getEnvironment().getBuiltinTypes().list(self.janitorGetHostValue().stream());
+        return process.getBuiltins().list(self.janitorGetHostValue().stream());
     }
 
     public static JInt __size(final JanitorWrapper<Set<JanitorObject>> _self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         final JSet self = ((JSet) _self);
         arguments.require(0);
-        return process.getEnvironment().getBuiltinTypes().integer(self.size());
+        return process.getBuiltins().integer(self.size());
     }
 
     public static JBool __isEmpty(final JanitorWrapper<Set<JanitorObject>> _self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {

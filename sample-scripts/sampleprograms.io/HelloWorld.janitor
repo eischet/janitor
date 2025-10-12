@@ -1,2 +1,3 @@
 // Janitor implementation of https://sampleprograms.io/projects/hello-world/
-print('Hello, World!');
+
+print('Hello, World!')

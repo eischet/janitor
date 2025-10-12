@@ -1,7 +1,7 @@
 // https://sampleprograms.io/projects/even-odd/
 
 if (args and args[0] and (args[0].isNumeric() or (args[0].startsWith("-") and args[0].substring(1).isNumeric()))) {
-    print(args[0].int() % 2 == 0 ? "Even" : "Odd");
+    print(args[0].int() % 2 == 0 ? "Even" : "Odd")
 } else {
-    print("Usage: please input a number");
+    print("Usage: please input a number")
 }

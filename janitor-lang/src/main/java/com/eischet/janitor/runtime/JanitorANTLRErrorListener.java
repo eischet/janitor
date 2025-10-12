@@ -1,23 +1,23 @@
 package com.eischet.janitor.runtime;
 
 import com.eischet.janitor.api.scopes.ScriptModule;
-import org.antlr.v4.runtime.ANTLRErrorListener;
-import org.antlr.v4.runtime.Parser;
-import org.antlr.v4.runtime.RecognitionException;
-import org.antlr.v4.runtime.Recognizer;
+import com.eischet.janitor.lang.JanitorLexer;
+import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.LinkedList;
 import java.util.List;
 
-class JanitorANTLRErrorListener implements ANTLRErrorListener {
+public class JanitorANTLRErrorListener extends BaseErrorListener implements ANTLRErrorListener {
 
-    private final String source;
-    private final List<String> issues = new ArrayList<>();
-    private List<String> lines;
+    protected final String source;
+    protected final List<String> issues = new LinkedList<>();
+    protected List<String> lines;
 
     public JanitorANTLRErrorListener(final String source) {
         this.source = source;
@@ -38,7 +38,24 @@ class JanitorANTLRErrorListener implements ANTLRErrorListener {
             lines = splitSource();
         }
 
+        // When semicolons were made optional, we started getting warnings like this:
+        //      ... print("hello") }
+        //                         ^ here at the closing brace
+        // "no viable alternative at input '}'"
+        // It would be desirable to remove these warnings, but until I figure out how to upgrade the grammar to do that,
+        // I'll simply mute them.
+        if (offendingSymbol instanceof Token token) {
+            int type = token.getType();
+            if (type == JanitorLexer.RBRACE && msg.contains("no viable alternative")) {
+                return;
+            }
+        }
+
         final String improvedMessage = improveAntlrMessage(msg);
+        if (improvedMessage == null) {
+            return;
+        }
+
         final String errorLine = ScriptModule.getLine(lines, line);
         if (errorLine != null && !errorLine.isBlank()) {
             issues.add("line %s:%s --> %s \n    %s".formatted(line, charPositionInLine, improvedMessage, errorLine));
@@ -47,29 +64,15 @@ class JanitorANTLRErrorListener implements ANTLRErrorListener {
         }
     }
 
-    @Override
-    public void reportAmbiguity(final Parser recognizer, final DFA dfa, final int startIndex, final int stopIndex, final boolean exact, final BitSet ambigAlts, final ATNConfigSet configs) {
-        // LATER: actually report this, as warning of sorts?
-        // log.info("ambiguity!");
-    }
-
-    @Override
-    public void reportAttemptingFullContext(final Parser recognizer, final DFA dfa, final int startIndex, final int stopIndex, final BitSet conflictingAlts, final ATNConfigSet configs) {
-        // LATER: actually report this, as warning of sorts?
-        // log.info("attempting full context!");
-    }
-
-    @Override
-    public void reportContextSensitivity(final Parser recognizer, final DFA dfa, final int startIndex, final int stopIndex, final int prediction, final ATNConfigSet configs) {
-        // LATER: actually report this, as warning of sorts?
-        // log.info("context sensitive!");
-    }
-
     public List<String> getIssues() {
         return issues;
     }
 
-    private String improveAntlrMessage(final String msg) {
+    private @Nullable String improveAntlrMessage(final String msg) {
+        if (msg.contains("failed predicate") && msg.contains("stmtTerminator")) {
+            // ignore; it's just the predicate returning false when trying to determine if a ';' is required
+            return null;
+        }
         String improved = msg;
         if (improved != null) {
             if (improved.startsWith("token recognition error at: '\"") || improved.startsWith("token recognition error at: ''")) {
@@ -83,5 +86,13 @@ class JanitorANTLRErrorListener implements ANTLRErrorListener {
             }
         }
         return improved;
+    }
+
+    public boolean hasIssues() {
+        return !issues.isEmpty();
+    }
+
+    public int numberOfIssues() {
+        return issues.size();
     }
 }

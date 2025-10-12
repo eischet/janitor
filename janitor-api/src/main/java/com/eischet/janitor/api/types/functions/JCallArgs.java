@@ -1,6 +1,7 @@
 package com.eischet.janitor.api.types.functions;
 
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
@@ -11,17 +12,15 @@ import com.eischet.janitor.api.util.ObjectUtilities;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * A class that represents the arguments passed to a function call.
  */
 public class JCallArgs {
 
-    private final @Nullable List<JanitorObject> args;
     private final String functionName;
+    private final @Nullable List<EvaluatedArgument> args;
     private final @NotNull JanitorScriptProcess process;
 
     /**
@@ -34,7 +33,13 @@ public class JCallArgs {
     public JCallArgs(final String functionName, final @NotNull JanitorScriptProcess process, final @Nullable List<JanitorObject> args) {
         this.functionName = functionName;
         this.process = process;
-        this.args = args;
+        this.args = args == null ? Collections.emptyList() : args.stream().map(value -> new EvaluatedArgument(null, value)).toList();
+    }
+
+    public JCallArgs(final JanitorScriptProcess process, final String identifier, final @NotNull List<EvaluatedArgument> evaluatedArguments) {
+        this.functionName = identifier;
+        this.process = process;
+        this.args = evaluatedArguments;
     }
 
     /**
@@ -81,6 +86,13 @@ public class JCallArgs {
         return this;
     }
 
+    public JCallArgs requireAtLeast(final int minSize) throws JanitorRuntimeException {
+        if (size() < minSize) {
+            throw new JanitorArgumentException(process, "%s: requires at least %s arguments, but got: %s".formatted(functionName, minSize, args));
+        }
+        return this;
+    }
+
     /**
      * Require that the number of arguments in the call is exactly size.
      *
@@ -106,7 +118,8 @@ public class JCallArgs {
         if (args == null) {
             throw new IndexOutOfBoundsException("No arguments provided");
         }
-        return args.get(position).janitorUnpack(); // unpacking is super-important, so that we store the actual value instead of a property reference, for example (!)
+        // TODO: I'm pretty sure this will fail when named args with defaults come in...
+        return args.get(position).getValue().janitorUnpack(); // unpacking is super-important, so that we store the actual value instead of a property reference, for example (!)
     }
 
     /**
@@ -289,8 +302,9 @@ public class JCallArgs {
      * Get the list of arguments.
      * @return the list of arguments.
      */
+    @Deprecated(since = "0.9.34", forRemoval = true) // "missing out on named arguments"
     public List<JanitorObject> getList() {
-        return args == null ? Collections.emptyList() : args;
+        return args == null ? Collections.emptyList() : args.stream().map(EvaluatedArgument::getValue).toList();
     }
 
     @Override
@@ -299,6 +313,27 @@ public class JCallArgs {
                "args=" + args +
                ", functionName='" + functionName + '\'' +
                '}';
+    }
+
+    public JanitorObject getByName(final @NotNull String name) {
+        return args.stream()
+                .filter(element -> Objects.nonNull(element.getName()))
+                .filter(element -> Objects.equals(element.getName(), name))
+                .map(EvaluatedArgument::getValue)
+                .findFirst()
+                .orElse(null);
+    }
+
+    public JMap asKwargs(final Set<String> except) {
+        @NotNull final JMap map = Janitor.map();
+        for (final EvaluatedArgument arg : args) {
+            if (arg.getName() != null) {
+                if (except == null || !except.contains(arg.getName())) {
+                    map.put(arg.getName(), arg.getValue());
+                }
+            }
+        }
+        return map;
     }
 
 }

@@ -7,3 +7,4 @@ janitor.iml
 janitor-lang/janitor-lang.iml
 
 .flattened-pom.xml
+.run

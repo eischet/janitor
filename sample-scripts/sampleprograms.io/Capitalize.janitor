@@ -1,9 +1,9 @@
 // https://sampleprograms.io/projects/capitalize/
 
-word = (args or [""])[0];
+word = (args or [""])[0]
 
 if (word) {
-    print(word[0].toUpperCase() + word[1:]);
+    print(word[0].toUpperCase() + word[1:])
 } else {
-    print("Usage: please provide a string");
+    print("Usage: please provide a string")
 }

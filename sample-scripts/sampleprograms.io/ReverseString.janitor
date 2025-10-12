@@ -6,18 +6,22 @@
 // These tests are really heavy on command line parsing, which is what Janitor is designed NOT to do, ever, so this is getting really verbose.
 // The fact that 'args' is simply a list of strings bound into the script by the testing code does not really help. Python has the same scenario, though,
 // with sys.argv, and it's just as annoying to parse, so we're probably in good company here. Granted, Python's list has more, and more mature, methods. :-)
-string = (args or [""])[0] or "";
+
+string = (args or [""])[0] or ""
 
 // Split the string into characters. String will probably soon grow a proper split method, but right now we'll use an empty regex instead.
-chars = re//.split(string);
+
+chars = re//.split(string)
 
 // Create a new list to hold the reversed characters.
-reversed = [];
+
+reversed = []
 
 // Iterate over the characters forward...
+
 for (i from 1 to chars.size()) {
-    reversed.add(chars[-i]); // ... but make use of the 'Pythonic' negative indexing available to actually go backwards
+    reversed.add(chars[-i]) // ... but make use of the 'Pythonic' negative indexing available to actually go backwards
 }
 
 // Join the reversed characters into a string and print it.
-print(reversed.join(""));
+print(reversed.join(""))
