@@ -7,6 +7,7 @@ import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.scopes.ScriptModule;
+import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.compiler.JanitorCompiler;
 import com.eischet.janitor.compiler.ast.statement.Script;
 import com.eischet.janitor.json.impl.DateTimeUtils;
@@ -75,5 +76,21 @@ public abstract class JanitorTest {
         return runtime.getAllOutput();
     }
 
+    protected JanitorObject evaluate(final @Language("Janitor") String expressionSource) throws JanitorCompilerException, JanitorRuntimeException {
+        return evaluate(expressionSource, NO_GLOBALS);
+    }
+
+    protected JanitorObject evaluate(final @Language("Janitor") String expressionSource, final Consumer<Scope> prepareGlobals) throws JanitorCompilerException, JanitorRuntimeException {
+        log.info("evaluating: " + expressionSource + "\n");
+        final JanitorParser.ScriptContext script = JanitorScript.parseScript(expressionSource);
+        final ScriptModule module = ScriptModule.unnamed(expressionSource);
+        final Script scriptObject = JanitorCompiler.build(TestEnv.env, module, script, expressionSource);
+        final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
+
+        final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), module); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
+        prepareGlobals.accept(globalScope);
+        final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, "manual", scriptObject);
+        return process.run();
+    }
 
 }

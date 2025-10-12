@@ -1,15 +1,26 @@
 package com.eischet.janitor.compiler;
 
-import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.compiler.ast.expression.Expression;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.StringJoiner;
-
 public class FormalParameter {
 
-    public enum Kind { NON_DEFAULT, DEFAULTED, VARARGS, KWARGS }
+    public enum Kind {
+        POSITIONAL,
+        DEFAULTED,
+        VARARGS,
+        KWARGS;
+
+        public String title() {
+            return switch (this) {
+                case POSITIONAL -> "positional";
+                case DEFAULTED -> "defaulted";
+                case VARARGS -> "varargs";
+                case KWARGS -> "kwargs";
+            };
+        }
+    }
 
     private final @NotNull String name;
     private final @NotNull Kind kind;
@@ -34,7 +45,7 @@ public class FormalParameter {
     }
 
     public static FormalParameter nonDefault(@NotNull final String name) {
-        return new FormalParameter(name, null, Kind.NON_DEFAULT);
+        return new FormalParameter(name, null, Kind.POSITIONAL);
     }
 
     public static FormalParameter defaulted(@NotNull final String name, @NotNull final Expression defaultValue) {
@@ -52,7 +63,7 @@ public class FormalParameter {
     @Override
     public String toString() {
         return switch (kind) {
-            case NON_DEFAULT -> name;
+            case POSITIONAL -> name;
             case DEFAULTED -> name + " = " + defaultValue;
             case VARARGS -> "*" + name;
             case KWARGS -> "**" + name;
@@ -60,7 +71,7 @@ public class FormalParameter {
     }
 
     public boolean isMinimallyRequired() {
-        return kind == Kind.NON_DEFAULT;
+        return kind == Kind.POSITIONAL;
     }
 
 
