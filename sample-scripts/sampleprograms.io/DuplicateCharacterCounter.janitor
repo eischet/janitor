@@ -1,31 +1,31 @@
 // https://sampleprograms.io/projects/duplicate-character-counter/
 
 function countDuplicateCharacters(input) {
-    characters = []; // need a list to keep track of the characters' sequence!
-    counts = {};
+    characters = [] // need a list to keep track of the characters' sequence!
+    counts = {}
     for (i from 0 to input.length() - 1) {
-        currentCharacter = input[i];
+        currentCharacter = input[i]
         if (not characters.contains(currentCharacter)) {
-            characters.add(currentCharacter);
+            characters.add(currentCharacter)
         }
-        counts[currentCharacter] = ( counts[currentCharacter] || 0 ) + 1;
+        counts[currentCharacter] = ( counts[currentCharacter] || 0 ) + 1
     }
-    hasDuplicates = false;
+    hasDuplicates = false
     for (i from 0 to characters.size() - 1) {
-        count = counts[characters[i]];
-        hasDuplicates = hasDuplicates or count > 1;
+        count = counts[characters[i]]
+        hasDuplicates = hasDuplicates or count > 1
         if (hasDuplicates and count > 1) {
-            print(characters[i] + ": " + count);
+            print(characters[i] + ": " + count)
         }
     }
     if (not hasDuplicates) {
-        print("No duplicate characters");
+        print("No duplicate characters")
     }
 }
 
 if (args and args[0]) {
-    countDuplicateCharacters(args[0]);
+    countDuplicateCharacters(args[0])
 } else {
-    print("Usage: please provide a string");
+    print("Usage: please provide a string")
 }
 

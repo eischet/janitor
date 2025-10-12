@@ -1,6 +1,6 @@
 // Janitor implementation of https://sampleprograms.io/projects/remove-all-whitespace/
 if (args and args[0]) {
-    print(args[0].replaceAll("\\s", "")); // String::replaceAll is actually a Java method, so this could be considered cheating ;-)
+    print(args[0].replaceAll("\\s", "")) // String::replaceAll is actually a Java method, so this could be considered cheating ;-)
 } else {
-    print("Usage: please provide a string");
+    print("Usage: please provide a string")
 }

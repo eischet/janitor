@@ -3,21 +3,21 @@
  */
 function isPalindrome(text) {
     if (text.length() == 1) {
-        return true;
+        return true
     }
     for (i from 1 to text.length() / 2) {
-        left = text[i - 1];
-        right = text[-i];
+        left = text[i - 1]
+        right = text[-i]
         if (left != right) {
-            return false;
+            return false
         }
     }
-    return true;
+    return true
 }
 
 if (args and args[0] and args[0].isNumeric()) {
     // We're restricting the input to numeric input to match the original challenge, not for "real" reasons.
-    print(isPalindrome(args[0]));
+    print(isPalindrome(args[0]))
 } else {
-    print("Usage: please input a non-negative integer");
+    print("Usage: please input a non-negative integer")
 }

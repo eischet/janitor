@@ -1,5 +1,6 @@
 // Print the Baklava shape from https://sampleprograms.io/projects/baklava/
+
 for (line from 0 to 20) {
-    spaces = if line < 11 then 10 - line else line - 10;
-    print(" " * spaces + "*" * (21 - spaces*2));
+    spaces = if line < 11 then 10 - line else line - 10
+    print(" " * spaces + "*" * (21 - spaces*2))
 }

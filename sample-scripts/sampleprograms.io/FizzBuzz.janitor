@@ -4,14 +4,14 @@
 // instead of the number. For numbers which are multiples of both three and five, print "FizzBuzz"
 
 for (i from 1 to 100) {
-    divisibleBy3 = i % 3 == 0;
-    divisibleBy5 = i % 5 == 0;
+    divisibleBy3 = i % 3 == 0
+    divisibleBy5 = i % 5 == 0
     print(
         if divisibleBy3 and divisibleBy5 then "FizzBuzz"
           else if divisibleBy3 then "Fizz"
           else if divisibleBy5 then "Buzz"
           else i
-      );
+      )
 }
 
 /*
@@ -20,13 +20,13 @@ for (i from 1 to 100) {
 
     for (i from 1 to 100) {
         if (i % 3 == 0 and i % 5 == 0) {
-            print("FizzBuzz");
+            print("FizzBuzz")
         } else if (i % 3 == 0) {
-            print("Fizz");
+            print("Fizz")
         } else if (i % 5 == 0) {
-            print("Buzz");
+            print("Buzz")
         } else {
-            print(i);
+            print(i)
         }
     }
 */

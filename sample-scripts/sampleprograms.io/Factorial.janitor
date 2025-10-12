@@ -1,13 +1,21 @@
+factorial = start -> if start == 0 then 1 else start * factorial(start - 1)
+
+/*
+
+long variant:
+
 function factorial(start) {
     if (start == 0) {
-        return 1;
+        return 1
     } else {
-        return start * factorial(start - 1);
+        return start * factorial(start - 1)
     }
 }
 
+*/
+
 if (args and args[0] and args[0].isNumeric()) {
-    print(factorial(args[0].int()));
+    print(factorial(args[0].int()))
 } else {
-    print("Usage: please input a non-negative integer");
+    print("Usage: please input a non-negative integer")
 }
