@@ -1,6 +1,7 @@
 package com.eischet.janitor.api.types.functions;
 
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
@@ -322,4 +323,17 @@ public class JCallArgs {
                 .findFirst()
                 .orElse(null);
     }
+
+    public JMap asKwargs(final Set<String> except) {
+        @NotNull final JMap map = Janitor.map();
+        for (final EvaluatedArgument arg : args) {
+            if (arg.getName() != null) {
+                if (except == null || !except.contains(arg.getName())) {
+                    map.put(arg.getName(), arg.getValue());
+                }
+            }
+        }
+        return map;
+    }
+
 }

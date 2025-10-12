@@ -53,6 +53,7 @@ blockStatement
     | THROW expression stmtTerminator                                                       # throwStatement
     | BREAK stmtTerminator                                                                  # breakStatement
     | CONTINUE stmtTerminator                                                               # continueStatement
+    | <assoc=right> expression bop=(ASSIGN | PLUS_ASSIGN | MINUS_ASSIGN | MUL_ASSIGN | DIV_ASSIGN | MOD_ASSIGN )  expression        # assignmentStatement
     | statementExpression=expression stmtTerminator                                         # expressionStatement
     | functionDeclaration                                                                   # functionDeclarationStatement
     | SEMICOLON                                                                             # emptyStatement
@@ -100,7 +101,6 @@ expression
     | expression bop=(AND | CAND) expression                                                                                        # binaryExpression
     | expression bop=(OR | COR) expression                                                                                          # binaryExpression
     | <assoc=right> expression bop=QUESTION expression COLON expression                                                             # ternaryExpression
-    | <assoc=right> expression bop=(ASSIGN | PLUS_ASSIGN | MINUS_ASSIGN | MUL_ASSIGN | DIV_ASSIGN | MOD_ASSIGN )  expression        # assignmentExpressiom
     | lambdaParameters ARROW lambdaBody                                                                                             # lambdaExpression
     | IF expression THEN expression (ELSE expression)?                                                                              # ifThenElseExpression
     | LBRACE (propertyAssignment (',' propertyAssignment)* ','?)? RBRACE                                                            # mapExpression

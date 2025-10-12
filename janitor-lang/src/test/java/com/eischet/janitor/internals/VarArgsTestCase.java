@@ -169,4 +169,27 @@ public class VarArgsTestCase extends JanitorTest {
         assertEquals("down & out", evaluate(script).janitorGetHostValue());
     }
 
+    @Test
+    void twoDefaultedArgsWithActualValueByName() throws JanitorRuntimeException, JanitorCompilerException {
+        @Language("Janitor") final String script = """
+                function move(dir0="up", dir1="down") {
+                    return dir0 + " & " + dir1
+                }
+                return move(dir0="left", dir1="right")
+                """;
+        assertEquals("left & right", evaluate(script).janitorGetHostValue());
+    }
+
+    @Test
+    void onlyKwargs() throws JanitorRuntimeException, JanitorCompilerException {
+        @Language("Janitor") final String script = """
+                function move(**kwargs) {
+                    return kwargs.dir0 + " & " + kwargs.dir1
+                }
+                return move(dir0="left", dir1="right")
+                """;
+        assertEquals("left & right", evaluate(script).janitorGetHostValue());
+    }
+
+
 }

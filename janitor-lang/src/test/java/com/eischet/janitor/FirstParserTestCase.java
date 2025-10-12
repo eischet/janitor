@@ -1225,24 +1225,41 @@ public class FirstParserTestCase extends JanitorTest {
     }
 
     @Test
-    public void someMoreFormatting() throws JanitorRuntimeException, JanitorCompilerException {
+    public void someMoreFormatting1() throws JanitorRuntimeException, JanitorCompilerException {
         assertEquals("2024-01-27T11:11\n", getOutput("""
                 print(@2024-01-27-11:11:11.string("yyyy-MM-dd'T'HH:mm"));
                 """));
+    }
+
+    @Test
+    public void someMoreFormatting2() throws JanitorRuntimeException, JanitorCompilerException {
         assertEquals("32\n", getOutput("""
-                print(2*("16".int())));
+                print(2*("16".int()));
                 """));
+    }
+
+    @Test
+    public void someMoreFormatting3() throws JanitorRuntimeException, JanitorCompilerException {
         assertEquals("32\n", getOutput("""
-                print(2*("16".toInt())));
+                print( 2 * ("16".toInt()) );
                 """));
+    }
+
+    @Test
+    public void someMoreFormatting4() throws JanitorRuntimeException, JanitorCompilerException {
         assertEquals("32.0\n", getOutput("""
-                print(10*("3.2".toFloat())));
+                print(10*("3.2".toFloat()));
                 """));
+    }
+
+    @Test
+    public void someMoreFormatting5() throws JanitorRuntimeException, JanitorCompilerException {
         assertEquals("2024-01-27T11:11 +0100\n", getOutput("""
                 print(@2024-01-27-11:11:11.formatAtTimezone("Europe/Berlin", "yyyy-MM-dd'T'HH:mm Z"));
                 """));
 
     }
+
 
     @Test
     public void deadlock() throws Exception {

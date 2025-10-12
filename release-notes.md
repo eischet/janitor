@@ -1,11 +1,15 @@
 # 0.9.34, 2025-10-xx
 
 Updated grammar:
-- semicolons are now optional at the end of a statement, similar to JavaScript
-- unused lexer symbols were remove: "|", "#".
-- function calls were simplified in the "compiler"
-- syntax is prepared for *args and **kwargs, but they are not implemented yet
-
+- Syntax is prepared for *args and **kwargs, but they are not fully implemented yet.
+  Notably, these are currently only available on functions, not on lambdas.
+<<<<<<<<<- Semicolons are now optional at the end of a statement, similar to JavaScript
+- Unused lexer symbols were remove: "|", "#".
+- Function calls were simplified in the AST compiler.
+- The syntax has been updated to see assignments as statements, not expressions, which
+  was intended from the start, but I somehow never got around to fixing. As a side effect,
+  the language is now stricter with unbalanced parentheses, which I have no real explanation
+  for, but which is a good thing.
 
 # 0.9.30-33, 2025-09-18
 

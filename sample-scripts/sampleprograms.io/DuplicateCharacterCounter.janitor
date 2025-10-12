@@ -8,7 +8,7 @@ function countDuplicateCharacters(input) {
         if (not characters.contains(currentCharacter)) {
             characters.add(currentCharacter)
         }
-        counts[currentCharacter] = ( counts[currentCharacter] || 0 ) + 1
+        counts[currentCharacter] = ( counts[currentCharacter] || 0 ) + 1;
     }
     hasDuplicates = false
     for (i from 0 to characters.size() - 1) {

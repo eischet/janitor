@@ -89,7 +89,8 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
             if (construct == null) {
                 log.warn("null statement from: {}, parent {}, children {}", topLevelStatementContext.getText(), topLevelStatementContext.getParent(), topLevelStatementContext.getChildCount());
                 for (int i = 0; i < topLevelStatementContext.getChildCount(); i++) {
-                    log.warn("child #{}: {}", i, topLevelStatementContext.getChild(i).getClass());
+                    final ParseTree element = topLevelStatementContext.getChild(i);
+                    log.warn("child #{}: {} = {}", i, element.getClass().getSimpleName(), element.getText());
                 }
             }
             if (construct instanceof final Expression expression) {
@@ -101,7 +102,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
                 if (verbose) log.info("top level statement: {}", stmt);
                 topLevelStatements.add(stmt);
             } else {
-                log.warn("invalid top level construct: {} at {}", construct, ctx.getText());
+                log.warn("invalid top level construct: {} in {} at {}, built from {} [{}]", construct, ctx.getText(), location(ctx.start, ctx.stop), topLevelStatementContext, simpleClassNameOf(topLevelStatementContext));
             }
         }
         return new Script(location(ctx.start, ctx.stop), topLevelStatements, source);
@@ -121,9 +122,15 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
         }
         final List<Statement> statements = new ArrayList<>(ctx.blockStatement().size());
         for (final JanitorParser.BlockStatementContext blockStatementContext : ctx.blockStatement()) {
-            final Statement stmt = (Statement) visit(blockStatementContext);
-            if (verbose) log.info("block statement: {}", stmt);
-            statements.add(stmt);
+            final Ast blockStatementCandidate = visit(blockStatementContext);
+            if (blockStatementCandidate instanceof final Statement stmt) {
+                if (verbose) log.info("block statement: {}", stmt);
+                statements.add(stmt);
+            } else {
+                throw new CompilerError("invalid block statement: " + blockStatementCandidate + " at " + blockStatementCandidate.getLocation());
+            }
+
+
         }
         return new Block(location(ctx.start, ctx.stop), statements);
     }
@@ -131,7 +138,11 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
     @Override
     public Ast visitTopLevelBlockStatement(final JanitorParser.TopLevelBlockStatementContext ctx) {
         if (verbose) log.info("visitTopLevelBlockStatement");
-        return visit(ctx.blockStatement());
+        final Ast result = visit(ctx.blockStatement());
+        if (result == null) {
+            log.warn("generated no code from statement {} at {}", ctx.getText(), location(ctx.start, ctx.stop));
+        }
+        return result;
     }
 
     @Override
@@ -370,7 +381,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
     }
 
     @Override
-    public AstNode visitAssignmentExpression(final JanitorParser.AssignmentExpressionContext ctx) {
+    public AstNode visitAssignmentStatement(final JanitorParser.AssignmentStatementContext ctx) {
         if (verbose) log.info("visitAssignmentExpression");
         final Expression left = (Expression) visit(ctx.expression(0));
         final Expression right = (Expression) visit(ctx.expression(1));
@@ -650,8 +661,8 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
     @Override
     public AstNode visitFunctionCall(final JanitorParser.FunctionCallContext ctx) {
         if (verbose) log.info("functionCall");
-        // ctx.expressionList()
-        return null;
+        throw new CompilerError("function call not implemented yet, at " + location(ctx.start, ctx.stop) + ": " + ctx.getText());
+        // return null;
     }
 
     @Override

@@ -10,6 +10,7 @@ import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.JList;
+import com.eischet.janitor.api.types.builtin.JMap;
 import com.eischet.janitor.api.types.builtin.JNull;
 import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.types.functions.JCallable;
@@ -28,7 +29,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
@@ -113,8 +116,11 @@ public class ScriptFunction extends AstNode implements Expression, JanitorObject
                     // start at the first argument:
                     int argPos = 0;
                     // go though all parameters that the function needs:
+
+                    // TODO: do not let these go into kwargs, or don't care, have to decide what's better: final Set<String> usedNames = new HashSet<>();
+
                     for (final FormalParameter parameter : formalParameters) {
-                        if ( parameter.getKind() == FormalParameter.Kind.POSITIONAL) {
+                        if (parameter.getKind() == FormalParameter.Kind.POSITIONAL) {
                             final JanitorObject matched = arguments.get(argPos++).janitorUnpack();
                             process.getCurrentScope().bind(process, parameter.getName(), matched);
                         } else if (parameter.getKind() == FormalParameter.Kind.VARARGS) {
@@ -146,11 +152,19 @@ public class ScriptFunction extends AstNode implements Expression, JanitorObject
                             } else if (valueByName == null && valueByPosition != null) {
                                 // Simple, too: only a matching positional argument is found, use that
                                 process.getCurrentScope().bind(process, parameter.getName(), valueByPosition);
+                            } else if (valueByName != null && valueByPosition != null && valueByName == valueByPosition) {
+                                // It's the same thing, no need to worry
+                                process.getCurrentScope().bind(process, parameter.getName(), valueByPosition);
                             } else {
+                                System.err.println("don't know what to do: valueByName=" + valueByName + ", valueByPosition=" + valueByPosition);
+                                // TODO: there are missing cases!
                                 throw new JanitorArgumentException(process, "Default parameters are not yet implemented");
                             }
                         } else if (parameter.getKind() == FormalParameter.Kind.KWARGS) {
-                            throw new JanitorArgumentException(process, "kwargs parameters are not yet implemented");
+                            // my first impulse was to keep all "used" args out of the map, but it cannot hurt us at all to use them, too
+                            @NotNull final JMap kwargs = arguments.asKwargs(null);
+                            process.getCurrentScope().bind(process, parameter.getName(), kwargs);
+                            // throw new JanitorArgumentException(process, "kwargs parameters are not yet implemented");
                         }
                     }
                 }
