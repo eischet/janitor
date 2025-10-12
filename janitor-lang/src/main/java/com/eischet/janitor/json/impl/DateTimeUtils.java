@@ -36,6 +36,8 @@ public class DateTimeUtils {
 
     private static ZoneId stz = null;
 
+    private static boolean hasInitiaizledStz = false;
+
     public static ZoneId getZoneId() {
         if (stz == null) {
             if (timeZoneSource != null) {
@@ -43,9 +45,14 @@ public class DateTimeUtils {
             }
             if (stz == null) {
                 stz = TimeZone.getDefault().toZoneId();
-                log.error("cannot get server time zone from app config, using fallback: {}", stz);
+                if (!hasInitiaizledStz) {
+                    log.info("cannot get server time zone from app config, using fallback: {}", stz);
+                }
             }
-            log.info("initialized time stamp interpreter time zone to: {}", stz);
+            if (!hasInitiaizledStz) {
+                log.info("initialized time stamp interpreter time zone to: {}", stz);
+            }
+            hasInitiaizledStz = true;
         }
         return stz;
     }

@@ -19,7 +19,7 @@ public class TestEnv {
         env.addModule(CollectionsModule.REGISTRATION);
     }
 
-    interface ScriptConsumer {
+    public interface ScriptConsumer {
         void accept(@Language("Janitor") String script) throws JanitorRuntimeException;
     }
 }

@@ -29,9 +29,9 @@
         <deps.jetbrains-annotations>26.0.2</deps.jetbrains-annotations>
         <deps.slf4j>2.0.17</deps.slf4j>
         <deps.autoservice>1.1.1</deps.autoservice>
+        <deps.jansi>3.30.2</deps.jansi>
 
     </properties>
-
 
     <licenses>
         <license>
@@ -65,6 +65,7 @@
         <module>janitor-commons</module>
         <module>janitor-grammarkit</module>
         <module>janitor-repl</module>
+        <module>janitor-logging</module>
     </modules>
 
 
@@ -168,6 +169,11 @@
             </dependency>
             <dependency>
                 <groupId>com.eischet.janitor</groupId>
+                <artifactId>janitor-logging</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eischet.janitor</groupId>
                 <artifactId>janitor-lang</artifactId>
                 <version>${revision}</version>
             </dependency>
@@ -214,6 +220,11 @@
                 <groupId>com.google.auto.service</groupId>
                 <artifactId>auto-service-annotations</artifactId>
                 <version>${deps.autoservice}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jline</groupId>
+                <artifactId>jansi</artifactId>
+                <version>${deps.jansi}</version>
             </dependency>
 
 

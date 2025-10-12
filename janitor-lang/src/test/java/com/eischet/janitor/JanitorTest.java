@@ -9,7 +9,9 @@ import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.scopes.ScriptModule;
 import com.eischet.janitor.compiler.JanitorCompiler;
 import com.eischet.janitor.compiler.ast.statement.Script;
+import com.eischet.janitor.json.impl.DateTimeUtils;
 import com.eischet.janitor.lang.JanitorParser;
+import com.eischet.janitor.logging.JanitorUnitTestLogging;
 import com.eischet.janitor.runtime.JanitorScript;
 import com.eischet.janitor.runtime.OutputCatchingTestRuntime;
 import com.eischet.janitor.runtime.RunningScriptProcess;
@@ -24,10 +26,20 @@ public abstract class JanitorTest {
 
     public static final Consumer<Scope> NO_GLOBALS = globals -> {
     };
+
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
     @BeforeAll
     static void setUp() {
+        JanitorUnitTestLogging.setup();
+            // this initializes the logging subsystem, which is deliberately used in the tests,
+            // but also sets the log level at WARN to avoid polluting logs.
+
+        DateTimeUtils.getZoneId();
+            // this prevents a race condition from tests running concurrently... might need to fix that with "synchronized"
+            // the symptom is that messages like "cannot get server time zone" appear numerous times in the logs, because a
+            // bunch of threads are trying to get the zone id at the same time.
+
         Janitor.setUserProvider(new JanitorEnvironmentProvider() {
             @Override
             public JanitorEnvironment getCurrentEnvironment() {

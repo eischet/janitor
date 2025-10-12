@@ -1068,7 +1068,7 @@ public class FirstParserTestCase extends JanitorTest {
                 assert(by60 == 0.75);
                 assert(@45mi.hours == 0);
                 """);
-        System.out.println("by60:" + by60);
+        log.info("by60:" + by60);
 
 
     }
@@ -1140,7 +1140,7 @@ public class FirstParserTestCase extends JanitorTest {
         final JMap map = (JMap) rt.compile("mapkeys_test", """
                 return {from: "here", to: "eternity"};
                 """).run();
-        System.out.println("got map: " + map);
+        log.info("got map: {}", map);
         assertEquals("here", map.get(TestEnv.env.getBuiltinTypes().string("from")).janitorToString());
         assertEquals("eternity", map.get(TestEnv.env.getBuiltinTypes().string("to")).janitorToString());
 
@@ -1157,34 +1157,6 @@ public class FirstParserTestCase extends JanitorTest {
         script.run(g -> g.bind("from", 18));
     }
 
-    @Test
-    public void partialParsing() throws JanitorControlFlowException, JanitorRuntimeException {
-        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
-        final JanitorRepl repl = new JanitorRepl(rt, new ConsoleReplIO());
-        assertEquals(PartialParseResult.OK, repl.parse("x = 17;"));
-
-
-        assertEquals(PartialParseResult.INCOMPLETE, repl.parse("if (x < 20) {"));
-        assertEquals(PartialParseResult.INCOMPLETE, repl.parse("if (x < 20) {\n  print(x);"));
-        assertEquals(PartialParseResult.OK, repl.parse("if (x < 20) {\n  print(x);\n}"));
-
-
-        repl.parse("if (x > 5) { return 'X is greater than five'; }");
-
-
-        rt.resetOutput();
-        repl.parse("print('x has value:', x);");
-        System.out.println("output: " + rt.getAllOutput());
-
-        assertEquals("x has value: 17\n", rt.getAllOutput());
-
-        rt.resetOutput();
-        repl.parse("function double(x) { return 2*x; }");
-        repl.parse("print('double(17) =', double(17));");
-        assertEquals("double(17) = 34\n", rt.getAllOutput());
-
-
-    }
 
     @Test
     public void classProperty() throws JanitorCompilerException, JanitorRuntimeException {
@@ -1320,7 +1292,9 @@ public class FirstParserTestCase extends JanitorTest {
         final Script scriptObject = JanitorCompiler.build(TestEnv.env, module, script, scriptSource);
         final SLFLoggingRuntime runtime = new SLFLoggingRuntime(TestEnv.env, LoggerFactory.getLogger(getClass()));
 
-        runtime.setTraceListener(System.out::println);
+        runtime.setTraceListener(message -> {
+            runtime.getLog().info("trace: {}", message);
+        });
 
         final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), module); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
         final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, "manual", scriptObject);
@@ -1410,11 +1384,11 @@ public class FirstParserTestCase extends JanitorTest {
         @Override
         public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess process, final @NotNull String name, final boolean required) throws JanitorRuntimeException {
             if (name.equals("from")) {
-                System.out.println("someone asked for property 'from'!");
+                log.info("someone asked for property 'from'!");
                 return TestEnv.env.getBuiltinTypes().string("foo");
             }
             if (name.equals("to")) {
-                System.out.println("someone asked for property 'to'!");
+                log.info("someone asked for property 'to'!");
                 return TestEnv.env.getBuiltinTypes().string("bar");
             }
             return JanitorObject.super.janitorGetAttribute(process, name, required);

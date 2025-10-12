@@ -18,6 +18,12 @@
         </dependency>
 
         <dependency>
+            <groupId>com.eischet.janitor</groupId>
+            <artifactId>janitor-logging</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
             <scope>provided</scope>

@@ -28,14 +28,6 @@ import java.util.function.Consumer;
 
 public class JanitorScript implements RunnableScript, JsonExportableObject {
 
-    public static final ANTLRErrorListener LOGGING_LISTENER = new BaseErrorListener() {
-        @Override
-        public void syntaxError(final Recognizer<?, ?> recognizer, final Object offendingSymbol, final int line, final int charPositionInLine, final String msg, final RecognitionException e) {
-            log.warn("line {}:{} --> {}", line, charPositionInLine, msg);
-        }
-    };
-
-
     private static final Logger log = LoggerFactory.getLogger(JanitorScript.class);
 
     private final @NotNull JanitorRuntime runtime;
@@ -107,7 +99,15 @@ public class JanitorScript implements RunnableScript, JsonExportableObject {
     // LATER: eigentlich ist es bescheuert, die Exception beim Check nicht zu werfen, denn es ist ja trotzdem ein Fehler
 
     public static JanitorParser.ScriptContext parseScript(final @NotNull String text) throws JanitorCompilerException {
-        return parseScript(text, LOGGING_LISTENER);
+        final JanitorANTLRErrorListener listener = new JanitorANTLRErrorListener(text);
+        try {
+            return parseScript(text, listener);
+        } finally {
+            if (listener.hasIssues()) {
+                final String caption = listener.numberOfIssues() == 1 ? "compiler warning" : "compiler warnings";
+                log.warn("{} {}:\n  {}", listener.numberOfIssues(), caption, String.join("\n  ", listener.getIssues()));
+            }
+        }
     }
 
     public static JanitorParser.ScriptContext parseScript(final @NotNull String text, final ANTLRErrorListener listener) throws JanitorCompilerException {
@@ -115,18 +115,13 @@ public class JanitorScript implements RunnableScript, JsonExportableObject {
         if (text == null || text.isBlank()) {
             modText = "";
         }
-
-
-        //final String modText = text.endsWith(";\n") ? text : text + ";\n";
         try {
             final CharStream stream = CharStreams.fromString(modText);
             final JanitorLexer lexer = new JanitorLexer(stream);
-
             if (listener != null) {
                 lexer.removeErrorListener(ConsoleErrorListener.INSTANCE);
                 lexer.addErrorListener(listener);
             }
-
             final CommonTokenStream tokenStream = new CommonTokenStream(lexer);
             final JanitorParser parser = new JanitorParser(tokenStream);
             if (listener != null) {
@@ -193,4 +188,5 @@ public class JanitorScript implements RunnableScript, JsonExportableObject {
         producer.optional("script", scriptObject);
         producer.endObject();
     }
+
 }
