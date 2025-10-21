@@ -7,6 +7,7 @@ import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.compiler.ast.AstNode;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
+import org.jetbrains.annotations.NotNull;
 
 import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
@@ -41,7 +42,7 @@ public class Identifier extends AstNode implements Expression {
 
 
     @Override
-    public JanitorObject evaluate(final JanitorScriptProcess process) throws JanitorNameException {
+    public @NotNull JanitorObject evaluate(final JanitorScriptProcess process) throws JanitorNameException {
         process.setCurrentLocation(getLocation());
         final JanitorObject v = process.lookup(text);
         if (v == null) {

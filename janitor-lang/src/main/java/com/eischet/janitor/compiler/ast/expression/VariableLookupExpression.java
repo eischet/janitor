@@ -7,6 +7,7 @@ import com.eischet.janitor.compiler.ast.AstNode;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonExportableObject;
 import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
+import org.jetbrains.annotations.NotNull;
 
 import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
@@ -28,7 +29,7 @@ public class VariableLookupExpression extends AstNode implements Expression, Jso
     }
 
     @Override
-    public JanitorObject evaluate(final JanitorScriptProcess process) {
+    public @NotNull JanitorObject evaluate(final JanitorScriptProcess process) {
         process.setCurrentLocation(getLocation());
         return process.lookup(variableName).janitorUnpack();
     }

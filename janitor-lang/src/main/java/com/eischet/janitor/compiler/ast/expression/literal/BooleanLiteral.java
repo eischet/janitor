@@ -7,6 +7,7 @@ import com.eischet.janitor.api.types.builtin.JBool;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Boolean literal: true, false.
@@ -19,13 +20,13 @@ public class BooleanLiteral extends Literal {
      * @param location where
      * @param value what
      */
-    public BooleanLiteral(final Location location, final JBool value) {
+    public BooleanLiteral(final @NotNull Location location, final @NotNull JBool value) {
         super(location);
         this.value = value;
     }
 
     @Override
-    public JanitorObject evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException {
+    public @NotNull JanitorObject evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException {
         return value;
     }
 

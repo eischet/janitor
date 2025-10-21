@@ -81,7 +81,7 @@ public class ScriptFunction extends AstNode implements Expression, JanitorObject
     }
 
     @Override
-    public JanitorObject evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException {
+    public @NotNull JanitorObject evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException {
         if (log.isDebugEnabled()) {
             log.debug("**** eval called on script function: " + name + " in scope with dir: {}", process.getCurrentScope().dir());
         }

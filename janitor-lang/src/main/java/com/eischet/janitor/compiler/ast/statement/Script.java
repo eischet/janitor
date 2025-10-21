@@ -11,6 +11,7 @@ import com.eischet.janitor.compiler.ast.expression.Expression;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonExportableList;
 import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
@@ -104,7 +105,7 @@ public class Script extends Statement implements JsonExportableList {
         }
 
         @Override
-        public JanitorObject evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException {
+        public @NotNull JanitorObject evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException {
             final JanitorObject result = callback.call(process, new JCallArgs("callback", process, args));
             process.setScriptResult(result);
             return result;

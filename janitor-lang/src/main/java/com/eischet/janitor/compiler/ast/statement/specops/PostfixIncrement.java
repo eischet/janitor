@@ -14,6 +14,7 @@ import com.eischet.janitor.compiler.ast.statement.Statement;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonExportableObject;
 import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
+import org.jetbrains.annotations.NotNull;
 
 import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
@@ -35,7 +36,7 @@ public class PostfixIncrement extends Statement implements Expression, JsonExpor
     }
 
     @Override
-    public JanitorObject evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException {
+    public @NotNull JanitorObject evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException {
         process.setCurrentLocation(getLocation());
         process.trace(() -> "postfix increment: expr=" + expr);
         if (expr instanceof Identifier) {

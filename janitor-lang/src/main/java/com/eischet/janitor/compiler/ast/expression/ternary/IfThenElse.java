@@ -7,6 +7,7 @@ import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.JNull;
 import com.eischet.janitor.compiler.ast.expression.Expression;
 import com.eischet.janitor.runtime.JanitorSemantics;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * If-then-else expression.
@@ -24,7 +25,7 @@ public class IfThenElse extends TernaryOperation {
     }
 
     @Override
-    public JanitorObject evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException {
+    public @NotNull JanitorObject evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException {
         process.setCurrentLocation(getLocation());
         if (JanitorSemantics.isTruthy(a.evaluate(process).janitorUnpack())) {
             return b.evaluate(process).janitorUnpack();

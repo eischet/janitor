@@ -1,5 +1,6 @@
 package com.eischet.janitor.api.scopes;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import com.eischet.janitor.toolbox.json.api.JsonException;
@@ -10,6 +11,8 @@ import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
  * The Location represents a position in a script source code.
  */
 public class Location implements JsonExportableObject {
+
+    public static final Location BUILTIN_LOCATION = Location.virtual(ScriptModule.builtin());
 
     private final ScriptModule module;
     private final int line;
@@ -87,6 +90,10 @@ public class Location implements JsonExportableObject {
      */
     public static Location virtual(final ScriptModule module) {
         return Location.at(module, 0, 0, 0, 0);
+    }
+
+    public static @NotNull Location builtin() {
+        return BUILTIN_LOCATION;
     }
 
     /**

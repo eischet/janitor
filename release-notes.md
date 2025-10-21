@@ -1,4 +1,4 @@
-# 0.9.34, 2025-10-xx
+# 0.9.34, 2025-10-21
 
 Updated grammar:
 - Syntax is prepared for *args and **kwargs, but they are not fully implemented yet.
@@ -10,6 +10,8 @@ Updated grammar:
   was intended from the start, but I somehow never got around to fixing. As a side effect,
   the language is now stricter with unbalanced parentheses, which I have no real explanation
   for, but which is a good thing.
+
+
 
 # 0.9.30-33, 2025-09-18
 

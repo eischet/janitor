@@ -13,6 +13,7 @@ import com.eischet.janitor.compiler.ast.statement.Statement;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonExportableObject;
 import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
+import org.jetbrains.annotations.NotNull;
 
 import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
@@ -37,7 +38,7 @@ public abstract class AnyFixOperator extends Statement implements Expression, Js
     }
 
     @Override
-    public JanitorObject evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException {
+    public @NotNull JanitorObject evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException {
         process.setCurrentLocation(getLocation());
         process.trace(() -> this + " : expr=" + expr);
         if (expr instanceof Identifier) {
@@ -63,7 +64,7 @@ public abstract class AnyFixOperator extends Statement implements Expression, Js
      * @param newValue     new value
      * @return whatever is appropriate for the operator
      */
-    protected abstract JanitorObject pick(final JanitorObject currentValue, final JanitorObject newValue);
+    protected abstract @NotNull JanitorObject pick(final JanitorObject currentValue, final JanitorObject newValue);
 
     /**
      * Apply the operator.

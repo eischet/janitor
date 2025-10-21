@@ -8,6 +8,7 @@ import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.compiler.ast.expression.Expression;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +32,7 @@ public class ListLiteral extends Literal {
     }
 
     @Override
-    public JList evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException {
+    public @NotNull JList evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException {
         if (elements.isEmpty()) {
             return process.getEnvironment().getBuiltinTypes().list();
         } else {

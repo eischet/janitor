@@ -15,6 +15,7 @@ import com.eischet.janitor.compiler.ast.expression.ArgumentList;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonExportableObject;
 import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -59,7 +60,7 @@ public class FunctionCallStatement extends Statement implements Expression, Json
     }
 
     @Override
-    public JanitorObject evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException {
+    public @NotNull JanitorObject evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException {
         process.trace(() -> "evaluating " + this);
         process.setCurrentLocation(getLocation());
         JanitorObject function = null;

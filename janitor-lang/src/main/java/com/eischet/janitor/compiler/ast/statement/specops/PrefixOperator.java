@@ -3,6 +3,7 @@ package com.eischet.janitor.compiler.ast.statement.specops;
 import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.compiler.ast.expression.Expression;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Prefix operator.
@@ -21,7 +22,7 @@ public abstract class PrefixOperator extends AnyFixOperator {
     }
 
     @Override
-    protected JanitorObject pick(final JanitorObject currentValue, final JanitorObject newValue) {
+    protected @NotNull JanitorObject pick(final JanitorObject currentValue, final JanitorObject newValue) {
         return newValue.janitorUnpack();
     }
 }

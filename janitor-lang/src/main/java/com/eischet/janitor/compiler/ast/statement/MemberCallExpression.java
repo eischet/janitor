@@ -39,7 +39,7 @@ public class MemberCallExpression extends Statement implements Expression {
     }
 
     @Override
-    public JanitorObject evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException {
+    public @NotNull JanitorObject evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException {
         final JanitorObject object = expression.evaluate(process);
         // "null?.anything(anything)" must return null; and don't bother evaluation the args.
         if (guarded && Janitor.NULL == object) {

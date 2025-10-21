@@ -54,8 +54,8 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
 
     public static final String INDEXED_GET_METHOD = "__get__";
     private static final Logger log = LoggerFactory.getLogger(JanitorAntlrCompiler.class);
-    private static final BooleanLiteral LITERAL_TRUE = new BooleanLiteral(null, JBool.TRUE);
-    private static final BooleanLiteral LITERAL_FALSE = new BooleanLiteral(null, JBool.FALSE);
+    private static final BooleanLiteral LITERAL_TRUE = new BooleanLiteral(Location.builtin(), JBool.TRUE);
+    private static final BooleanLiteral LITERAL_FALSE = new BooleanLiteral(Location.builtin(), JBool.FALSE);
     private final ScriptModule module;
     private final boolean verbose;
     private final String source;
@@ -174,7 +174,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
             for (final JanitorParser.ArgumentContext argumentContext : ctx.positionalArgs().argument()) {
                 final Ast construct = visit(argumentContext);
                 if (construct instanceof final Expression expression) {
-                    argumentList.addExpression((Expression) expression);
+                    argumentList.addExpression(expression);
                 } else {
                     throw new CompilerError("invalid argument: " + construct);
                 }
@@ -188,7 +188,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
                 final String parameterName = keywordArgContext.validIdentifier().getText();
                 final Ast construct = visit(keywordArgContext.expression());
                 if (construct instanceof final Expression expression) {
-                    argumentList.addNamedExpression(parameterName, (Expression) expression);
+                    argumentList.addNamedExpression(parameterName, expression);
                 } else {
                     throw new CompilerError("invalid argument: " + construct);
                 }
@@ -322,11 +322,6 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
     }
 
     @Override
-    public Ast visitThrowStatement(final JanitorParser.ThrowStatementContext ctx) {
-        return super.visitThrowStatement(ctx); // LATER: throw
-    }
-
-    @Override
     public IfStatement visitIfStatementDef(final JanitorParser.IfStatementDefContext ctx) {
         final Location loc = location(ctx.start, ctx.stop);
         if (ctx.ifStatementDef() != null) { // else if
@@ -369,15 +364,12 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
     public Ast visitPrefixExpression(final JanitorParser.PrefixExpressionContext ctx) {
         if (verbose) log.info("prefixExpression");
         final Expression expr = (Expression) visit(ctx.expression());
-        switch (ctx.prefix.getType()) {
-            case JanitorLexer.INC:
-                return new PrefixIncrement(location(ctx.start, ctx.stop), expr);
-            case JanitorLexer.DEC:
-                return new PrefixDecrement(location(ctx.start, ctx.stop), expr);
-            case JanitorLexer.SUB:
-                return new Negation(location(ctx.start, ctx.stop), expr);
-        }
-        throw new CompilerError("unimplemented prefix expression: " + ctx.getText());
+        return switch (ctx.prefix.getType()) {
+            case JanitorLexer.INC -> new PrefixIncrement(location(ctx.start, ctx.stop), expr);
+            case JanitorLexer.DEC -> new PrefixDecrement(location(ctx.start, ctx.stop), expr);
+            case JanitorLexer.SUB -> new Negation(location(ctx.start, ctx.stop), expr);
+            default -> throw new CompilerError("unimplemented prefix expression: " + ctx.getText());
+        };
     }
 
     @Override
@@ -620,17 +612,13 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
                 }
             }
             if (varArgParameters != null) {
-                if (varArgParameters != null) {
-                    parameters.add(FormalParameter.varargs(varArgParameters.validIdentifier().getText()));
-                }
+                parameters.add(FormalParameter.varargs(varArgParameters.validIdentifier().getText()));
             }
             if (kwArgParameters != null) {
-                if (kwArgParameters != null) {
-                    if (!"**".equals(kwArgParameters.DOUBLE_STAR().getText())) {
-                        throw new CompilerError("invalid kwargs parameter not annotated with **: " + kwArgParameters.getText());
-                    }
-                    parameters.add(FormalParameter.kwargs(kwArgParameters.validIdentifier().getText()));
+                if (!"**".equals(kwArgParameters.DOUBLE_STAR().getText())) {
+                    throw new CompilerError("invalid kwargs parameter not annotated with **: " + kwArgParameters.getText());
                 }
+                parameters.add(FormalParameter.kwargs(kwArgParameters.validIdentifier().getText()));
             }
             return FormalParameters.of(parameters);
         } else {
@@ -648,8 +636,6 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
     public Statement visitExplicitGenericInvocationSuffix(final JanitorParser.ExplicitGenericInvocationSuffixContext ctx) {
         if (verbose) log.info("genericInvocationSuffix??");
         return new FunctionCallStatement(location(ctx.start, ctx.stop), ctx.validIdentifier().getText(), null, visitArguments(ctx.arguments()));
-
-        // return super.visitExplicitGenericInvocationSuffix(ctx);
     }
 
     @Override
@@ -666,7 +652,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
     }
 
     @Override
-    public Ast visitIndexExpression(final JanitorParser.IndexExpressionContext ctx) {
+    public FunctionCallStatement visitIndexExpression(final JanitorParser.IndexExpressionContext ctx) {
         final JanitorParser.ExpressionContext index = ctx.expression(1);
         return new FunctionCallStatement(
                 location(ctx.start, ctx.stop),
@@ -674,6 +660,11 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
                 (Expression) visit(ctx.expression(0)),
                 new ArgumentList(location(index.start, index.stop)).addExpression((Expression) visit(index))
         );
+    }
+
+    @Override
+    public ThrowStatement visitThrowStatement(final JanitorParser.ThrowStatementContext ctx) {
+        return new ThrowStatement(location(ctx.start, ctx.stop), visitExpression(ctx.expression()));
     }
 
     @Override
@@ -1007,7 +998,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
         }
     }
 
-    private Location location(final Token start, final Token stop) {
+    protected Location location(final Token start, final Token stop) {
         return Location.at(module, start.getLine(), start.getCharPositionInLine(),
                 stop == null ? start.getLine() : stop.getLine(),
                 stop == null ? start.getCharPositionInLine() : stop.getCharPositionInLine());

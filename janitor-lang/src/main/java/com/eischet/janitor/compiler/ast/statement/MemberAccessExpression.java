@@ -11,6 +11,7 @@ import com.eischet.janitor.compiler.ast.AstNode;
 import com.eischet.janitor.compiler.ast.expression.Expression;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
@@ -29,7 +30,7 @@ public class MemberAccessExpression extends AstNode implements Expression {
     }
 
     @Override
-    public JanitorObject evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException {
+    public @NotNull JanitorObject evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException {
         final JanitorObject object = expression.evaluate(process);
         // "null?.anything" must return null
         if (guarded && Janitor.NULL == object) {

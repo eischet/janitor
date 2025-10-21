@@ -6,6 +6,7 @@ import com.eischet.janitor.api.types.builtin.JInt;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Integer literal.
@@ -24,7 +25,7 @@ public class IntegerLiteral extends Literal {
     }
 
     @Override
-    public JanitorObject evaluate(final JanitorScriptProcess process) {
+    public @NotNull JanitorObject evaluate(final JanitorScriptProcess process) {
         return variableInteger;
     }
 

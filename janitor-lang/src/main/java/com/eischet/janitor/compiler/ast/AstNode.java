@@ -2,6 +2,7 @@ package com.eischet.janitor.compiler.ast;
 
 import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.toolbox.json.api.JsonExportable;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Base class for all AST nodes, which are either Statements or Expressions.
@@ -10,13 +11,13 @@ import com.eischet.janitor.toolbox.json.api.JsonExportable;
  */
 public abstract class AstNode implements Ast, JsonExportable {
 
-    private final Location location;
+    private final @NotNull Location location;
 
     /**
      * Create a new AST node at the specified location.
      * @param location the location of the corresponding instruction.
      */
-    public AstNode(final Location location) {
+    public AstNode(final @NotNull Location location) {
         this.location = location;
     }
 
@@ -24,7 +25,7 @@ public abstract class AstNode implements Ast, JsonExportable {
      * Return the location of this AST node.
      * @return the location of this AST node.
      */
-    public Location getLocation() {
+    public @NotNull Location getLocation() {
         return location;
     }
 

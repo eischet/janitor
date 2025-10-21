@@ -44,7 +44,7 @@ public interface JCallable {
          * @param callable the callable to wrap
          * @param functionName the name of the function/method/call-it-what-you-want
          */
-        public Wrapper(final JCallable callable, final String functionName) {
+        public Wrapper(final @NotNull JCallable callable, final @NotNull String functionName) {
             this.callable = callable;
             this.functionName = "[function " + functionName + "]";
         }
@@ -57,6 +57,14 @@ public interface JCallable {
         @Override
         public String janitorToString() {
             return functionName;
+        }
+
+        public String getFunctionName() {
+            return functionName;
+        }
+
+        public JCallable getCallable() {
+            return callable;
         }
 
         @Override

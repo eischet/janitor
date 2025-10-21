@@ -8,6 +8,7 @@ import com.eischet.janitor.compiler.ast.expression.Expression;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonExportableObject;
 import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
@@ -45,7 +46,7 @@ public class MapLiteral extends Literal implements JsonExportableObject {
     }
 
     @Override
-    public JMap evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException {
+    public @NotNull JMap evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException {
         final JMap map = process.getEnvironment().getBuiltinTypes().map();
         for (final Preset preset : presets) {
             map.put(preset.key.evaluate(process).janitorUnpack(), preset.value.evaluate(process).janitorUnpack());
