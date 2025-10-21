@@ -26,7 +26,7 @@
         <maven.plugin.validation>VERBOSE</maven.plugin.validation>
 
         <!-- dependency versions -->
-        <deps.jetbrains-annotations>26.0.2</deps.jetbrains-annotations>
+        <deps.jetbrains-annotations>26.0.2-1</deps.jetbrains-annotations>
         <deps.slf4j>2.0.17</deps.slf4j>
         <deps.autoservice>1.1.1</deps.autoservice>
         <deps.jansi>3.30.2</deps.jansi>
