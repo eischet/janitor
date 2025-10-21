@@ -1,10 +1,15 @@
+# 0.9.36-SNAPSHOT, 2025-10-xx
+
+- fix snapshot repo for automatic builds on GitHub Actions
+
+
 # 0.9.35, 2025-10-21
 
 Updated grammar:
 - Syntax is prepared for *args and **kwargs, but they are not fully implemented yet.
   Notably, these are currently only available on functions, not on lambdas.
 - Semicolons are now optional at the end of a statement, similar to JavaScript
-- Unused lexer symbols were remove: "|", "#".
+- Unused lexer symbols were removed: "|", "#".
 - Function calls were simplified in the AST compiler.
 - The syntax has been updated to see assignments as statements, not expressions, which
   was intended from the start, but I somehow never got around to fixing. As a side effect,
