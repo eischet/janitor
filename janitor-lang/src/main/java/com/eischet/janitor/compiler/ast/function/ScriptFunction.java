@@ -147,7 +147,7 @@ public class ScriptFunction extends AstNode implements Expression, JanitorObject
 
                             if (valueByName == null && valueByPosition == null) {
                                 // Simple: neither matching position nor name is found, use the default value.
-                                System.out.println("using default value for parameter " + parameter.getName());
+                                // System.out.println("using default value for parameter " + parameter.getName());
                                 process.getCurrentScope().bind(process, parameter.getName(), defaultValue);
                             } else if (valueByName == null && valueByPosition != null) {
                                 // Simple, too: only a matching positional argument is found, use that

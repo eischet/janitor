@@ -13,13 +13,13 @@ public class FormalParameters implements Iterable<FormalParameter> {
     protected FormalParameters(final List<FormalParameter> parameters) throws CompilerError {
         this.parameters = parameters;
 
-        System.err.println("FormalParameters: " + parameters);
+        // System.err.println("FormalParameters: " + parameters);
 
         final Set<String> seen = new HashSet<>();
         // check for plausibility
         FormalParameter.Kind previousKind = FormalParameter.Kind.POSITIONAL;
         for (final var parameter : parameters) {
-            System.out.println(parameter + " (" + parameter.getKind().title() + ")");
+            // System.out.println(parameter + " (" + parameter.getKind().title() + ")");
             // fail on any duplicate names
             if (seen.contains(parameter.getName())) {
                 throw new CompilerError("duplicate parameter name: " + parameter.getName());

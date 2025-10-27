@@ -1166,7 +1166,7 @@ public class FirstParserTestCase extends JanitorTest {
 
         rt.resetOutput();
         repl.parse("print('x has value:', x);");
-        System.out.println("output: " + rt.getAllOutput());
+        // System.out.println("output: " + rt.getAllOutput());
 
         assertEquals("x has value: 17\n", rt.getAllOutput());
 

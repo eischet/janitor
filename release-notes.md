@@ -1,7 +1,8 @@
-# 0.9.36-SNAPSHOT, 2025-10-xx
+# 0.9.36, 2025-10-27
 
+Just a few cosmetic changes:
 - fix snapshot repo for automatic builds on GitHub Actions
-
+- remove a number of leftover debug statements that wrote to stderr/stdout
 
 # 0.9.35, 2025-10-21
 
