@@ -36,7 +36,7 @@ public class JCallArgs {
         this.args = args == null ? Collections.emptyList() : args.stream().map(value -> new EvaluatedArgument(null, value)).toList();
     }
 
-    public JCallArgs(final JanitorScriptProcess process, final String identifier, final @NotNull List<EvaluatedArgument> evaluatedArguments) {
+    public JCallArgs(final @NotNull JanitorScriptProcess process, final String identifier, final @NotNull List<EvaluatedArgument> evaluatedArguments) {
         this.functionName = identifier;
         this.process = process;
         this.args = evaluatedArguments;

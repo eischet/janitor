@@ -71,12 +71,12 @@ public class JString extends JanitorComposed<JString> implements JConstant, Json
 
 
     @Override
-    public String janitorGetHostValue() {
+    public @NotNull String janitorGetHostValue() {
         return wrapped;
     }
 
     @Override
-    public String janitorToString() {
+    public @NotNull String janitorToString() {
         return wrapped;
     }
 

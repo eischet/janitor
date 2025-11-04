@@ -2,6 +2,7 @@ package com.eischet.janitor.compiler.ast.statement.controlflow;
 
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.glue.JanitorControlFlowException;
+import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.compiler.ast.statement.Statement;
@@ -42,7 +43,11 @@ public class TryCatchFinally extends Statement implements JsonExportableObject {
     public void execute(final JanitorScriptProcess process) throws JanitorRuntimeException, JanitorControlFlowException {
         if (catchBlock != null) {
             try {
-                tryBlock.execute(process);
+                try {
+                    tryBlock.execute(process);
+                } catch (RuntimeException runtimeException) {
+                    throw new JanitorNativeException(process, runtimeException.getMessage(), runtimeException);
+                }
             } catch (JanitorRuntimeException e) {
                 try {
                     process.enterBlock(null);
@@ -58,7 +63,11 @@ public class TryCatchFinally extends Statement implements JsonExportableObject {
         } else {
             JanitorRuntimeException error = null;
             try {
-                tryBlock.execute(process);
+                try {
+                    tryBlock.execute(process);
+                } catch (RuntimeException runtimeException) {
+                    throw new JanitorNativeException(process, runtimeException.getMessage(), runtimeException);
+                }
             } catch (JanitorRuntimeException e) {
                 error = e;
             }

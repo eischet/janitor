@@ -44,7 +44,7 @@ public class Block extends Statement implements JsonExportableList {
         try {
             process.setCurrentLocation(getLocation());
             if (getLocation() != null) {
-                process.enterBlock(null);
+                process.enterBlock(null); // TODO: why are we passing null?!
             }
             process.trace(() -> "executing " + getStatements().size() + " statements...");
             for (final Statement statement : getStatements()) {

@@ -1,12 +1,14 @@
+// noinspection JSUnusedGlobalSymbols
+
 ace.define('ace/mode/janitor',
     ["require", "exports", "module", "ace/lib/oop", "ace/mode/text", "ace/mode/text_highlight_rules", "ace/worker/worker_client"],
     function (require, exports, module) {
-        var oop = require("ace/lib/oop");
-        var TextMode = require("ace/mode/text").Mode;
-        var TextHighlightRules = require("ace/mode/text_highlight_rules").TextHighlightRules;
+        const oop = require("ace/lib/oop");
+        const TextMode = require("ace/mode/text").Mode;
+        const TextHighlightRules = require("ace/mode/text_highlight_rules").TextHighlightRules;
 
         var MyHighlightRules = function () {
-            var keywordMapper = this.createKeywordMapper({
+            const keywordMapper = this.createKeywordMapper({
                 "keyword.control": "if|then|else|break|continue|do|while|try|catch|finally|for|return",
                 "keyword.operator": "and|or|not",
                 "keyword.other": "class|print|assert|import|function",

@@ -3,13 +3,9 @@ package com.eischet.janitor.runtime;
 import com.eischet.janitor.api.scopes.ScriptModule;
 import com.eischet.janitor.lang.JanitorLexer;
 import org.antlr.v4.runtime.*;
-import org.antlr.v4.runtime.atn.ATNConfigSet;
-import org.antlr.v4.runtime.dfa.DFA;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
-import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.LinkedList;
 import java.util.List;
 

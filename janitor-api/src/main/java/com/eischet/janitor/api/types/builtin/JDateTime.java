@@ -95,7 +95,7 @@ public class JDateTime extends JanitorComposed<JDateTime> implements JConstant {
     }
 
     @Override
-    public LocalDateTime janitorGetHostValue() {
+    public @NotNull LocalDateTime janitorGetHostValue() {
         return unpackLocalDateTime(dateTime);
     }
 
@@ -113,7 +113,7 @@ public class JDateTime extends JanitorComposed<JDateTime> implements JConstant {
      * @return the string representation
      */
     @Override
-    public String janitorToString() {
+    public @NotNull String janitorToString() {
         return "@" + DATE_FORMAT_LONG.format(janitorGetHostValue());
     }
 

@@ -2,6 +2,7 @@ package com.eischet.janitor.compiler.ast.statement;
 
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.glue.JanitorControlFlowException;
+import com.eischet.janitor.api.errors.runtime.JanitorError;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.compiler.ast.AstNode;
@@ -25,6 +26,6 @@ public abstract class Statement extends AstNode implements JsonExportable {
      * @throws JanitorRuntimeException if something goes wrong
      * @throws JanitorControlFlowException on control flow events, which are currently implemented as exceptions
      */
-    public abstract void execute(final JanitorScriptProcess process) throws JanitorRuntimeException, JanitorControlFlowException;
+    public abstract void execute(final JanitorScriptProcess process) throws JanitorRuntimeException, JanitorControlFlowException, JanitorError;
 
 }

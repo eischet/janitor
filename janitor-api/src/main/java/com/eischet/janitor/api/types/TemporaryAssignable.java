@@ -2,6 +2,9 @@ package com.eischet.janitor.api.types;
 
 import com.eischet.janitor.api.errors.glue.JanitorGlueException;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
 /**
  * An object (e.g. return value) that can be assigned to.
@@ -11,27 +14,36 @@ import org.jetbrains.annotations.NotNull;
  */
 public class TemporaryAssignable implements JAssignable, JanitorObject {
 
+    private final String name;
     private final JanitorObject value;
     private final RuntimeConsumer<JanitorObject> setter;
 
+    @Override
+    public String toString() {
+        return "TemporaryAssignable{name='"+name+"', value="+simpleClassNameOf(value)+"}";
+    }
+
     /**
      * Create a new temporary assignable.
+     * @param name a readable name, e.g. for a field
      * @param value our value
      * @param setter code to call when someone assigns to us
      */
-    public TemporaryAssignable(final JanitorObject value, final RuntimeConsumer<JanitorObject> setter) {
+    protected TemporaryAssignable(final String name, final JanitorObject value, final RuntimeConsumer<JanitorObject> setter) {
+        this.name = name;
         this.value = value;
         this.setter = setter;
     }
 
     /**
      * Create a new temporary assignable.
+     * @param name a readable name, e.g. for a field
      * @param value our value
      * @param setter code to call when someone assigns to us
      * @return the new temporary assignable
      */
-    public static TemporaryAssignable of(final JanitorObject value, final RuntimeConsumer<JanitorObject> setter) {
-        return new TemporaryAssignable(value, setter);
+    public static TemporaryAssignable of(final String name, final JanitorObject value, final RuntimeConsumer<JanitorObject> setter) {
+        return new TemporaryAssignable(name, value, setter);
     }
 
     /**
@@ -52,12 +64,12 @@ public class TemporaryAssignable implements JAssignable, JanitorObject {
     }
 
     @Override
-    public Object janitorGetHostValue() {
+    public @Nullable Object janitorGetHostValue() {
         return value.janitorGetHostValue();
     }
 
     @Override
-    public String janitorToString() {
+    public @NotNull String janitorToString() {
         return value.janitorToString();
     }
 
@@ -72,7 +84,7 @@ public class TemporaryAssignable implements JAssignable, JanitorObject {
     }
 
     @Override
-    public JanitorObject janitorUnpack() {
+    public @NotNull JanitorObject janitorUnpack() {
         return value;
     }
 

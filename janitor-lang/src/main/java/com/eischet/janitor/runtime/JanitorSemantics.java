@@ -18,7 +18,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.time.Duration;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * The semantics of the Janitor language.

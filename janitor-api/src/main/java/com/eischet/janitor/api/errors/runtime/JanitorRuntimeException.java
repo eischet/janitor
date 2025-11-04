@@ -137,7 +137,7 @@ public abstract class JanitorRuntimeException extends JanitorException implement
     }
 
     @Override
-    public String janitorToString() {
+    public @NotNull String janitorToString() {
         return getClass().getSimpleName() + ": " + getMessage();
     }
 

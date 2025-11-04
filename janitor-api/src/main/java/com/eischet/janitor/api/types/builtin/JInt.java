@@ -1,11 +1,7 @@
 package com.eischet.janitor.api.types.builtin;
 
-import com.eischet.janitor.api.JanitorScriptProcess;
-import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
-import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
-import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
 import org.jetbrains.annotations.NotNull;
@@ -35,7 +31,7 @@ public class JInt extends JanitorWrapper<Long> implements JNumber {
     }
 
     @Override
-    public Long janitorGetHostValue() {
+    public @NotNull Long janitorGetHostValue() {
         return wrapped;
     }
 

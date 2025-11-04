@@ -28,7 +28,7 @@ public class NullLiteral extends Literal {
         return JNull.NULL;
     }
 
-    public static NullLiteral NULL = new NullLiteral(null);
+    public static final NullLiteral NULL = new NullLiteral(null);
 
 
     @Override

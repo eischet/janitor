@@ -17,7 +17,6 @@ import com.eischet.janitor.api.types.functions.JCallable;
 import com.eischet.janitor.compiler.FormalParameter;
 import com.eischet.janitor.compiler.FormalParameters;
 import com.eischet.janitor.compiler.ast.AstNode;
-import com.eischet.janitor.compiler.ast.expression.ArgumentList;
 import com.eischet.janitor.compiler.ast.expression.Expression;
 import com.eischet.janitor.compiler.ast.statement.controlflow.Block;
 import com.eischet.janitor.compiler.ast.statement.controlflow.ReturnStatement;
@@ -27,11 +26,6 @@ import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
@@ -92,7 +86,7 @@ public class ScriptFunction extends AstNode implements Expression, JanitorObject
     }
 
     @Override
-    public String janitorToString() {
+    public @NotNull String janitorToString() {
         return "function " + name + "(" + formalParameters + ")";
     }
 

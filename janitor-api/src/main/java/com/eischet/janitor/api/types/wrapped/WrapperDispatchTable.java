@@ -4,7 +4,6 @@ import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.api.types.dispatch.GenericDispatchTable;
 
-import java.lang.reflect.Constructor;
 import java.util.function.Function;
 import java.util.function.Supplier;
 

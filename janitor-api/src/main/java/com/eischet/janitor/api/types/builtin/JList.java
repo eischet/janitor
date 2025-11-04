@@ -130,10 +130,14 @@ public class JList extends JanitorComposed<JList> implements JIterable, Iterable
      * @return the element
      */
     public JanitorObject getIndexed(JInt index) {
-        return new TemporaryAssignable(get(index), value -> {
-            list.set(toIndex(index.getAsInt(), list.size()), value);
-            notifyUpdateReceivers();
-        });
+        return TemporaryAssignable.of(
+                "[" + index.janitorToString() + "]",
+                get(index),
+                value -> {
+                    list.set(toIndex(index.getAsInt(), list.size()), value);
+                    notifyUpdateReceivers();
+                }
+                );
     }
 
     /**
@@ -205,7 +209,7 @@ public class JList extends JanitorComposed<JList> implements JIterable, Iterable
 
 
     @Override
-    public @Unmodifiable List<JanitorObject> janitorGetHostValue() {
+    public @Unmodifiable @NotNull List<JanitorObject> janitorGetHostValue() {
         return List.copyOf(list);
     }
 

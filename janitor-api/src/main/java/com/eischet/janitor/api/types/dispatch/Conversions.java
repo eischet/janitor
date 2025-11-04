@@ -21,20 +21,6 @@ public class Conversions {
      * @return the integer
      * @throws JanitorGlueException [JanitorArgumentException] if the value is not an integer
      */
-    public static JInt requireInt(final JanitorObject value) throws JanitorGlueException {
-        if (value instanceof JInt ok) {
-            return ok;
-        }
-        throw new JanitorGlueException(JanitorArgumentException::fromGlue, "Expected an integer value but got " + value.janitorClassName() + ".");
-    }
-
-    /**
-     * Create a new JInt.
-     *
-     * @param value the value
-     * @return the integer
-     * @throws JanitorGlueException [JanitorArgumentException] if the value is not an integer
-     */
     public static JanitorObject requireNullableInt(final JanitorObject value) throws JanitorGlueException {
         if (value instanceof JInt ok) {
             return ok;

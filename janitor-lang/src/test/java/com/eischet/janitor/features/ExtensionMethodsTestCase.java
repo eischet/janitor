@@ -2,7 +2,6 @@ package com.eischet.janitor.features;
 
 import com.eischet.janitor.JanitorTest;
 import com.eischet.janitor.api.*;
-import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.errors.runtime.JanitorNameException;

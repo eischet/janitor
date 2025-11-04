@@ -1,3 +1,15 @@
+# 0.9.37, 2025-10-xx
+
+- Improve toString() for TemporaryAssignable to aid debugging.
+- Improve a lot of nullability annotations.
+- Catch RuntimeExceptions in Script and Statement, making the runtime more robust in the face of errors.
+  Runtime exceptions that occur in Java Code can now be caught by script code, where the script used to be terminated instead.
+  JanitorError extends RuntimeException is provided as a base class for your own hierarchiy of runtime exceptions,
+  but at the moment it is not processed differently from other runtime exceptions.
+- Keep parameter names (via maven compiler plugin, via company root POM 1.0.6)
+- Basic support for BigDecimal properties in dispatch tables.
+
+
 # 0.9.36, 2025-10-27
 
 Just a few cosmetic changes:

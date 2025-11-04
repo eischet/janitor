@@ -23,12 +23,12 @@ public class JSet extends JanitorWrapper<Set<JanitorObject>> implements JIterabl
 
 
     @Override
-    public Set<JanitorObject> janitorGetHostValue() {
+    public @NotNull Set<JanitorObject> janitorGetHostValue() {
         return wrapped;
     }
 
     @Override
-    public String janitorToString() {
+    public @NotNull String janitorToString() {
         return wrapped.toString();
     }
 

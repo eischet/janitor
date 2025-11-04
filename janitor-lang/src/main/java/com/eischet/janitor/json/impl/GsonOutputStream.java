@@ -2,7 +2,6 @@ package com.eischet.janitor.json.impl;
 
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
-import com.google.gson.FormattingStyle;
 import com.google.gson.stream.JsonWriter;
 import org.jetbrains.annotations.NotNull;
 

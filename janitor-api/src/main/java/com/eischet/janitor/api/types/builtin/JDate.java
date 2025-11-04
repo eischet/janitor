@@ -89,12 +89,12 @@ public class JDate extends JanitorComposed<JDate> implements JConstant {
     }
 
     @Override
-    public LocalDate janitorGetHostValue() {
+    public @NotNull LocalDate janitorGetHostValue() {
         return unpackLocalDate(date);
     }
 
     @Override
-    public String janitorToString() {
+    public @NotNull String janitorToString() {
         return "@" + DATE_FORMAT.format(janitorGetHostValue());
     }
 

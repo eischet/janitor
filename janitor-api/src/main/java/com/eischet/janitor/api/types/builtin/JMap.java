@@ -17,6 +17,7 @@ import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import com.eischet.janitor.toolbox.json.api.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -32,7 +33,7 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
     /**
      * Create a new JMap.
      */
-    private JMap(final Dispatcher<JanitorWrapper<Map<JanitorObject, JanitorObject>>> dispatch) {
+    private JMap(final @NotNull Dispatcher<JanitorWrapper<Map<JanitorObject, JanitorObject>>> dispatch) {
         super(dispatch, new HashMap<>());
     }
 
@@ -42,8 +43,8 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
      *
      * @return the keys
      */
-    public Set<JanitorObject> keySet() {
-        return wrapped.keySet();
+    public @NotNull @Unmodifiable Set<JanitorObject> keySet() {
+        return Set.copyOf(wrapped.keySet());
     }
 
     /**
@@ -51,7 +52,7 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
      *
      * @return the values
      */
-    public Collection<JanitorObject> values() {
+    public @NotNull @Unmodifiable Collection<JanitorObject> values() {
         return wrapped.values();
     }
 
@@ -70,12 +71,12 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
     }
 
     @Override
-    public Map<JanitorObject, JanitorObject> janitorGetHostValue() {
+    public @NotNull Map<JanitorObject, JanitorObject> janitorGetHostValue() {
         return new HashMap<>(wrapped);
     }
 
     @Override
-    public String janitorToString() {
+    public @NotNull String janitorToString() {
         return wrapped.toString();
     }
 
@@ -114,8 +115,6 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
     public void put(final String key, final JanitorObject value) {
         wrapped.put(Janitor.nullableString(key), value);
     }
-
-
 
     /**
      * Put a key-value pair into the map, builder style.
@@ -200,8 +199,8 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
      * @param key the key
      * @return an assignable object representing an indexed lookup
      */
-    public JanitorObject getIndexed(final JanitorObject key) {
-        return TemporaryAssignable.of(get(key), value -> put(key, value));
+    public JanitorObject getIndexed(final @NotNull JanitorObject key) {
+        return TemporaryAssignable.of(key.janitorToString(), get(key), value -> put(key, value));
     }
 
     @Override
@@ -223,7 +222,7 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
      *
      * @param map the other map
      */
-    public void putAll(final JMap map) {
+    public void putAll(final @NotNull JMap map) {
         this.wrapped.putAll(map.janitorGetHostValue());
     }
 

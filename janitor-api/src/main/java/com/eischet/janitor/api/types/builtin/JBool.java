@@ -50,7 +50,7 @@ public enum JBool implements JConstant, JsonExportablePrimitive {
     }
 
     @Override
-    public String janitorToString() {
+    public @NotNull String janitorToString() {
         return value ? "true" : "false";
     }
 

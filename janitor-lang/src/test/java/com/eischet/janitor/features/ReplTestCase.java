@@ -3,7 +3,6 @@ package com.eischet.janitor.features;
 import com.eischet.janitor.JanitorTest;
 import com.eischet.janitor.api.errors.glue.JanitorControlFlowException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
-import com.eischet.janitor.repl.ConsoleReplIO;
 import com.eischet.janitor.repl.JanitorRepl;
 import com.eischet.janitor.repl.PartialParseResult;
 import com.eischet.janitor.repl.ReplIO;

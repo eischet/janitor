@@ -288,7 +288,7 @@ public class AutoJsonTestCase extends JanitorTest {
 
 
     @Test void simpleList() throws JsonException {
-        final String JSON = "[1, 2, 3, 4, 5]";
+        @Language("JSON") final String JSON = "[1, 2, 3, 4, 5]";
         final JList list = Janitor.list();
         list.readJson(Janitor.current().getLenientJsonConsumer(JSON));
         assertEquals(5, list.size());

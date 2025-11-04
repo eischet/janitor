@@ -628,7 +628,7 @@ public class FirstParserTestCase extends JanitorTest {
         assertEquals("\n", rt.compile("test", "return '\\n';").run(JanitorTest.NO_GLOBALS).janitorGetHostValue());
 
         final RunnableScript script3 = rt.compile("test2", """
-                return \"select usr_id from usr where regexp_like(usr_sc, '^\\\\d+$')";""");
+                return "select usr_id from usr where regexp_like(usr_sc, '^\\\\d+$')";""");
         assertEquals("select usr_id from usr where regexp_like(usr_sc, '^\\d+$')", script3.run(JanitorTest.NO_GLOBALS).janitorGetHostValue());
 
     }
@@ -691,7 +691,6 @@ public class FirstParserTestCase extends JanitorTest {
         assertEquals(TestEnv.env.getBuiltinTypes().string("15.11.2021, 12:04:00"), rt.compile("test", "d.string()").run(g -> g.bind("d", TestEnv.env.getBuiltinTypes().nullableDateTime(testDate))));
         assertEquals(JBool.TRUE, rt.compile("test", "@now > @now.date()").run(JanitorTest.NO_GLOBALS));
         assertEquals(JBool.FALSE, rt.compile("test", "@now < @now.date()").run(JanitorTest.NO_GLOBALS));
-        Long.compare(1, 2);
     }
 
     @Test

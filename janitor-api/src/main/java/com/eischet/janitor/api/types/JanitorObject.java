@@ -8,6 +8,10 @@ import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.builtin.JString;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
+
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * A JanitorObject is a value that can be used in a Janitor script.
@@ -39,7 +43,7 @@ public interface JanitorObject {
      * </p>
      * @return the Java value of this object
      */
-    default Object janitorGetHostValue() {
+    default @Nullable Object janitorGetHostValue() {
         return this;
     }
 
@@ -68,7 +72,7 @@ public interface JanitorObject {
      * <p>By default, this is delegated to the Object::toString() method.</p>
      * @return a string representation of the object, preferably one that can be used inside a script to reconstruct the object, if applicable
      */
-    default String janitorToString() {
+    default @NotNull String janitorToString() {
         return toString();
     }
 
@@ -99,8 +103,20 @@ public interface JanitorObject {
      * <p>By default, we assume that this object itself is useful for scripts, and return "this".</p>
      * @return usually this, or a preferred value contained by this object
      */
-    default JanitorObject janitorUnpack() {
+    default @NotNull JanitorObject janitorUnpack() {
         return this;
+    }
+
+    default @NotNull @Unmodifiable List<JanitorObject> janitorUnpackAll() {
+        @NotNull final JanitorObject first = janitorUnpack();
+        if (this == first) {
+            return List.of(this);
+        } else {
+            final LinkedList<JanitorObject> list = new LinkedList<>();
+            list.add(this);
+            list.addAll(first.janitorUnpackAll());
+            return list;
+        }
     }
 
     /**

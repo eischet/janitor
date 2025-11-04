@@ -66,12 +66,12 @@ public class JDuration extends JanitorComposed<JDuration> implements JConstant, 
     }
 
     @Override
-    public JDuration janitorGetHostValue() {
+    public @NotNull JDuration janitorGetHostValue() {
         return this;
     }
 
     @Override
-    public String janitorToString() {
+    public @NotNull String janitorToString() {
         return toString();
     }
 

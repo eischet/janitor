@@ -48,7 +48,7 @@ public class JanitorWrapper<T> implements JanitorTypedObject<T> {
     }
 
     @Override
-    public T janitorGetHostValue() {
+    public @NotNull T janitorGetHostValue() {
         return wrapped;
     }
 

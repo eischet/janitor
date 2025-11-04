@@ -14,6 +14,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
+import java.math.BigDecimal;
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -92,6 +93,17 @@ public final class Janitor {
     @NotNull
     public static JString string(final @Nullable String value) {
         return getBuiltins().string(value);
+    }
+
+    /**
+     * If the Optional is present, return a new JanitorObject, or NULL if the value is null.
+     * @param optional any optional JanitorObject
+     * @return the object or NULL
+     * @param <T> any type of JanitorObject
+     */
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType") // For wrapping Optional<T> results, actually, which is, IHMO, absofuckinglutely OK.
+    public static <T extends JanitorObject> JanitorObject nullable(final @NotNull Optional<T> optional) {
+        return optional.map(result -> (JanitorObject) result).orElse(Janitor.NULL);
     }
 
     /**
@@ -243,6 +255,10 @@ public final class Janitor {
         return getBuiltins().integer(value);
     }
 
+    public static @NotNull JanitorObject nullableInteger(@Nullable BigDecimal value) {
+        return getBuiltins().nullableInteger(value);
+    }
+
     /**
      * Returns a new JInt from the int argument.
      *
@@ -271,6 +287,10 @@ public final class Janitor {
      */
     public static @NotNull JBinary binary(byte @NotNull [] arr) {
         return getBuiltins().binary(arr);
+    }
+
+    public static @NotNull JanitorObject nullableBinary(byte @Nullable [] arr) {
+        return arr == null ? NULL : binary(arr);
     }
 
     /**
@@ -621,6 +641,20 @@ public final class Janitor {
     }
 
     /**
+     * Create a new JInt.
+     *
+     * @param value the value
+     * @return the integer
+     * @throws JanitorGlueException [JanitorArgumentException] if the value is not an integer
+     */
+    public static JInt requireInt(final JanitorObject value) throws JanitorGlueException {
+        if (value instanceof JInt ok) {
+            return ok;
+        }
+        throw new JanitorGlueException(JanitorArgumentException::fromGlue, "Expected an integer value but got " + value.janitorClassName() + ".");
+    }
+
+    /**
      * Compiles a script (source code) to a runnable script (an executable AST in the default implementation).
      *
      * @param runtime    a runtime to use [TODO: this is actually only used to retrieve an environment, so this could and should be dropped soon!]
@@ -679,18 +713,18 @@ public final class Janitor {
         /**
          * The class name for an object.
          */
-        public static MetaDataKey<String> CLASS = new MetaDataKey<>("class", String.class);
+        public static final MetaDataKey<String> CLASS = new MetaDataKey<>("class", String.class);
 
         /**
          * Helper for emitting TS defs for Janutor objects: A property points to a class of this name.
          * To be used where type hints are not possible, because they refer to builtin types only.
          */
-        public static MetaDataKey<String> REF = new MetaDataKey<>("ref", String.class);
+        public static final MetaDataKey<String> REF = new MetaDataKey<>("ref", String.class);
 
         /**
          * Marks fields that are nullable on the Java side, without specifying anything about script-side nullability.
          */
-        public static MetaDataKey<Boolean> HOST_NULLABLE = new MetaDataKey<>("host_nullable", Boolean.class);
+        public static final MetaDataKey<Boolean> HOST_NULLABLE = new MetaDataKey<>("host_nullable", Boolean.class);
 
 
         /**

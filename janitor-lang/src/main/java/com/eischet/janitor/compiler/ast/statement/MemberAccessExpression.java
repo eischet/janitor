@@ -44,7 +44,21 @@ public class MemberAccessExpression extends AstNode implements Expression {
             // for ease of use, {}.foo returns null instead of throwing an exception! I.e. Maps are always using guarded lookups.
             return Janitor.NULL;
         }
-        throw new JanitorNameException(process, "member not found: " + identifier + "; on: " + object + "[" + simpleClassNameOf(object) + "]");
+        // try unpacking the object, so we can look inside property objects and the like...
+        for (final JanitorObject unpacked : object.janitorUnpackAll()) {
+            if (guarded && Janitor.NULL == unpacked) {
+                return Janitor.NULL;
+            }
+            @Nullable final JanitorObject unpackedAttribute = unpacked.janitorGetAttribute(process, identifier, false);
+            if (unpackedAttribute != null) {
+                return unpackedAttribute;
+            }
+            if (unpacked instanceof JMap) {
+                // for ease of use, {}.foo returns null instead of throwing an exception! I.e. Maps are always using guarded lookups.
+                return Janitor.NULL;
+            }
+        }
+        throw new JanitorNameException(process, "member not found: " + identifier + "; guarded: " + guarded +"; on: " + object + " [" + simpleClassNameOf(object) + "]");
     }
 
     @Override

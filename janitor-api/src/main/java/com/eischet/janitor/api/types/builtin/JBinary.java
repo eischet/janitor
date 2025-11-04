@@ -41,12 +41,12 @@ public class JBinary extends JanitorWrapper<byte[]> implements JConstant {
     }
 
     @Override
-    public byte[] janitorGetHostValue() {
+    public byte @NotNull [] janitorGetHostValue() {
         return wrapped;
     }
 
     @Override
-    public String janitorToString() {
+    public @NotNull String janitorToString() {
         return Arrays.toString(wrapped);
     }
 

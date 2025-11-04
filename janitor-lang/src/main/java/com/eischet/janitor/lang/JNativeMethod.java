@@ -154,7 +154,7 @@ public class JNativeMethod implements JCallable, JanitorObject {
     }
 
     @Override
-    public String janitorToString() {
+    public @NotNull String janitorToString() {
         if (name == null) {
             return "[native function]";
         }

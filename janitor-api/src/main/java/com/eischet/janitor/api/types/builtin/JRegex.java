@@ -22,7 +22,7 @@ public class JRegex extends JanitorWrapper<Pattern> implements JConstant {
     }
 
     @Override
-    public String janitorToString() {
+    public @NotNull String janitorToString() {
         return wrapped.toString();
     }
 

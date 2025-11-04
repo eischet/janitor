@@ -13,15 +13,7 @@ import static org.junit.Assert.*;
 
 public class MyMojoTest {
     @Rule
-    public MojoRule rule = new MojoRule() {
-        @Override
-        protected void before() throws Throwable {
-        }
-
-        @Override
-        protected void after() {
-        }
-    };
+    public MojoRule rule = new MojoRule();
 
     /**
      * @throws Exception if any

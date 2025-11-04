@@ -1,5 +1,7 @@
 package com.eischet.janitor.runtime;
 
+import com.eischet.janitor.json.impl.DateTimeUtils;
+
 import java.time.*;
 import java.util.Date;
 
@@ -29,10 +31,7 @@ public class DateTimeUtilities {
      * @return the converted date
      */
     public static Date convert(final LocalDateTime date) {
-        if (date == null) {
-            return null;
-        }
-        return java.sql.Timestamp.valueOf(date);
+        return DateTimeUtils.convert(date);
     }
 
 

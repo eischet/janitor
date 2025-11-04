@@ -39,7 +39,7 @@ public class AetherArtifactWrapper extends JanitorWrapper<Artifact> {
     }
 
     @Override
-    public String janitorToString() {
+    public @NotNull String janitorToString() {
         final String claf = janitorGetHostValue().getClassifier();
         if (claf != null && !claf.isBlank()) {
             return String.format("%s:%s:%s:%s", janitorGetHostValue().getGroupId(), janitorGetHostValue().getArtifactId(), janitorGetHostValue().getVersion(), janitorGetHostValue().getClassifier());

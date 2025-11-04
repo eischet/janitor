@@ -53,13 +53,13 @@ public class RunScriptMojo extends AbstractMojo {
     @Parameter(defaultValue = "${project}", required = true, readonly = true)
     MavenProject project;
 
-    @Parameter(property = "scriptFile", required = false)
+    @Parameter(property = "scriptFile")
     private File scriptFile;
 
-    @Parameter(property = "script", required = false)
+    @Parameter(property = "script")
     private String script;
 
-    @Parameter(property = "skip", required = false)
+    @Parameter(property = "skip")
     private boolean skip;
 
     @Parameter(defaultValue = "${repositorySystemSession}", readonly = true, required = true)

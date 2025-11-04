@@ -2,6 +2,7 @@ package com.eischet.janitor.compiler.ast.statement;
 
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.glue.JanitorControlFlowException;
+import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.api.types.JanitorObject;
@@ -61,8 +62,12 @@ public class Script extends Statement implements JsonExportableList {
     public void execute(final JanitorScriptProcess process) throws JanitorRuntimeException, JanitorControlFlowException {
         process.trace(() -> "executing " + getStatements().size() + " statements at top level...");
         for (final Statement statement : getStatements()) {
-            process.trace(() -> "executing: " + statement);
-            statement.execute(process);
+            try {
+                process.trace(() -> "executing: " + statement);
+                statement.execute(process);
+            } catch (RuntimeException runtimeException) {
+                throw new JanitorNativeException(process, runtimeException.getMessage(), runtimeException);
+            }
         }
     }
 

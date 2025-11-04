@@ -50,12 +50,12 @@ public interface JCallable {
         }
 
         @Override
-        public Object janitorGetHostValue() {
+        public @NotNull Object janitorGetHostValue() {
             return callable;
         }
 
         @Override
-        public String janitorToString() {
+        public @NotNull String janitorToString() {
             return functionName;
         }
 

@@ -457,7 +457,7 @@ public class Scope implements JanitorObject {
     }
 
     @Override
-    public String janitorToString() {
+    public @NotNull String janitorToString() {
         return String.valueOf(variables);
     }
 

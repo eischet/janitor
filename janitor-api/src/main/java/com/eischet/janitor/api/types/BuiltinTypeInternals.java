@@ -7,7 +7,6 @@ import com.eischet.janitor.api.types.builtin.JString;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;

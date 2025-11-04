@@ -45,9 +45,12 @@ public class JanitorScriptEngine implements ScriptEngine {
             if (runtimeScope == null) {
                 runtimeScope = factory.getGlobalScope();
             }
+            /*
             if (context != null) {
                 // TODO: use context, whatever that means technically ...
             }
+
+             */
             final @NotNull ResultAndScope resultAndScope = compiled.runInScopeAndKeepGlobals(runtimeScope);
             // System.out.println("scope after run: " + resultAndScope.getScope().dir());
 

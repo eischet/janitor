@@ -8,7 +8,6 @@ import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.builtin.*;
-import com.eischet.janitor.runtime.JanitorSemantics;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.api.types.functions.JCallable;
 import com.eischet.janitor.api.types.*;

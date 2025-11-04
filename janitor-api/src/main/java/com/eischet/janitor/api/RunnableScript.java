@@ -34,6 +34,16 @@ public interface RunnableScript {
     @NotNull ResultAndScope runAndKeepGlobals(@NotNull Consumer<Scope> prepareGlobals) throws JanitorRuntimeException;
 
     /**
+     * Run the script with an empty global scope, and keep the global scope afterward.
+     * This is probably less useful than {@link #runAndKeepGlobals(Consumer)}, but might be usable for e.g. config files.
+     * @return the script's result and the global scope
+     * @throws JanitorRuntimeException on runtime errors
+     */
+    default @NotNull ResultAndScope runAndKeepGlobals() throws JanitorRuntimeException {
+        return runAndKeepGlobals(scope -> { });
+    }
+
+    /**
      * Run the script with a given global scope.
      * The usual way of obtaining such a scope is by using runAndKeepGlobals.
      *

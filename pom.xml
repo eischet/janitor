@@ -4,9 +4,9 @@
     <packaging>pom</packaging>
 
     <parent>
-        <groupId>com.eischet</groupId>
-        <artifactId>eischet-root-public</artifactId>
-        <version>1.0.2</version>
+        <groupId>com.eischet.root</groupId>
+        <artifactId>lib-public</artifactId>
+        <version>1.0.7</version>
     </parent>
 
 
@@ -20,7 +20,7 @@
 
     <properties>
         <!-- project revision -->
-        <revision>0.9.36</revision>
+        <revision>0.9.37-SNAPSHOT</revision>
 
         <!-- project settings -->
         <maven.plugin.validation>VERBOSE</maven.plugin.validation>
@@ -36,7 +36,7 @@
     <licenses>
         <license>
             <name>MIT License</name>
-            <url>http://www.opensource.org/licenses/mit-license.php</url>
+            <url>https://www.opensource.org/licenses/mit-license.php</url>
         </license>
     </licenses>
 
@@ -250,8 +250,36 @@
                 <version>${deps.jansi}</version>
             </dependency>
 
-
         </dependencies>
     </dependencyManagement>
+
+    <!--
+    <profiles>
+        <profile>
+            <id>jrebel</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.zeroturnaround</groupId>
+                        <artifactId>jrebel-maven-plugin</artifactId>
+                        <version>1.2.1</version>
+                        <executions>
+                            <execution>
+                                <id>generate-rebel-xml</id>
+                                <phase>process-resources</phase>
+                                <goals>
+                                    <goal>generate</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+    -->
 
 </project>

@@ -5,6 +5,7 @@ import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonExportablePrimitive;
 import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public final class JNull implements JanitorObject, JsonExportablePrimitive {
     public static final JNull NULL = new JNull();
@@ -18,12 +19,12 @@ public final class JNull implements JanitorObject, JsonExportablePrimitive {
     }
 
     @Override
-    public Object janitorGetHostValue() {
+    public @Nullable Object janitorGetHostValue() {
         return null;
     }
 
     @Override
-    public String janitorToString() {
+    public @NotNull String janitorToString() {
         return "null";
     }
 

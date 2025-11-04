@@ -16,7 +16,7 @@ public class JFloat extends JanitorWrapper<Double> implements JNumber {
     }
 
     @Override
-    public Double janitorGetHostValue() {
+    public @NotNull Double janitorGetHostValue() {
         return wrapped;
     }
 

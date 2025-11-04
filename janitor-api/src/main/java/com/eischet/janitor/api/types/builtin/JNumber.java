@@ -14,6 +14,7 @@ public interface JNumber extends JConstant, JsonExportablePrimitive, Comparable<
      * @return the numeric value
      */
     @Override
+    @NotNull
     Number janitorGetHostValue();
 
     /**

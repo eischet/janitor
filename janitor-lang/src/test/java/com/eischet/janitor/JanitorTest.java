@@ -48,10 +48,6 @@ public abstract class JanitorTest {
                 return TestEnv.env;
             }
 
-            @Override
-            public int priority() {
-                return 0;
-            }
         });
     }
 

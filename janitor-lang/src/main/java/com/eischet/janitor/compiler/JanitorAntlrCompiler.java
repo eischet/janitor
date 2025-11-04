@@ -201,7 +201,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
     public Ast visitIdentifier(final JanitorParser.IdentifierContext ctx) {
         //String text = ctx.getText();
         // System.out.println("visitIdentifier: " + text + ", TO = " + ctx.TO() + ", FROM = " + ctx.FROM());
-        // Sonderlogik für Keywords, die auch Identifier sein können, z.B. from und to: die müssen hier separat abgearbeitet werden!
+        // Sonderlogik für Keywords, die auch Identifier sein können, z.B. from und to: Die müssen hier separat abgearbeitet werden!
         // Komischerweise scheint man das hier aber nicht zu brauchen, weil...?
         return new Identifier(location(ctx.start, ctx.stop), builtinTypes.intern(ctx.getText()));
     }

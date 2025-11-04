@@ -7,8 +7,6 @@ import com.eischet.janitor.runtime.OutputCatchingTestRuntime;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 /**
  * The AST of scripts can be written to JSON format.
  * Test that this actually works.

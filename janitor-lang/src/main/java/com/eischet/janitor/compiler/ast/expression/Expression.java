@@ -1,6 +1,7 @@
 package com.eischet.janitor.compiler.ast.expression;
 
 import com.eischet.janitor.api.JanitorScriptProcess;
+import com.eischet.janitor.api.errors.runtime.JanitorError;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.compiler.ast.Ast;
@@ -13,5 +14,5 @@ import org.jetbrains.annotations.NotNull;
  * It's the most basic building block of the language, together with statements.
  */
 public interface Expression extends Ast, JsonExportableObject {
-    @NotNull JanitorObject evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException;
+    @NotNull JanitorObject evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException, JanitorError;
 }
