@@ -29,7 +29,7 @@
         <maven.version>3.9.9</maven.version>
 
 
-        <deps.maven-resolver>2.0.10</deps.maven-resolver>
+        <deps.maven-resolver>2.0.13</deps.maven-resolver>
 
         <!-- TODO: with current dependency versions, the (old?) unit test does not work anymore.
              it was all just boilerplate generated when I started, anyway, so I'll live without
@@ -187,7 +187,7 @@
                 </plugin>
                 <plugin>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.14.0</version>
+                    <version>3.14.1</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-plugin-plugin</artifactId>
@@ -195,7 +195,7 @@
                 </plugin>
                 <plugin>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.5.3</version>
+                    <version>3.5.4</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-jar-plugin</artifactId>
@@ -218,7 +218,7 @@
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.14.0</version>
+                <version>3.14.1</version>
                 <configuration>
                     <annotationProcessorPaths>
                         <path>
