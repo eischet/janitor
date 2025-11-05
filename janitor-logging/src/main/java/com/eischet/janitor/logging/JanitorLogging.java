@@ -9,6 +9,7 @@ import com.eischet.jul.rolling.RenamingBackupPolicy;
 import com.eischet.jul.rolling.RollingFileHandler;
 import com.eischet.jul.rolling.TimeRollingPolicy;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jline.jansi.Ansi;
 import org.slf4j.LoggerFactory;
 
@@ -18,6 +19,7 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.logging.*;
 
 /**
@@ -79,6 +81,11 @@ public class JanitorLogging {
      */
     public static String LOGSIZE = "LOGSIZE";
 
+    /**
+     * Path where the log files are stored
+     */
+    public static @Nullable File LOG_FOLDER;
+
     public static @NotNull org.slf4j.Logger getLogger(final @NotNull Class<?> clazz) {
         return LoggerFactory.getLogger(clazz);
     }
@@ -108,9 +115,17 @@ public class JanitorLogging {
 
     /**
      * Configure logging.
-     * @param logName
+     * @param logName root name of the log files we'll write
      */
     public static void configure(final String logName) {
+        configure(logName, null);
+    }
+
+    /**
+     * Configure logging.
+     * @param logName root name of the log files we'll write
+     */
+    public static void configure(final String logName, final @Nullable Supplier<Filter> filterSupplier) {
         final boolean noLogFile = "true".equalsIgnoreCase(env(NOLOGFILE));
         final boolean noConsoleLog = "true".equalsIgnoreCase(env(NOCONSOLELOG));
         final boolean color = "true".equalsIgnoreCase(env(CONSOLELOGCOLOR));
@@ -164,8 +179,6 @@ public class JanitorLogging {
 
         final Logger rootLogger = Logger.getLogger("");
 
-        // final CockpitDatabaseAppender cda = new CockpitDatabaseAppender();
-
         // unless explicitly disabled, add our own file handler
         if (!noLogFile) {
             final String saneLogName = sanitizeFilename(logName);
@@ -186,10 +199,14 @@ public class JanitorLogging {
                 System.out.println("Logging to: " + logFolder.getAbsolutePath());
             }
 
+            JanitorLogging.LOG_FOLDER = logFolder;
+
             if (minutes > 0) {
                 final RollingFileHandler rolf = new RollingFileHandler(logFolder, saneLogName + ".log", 0, new TimeRollingPolicy(TimeRollingPolicy.TimeBoundary.MINUTELY), new RenamingBackupPolicy(saneLogName + "_%s.log", minutes));
                 rolf.setFormatter(new PlainConsoleFormatter());
-                // rolf.setFilter(cda.getAntiFileFiler());
+                if (filterSupplier != null) {
+                    rolf.setFilter(filterSupplier.get());
+                }
                 rolf.setLevel(Level.INFO);
                 rootLogger.addHandler(rolf);
                 addStream = true;
@@ -198,7 +215,9 @@ public class JanitorLogging {
             if (!addStream && days > 0) {
                 final RollingFileHandler rolf = new RollingFileHandler(logFolder, saneLogName + ".log", 0, new TimeRollingPolicy(TimeRollingPolicy.TimeBoundary.DAILY), new RenamingBackupPolicy(saneLogName + "_%s.log", days));
                 rolf.setFormatter(new PlainConsoleFormatter());
-                // rolf.setFilter(cda.getAntiFileFiler());
+                if (filterSupplier != null) {
+                    rolf.setFilter(filterSupplier.get());
+                }
                 rolf.setLevel(Level.INFO);
                 rootLogger.addHandler(rolf);
                 addStream = true;
@@ -211,7 +230,9 @@ public class JanitorLogging {
                     // fileHandler.setLevel(Level.INFO);
                     fileHandler.setFormatter(new PlainConsoleFormatter());
                     rootLogger.addHandler(fileHandler);
-                    // fileHandler.setFilter(cda.getAntiFileFiler());
+                    if (filterSupplier != null) {
+                        fileHandler.setFilter(filterSupplier.get());
+                    }
                 } catch (IOException e) {
                     e.printStackTrace(System.err);
                 }

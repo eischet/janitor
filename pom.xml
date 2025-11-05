@@ -66,6 +66,7 @@
         <module>janitor-grammarkit</module>
         <module>janitor-repl</module>
         <module>janitor-logging</module>
+        <module>janitor-dbxs</module>
     </modules>
 
 

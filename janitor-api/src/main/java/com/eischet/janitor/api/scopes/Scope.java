@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A scope is the basic building block of how the interpreter operates.
@@ -41,7 +42,7 @@ import java.util.Objects;
 public class Scope implements JanitorObject {
 
     private final @Nullable Scope parent;
-    private final Map<String, JanitorObject> variables = new HashMap<>(4);
+    private final Map<String, JanitorObject> variables;
     private final @Nullable Location location;
     private final @Nullable Scope moduleScope;
     private final JanitorEnvironment env;
@@ -49,11 +50,16 @@ public class Scope implements JanitorObject {
     private @Nullable JanitorObject implicitObject;
     private boolean sealed = false;
 
-    private Scope(final JanitorEnvironment env, final @Nullable Location location, final @Nullable Scope parent, final @Nullable Scope moduleScope) {
+    private Scope(final JanitorEnvironment env, final @Nullable Location location, final @Nullable Scope parent, final @Nullable Scope moduleScope, final boolean threadEnabled) {
         this.env = env;
         this.location = location;
         this.parent = parent;
         this.moduleScope = moduleScope;
+        this.variables = threadEnabled ? new ConcurrentHashMap<>(4) : new HashMap<>(4);
+        // Initially, we always used HashMap. 2025-11-05, I became aware of a potential issue where an app keeps updating the builtin scope in a background thread,
+        // *while scripts might be running*, which would lead to a potential ConcurrentModificationException. Now, I'm not sure if it's a good idea to use ConcurrentHashMap
+        // exclusively, even though I faintly remember from "Java Concurrency in Practice" that it's superior for most cases anyway. I'll come fix it once I've re-read that book.
+        // TODO decide whether HashMap or ConcurrentHashMap is the better choice, or if we should keep the simple heuritstic that chooses between them.
     }
 
 
@@ -64,7 +70,7 @@ public class Scope implements JanitorObject {
      * @return the global scope
      */
     public static Scope createGlobalScope(final JanitorEnvironment env, final ScriptModule module) {
-        return new Scope(env, Location.startOf(module), env.getBuiltinScope(), null);
+        return new Scope(env, Location.startOf(module), env.getBuiltinScope(), null, true);
     }
 
     /**
@@ -74,7 +80,7 @@ public class Scope implements JanitorObject {
      * @return the builtin scope
      */
     public static Scope createBuiltinScope(final JanitorEnvironment env, final Location location) {
-        return new Scope(env, location, null, null);
+        return new Scope(env, location, null, null, true);
     }
 
     /**
@@ -84,7 +90,7 @@ public class Scope implements JanitorObject {
      * @return the main scope
      */
     public static Scope createMainScope(final Scope globalScope) {
-        return new Scope(globalScope.env, null, globalScope, null);
+        return new Scope(globalScope.env, null, globalScope, null, true);
     }
 
     /**
@@ -95,7 +101,7 @@ public class Scope implements JanitorObject {
      * @return the fresh module scope
      */
     public static Scope createFreshModuleScope(final Scope moduleScope, final Scope currentScope) {
-        return new Scope(moduleScope.env, moduleScope.getLocation(), currentScope, moduleScope);
+        return new Scope(moduleScope.env, moduleScope.getLocation(), currentScope, moduleScope, true);
     }
 
     /**
@@ -106,7 +112,7 @@ public class Scope implements JanitorObject {
      * @return the fresh block scope
      */
     public static Scope createFreshBlockScope(final Location location, final Scope currentScope) {
-        return new Scope(currentScope.env, location, currentScope, null);
+        return new Scope(currentScope.env, location, currentScope, null, false);
     }
 
     /**
