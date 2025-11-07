@@ -24,6 +24,10 @@ public interface DatabaseDialect {
         return columnName;
     }
 
+    default String quoteTableName(String tableName) {
+        return quoteTableName(null, tableName);
+    }
+
     default String quoteTableName(String schema, String tableName) {
         if (schema == null || schema.isEmpty()) {
             return tableName;

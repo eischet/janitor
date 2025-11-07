@@ -1,6 +1,7 @@
 package com.eischet.janitor.api;
 
 import com.eischet.janitor.api.types.BuiltinTypes;
+import com.eischet.janitor.api.types.JanitorCleanupRequired;
 import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.i18n.JanitorFormatting;
@@ -118,6 +119,12 @@ public interface JanitorScriptProcess {
     default void protect(final String title, ProtectedCall call) {
         getRuntime().protect(title, call);
     }
+
+    /**
+     * When scripts create objects that should be cleaned up after a script terminates, this method receives them.
+     * @param cleanable the object to clean up
+     */
+    void registerCleanable(JanitorCleanupRequired cleanable);
 
     @FunctionalInterface
     interface ProtectedCall {

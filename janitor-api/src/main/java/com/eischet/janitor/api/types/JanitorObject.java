@@ -132,6 +132,13 @@ public interface JanitorObject {
     }
 
     /**
+     * Called on an Object when it enters a scripting scope.
+     */
+    default void janitorEnterScope() {
+        // ignored by default
+    }
+
+    /**
      * Retrieve an attribute of an object, e.h. a method or a property.
      * <p>Intended Users: scripting runtime.</p>
      * @param process a running script processed

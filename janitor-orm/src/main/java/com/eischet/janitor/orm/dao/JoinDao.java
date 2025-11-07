@@ -184,25 +184,40 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
     public void merge(@NotNull DatabaseConnection conn, @NotNull T record) throws DatabaseError {
         final StatementCreator creator = new StatementCreator(getDataManager().getDialect());
         final List<String> updatingColumns = columns.stream().filter(col -> !primaryKeyColumns.contains(col)).toList();
-        final UpdateStatement updateStatement = UpdateStatement.of(creator.createUpdateStatement(tableName, updatingColumns, primaryKeyColumns));
-        final int changedRows = conn.update(updateStatement, ps -> {
-            writeAllColumns(conn, record, updatingColumns, ps);
-            writeAllColumns(conn, record, primaryKeyColumns, ps);
-        });
-        if (verbose) {
-            log.info("updated {} rows", changedRows);
-        }
-        if (changedRows == 0) {
-            update(conn, record);
-        }
-        if (changedRows > 1) {
-            throw new DatabaseError("multiple rows affected by update");
+        if (updatingColumns.isEmpty()) {
+            final List<String> countingColumns = columns.stream().toList();
+            final SelectStatement countStatement = SelectStatement.of(creator.createCountStatement(tableName, countingColumns));
+            final int count = conn.queryForInt(countStatement, ps -> writeAllColumns(conn, record, countingColumns, ps));
+            log.info("merge: suche via {} -> {} Zeilen", countStatement.getSql(), count);
+            if (count == 0) {
+                insert(conn, record);
+            }
+        } else {
+            final UpdateStatement updateStatement = UpdateStatement.of(creator.createUpdateStatement(tableName, updatingColumns, primaryKeyColumns));
+            final int changedRows = conn.update(updateStatement, ps -> {
+                writeAllColumns(conn, record, updatingColumns, ps);
+                writeAllColumns(conn, record, primaryKeyColumns, ps);
+            });
+            if (verbose) {
+                log.info("updated {} rows", changedRows);
+            }
+            if (changedRows == 0) {
+                update(conn, record);
+            }
+            if (changedRows > 1) {
+                throw new DatabaseError("multiple rows affected by update");
+            }
         }
     }
 
     public void update(@NotNull DatabaseConnection conn, @NotNull T record) throws DatabaseError {
         final StatementCreator creator = new StatementCreator(getDataManager().getDialect());
         final List<String> updatingColumns = columns.stream().filter(col -> !primaryKeyColumns.contains(col)).toList();
+        if (updatingColumns.isEmpty()) {
+            log.warn("update is meaningless on a collection that consists only of its primary key columns - you probably want to call merge directly, and I'm calling it for you");
+            merge(conn, record);
+            return;
+        }
         final UpdateStatement updateStatement = UpdateStatement.of(creator.createUpdateStatement(tableName, updatingColumns, primaryKeyColumns));
         final int changedRows = conn.update(updateStatement, ps -> {
             writeAllColumns(conn, record, updatingColumns, ps);
@@ -237,7 +252,9 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
     public T convertToEntity(final @NotNull JanitorScriptProcess process, final @NotNull JCallArgs arguments, final OrmEntity parent) throws JanitorRuntimeException {
         final JanitorObject param = arguments.require(1).get(0);
         if (param instanceof JMap map) {
-            final T instance = entityDispatch.getConstructor().call(process, JCallArgs.empty("constructor", process));
+            final T instance = newValue.get();
+            // we cannot usually call this, because it needs the Source as a parameter, so it cannot be in the dispatch table!
+            // final T instance = entityDispatch.getConstructor().call(process, JCallArgs.empty("constructor", process));
             map.applyTo(process, instance);
             return instance;
         } else if (entityClass.isInstance(param)) {
@@ -253,7 +270,9 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
                                 final @NotNull JCallArgs arguments) throws JanitorRuntimeException {
         final JanitorObject param = arguments.require(1).get(0);
         if (param instanceof JMap map) {
-            final T instance = entityDispatch.getConstructor().call(process, JCallArgs.empty("constructor", process));
+            final T instance = newValue.get();
+            // we cannot usually call this, because it needs the Source as a parameter, so it cannot be in the dispatch table!
+            // final T instance = entityDispatch.getConstructor().call(process, JCallArgs.empty("constructor", process));
             map.applyTo(process, instance);
             try {
                 getDataManager().executeTransaction(conn -> insert(conn, instance));
@@ -277,7 +296,9 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
                                    final @NotNull JCallArgs arguments) throws JanitorRuntimeException {
         final JanitorObject param = arguments.require(1).get(0);
         if (param instanceof JMap map) {
-            final T instance = entityDispatch.getConstructor().call(process, JCallArgs.empty("constructor", process));
+            final T instance = newValue.get();
+            // we cannot usually call this, because it needs the Source as a parameter, so it cannot be in the dispatch table!
+            // final T instance = entityDispatch.getConstructor().call(process, JCallArgs.empty("constructor", process));
             map.applyTo(process, instance);
             try {
                 getDataManager().executeTransaction(conn -> update(conn, instance));
@@ -301,7 +322,9 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
                                 final @NotNull JCallArgs arguments) throws JanitorRuntimeException {
         final JanitorObject param = arguments.require(1).get(0);
         if (param instanceof JMap map) {
-            final T instance = entityDispatch.getConstructor().call(process, JCallArgs.empty("constructor", process));
+            final T instance = newValue.get();
+            // we cannot usually call this, because it needs the Source as a parameter, so it cannot be in the dispatch table!
+            // final T instance = entityDispatch.getConstructor().call(process, JCallArgs.empty("constructor", process));
             map.applyTo(process, instance);
             try {
                 getDataManager().executeTransaction(conn -> merge(conn, instance));
@@ -325,7 +348,9 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
     public void deleteForScript(final @NotNull JanitorScriptProcess process, final @NotNull JCallArgs arguments) throws JanitorRuntimeException {
         final JanitorObject param = arguments.require(1).get(0);
         if (param instanceof JMap map) {
-            final T instance = entityDispatch.getConstructor().call(process, JCallArgs.empty("constructor", process));
+            final T instance = newValue.get();
+            // we cannot usually call this, because it needs the Source as a parameter, so it cannot be in the dispatch table!
+            // final T instance = entityDispatch.getConstructor().call(process, JCallArgs.empty("constructor", process));
             map.applyTo(process, instance);
             try {
                 getDataManager().executeTransaction(conn -> delete(conn, instance));

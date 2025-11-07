@@ -12,6 +12,7 @@ import com.eischet.janitor.api.types.builtin.JMap;
 import com.eischet.janitor.api.types.builtin.JNull;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.HashMap;
 import java.util.List;
@@ -42,7 +43,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class Scope implements JanitorObject {
 
     private final @Nullable Scope parent;
-    private final Map<String, JanitorObject> variables;
+    private final Map<String, JanitorObject> _variables;
     private final @Nullable Location location;
     private final @Nullable Scope moduleScope;
     private final JanitorEnvironment env;
@@ -55,7 +56,7 @@ public class Scope implements JanitorObject {
         this.location = location;
         this.parent = parent;
         this.moduleScope = moduleScope;
-        this.variables = threadEnabled ? new ConcurrentHashMap<>(4) : new HashMap<>(4);
+        this._variables = threadEnabled ? new ConcurrentHashMap<>(4) : new HashMap<>(4);
         // Initially, we always used HashMap. 2025-11-05, I became aware of a potential issue where an app keeps updating the builtin scope in a background thread,
         // *while scripts might be running*, which would lead to a potential ConcurrentModificationException. Now, I'm not sure if it's a good idea to use ConcurrentHashMap
         // exclusively, even though I faintly remember from "Java Concurrency in Practice" that it's superior for most cases anyway. I'll come fix it once I've re-read that book.
@@ -216,7 +217,19 @@ public class Scope implements JanitorObject {
                 return impVar;
             }
         }
-        return variables.get(variableName);
+        return getVariable(variableName);
+    }
+
+    protected @Nullable JanitorObject getVariable(final String variableName) {
+        return _variables.get(variableName);
+    }
+
+    protected void setVariable(final @NotNull String variableName, final @NotNull JanitorObject value, final @Nullable JanitorScriptProcess process) {
+        _variables.put(variableName, value);
+        value.janitorEnterScope();
+        if (process != null && value instanceof JanitorCleanupRequired cleanable) {
+            process.registerCleanable(cleanable);
+        }
     }
 
     /**
@@ -227,7 +240,7 @@ public class Scope implements JanitorObject {
      * @return true if the variable is present
      */
     public boolean hasLocal(final String variableName) {
-        return variables.containsKey(variableName);
+        return _variables.containsKey(variableName);
     }
 
     /**
@@ -237,8 +250,8 @@ public class Scope implements JanitorObject {
      * @param variableName the variable name
      * @return the variable or null
      */
-    public JanitorObject retrieveLocal(final String variableName) {
-        return variables.get(variableName);
+    public @Nullable JanitorObject retrieveLocal(final String variableName) {
+        return getVariable(variableName);
     }
 
     /**
@@ -257,7 +270,7 @@ public class Scope implements JanitorObject {
                 return impVar;
             }
         }
-        final JanitorObject existing = variables.get(variableName);
+        final @Nullable JanitorObject existing = getVariable(variableName);
         if (existing != null) {
             return existing;
         }
@@ -307,14 +320,14 @@ public class Scope implements JanitorObject {
         }
         if (variable == null) {
             // ist kein Fehler mehr: log.debug("tried to bind null as {} in scope {}", variableName, this);
-            variables.put(name, JNull.NULL);
+            setVariable(name, JNull.NULL, process);
         } else {
-            final JanitorObject existing = variables.get(name);
+            final JanitorObject existing = getVariable(name);
             if (existing != null) {
                 process.trace(() -> "replacing existing value " + name + " = " + existing + " with " + variable);
                 existing.janitorLeaveScope();
             }
-            variables.put(name, variable);
+            setVariable(name, variable, process);
         }
         return this;
     }
@@ -328,7 +341,7 @@ public class Scope implements JanitorObject {
      * @param variableName the name to unbind
      */
     public JanitorObject unbind(final String variableName) {
-        final JanitorObject existing = variables.remove(variableName);
+        final JanitorObject existing = _variables.remove(variableName);
         if (existing != null) {
             existing.janitorLeaveScope();
         }
@@ -339,8 +352,8 @@ public class Scope implements JanitorObject {
      * Remove all variables from this scope.
      */
     public void unbindAll() {
-        variables.values().forEach(JanitorObject::janitorLeaveScope);
-        variables.clear();
+        _variables.values().forEach(JanitorObject::janitorLeaveScope);
+        _variables.clear();
     }
 
     /**
@@ -357,7 +370,7 @@ public class Scope implements JanitorObject {
         //   process.warn("tried to rebind '%s' as %s in sealed scope %s".formatted(name, variable, this));
         // }
 
-        variables.put(variableName, Objects.requireNonNullElse(variable, JNull.NULL));
+        setVariable(variableName, Janitor.nullableObject(variable), null);
         return this;
     }
 
@@ -373,7 +386,7 @@ public class Scope implements JanitorObject {
         // if (sealed) {
         // log.warn("tried to rebind '{}' as {} in sealed scope {}", function, function, this);
         // }
-        variables.put(functionName, function.asObject(functionName));
+        setVariable(functionName, function.asObject(functionName), null);
         return this;
     }
 
@@ -440,8 +453,8 @@ public class Scope implements JanitorObject {
      *
      * @return a list of variable names
      */
-    public List<String> dir() {
-        return variables.keySet().stream().toList();
+    public @NotNull @Unmodifiable List<String> dir() {
+        return _variables.keySet().stream().toList();
     }
 
     /**
@@ -457,14 +470,14 @@ public class Scope implements JanitorObject {
         } else if (parent != null) {
             dump.putAll(parent.toMap());
         }
-        variables.forEach((key, value) -> dump.put(env.getBuiltinTypes().string(key), value));
+        _variables.forEach((key, value) -> dump.put(env.getBuiltinTypes().string(key), value));
         return dump;
 
     }
 
     @Override
     public @NotNull String janitorToString() {
-        return String.valueOf(variables);
+        return String.valueOf(_variables);
     }
 
     /**
@@ -475,7 +488,7 @@ public class Scope implements JanitorObject {
      */
     @Override
     public boolean janitorIsTrue() {
-        return !variables.isEmpty();
+        return !_variables.isEmpty();
     }
 
     @Override
@@ -491,7 +504,7 @@ public class Scope implements JanitorObject {
     @Override
     public void janitorLeaveScope() {
         if (!sealed) {
-            variables.values().stream().filter(Objects::nonNull).forEach(JanitorObject::janitorLeaveScope);
+            _variables.values().stream().filter(Objects::nonNull).forEach(JanitorObject::janitorLeaveScope);
         }
     }
 
@@ -509,7 +522,7 @@ public class Scope implements JanitorObject {
      * @param other another scope, probably the main scope of a previous REPL command execution
      */
     public void replEatScope(Scope other) {
-        variables.putAll(other.variables);
+        other._variables.forEach((variableName, value) -> setVariable(variableName, value, null));
     }
 
     /**
@@ -539,7 +552,7 @@ public class Scope implements JanitorObject {
      * @see Scope#replEatScope
      */
     public void bindAll(final Scope evalScope) {
-        evalScope.variables.forEach(this::bind);
+        evalScope._variables.forEach((variableName, value) -> setVariable(variableName, value, null));
     }
 
 }

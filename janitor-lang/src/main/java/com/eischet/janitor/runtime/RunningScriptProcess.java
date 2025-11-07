@@ -5,6 +5,7 @@ import com.eischet.janitor.api.errors.glue.JanitorControlFlowException;
 import com.eischet.janitor.api.errors.runtime.JanitorInternalException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.Scope;
+import com.eischet.janitor.api.types.JanitorCleanupRequired;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.compiler.ast.statement.Script;
 import com.eischet.janitor.compiler.ast.statement.controlflow.ReturnStatement;
@@ -38,8 +39,10 @@ public class RunningScriptProcess extends AbstractScriptProcess {
             throw new JanitorInternalException(this, "invalid control flow: exited script at top level", e);
         } finally {
             getMainScope().janitorLeaveScope();
+            processCleanups();
         }
     }
+
 
     @Override
     public String getSource() {

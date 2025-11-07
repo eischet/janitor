@@ -3,6 +3,7 @@ package com.eischet.janitor.runtime;
 
 import com.eischet.janitor.api.JanitorRuntime;
 import com.eischet.janitor.api.JanitorScriptProcess;
+import com.eischet.janitor.api.types.JanitorCleanupRequired;
 import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.Location;
@@ -29,6 +30,7 @@ public abstract class AbstractScriptProcess implements JanitorScriptProcess {
     private final List<Scope> closureScopes = new LinkedList<>();
     private final @NotNull String processName;
     private Scope currentScope;
+    private final LinkedList<JanitorCleanupRequired> cleanupList = new LinkedList<>();
 
     private JanitorObject scriptResult = JNull.NULL;
 
@@ -191,6 +193,22 @@ public abstract class AbstractScriptProcess implements JanitorScriptProcess {
             scope = scope.getParent();
         }
         return stack;
+    }
+
+
+    @Override
+    public void registerCleanable(final JanitorCleanupRequired cleanable) {
+        if (!cleanupList.contains(cleanable)) {
+            cleanupList.add(cleanable);
+        } else {
+            trace(() -> "cleanable already registered: " + cleanable);
+        }
+    }
+
+    protected void processCleanups() {
+        for (final JanitorCleanupRequired janitorCleanupRequired : cleanupList) {
+            janitorCleanupRequired.janitorCleanup();
+        }
     }
 
 }

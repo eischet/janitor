@@ -159,11 +159,27 @@ public class StatementCreator {
             throw new IllegalArgumentException("the 'where' columns must not be empty");
         }
         final StringBuilder out = new StringBuilder();
-        out.append("update ").append(table).append(" set ");
+        out.append("update ").append(dialect.quoteTableName(table)).append(" set ");
         out.append(columns.stream().map(col -> String.format("%s = ?", dialect.quoteColumn(col))).collect(Collectors.joining(", ")));
         out.append(" where ").append(whereColumns.stream().map(dialect::quoteColumn).map(it -> it + " = ?").collect(Collectors.joining(" and ")));
         return out.toString();
     }
 
+    @NotNull
+    @Language("sql")
+    public String createCountStatement(final @NotNull String table,
+                                       final @NotNull @Unmodifiable List<String> whereColumns) throws IllegalArgumentException {
+        if (table.isBlank()) {
+            throw new IllegalArgumentException("the table name must not be blank");
+        }
+        if (whereColumns.isEmpty()) {
+            throw new IllegalArgumentException("the 'where' columns must not be empty");
+        }
+        final StringBuilder out = new StringBuilder();
+        out.append("select count (*) from ").append(dialect.quoteTableName(table));
+        out.append(" where ").append(whereColumns.stream().map(dialect::quoteColumn).map(it -> it + " = ?").collect(Collectors.joining(" and ")));
+        return out.toString();
+
+    }
 
 }
