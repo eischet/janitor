@@ -114,6 +114,10 @@ public class JoinedList<T extends OrmJoined, U extends Uplink, V extends JoinDao
         return companion;
     }
 
+    public boolean isEmpty() {
+        return list == null || list.isEmpty();
+    }
+
     public Stream<T> getFullJoinedObjects() {
         return list == null ? Stream.empty() : list.stream();
     }
