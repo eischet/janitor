@@ -20,7 +20,7 @@
 
     <properties>
         <!-- project revision -->
-        <revision>0.9.37-SNAPSHOT</revision>
+        <revision>0.9.37</revision>
 
         <!-- project settings -->
         <maven.plugin.validation>VERBOSE</maven.plugin.validation>
@@ -132,6 +132,14 @@
                     </execution>
                 </executions>
             </plugin>
+
+
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.5.4</version>
+            </plugin>
+
+
         </plugins>
     </build>
 
@@ -187,6 +195,15 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- as sugessted by https://github.com/junit-team/junit-examples/blob/main/junit-jupiter-starter-maven/pom.xml -->
+            <dependency>
+                <groupId>org.junit</groupId>
+                <artifactId>junit-bom</artifactId>
+                <version>6.0.1</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
             <dependency>
                 <groupId>com.eischet.janitor</groupId>
                 <artifactId>janitor-api</artifactId>
@@ -233,12 +250,6 @@
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-jdk14</artifactId>
                 <version>2.0.17</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.junit.jupiter</groupId>
-                <artifactId>junit-jupiter-engine</artifactId>
-                <version>6.0.1</version>
                 <scope>test</scope>
             </dependency>
             <dependency>

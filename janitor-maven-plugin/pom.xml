@@ -1,6 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -40,7 +38,7 @@
 
     <!--
         Note that all Maven components referenced as dependencies MUST BE "provided".
-        Putting them into "compile", for exmample, will have Maven load separate JARs into an isolated class loader.
+        Putting them into "compile", for example, will have Maven load separate JARs into an isolated class loader.
         This will have terrible effects, like for example breaking deployments because suddenly maven cannot see the contents
         of settings.xml anymore when our plugin is only included in the build...
     -->
@@ -152,7 +150,6 @@
             <version>3.5.3</version>
             <scope>provided</scope>
         </dependency>
-
 
 
 

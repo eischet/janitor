@@ -1,4 +1,4 @@
-# 0.9.37, 2025-11-xx
+# 0.9.37, 2025-11-12
 
 - Improve toString() for TemporaryAssignable to aid debugging.
 - Improve a lot of nullability annotations.
@@ -9,7 +9,7 @@
 - Keep parameter names (via maven compiler plugin, via company root POM 1.0.6)
 - Basic support for BigDecimal properties in dispatch tables.
 - added the standalone project "dbxs" as module "janitor-dbxs", which will first be updated gently and then be enhanced with Janitor bindings
-- added the standalone project "janitor-orm", a very experimental (but working) simple ORM for Janitor objects.
+- added the standalone project "janitor-orm", a *very experimental* (but working) simple ORM for Janitor objects.
 - In janitor-logging, the required @AutoService annotation was placed correctly, but no annotation processor was configured, so it did not do anything.
 
 
