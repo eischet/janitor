@@ -3,6 +3,7 @@
 - Improve and simplify the ORM module.
 - Fix the logging dependency for the REPL.
 - Shade the REPL jar so it can be run with java -jar.
+- The REPL now uses JLine for improved prompting by default.
 
 
 # 0.9.37, 2025-11-12

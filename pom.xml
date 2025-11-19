@@ -30,6 +30,7 @@
         <deps.slf4j>2.0.17</deps.slf4j>
         <deps.autoservice>1.1.1</deps.autoservice>
         <deps.jansi>3.30.2</deps.jansi>
+        <deps.jline>3.30.6</deps.jline>
 
     </properties>
 
@@ -258,6 +259,11 @@
                 <groupId>com.google.auto.service</groupId>
                 <artifactId>auto-service-annotations</artifactId>
                 <version>${deps.autoservice}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jline</groupId>
+                <artifactId>jline</artifactId>
+                <version>${deps.jline}</version>
             </dependency>
             <dependency>
                 <groupId>org.jline</groupId>
