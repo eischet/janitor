@@ -782,55 +782,62 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
         }).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.DATE); // TODO: support dates
     }
 
+
     private String stringOrNull(final JanitorObject value) throws JanitorGlueException {
-        if (value == Janitor.NULL) {
-            return null;
-        } else if (value instanceof JString jstring) {
-            return jstring.janitorGetHostValue();
+        for (final var v : value.janitorUnpackAll()) {
+            if (v == Janitor.NULL) {
+                return null;
+            } else if (v instanceof JString jstring) {
+                return jstring.janitorGetHostValue();
+            }
         }
         throw new JanitorGlueException(JanitorArgumentException::fromGlue, "expected String or null, but received " + value + " [" + simpleClassNameOf(value) + "]");
     }
 
-    private LocalDateTime dateTimeOrNull(final JanitorObject value) throws JanitorGlueException {
-        if (value == Janitor.NULL) {
-            return null;
-        } else if (value instanceof JDate date) {
-            return date.janitorGetHostValue().atStartOfDay();
-        } else if (value instanceof JDateTime dateTime) {
-            return dateTime.janitorGetHostValue();
-        } else if (value instanceof JString stringRep) {
-            try {
-                @NotNull final JanitorObject possibleDateTime = Janitor.nullableDateTimeFromJsonString(stringRep.janitorGetHostValue());
-                if (possibleDateTime instanceof JDateTime dateTime) {
-                    return dateTime.janitorGetHostValue();
+    private LocalDateTime dateTimeOrNull(final JanitorObject v) throws JanitorGlueException {
+        for (final var value : v.janitorUnpackAll()) {
+            if (value == Janitor.NULL) {
+                return null;
+            } else if (value instanceof JDate date) {
+                return date.janitorGetHostValue().atStartOfDay();
+            } else if (value instanceof JDateTime dateTime) {
+                return dateTime.janitorGetHostValue();
+            } else if (value instanceof JString stringRep) {
+                try {
+                    @NotNull final JanitorObject possibleDateTime = Janitor.nullableDateTimeFromJsonString(stringRep.janitorGetHostValue());
+                    if (possibleDateTime instanceof JDateTime dateTime) {
+                        return dateTime.janitorGetHostValue();
+                    }
+                    log.warn("invalid datetime string: {}", stringRep);
+                } catch (JsonException e) {
+                    log.warn("invalid datetime string: {}", stringRep, e);
                 }
-                log.warn("invalid datetime string: {}", stringRep);
-            } catch (JsonException e) {
-                log.warn("invalid datetime string: {}", stringRep, e);
             }
         }
-        throw new JanitorGlueException(JanitorArgumentException::fromGlue, "expected DateTime (or Date, or null), but received " + value + " [" + simpleClassNameOf(value) + "]");
+        throw new JanitorGlueException(JanitorArgumentException::fromGlue, "expected DateTime (or Date, or null), but received " + v + " [" + simpleClassNameOf(v) + "]");
     }
 
-    private LocalDate dateOrNull(final JanitorObject value) throws JanitorGlueException {
-        if (value == Janitor.NULL) {
-            return null;
-        } else if (value instanceof JDate date) {
-            return date.janitorGetHostValue();
-        } else if (value instanceof JDateTime dateTime) {
-            return dateTime.toDate().janitorGetHostValue();
-        } else if (value instanceof JString stringRep) {
-            try {
-                @NotNull final JanitorObject possibleDate = Janitor.nullableDateFromJsonString(stringRep.janitorGetHostValue());
-                if (possibleDate instanceof JDate date) {
-                    return date.janitorGetHostValue();
+    private LocalDate dateOrNull(final JanitorObject v) throws JanitorGlueException {
+        for (final var value : v.janitorUnpackAll()) {
+            if (value == Janitor.NULL) {
+                return null;
+            } else if (value instanceof JDate date) {
+                return date.janitorGetHostValue();
+            } else if (value instanceof JDateTime dateTime) {
+                return dateTime.toDate().janitorGetHostValue();
+            } else if (value instanceof JString stringRep) {
+                try {
+                    @NotNull final JanitorObject possibleDate = Janitor.nullableDateFromJsonString(stringRep.janitorGetHostValue());
+                    if (possibleDate instanceof JDate date) {
+                        return date.janitorGetHostValue();
+                    }
+                    log.warn("invalid date string: {}", stringRep);
+                } catch (JsonException e) {
+                    log.warn("invalid date string: {}", stringRep, e);
                 }
-                log.warn("invalid date string: {}", stringRep);
-            } catch (JsonException e) {
-                log.warn("invalid date string: {}", stringRep, e);
             }
         }
-        throw new JanitorGlueException(JanitorArgumentException::fromGlue, "expected Date (or DateTime, or null), but received " + value + " [" + simpleClassNameOf(value) + "]");
+        throw new JanitorGlueException(JanitorArgumentException::fromGlue, "expected Date (or DateTime, or null), but received " + v + " [" + simpleClassNameOf(v) + "]");
     }
 
     /**

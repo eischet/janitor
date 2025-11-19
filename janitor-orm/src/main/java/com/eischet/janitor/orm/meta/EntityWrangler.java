@@ -1,6 +1,7 @@
 package com.eischet.janitor.orm.meta;
 
 import com.eischet.janitor.api.Janitor;
+import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import com.eischet.janitor.api.types.dispatch.ValueExpander;
 import com.eischet.janitor.orm.JanitorOrm;
@@ -39,6 +40,24 @@ public interface EntityWrangler<T extends OrmEntity, U extends Uplink> extends W
                 .setMetaData(JanitorOrm.MetaData.COLUMN_TYPE, ColumnTypeHint.INT)
                 .setMetaData(Janitor.MetaData.REF, getSimpleClassName())
                 .setMetaData(JanitorOrm.MetaData.WRANGLER, () -> this);
+    }
+
+    /**
+     * Copies an object by copying all assignable scripting attributes.
+     * In most cases, this should be enough to create a proper clone.
+     * If you want to have full control over the copying, implement EntityWrangler.Duplicating in your class.
+     * Make sure that it can be cast to T in this context, or you'll get a class cast exception here.
+     * @param uplink uplink object
+     * @param original original object
+     * @return a copy
+     */
+    T duplicate(U uplink, T original);
+
+    /**
+     * Interface for objects that will duplicate themselves, instead of relying on the simple approach of the duplicate method.
+     */
+    interface Duplicating {
+        OrmEntity duplicate();
     }
 
 }

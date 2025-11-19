@@ -22,6 +22,7 @@ public sealed interface ForeignKey<T extends OrmEntity> extends JanitorObject, J
 
     @NotNull Optional<T> resolve(@NotNull DatabaseConnection conn) throws DatabaseError;
 
+    // TODO: I think the preResolve stuff hurts more than it helps, so it should be removed.
     void preResolve(@NotNull DatabaseConnection conn) throws DatabaseError;
 
     default @Nullable T resolveOrNull() {

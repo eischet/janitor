@@ -655,5 +655,25 @@ public abstract class GenericDao<T extends OrmEntity> extends JanitorComposed<Ge
         }
     }
 
+    /**
+     * Equality check.
+     * Note that this is based on the table name by default, which should be reasonable for many use cases.
+     * @param o   the reference object with which to compare.
+     * @return true if the reference object is equal to the argument object or
+     */
+    @Override
+    public boolean equals(final Object o) {
+        if (!(o instanceof final GenericDao<?> that)) return false;
+        return Objects.equals(tableName, that.tableName);
+    }
 
+    /**
+     * Hash code generation.
+     * Note that this is based on the table name by default, which should be reasonable for many use cases.
+     * @return
+     */
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(tableName);
+    }
 }

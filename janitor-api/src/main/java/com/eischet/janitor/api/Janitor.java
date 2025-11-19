@@ -6,6 +6,7 @@ import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.metadata.MetaDataKey;
 import com.eischet.janitor.api.types.BuiltinTypes;
 import com.eischet.janitor.api.types.JanitorObject;
+import com.eischet.janitor.api.types.TemporaryAssignable;
 import com.eischet.janitor.api.types.builtin.*;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import com.eischet.janitor.toolbox.json.api.JsonException;
@@ -22,6 +23,8 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+
+import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
 /**
  * This is the main entry point for working with the Janitor language in Java.
@@ -506,15 +509,17 @@ public final class Janitor {
     /**
      * Require a boolean value.
      *
-     * @param value the value to check
+     * @param v the value to check
      * @return the value, if it's a boolean
      * @throws JanitorGlueException if the value is not a boolean
      */
-    public static JBool requireBool(final JanitorObject value) throws JanitorGlueException {
-        if (value instanceof JBool ok) {
-            return ok;
+    public static JBool requireBool(final JanitorObject v) throws JanitorGlueException {
+        for (final var value : v.janitorUnpackAll()) {
+            if (value instanceof JBool ok) {
+                return ok;
+            }
         }
-        throw new JanitorGlueException(JanitorArgumentException::fromGlue, "Expected a boolean value, but got " + value.janitorClassName() + " instead.");
+        throw new JanitorGlueException(JanitorArgumentException::fromGlue, "Expected a boolean value, but got " + v.janitorClassName() + " instead.");
     }
 
     /**
@@ -651,7 +656,14 @@ public final class Janitor {
         if (value instanceof JInt ok) {
             return ok;
         }
-        throw new JanitorGlueException(JanitorArgumentException::fromGlue, "Expected an integer value but got " + value.janitorClassName() + ".");
+        if (value != null) {
+            for (final JanitorObject janitorObject : value.janitorUnpackAll()) {
+                if (janitorObject instanceof JInt ok) {
+                    return ok;
+                }
+            }
+        }
+        throw new JanitorGlueException(JanitorArgumentException::fromGlue, "Expected an integer value but got " + ( value == null ? "<null>" : value.janitorClassName() ) + " ["+simpleClassNameOf(value)+"].");
     }
 
     /**

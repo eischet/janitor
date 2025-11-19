@@ -9,25 +9,36 @@ import com.eischet.janitor.orm.entity.OrmEntity;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.Objects;
 import java.util.Optional;
 
-public final class ForeignKeySearchResult<T extends OrmEntity, R> implements ForeignKey<T> {
+public non-sealed class ForeignKeySearchResult<T extends OrmEntity> implements ForeignKey<T>, OrmEntity {
 
-    private final long id;
+    protected final long id;
+    protected final String key;
+    protected final String name;
+    protected final boolean softDeleted;
+
     private final Dao<T> dao;
-    private final R result;
-    private T resolved;
 
-    public ForeignKeySearchResult(final long id, final Dao<T> dao, final R result) {
+    public ForeignKeySearchResult(final Dao<T> dao, final long id, final String key, final String name, final boolean softDeleted) {
         this.id = id;
         this.dao = dao;
-        this.result = result;
+        this.key = key;
+        this.name = name;
+        this.softDeleted = softDeleted;
     }
 
     @Override
     public long getId() {
         return id;
+    }
+
+    @Override
+    public void setId(final long id) {
+        // ignore
     }
 
     public boolean isEmpty() {
@@ -37,10 +48,6 @@ public final class ForeignKeySearchResult<T extends OrmEntity, R> implements For
     @Override
     public boolean janitorIsTrue() {
         return !isEmpty();
-    }
-
-    public R getResult() {
-        return result;
     }
 
     @Override
@@ -58,10 +65,7 @@ public final class ForeignKeySearchResult<T extends OrmEntity, R> implements For
         if (isEmpty()) {
             return Optional.empty();
         }
-        if (resolved == null) {
-            resolved = dao.lazyLoadById(id);
-        }
-        return Optional.ofNullable(resolved);
+        return Optional.ofNullable(dao.lazyLoadById(id));
     }
 
     @Override
@@ -69,28 +73,18 @@ public final class ForeignKeySearchResult<T extends OrmEntity, R> implements For
         if (isEmpty()) {
             return Janitor.NULL;
         } else {
-            if (resolved == null) {
-                resolved = dao.lazyLoadById(id);
-            }
-            if (resolved == null) {
-                return Janitor.NULL;
-            }
-            return resolved;
+            return Janitor.nullableObject(dao.lazyLoadById(id));
         }
     }
 
 
     @Override
     public void preResolve(@NotNull DatabaseConnection conn) throws DatabaseError {
-        if (resolved == null) {
-            resolved = dao.findById(conn, id);
-        }
     }
 
     @Override
     public @NotNull Optional<T> resolve(final @NotNull DatabaseConnection conn) throws DatabaseError {
-        preResolve(conn);
-        return Optional.ofNullable(resolved);
+        return Optional.ofNullable(dao.lazyLoadById(id));
     }
 
     @Override
@@ -98,8 +92,6 @@ public final class ForeignKeySearchResult<T extends OrmEntity, R> implements For
         return "ForeignKeySearchResult{" +
                "id=" + id +
                ", dao=" + dao +
-               ", resolved=" + (resolved != null) +
-               ", result=" + result +
                '}';
     }
 
@@ -113,4 +105,48 @@ public final class ForeignKeySearchResult<T extends OrmEntity, R> implements For
         return id <= 0;
     }
 
+    @Override
+    public @Nullable String getKey() {
+        return key;
+    }
+
+    @Override
+    public void setKey(final String key) {
+        // ignore
+    }
+
+    @Override
+    public @Nullable String getName() {
+        return name;
+    }
+
+    @Override
+    public void setName(final String name) {
+        // ignore
+    }
+
+    @Override
+    public boolean isSoftDeleted() {
+        return softDeleted;
+    }
+
+    @Override
+    public void setSoftDeleted(final boolean softDeleted) {
+        // ignore
+    }
+
+    public Dao<T> getDao() {
+        return dao;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (!(o instanceof final ForeignKeySearchResult<?> that)) return false;
+        return id == that.id && Objects.equals(dao, that.dao);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, dao);
+    }
 }

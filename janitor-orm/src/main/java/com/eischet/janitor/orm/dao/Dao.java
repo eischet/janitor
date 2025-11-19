@@ -7,6 +7,7 @@ import com.eischet.dbxs.exceptions.DatabaseError;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.orm.FilterExpression;
 import com.eischet.janitor.orm.entity.OrmEntity;
+import com.eischet.janitor.orm.ref.ForeignKeySearchResult;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -100,6 +101,14 @@ public interface Dao<T extends OrmEntity> extends JanitorObject {
     // TODO: should lazyLoadByAssociation better throw an exception on errors?
 
     void setLogging(final DaoLogging logging);
+
+    default T findBySearchResult(ForeignKeySearchResult<T> searchResult) {
+        return lazyLoadById(searchResult.getId());
+    }
+
+    default ForeignKeySearchResult<T> toSearchResult(T entity) {
+        return new ForeignKeySearchResult<>(this, entity.getId(), entity.getKey(), entity.getName(), entity.isSoftDeleted());
+    }
 
 }
 

@@ -14,9 +14,9 @@ import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
  */
 public class TemporaryAssignable implements JAssignable, JanitorObject {
 
-    private final String name;
-    private final JanitorObject value;
-    private final RuntimeConsumer<JanitorObject> setter;
+    private final @NotNull  String name;
+    private final @NotNull JanitorObject value;
+    private final @NotNull RuntimeConsumer<JanitorObject> setter;
 
     @Override
     public String toString() {
@@ -29,7 +29,7 @@ public class TemporaryAssignable implements JAssignable, JanitorObject {
      * @param value our value
      * @param setter code to call when someone assigns to us
      */
-    protected TemporaryAssignable(final String name, final JanitorObject value, final RuntimeConsumer<JanitorObject> setter) {
+    protected TemporaryAssignable(final @NotNull String name, final @NotNull JanitorObject value, final @NotNull RuntimeConsumer<JanitorObject> setter) {
         this.name = name;
         this.value = value;
         this.setter = setter;
@@ -42,7 +42,7 @@ public class TemporaryAssignable implements JAssignable, JanitorObject {
      * @param setter code to call when someone assigns to us
      * @return the new temporary assignable
      */
-    public static TemporaryAssignable of(final String name, final JanitorObject value, final RuntimeConsumer<JanitorObject> setter) {
+    public static TemporaryAssignable of(final @NotNull String name, final @NotNull JanitorObject value, final @NotNull RuntimeConsumer<JanitorObject> setter) {
         return new TemporaryAssignable(name, value, setter);
     }
 
@@ -88,11 +88,11 @@ public class TemporaryAssignable implements JAssignable, JanitorObject {
         return value;
     }
 
-    public JanitorObject getValue() {
+    public @NotNull JanitorObject getValue() {
         return value;
     }
 
-    public RuntimeConsumer<JanitorObject> getSetter() {
+    public @NotNull RuntimeConsumer<JanitorObject> getSetter() {
         return setter;
     }
 }

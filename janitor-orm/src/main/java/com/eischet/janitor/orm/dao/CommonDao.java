@@ -98,7 +98,7 @@ public class CommonDao {
                 if (propertyValue instanceof ForeignKeyInteger<?> ifk) {
                     ps.addLong(ifk.getId());
                     return;
-                } else if (propertyValue instanceof ForeignKeySearchResult<?, ?> fksr) {
+                } else if (propertyValue instanceof ForeignKeySearchResult<?> fksr) {
                     ps.addLong(fksr.getId());
                     return;
                 } else if (propertyValue instanceof ForeignKeyIdentity<?> ifk) {
