@@ -1,10 +1,13 @@
-# Maven target folder
+# Maven build results
 target/
-# IntelliJ Idea Project files, MacOS junk
+dependency-reduced-pom.xml
+.flattened-pom.xml
+
+# IntelliJ Idea stuff
 .idea/
+.run
 janitor.iml
-.DS_Store
 janitor-lang/janitor-lang.iml
 
-.flattened-pom.xml
-.run
+# MacOS junk folders
+.DS_Store
