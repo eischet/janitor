@@ -15,11 +15,13 @@ import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
  */
 public class NullLiteral extends Literal {
 
+    public static final NullLiteral NULL = new NullLiteral(Location.BUILTIN_LOCATION);
+
     /**
      * Constructor.
      * @param location where
      */
-    private NullLiteral(final Location location) {
+    private NullLiteral(final @NotNull Location location) {
         super(location);
     }
 
@@ -27,9 +29,6 @@ public class NullLiteral extends Literal {
     public @NotNull JanitorObject evaluate(final JanitorScriptProcess process) {
         return JNull.NULL;
     }
-
-    public static final NullLiteral NULL = new NullLiteral(null);
-
 
     @Override
     public void writeJson(JsonOutputStream producer) throws JsonException {
