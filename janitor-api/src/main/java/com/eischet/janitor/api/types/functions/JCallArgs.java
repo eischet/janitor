@@ -4,6 +4,7 @@ package com.eischet.janitor.api.types.functions;
 import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
+import com.eischet.janitor.api.errors.runtime.JanitorNameException;
 import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.JanitorObject;
@@ -336,4 +337,16 @@ public class JCallArgs {
         return map;
     }
 
+    /**
+     * Shorthand for creating Constructors that take a single optional map argument, e.g. Foo({name: "foo", friend: "bar"}).
+     * All fields of the instance are populated from the map automatically.
+     * @param instance any object instance
+     * @return the same instance, optionally populated with values from the map.
+     */
+    public JanitorObject applyOptionalMap(final JanitorScriptProcess process, final JanitorObject instance) throws JanitorNameException {
+        if (args != null && args.size() == 1 && args.get(0).getValue() instanceof JMap map) {
+            map.applyTo(process, instance);
+        }
+        return instance;
+    }
 }
