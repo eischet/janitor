@@ -1,9 +1,10 @@
-# 0.9.38, 2025-11-16
+# 0.9.38-SNAPSHOT, 2025-11-xx
 
 - Improve and simplify the ORM module.
 - Fix the logging dependency for the REPL.
 - Shade the REPL jar so it can be run with java -jar.
 - The REPL now uses JLine for improved prompting by default.
+- added "janitor-generator", an experimental generator for Java code that includes Janitor mappings
 
 
 # 0.9.37, 2025-11-12
