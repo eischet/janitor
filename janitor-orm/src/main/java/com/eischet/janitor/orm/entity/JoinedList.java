@@ -50,6 +50,7 @@ public class JoinedList<T extends OrmJoined, U extends Uplink, V extends JoinDao
         this.plucker = plucker;
     }
 
+
     public boolean isLoaded() {
         return loaded;
     }
@@ -69,13 +70,14 @@ public class JoinedList<T extends OrmJoined, U extends Uplink, V extends JoinDao
         return this;
     }
 
+
+
     private void scriptAdd(final JanitorScriptProcess process, final JCallArgs args) throws JanitorRuntimeException {
         final U uplink = uplinkSupplier.get();
         final V dao = daoRetriever.apply(uplink);
         final T entity = dao.convertToEntity(process, args, parent);
-
-        loaded = false;
-
+        dao.insertForScript(process, JCallArgs.ofSingleArgument(process, entity));
+        loaded = false; // simply lazy-load again if needed
     }
 
 
@@ -138,7 +140,6 @@ public class JoinedList<T extends OrmJoined, U extends Uplink, V extends JoinDao
             //DISPATCH.addBuilderMethod("add", (self, process, args) -> self.parent.addGeneric(args.get(0)));
             DISPATCH.addMethod("size", (self, process, args) -> Janitor.integer(self.parent.size()));
             //DISPATCH.addBuilderMethod("clear", (self, process, args) -> self.parent.clear());
-
             DISPATCH.addBuilderMethod("add", (self, process, args) -> self.parent.scriptAdd(process, args));
 
         }
@@ -154,6 +155,20 @@ public class JoinedList<T extends OrmJoined, U extends Uplink, V extends JoinDao
         public Iterator<? extends JanitorObject> getIterator() {
             return parent.readList().iterator();
         }
+
+        @Override
+        public String toString() {
+            return parent.toString();
+        }
+
+        @Override
+        public boolean janitorIsTrue() {
+            return !parent.isEmpty();
+        }
+    }
+
+    public String toString() {
+        return "JoinedList<" + entityClass.getSimpleName() + ">(" + (loaded && list != null ? list.size() : "not loaded yet") + ")";
     }
 
 

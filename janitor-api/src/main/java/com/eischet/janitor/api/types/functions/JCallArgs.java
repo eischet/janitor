@@ -54,6 +54,10 @@ public class JCallArgs {
         return new JCallArgs(functionName, process, null);
     }
 
+    public static @NotNull JCallArgs ofSingleArgument(final JanitorScriptProcess process, final JanitorObject arg) {
+        return new JCallArgs(process, "anonymous", List.of(new EvaluatedArgument("arg0", arg)));
+    }
+
     /**
      * Get the name of the function being called.
      *
