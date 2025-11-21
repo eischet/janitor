@@ -19,4 +19,18 @@ public class EvaluatedArgument {
     public JanitorObject getValue() {
         return value;
     }
+
+    @Override
+    public String toString() {
+        if (name == null) {
+            if (value == null) {
+                return "null";
+            } else {
+                return value.toString();
+            }
+        } else {
+            return name + "=" + value;
+        }
+    }
+
 }
