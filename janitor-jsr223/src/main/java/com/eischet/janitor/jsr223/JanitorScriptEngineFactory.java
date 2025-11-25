@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 /**
  * JSR224 (javax.scripting) wrappers for Janitor.
  * <p>This factory is automatically discovered by the Java ServiceLoader mechanism used by the ScriptEngineManager.</p>
- * <p>Note that this is currently just a by-product, not the main artifact, of the Janitor language implementation.</p>
+ * <p>Note that this is just a by-product, not the main artifact, of the Janitor language implementation.</p>
  */
 @AutoService(ScriptEngineFactory.class)
 public class JanitorScriptEngineFactory implements ScriptEngineFactory {
@@ -37,6 +37,10 @@ public class JanitorScriptEngineFactory implements ScriptEngineFactory {
     private Bindings bindings;
 
     public JanitorScriptEngineFactory() {
+        // Usually a caller should do this himself, but with JSR224, that's not part of the official API, so let's provide a default.
+        if (Janitor.getUserProvider() == null) {
+            Janitor.setUserProvider(() -> environment);
+        }
         this.globalScope = Scope.createGlobalScope(environment, ScriptModule.builtin());
         this.bindings = new JanitorBindings(globalScope, environment);
     }
@@ -113,10 +117,6 @@ public class JanitorScriptEngineFactory implements ScriptEngineFactory {
                 return JNull.NULL;
             }
         };
-    }
-
-    public JanitorDefaultEnvironment getEnvironment() {
-        return environment;
     }
 
     public void setBindings(final Bindings bindings) {

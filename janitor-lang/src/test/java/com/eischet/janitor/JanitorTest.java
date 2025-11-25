@@ -47,7 +47,6 @@ public abstract class JanitorTest {
             public JanitorEnvironment getCurrentEnvironment() {
                 return TestEnv.env;
             }
-
         });
     }
 

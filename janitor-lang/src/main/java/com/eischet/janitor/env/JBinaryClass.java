@@ -1,5 +1,6 @@
 package com.eischet.janitor.env;
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
 import com.eischet.janitor.api.types.functions.JCallArgs;
@@ -17,7 +18,6 @@ import java.security.NoSuchAlgorithmException;
 
 public class JBinaryClass {
 
-
     /**
      * Encode binary data to base64.
      *
@@ -29,9 +29,9 @@ public class JBinaryClass {
     public static JString __encodeBase64(final JanitorWrapper<byte[]> self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);
         if (self.janitorGetHostValue() == null) {
-            return process.getEnvironment().getBuiltinTypes().emptyString();
+            return Janitor.emptyString();
         }
-        return process.getEnvironment().getBuiltinTypes().string(new String(java.util.Base64.getEncoder().encode(self.janitorGetHostValue())));
+        return Janitor.string(new String(java.util.Base64.getEncoder().encode(self.janitorGetHostValue())));
     }
 
     /**
@@ -47,7 +47,7 @@ public class JBinaryClass {
     public static JString __toString(final JanitorWrapper<byte[]> self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         String charsetName = arguments.require(0, 1).getOptionalStringValue(0, null);
         try {
-            return process.getEnvironment().getBuiltinTypes().string(self.janitorIsTrue() ? new String(self.janitorGetHostValue(), charsetName == null ? StandardCharsets.UTF_8 : Charset.forName(charsetName)) : null);
+            return Janitor.string(self.janitorIsTrue() ? new String(self.janitorGetHostValue(), charsetName == null ? StandardCharsets.UTF_8 : Charset.forName(charsetName)) : null);
         } catch (IllegalArgumentException e) {
             throw new JanitorArgumentException(process, "invalid charset: '" + charsetName + "'", e);
         }
@@ -63,7 +63,7 @@ public class JBinaryClass {
      */
     public static JInt __size(final JanitorWrapper<byte[]> self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);
-        return process.getEnvironment().getBuiltinTypes().integer(self.janitorGetHostValue().length);
+        return Janitor.integer(self.janitorGetHostValue().length);
     }
 
     /**

@@ -1,5 +1,6 @@
 package com.eischet.janitor.template;
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorRuntime;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.RunnableScript;
@@ -106,12 +107,24 @@ public class TemplateParser {
      */
     public static String plainRenderer(final Stream<TemplateBlock> blocks) {
         return blocks.map(block -> switch (block.getType()) {
-            case text -> "__OUT__('''" + block.getSource() + "''');";
+            case text -> carefullyQuote(block);
             case expression -> "__OUT__(" + block.getSource() + ");";
             case statement -> block.getSource();
             case comment -> "/* " + block.getSource().replace("*/", "*_/") + " */";
             case invalid -> "/* INVALID: " + block.getSource().replace("*/", "*_/") + " */";
         }).filter(Objects::nonNull).collect(Collectors.joining());
+    }
+
+    private static String carefullyQuote(final TemplateBlock block) {
+        final boolean hasSingleQuote = block.getSource().contains("'");
+        final boolean hasDoubleQuote = block.getSource().contains("\"");
+        if (!hasSingleQuote) {
+            return "__OUT__('''" + block.getSource() + "''');";
+        } else if (!hasDoubleQuote) {
+            return "__OUT__(\"\"\"" + block.getSource() + "\"\"\");";
+        } else {
+            return "__OUT__('''" + block.getSource().replace("'", "\\'") + "''');";
+        }
     }
 
     /**
@@ -161,7 +174,7 @@ public class TemplateParser {
                         }
                     }, process.getCurrentScope()
             );
-            return runtime.getEnvironment().getBuiltinTypes().string(stringBuilder.toString());
+            return Janitor.string(stringBuilder.toString());
         } catch (JanitorCompilerException e) {
             throw new JanitorArgumentException(process, "invalid template", e);
         }

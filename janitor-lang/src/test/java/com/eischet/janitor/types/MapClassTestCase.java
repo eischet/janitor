@@ -2,7 +2,7 @@ package com.eischet.janitor.types;
 
 import com.eischet.janitor.JanitorTest;
 import com.eischet.janitor.TestEnv;
-import com.eischet.janitor.api.types.BuiltinTypes;
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.RunnableScript;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
@@ -10,7 +10,6 @@ import com.eischet.janitor.api.types.builtin.JMap;
 import com.eischet.janitor.runtime.OutputCatchingTestRuntime;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import org.intellij.lang.annotations.Language;
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -29,7 +28,6 @@ public class MapClassTestCase extends JanitorTest {
     @Test
     public void mapTests() throws JsonException, JanitorRuntimeException {
         final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
-        final @NotNull BuiltinTypes bt = rt.getEnvironment().getBuiltinTypes(); // alias builtin types
 
         final JMap empty = rt.getEnvironment().parseJsonToMap("{}");
         assertEquals(0, empty.size(), "empty maps have size 0");
@@ -37,15 +35,15 @@ public class MapClassTestCase extends JanitorTest {
         assertTrue(empty.isDefaultOrEmpty(), "empty maps are default/empty");
         assertFalse(empty.janitorIsTrue(), "empty maps are false");
 
-        assertEquals(empty, bt.map(), "empty maps should be equal");
+        assertEquals(empty, Janitor.map(), "empty maps should be equal");
 
         @Language("JSON") final String JSON_SOURCE = "{\"a\": 1, \"b\": 2, \"c\": 3}";
 
         final JMap map = rt.getEnvironment().parseJsonToMap(JSON_SOURCE);
         // I'd prefer having bt.integer(1..4), but that's not how JSON works.
-        assertEquals(bt.integer(1), map.get(bt.string("a")));
-        assertEquals(bt.integer(2), map.get(bt.string("b")));
-        assertEquals(bt.integer(3), map.get(bt.string("c")));
+        assertEquals(Janitor.integer(1), map.get(Janitor.string("a")));
+        assertEquals(Janitor.integer(2), map.get(Janitor.string("b")));
+        assertEquals(Janitor.integer(3), map.get(Janitor.string("c")));
         assertFalse(map.isEmpty(), "non-empty maps are not empty");
         assertFalse(map.isDefaultOrEmpty(), "non-empty maps are not default/empty");
         assertTrue(map.janitorIsTrue(), "non-empty maps are true");
@@ -95,10 +93,10 @@ public class MapClassTestCase extends JanitorTest {
 
 
         play.accept("map['d'] = 4.0;");
-        assertEquals(map.get(bt.string("d")), bt.floatingPoint(4.0));
+        assertEquals(map.get(Janitor.string("d")), Janitor.floatingPoint(4.0));
         assertEquals(4, map.size(), "size increases when adding elements");
         play.accept("map.put('e', 5.0);");
-        assertEquals(map.get(bt.string("e")), bt.floatingPoint(5.0));
+        assertEquals(map.get(Janitor.string("e")), Janitor.floatingPoint(5.0));
         assertEquals(5, map.size(), "size increases when adding elements");
 
         play.accept("map['foobar'] = map.d + 1;");

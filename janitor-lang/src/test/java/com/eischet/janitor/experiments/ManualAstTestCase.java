@@ -1,6 +1,7 @@
 package com.eischet.janitor.experiments;
 
 import com.eischet.janitor.JanitorTest;
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.Location;
@@ -81,14 +82,14 @@ public class ManualAstTestCase extends JanitorTest {
 
 
         final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), null); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
-        globalScope.bind("x", runtime.getEnvironment().getBuiltinTypes().integer(17));
+        globalScope.bind("x", Janitor.integer(17));
 
         final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, "manual", script);
         process.run();
         assertEquals("17\n", runtime.getAllOutput());
 
         runtime.resetOutput();
-        globalScope.bind("x", runtime.getEnvironment().getBuiltinTypes().integer(29));
+        globalScope.bind("x", Janitor.integer(29));
         final RunningScriptProcess runningScript2 = new RunningScriptProcess(runtime, globalScope,"manual", script);
         runningScript2.run();
         assertEquals("29\n", runtime.getAllOutput());
@@ -99,7 +100,7 @@ public class ManualAstTestCase extends JanitorTest {
         final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
         final Addition addition = new Addition(null,
             new VariableLookupExpression(null, "a"),
-            new IntegerLiteral(null,  runtime.getEnvironment().getBuiltinTypes().integer(4)));
+            new IntegerLiteral(null,  Janitor.integer(4)));
         final ArgumentList expressionList = new ArgumentList(null);
         expressionList.addExpression(addition);
         //final IR.Statement.PrintStatement printStatement = new IR.Statement.PrintStatement(null, expressionList);
@@ -110,7 +111,7 @@ public class ManualAstTestCase extends JanitorTest {
 
 
         final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), null); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
-        globalScope.bind("a", runtime.getEnvironment().getBuiltinTypes().integer(17));
+        globalScope.bind("a", Janitor.integer(17));
         final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, "manual", script);
         process.run();
         assertEquals("21\n", runtime.getAllOutput());
@@ -129,8 +130,8 @@ public class ManualAstTestCase extends JanitorTest {
         final Script script = new Script(null, List.of(printCall), null);
 
         final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), null); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
-        globalScope.bind("a", runtime.getEnvironment().getBuiltinTypes().integer(17));
-        globalScope.bind("b", runtime.getEnvironment().getBuiltinTypes().integer(4));
+        globalScope.bind("a", Janitor.integer(17));
+        globalScope.bind("b", Janitor.integer(4));
         final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, "manual", script);
         process.run();
         assertEquals("21\n", runtime.getAllOutput());

@@ -1,5 +1,6 @@
 package com.eischet.janitor.compiler.ast.expression.literal;
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.Location;
@@ -33,7 +34,7 @@ public class RegexLiteral extends Literal {
 
     @Override
     public @NotNull JanitorObject evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException {
-        return process.getEnvironment().getBuiltinTypes().regex(pattern);
+        return Janitor.regex(pattern);
     }
 
     @Override

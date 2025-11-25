@@ -31,6 +31,7 @@ public class JanitorScriptEngine implements ScriptEngine {
 
     private JanitorObject runScript(@Language("Janitor") final String script, final @Nullable ScriptContext context, final @Nullable Bindings bindings) throws ScriptException {
         try {
+
             final JanitorRuntime runtime = factory.getRuntime();
             final RunnableScript compiled = runtime.compile("eval", script);
 

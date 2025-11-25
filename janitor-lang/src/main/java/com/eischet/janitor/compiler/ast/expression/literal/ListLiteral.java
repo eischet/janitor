@@ -1,5 +1,6 @@
 package com.eischet.janitor.compiler.ast.expression.literal;
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.Location;
@@ -34,13 +35,13 @@ public class ListLiteral extends Literal {
     @Override
     public @NotNull JList evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException {
         if (elements.isEmpty()) {
-            return process.getEnvironment().getBuiltinTypes().list();
+            return Janitor.list();
         } else {
             final List<JanitorObject> evaluatedElements = new ArrayList<>(elements.size());
             for (final Expression element : elements) {
                 evaluatedElements.add(element.evaluate(process).janitorUnpack());
             }
-            return process.getEnvironment().getBuiltinTypes().list(evaluatedElements);
+            return Janitor.list(evaluatedElements);
         }
     }
 

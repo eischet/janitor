@@ -31,7 +31,7 @@ public class JMapClass {
     public static JString __toJson(final JanitorWrapper<Map<JanitorObject, JanitorObject>> self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         try {
             arguments.require(0);
-            return process.getEnvironment().getBuiltinTypes().string(((JMap) self).exportToJson(process.getEnvironment()));
+            return Janitor.string(((JMap) self).exportToJson(process.getEnvironment()));
         } catch (JsonException e) {
             throw new JanitorNativeException(process, "error exporting json", e);
         }
@@ -69,7 +69,7 @@ public class JMapClass {
     }
 
     public static JanitorObject __size(JanitorWrapper<Map<JanitorObject, JanitorObject>> mapJanitorWrapper, JanitorScriptProcess process, JCallArgs jCallArgs) {
-        return process.getEnvironment().getBuiltinTypes().integer(mapJanitorWrapper.janitorGetHostValue().size());
+        return Janitor.integer(mapJanitorWrapper.janitorGetHostValue().size());
     }
 
     public static JanitorObject __isEmpty(JanitorWrapper<Map<JanitorObject, JanitorObject>> mapJanitorWrapper, JanitorScriptProcess process, JCallArgs jCallArgs) {
@@ -77,11 +77,11 @@ public class JMapClass {
     }
 
     public static JanitorObject __keys(JanitorWrapper<Map<JanitorObject, JanitorObject>> mapJanitorWrapper, JanitorScriptProcess process, JCallArgs jCallArgs) {
-        return process.getEnvironment().getBuiltinTypes().list(mapJanitorWrapper.janitorGetHostValue().keySet().stream());
+        return Janitor.list(mapJanitorWrapper.janitorGetHostValue().keySet().stream());
     }
 
     public static JanitorObject __values(JanitorWrapper<Map<JanitorObject, JanitorObject>> mapJanitorWrapper, JanitorScriptProcess process, JCallArgs jCallArgs) {
-        return process.getEnvironment().getBuiltinTypes().list(mapJanitorWrapper.janitorGetHostValue().values().stream());
+        return Janitor.list(mapJanitorWrapper.janitorGetHostValue().values().stream());
     }
 
     public static JanitorObject __containsKey(JanitorWrapper<Map<JanitorObject, JanitorObject>> mapJanitorWrapper, JanitorScriptProcess process, JCallArgs jCallArgs) throws JanitorRuntimeException {

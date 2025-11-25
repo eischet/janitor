@@ -1,6 +1,7 @@
 package com.eischet.janitor.types;
 
 import com.eischet.janitor.JanitorTest;
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.RunnableScript;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
@@ -20,7 +21,7 @@ public class JDurationTestCase extends JanitorTest {
     final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
 
     private JDuration make(final long value, final JDuration.JDurationKind kind) {
-        return rt.getEnvironment().getBuiltinTypes().duration(value, kind);
+        return Janitor.duration(value, kind);
     }
 
     private void testDurationMethod(final @Language("Janitor") String script, final Object expectedResult) throws JanitorCompilerException, JanitorRuntimeException {

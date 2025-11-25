@@ -1,5 +1,6 @@
 package com.eischet.janitor.compiler.ast.statement.controlflow;
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.errors.glue.JanitorControlFlowException;
@@ -56,7 +57,7 @@ public class ForRangeLoop extends Statement implements JsonExportableObject {
                 for (long i = startInt.getValue(); i <= endIntValue; i++) {
                     try {
                         process.enterBlock(getLocation());
-                        process.getCurrentScope().bind(process, loopVar, process.getEnvironment().getBuiltinTypes().integer(i));
+                        process.getCurrentScope().bind(process, loopVar, Janitor.integer(i));
                         try {
                             block.execute(process);
                         } catch (ContinueStatement.Continue ignored) {

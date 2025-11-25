@@ -1,5 +1,6 @@
 package com.eischet.janitor.compiler.ast.expression.literal;
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.Location;
@@ -47,7 +48,7 @@ public class MapLiteral extends Literal implements JsonExportableObject {
 
     @Override
     public @NotNull JMap evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException {
-        final JMap map = process.getEnvironment().getBuiltinTypes().map();
+        final JMap map = Janitor.map();
         for (final Preset preset : presets) {
             map.put(preset.key.evaluate(process).janitorUnpack(), preset.value.evaluate(process).janitorUnpack());
         }

@@ -1,3 +1,10 @@
+# 0.9.39-SNAPSHOT, 2025-11-25
+
+- Fixed a template parser bug: templates that end in "'" produced invalid script code.
+- Added missing containsValue method to Maps
+- A bunch of convoluted calls like "runtime.getEnvironment().getBuiltinTypes().<type>(...)" where shortened to "Janitor.<type>(...)"
+
+
 # 0.9.38, 2025-11-21
 
 - Improve and simplify the ORM module.

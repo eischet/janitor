@@ -1,5 +1,6 @@
 package com.eischet.janitor.features;
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.integration.CustomClassTestCase.Dog;
 import com.eischet.janitor.JanitorTest;
 import com.eischet.janitor.api.FilterPredicate;
@@ -38,7 +39,7 @@ public class FilterScriptTestCase extends JanitorTest {
         final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         @NotNull JList numbers = rt.getBuiltinTypes().list(
                 Stream.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
-                        .map(number -> rt.getEnvironment().getBuiltinTypes().integer(number))
+                        .map(Janitor::integer)
         );
 
         final @NotNull FilterPredicate passAll = rt.getEnvironment().filterScript("all", "value >= 0", null);

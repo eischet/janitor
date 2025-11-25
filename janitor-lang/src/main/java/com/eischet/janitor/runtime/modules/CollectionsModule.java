@@ -1,5 +1,6 @@
 package com.eischet.janitor.runtime.modules;
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.lang.JNativeMethod;
 import com.eischet.janitor.api.errors.runtime.JanitorNameException;
@@ -16,15 +17,15 @@ public class CollectionsModule extends JanitorNativeModule {
     @Override
     public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess process, final @NotNull String name, final boolean required) throws JanitorNameException {
         if ("set".equals(name) || "Set".equals(name)) {
-            return JNativeMethod.of(arguments -> process.getEnvironment().getBuiltinTypes().set(arguments.getList().stream()));
+            return JNativeMethod.of(arguments -> Janitor.set(arguments.getList().stream()));
         }
         if ("list".equals(name) || "List".equals(name)) {
-            return JNativeMethod.of(arguments -> process.getEnvironment().getBuiltinTypes().list(arguments.getList()));
+            return JNativeMethod.of(arguments -> Janitor.list(arguments.getList()));
         }
         if ("map".equals(name) || "Map".equals(name)) {
             return JNativeMethod.of(arguments -> {
                 arguments.require(0);
-                return process.getEnvironment().getBuiltinTypes().map();
+                return Janitor.map();
             });
         }
         return null;

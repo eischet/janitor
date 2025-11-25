@@ -1,5 +1,6 @@
 package com.eischet.janitor.env;
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
@@ -25,7 +26,7 @@ public class JDateTimeClass {
 
     public static JInt __epoch(final JDateTime csDateTime, final JanitorScriptProcess janitorScriptProcess, final JCallArgs jCallArgs) throws JanitorRuntimeException {
         jCallArgs.require(0);
-        return janitorScriptProcess.getEnvironment().getBuiltinTypes().integer(csDateTime.janitorGetHostValue().toEpochSecond(DateTimeUtils.getZoneId().getRules().getOffset(csDateTime.janitorGetHostValue())));
+        return Janitor.integer(csDateTime.janitorGetHostValue().toEpochSecond(DateTimeUtils.getZoneId().getRules().getOffset(csDateTime.janitorGetHostValue())));
     }
 
     public static long __epochAsAttribute(final JDateTime csDateTime) {
@@ -34,20 +35,20 @@ public class JDateTimeClass {
 
     public static JDate __date(final JDateTime csDateTime, final JanitorScriptProcess janitorScriptProcess, final JCallArgs jCallArgs) throws JanitorRuntimeException {
         jCallArgs.require(0);
-        return janitorScriptProcess.getBuiltins().date(csDateTime.janitorGetHostValue().toLocalDate());
+        return Janitor.date(csDateTime.janitorGetHostValue().toLocalDate());
     }
 
     public static JString __time(final JDateTime csDateTime, final JanitorScriptProcess janitorScriptProcess, final JCallArgs jCallArgs) throws JanitorRuntimeException {
         jCallArgs.require(0);
-        return janitorScriptProcess.getRuntime().getEnvironment().getBuiltinTypes().string(janitorScriptProcess.getEnvironment().getFormatting().asTimeString(csDateTime.janitorGetHostValue()));
+        return Janitor.string(janitorScriptProcess.getEnvironment().getFormatting().asTimeString(csDateTime.janitorGetHostValue()));
     }
 
     public static JString __string(final JDateTime csDateTime, final JanitorScriptProcess janitorScriptProcess, final JCallArgs jCallArgs) throws JanitorRuntimeException {
         final String fmt = jCallArgs.getOptionalStringValue(0, null);
         if (fmt == null) {
-            return janitorScriptProcess.getEnvironment().getBuiltinTypes().string(janitorScriptProcess.getFormatting().formatDateTime(csDateTime.janitorGetHostValue()));
+            return Janitor.string(janitorScriptProcess.getFormatting().formatDateTime(csDateTime.janitorGetHostValue()));
         } else {
-            return janitorScriptProcess.getEnvironment().getBuiltinTypes().string(DateTimeFormatter.ofPattern(fmt).format(csDateTime.janitorGetHostValue()));
+            return Janitor.string(DateTimeFormatter.ofPattern(fmt).format(csDateTime.janitorGetHostValue()));
         }
     }
 
@@ -58,19 +59,19 @@ public class JDateTimeClass {
         final ZonedDateTime zoned = fmt != null ? csDateTime.janitorGetHostValue().atZone(ZoneId.of(tz)) : null;
 
         if (fmt == null) {
-            return janitorScriptProcess.getEnvironment().getBuiltinTypes().string(janitorScriptProcess.getFormatting().formatDateTime(zoned));
+            return Janitor.string(janitorScriptProcess.getFormatting().formatDateTime(zoned));
         } else {
-            return janitorScriptProcess.getEnvironment().getBuiltinTypes().string(DateTimeFormatter.ofPattern(fmt).format(zoned));
+            return Janitor.string(DateTimeFormatter.ofPattern(fmt).format(zoned));
         }
     }
 
     public static JInt __year(final JDateTime jDateTime, final JanitorScriptProcess janitorScriptProcess, final JCallArgs jCallArgs) throws JanitorRuntimeException {
-        return janitorScriptProcess.getEnvironment().getBuiltinTypes().integer(jDateTime.janitorGetHostValue().getYear());
+        return Janitor.integer(jDateTime.janitorGetHostValue().getYear());
     }
 
     public static JString __kw(final JDateTime jDateTime, final JanitorScriptProcess janitorScriptProcess, final JCallArgs jCallArgs) throws JanitorRuntimeException {
         final int kw = jDateTime.janitorGetHostValue().get(weekFields.weekOfWeekBasedYear());
-        return janitorScriptProcess.getEnvironment().getBuiltinTypes().string(kw < 10 ? "0" + kw : String.valueOf(kw));
+        return Janitor.string(kw < 10 ? "0" + kw : String.valueOf(kw));
     }
 
 }
