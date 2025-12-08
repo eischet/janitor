@@ -1,4 +1,4 @@
-# 0.9.39-SNAPSHOT, 2025-11-25
+# 0.9.39, 2025-12-08
 
 - Fixed a template parser bug: templates that end in "'" produced invalid script code.
 - Added missing containsValue method to Maps
