@@ -127,6 +127,8 @@ public class RunScriptMojo extends AbstractMojo {
     }
 
     private JList resolveDependencies() throws DependencyResolutionException {
+        // TODO: when maven upgrades a dependency transitively, this is not properly reflected here and you'll get the DECLARED dependency versions only... that's not the desired result.
+
         // I'm not sure why this differs so much from project.artifacts, but this seems to work "better" for me.
         // Create a collect request for the project's dependencies
         CollectRequest collectRequest = new CollectRequest();
