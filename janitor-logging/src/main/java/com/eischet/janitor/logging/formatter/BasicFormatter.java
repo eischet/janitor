@@ -69,6 +69,10 @@ public abstract class BasicFormatter extends Formatter {
                 thread = formatThreadName(ti.getThreadName());
             }
         }
+        if (thread == null || thread.isEmpty()) {
+            thread = "#" + record.getLongThreadID();
+        }
+
         final String ts = calcDate(record.getMillis());
         String message = record.getMessage();
 
