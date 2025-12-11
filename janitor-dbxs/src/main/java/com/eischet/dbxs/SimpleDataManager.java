@@ -28,17 +28,18 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
+@SuppressWarnings("unused") // this is not unused, it's our main API, currently all the tests are hidden from the public in an app though...
 public class SimpleDataManager implements DataManager {
 
-    private static final Logger log = LoggerFactory.getLogger(SimpleDataManager.class);
-    private final ThreadLocal<ConnectionWrapper> connHolder = new ThreadLocal<>();
-    private final String defaultSchema;
-    private final AtomicLong transId = new AtomicLong();
+    protected static final Logger log = LoggerFactory.getLogger(SimpleDataManager.class);
+    protected final ThreadLocal<ConnectionWrapper> connHolder = new ThreadLocal<>();
+    protected final String defaultSchema;
+    protected final AtomicLong transId = new AtomicLong();
 
-    private final String name;
-    private final DataSource dataSource;
-    private final List<String> initStatements;
-    private final DatabaseDialect dialect;
+    protected final String name;
+    protected final DataSource dataSource;
+    protected final List<String> initStatements;
+    protected final DatabaseDialect dialect;
 
     public SimpleDataManager(final @NotNull String name,
                              final @NotNull DataSource dataSource,
@@ -50,6 +51,10 @@ public class SimpleDataManager implements DataManager {
         this.dialect = dialect;
         this.defaultSchema = defaultSchema;
         this.initStatements = initStatements == null ? Collections.emptyList() : List.copyOf(initStatements);
+    }
+
+    public DataSource getDataSource() {
+        return dataSource;
     }
 
     @Override
@@ -110,8 +115,26 @@ public class SimpleDataManager implements DataManager {
             }
         } catch (SQLException e) {
             log.error("{}: SQL Exception connecting to database for transaction {}", name, transId, e);
+            if (exceptionConsumer != null) {
+                exceptionConsumer.accept(this, e);
+            }
             throw new DatabaseError(e);
+        } catch (DatabaseError e) {
+            if (exceptionConsumer != null) {
+                exceptionConsumer.accept(this, e);
+            }
+            throw e;
         }
+    }
+
+    public interface ExceptionConsumer {
+        void accept(SimpleDataManager self, Throwable e);
+    }
+
+    protected static @Nullable ExceptionConsumer exceptionConsumer = null;
+
+    public static void setExceptionConsumer(@Nullable final ExceptionConsumer exceptionConsumer) {
+        SimpleDataManager.exceptionConsumer = exceptionConsumer;
     }
 
     @Override
