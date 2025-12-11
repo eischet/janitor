@@ -24,7 +24,7 @@
         <!-- janitor-lang requires 17, therefore the plugin does, too -->
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <maven.version>3.9.9</maven.version>
+        <maven.version>3.9.11</maven.version>
 
 
         <deps.maven-resolver>2.0.13</deps.maven-resolver>
@@ -184,7 +184,7 @@
                 <!-- see http://maven.apache.org/ref/current/maven-core/default-bindings.html#Plugin_bindings_for_maven-plugin_packaging -->
                 <plugin>
                     <artifactId>maven-resources-plugin</artifactId>
-                    <version>3.3.1</version>
+                    <version>3.4.0</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-compiler-plugin</artifactId>
