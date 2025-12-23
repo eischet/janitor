@@ -1,5 +1,6 @@
 package com.eischet.janitor.orm.entity;
 
+import com.eischet.dbxs.exceptions.DatabaseError;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -119,5 +120,32 @@ public interface OrmEntity extends OrmObject {
      * A comparator that compares entities by their name.
      */
     Comparator<? super @NotNull OrmEntity> COMPARE_BY_NAME = Comparator.comparing(OrmEntity::coalesceName);
+
+    /**
+     * Called by the ORM layer before updating this entity in the database.
+     * If you need to do anything special before that happens, override this method.
+     * You can even abort the update by throwing a DatabaseError.
+     * @throws DatabaseError when you see fit to do so
+     */
+    default void beforeUpdate() throws DatabaseError {
+    }
+
+    /**
+     * Called by the ORM layer before inserting this entity in the database.
+     * If you need to do anything special before that happens, override this method.
+     * You can even abort the insertion by throwing a DatabaseError.
+     * @throws DatabaseError when you see fit to do so
+     */
+    default void beforeInsert() throws DatabaseError {
+    }
+
+    /**
+     * Called by the ORM layer before deleting this entity from the database.
+     * If you need to do anything special before that happens, override this method.
+     * You can even abort the deletion by throwing a DatabaseError.
+     * @throws DatabaseError when you see fit to do so
+     */
+    default void beforeDelete() throws DatabaseError {
+    }
 
 }

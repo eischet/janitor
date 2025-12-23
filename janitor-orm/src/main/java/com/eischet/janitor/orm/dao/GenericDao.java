@@ -441,6 +441,7 @@ public abstract class GenericDao<T extends OrmEntity> extends JanitorComposed<Ge
         if (verbose) {
             log.info("{}::insert() with new id {}, running {} on columns {}", className, generatedId, insertStatement, insertingColumns);
         }
+        record.beforeInsert();
         conn.update(insertStatement, ps -> {
             // unsinnig / schädlich: ps.addLong(generatedId);
             writeAllColumns(conn, record, insertingColumns, ps);
@@ -452,6 +453,7 @@ public abstract class GenericDao<T extends OrmEntity> extends JanitorComposed<Ge
         final StatementCreator creator = new StatementCreator(getDataManager().getDialect());
         final List<String> updatingColumns = columns.stream().filter(field -> !Objects.equals(field, idColumn)).toList();
         final UpdateStatement updateStatement = UpdateStatement.of(creator.createUpdateStatement(tableName, updatingColumns, idColumn));
+        record.beforeUpdate();
         conn.update(updateStatement, ps -> {
             writeAllColumns(conn, record, updatingColumns, ps);
             ps.addLong(record.getId());
