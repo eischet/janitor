@@ -1,3 +1,10 @@
+# 0.9.41, 2025-12-23
+
+- JList: set(index, value) method added, which grows the list when needed
+- ORM: some ORM tweaks for an upstream project
+- skipping v.0.9.40 because of a build issue
+
+
 # 0.9.39, 2025-12-08
 
 - Fixed a template parser bug: templates that end in "'" produced invalid script code.
