@@ -162,12 +162,26 @@ public class JList extends JanitorComposed<JList> implements JIterable, Iterable
     /**
      * Add an element to the list.
      *
-     * @param i     the index
+     * @param index the index
      * @param value the value
      */
-    public void add(JInt i, JanitorObject value) {
-        list.add(i.janitorGetHostValue().intValue(), value);
+    public void add(JInt index, JanitorObject value) {
+        list.add(index.janitorGetHostValue().intValue(), value);
         notifyUpdateReceivers();
+    }
+
+    /**
+     * Set an element in the list.
+     * If the list is too small to accommodate the element, it will be grown by adding NULL objects as required.
+     * @param index the index
+     * @param value the value
+     */
+    public void set(JInt index, JanitorObject value) {
+        final int jindex = index.janitorGetHostValue().intValue();
+        while (list.size() <= jindex) {
+            list.add(Janitor.NULL);
+        }
+        list.set(jindex, value);
     }
 
     /**
