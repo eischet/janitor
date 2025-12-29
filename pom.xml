@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.eischet.root</groupId>
         <artifactId>lib-public</artifactId>
-        <version>1.0.7</version>
+        <version>1.0.8</version>
     </parent>
 
 
@@ -74,13 +74,6 @@
 
 
     <build>
-        <extensions>
-            <extension>
-                <groupId>com.eischet.mvn</groupId>
-                <artifactId>wagon-providers</artifactId>
-                <version>1.0.3</version>
-            </extension>
-        </extensions>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -147,49 +140,37 @@
 
     <repositories>
         <repository>
-            <id>eischet-public-releases</id>
-            <url>https://mvn.eischet.net/releases</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
+            <id>repo-eischet-releases</id>
+            <name>Eischet Software Repository</name>
+            <url>https://repo.srv.eischet.net/releases</url>
         </repository>
         <repository>
-            <id>eischet-public-snapshots</id>
-            <url>https://mvn.eischet.net/snapshots</url>
+            <id>repo-eischet-snapshots</id>
+            <name>Eischet Software Repository</name>
+            <url>https://repo.srv.eischet.net/snapshots</url>
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
         </repository>
     </repositories>
 
     <pluginRepositories>
         <pluginRepository>
-            <id>eischet-public-releases</id>
-            <url>https://mvn.eischet.net/releases</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
+            <id>repo-eischet-releases</id>
+            <name>Eischet Software Repository</name>
+            <url>https://repo.srv.eischet.net/releases</url>
         </pluginRepository>
         <pluginRepository>
-            <id>eischet-public-snapshots</id>
-            <url>https://mvn.eischet.net/snapshots</url>
+            <id>repo-eischet-snapshots</id>
+            <name>Eischet Software Repository</name>
+            <url>https://repo.srv.eischet.net/snapshots</url>
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
         </pluginRepository>
     </pluginRepositories>
+
+
 
 
     <!-- LATER: add a profile for public maven central deployments! -->
@@ -197,7 +178,7 @@
 
     <dependencyManagement>
         <dependencies>
-            <!-- as sugessted by https://github.com/junit-team/junit-examples/blob/main/junit-jupiter-starter-maven/pom.xml -->
+            <!-- as suggessted by https://github.com/junit-team/junit-examples/blob/main/junit-jupiter-starter-maven/pom.xml -->
             <dependency>
                 <groupId>org.junit</groupId>
                 <artifactId>junit-bom</artifactId>
@@ -279,34 +260,5 @@
 
         </dependencies>
     </dependencyManagement>
-
-    <!--
-    <profiles>
-        <profile>
-            <id>jrebel</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.zeroturnaround</groupId>
-                        <artifactId>jrebel-maven-plugin</artifactId>
-                        <version>1.2.1</version>
-                        <executions>
-                            <execution>
-                                <id>generate-rebel-xml</id>
-                                <phase>process-resources</phase>
-                                <goals>
-                                    <goal>generate</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
-    -->
 
 </project>
