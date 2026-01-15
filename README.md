@@ -61,6 +61,7 @@ See the janitor-demo module for a simple example of how to embed Janitor into a 
 
 Starting with 1.0.0, we'll upload to Maven Central.
 
-Versions 0.9.x are uploaded to GitHub Packages only to avoid spamming Maven Central with rapidly changing JARs.
-(https://docs.github.com/en/packages/learn-github-packages/introduction-to-github-packages)
+# IntelliJ Plugin
+
+There's a rudimentary plugin with syntax highlighting and a REPL available here: https://github.com/eischet/janitor-idea
 
