@@ -1,3 +1,8 @@
+# 0.9.42, 2026-01-19
+
+- just cleaned up some old stuff (semicolon removal, grammarkit experiment)
+- there's now a simple IDEA plugin at: https://github.com/eischet/janitor-idea
+
 
 # 0.9.41, 2025-12-23
 

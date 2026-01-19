@@ -20,7 +20,7 @@
 
     <properties>
         <!-- project revision -->
-        <revision>0.9.42-SNAPSHOT</revision>
+        <revision>0.9.42</revision>
 
         <!-- project settings -->
         <maven.plugin.validation>VERBOSE</maven.plugin.validation>
@@ -64,7 +64,6 @@
         <module>janitor-jsr223</module>
         <module>janitor-maven-plugin</module>
         <module>janitor-commons</module>
-        <module>janitor-grammarkit</module>
         <module>janitor-repl</module>
         <module>janitor-logging</module>
         <module>janitor-dbxs</module>
