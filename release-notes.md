@@ -1,6 +1,7 @@
 # 0.9.43, 2026-01-xx
 
 - Scope.java: rebinding of a variable in a sealed scope is now rejected. There was an error message already, but the rebind did take place.
+- improve access to map values by properly unpacking them from TemporaryAssignable to the real value where needed.
 
 
 # 0.9.42, 2026-01-19
