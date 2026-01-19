@@ -317,6 +317,7 @@ public class Scope implements JanitorObject {
         //log.debug("binding in scope {}: {} = {}", this.getLocation(), name, variable);
         if (sealed) {
             process.warn("tried to rebind '%s' as %s in sealed scope %s".formatted(name, variable, this));
+            return this;
         }
         if (variable == null) {
             // ist kein Fehler mehr: log.debug("tried to bind null as {} in scope {}", variableName, this);

@@ -1,3 +1,8 @@
+# 0.9.43, 2026-01-xx
+
+- Scope.java: rebinding of a variable in a sealed scope is now rejected. There was an error message already, but the rebind did take place.
+
+
 # 0.9.42, 2026-01-19
 
 - just cleaned up some old stuff (semicolon removal, grammarkit experiment)

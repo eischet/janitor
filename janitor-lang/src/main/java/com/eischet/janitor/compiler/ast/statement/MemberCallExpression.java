@@ -7,6 +7,7 @@ import com.eischet.janitor.api.errors.runtime.JanitorNameException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.api.types.JanitorObject;
+import com.eischet.janitor.api.types.TemporaryAssignable;
 import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.types.functions.JCallable;
 import com.eischet.janitor.compiler.ast.expression.Expression;
@@ -45,17 +46,25 @@ public class MemberCallExpression extends Statement implements Expression {
         if (guarded && Janitor.NULL == object) {
             return Janitor.NULL;
         }
-        @Nullable final JanitorObject attribute = object.janitorGetAttribute(process, identifier, false);
+        @Nullable JanitorObject attribute = object.janitorGetAttribute(process, identifier, false);
         if (attribute == null) {
-            throw new JanitorNameException(process, "member not found: " + identifier + "; on: " + object + "[" + simpleClassNameOf(object) + "]");
+            for (final JanitorObject inner : object.janitorUnpackAll()) {
+                @Nullable final JanitorObject subAttribute = inner.janitorGetAttribute(process, identifier, false);
+                if (subAttribute != null) {
+                    attribute = subAttribute;
+                    break;
+                }
+            }
+            if (attribute == null) {
+                throw new JanitorNameException(process, "member not found: " + identifier + "; on: " + object + "[" + simpleClassNameOf(object) + "]");
+            }
         }
-        @NotNull final JanitorObject existingAttribute = attribute;
-        if (existingAttribute instanceof JCallable callable) {
+        if (attribute instanceof JCallable callable) {
             return callable.call(process, args == null ? JCallArgs.empty(identifier, process) : args.toCallArguments(identifier, process));
         }
         throw new JanitorNameException(process, "member is not callable: " + identifier +
                                                 "; on: " + object + "[" + simpleClassNameOf(object) + "] = " +
-                                                existingAttribute + " [" + simpleClassNameOf(existingAttribute) + "]");
+                                                 attribute + " [" + simpleClassNameOf(attribute) + "]");
     }
 
     @Override
