@@ -12,10 +12,22 @@ public class Flag {
         return flag;
     }
 
+    public boolean isChecked() {
+        return isFlag();
+    }
+
     public Flag setFlag(final boolean flag) {
         this.flag = flag;
         listeners.stream().forEach(listener -> listener.onFlagChanged(flag));
         return this;
+    }
+
+    public Flag check() {
+        return setFlag(true);
+    }
+
+    public Flag uncheck() {
+        return setFlag(false);
     }
 
     public boolean invert() {
@@ -33,4 +45,11 @@ public class Flag {
         void onFlagChanged(boolean flag);
     }
 
+    /**
+     * Returns the listener set for this flag.
+     * @return the listener set
+     */
+    public ListenerSet<FlagListener> getListeners() {
+        return listeners;
+    }
 }

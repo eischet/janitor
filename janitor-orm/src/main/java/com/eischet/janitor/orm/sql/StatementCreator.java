@@ -29,7 +29,7 @@ public class StatementCreator {
             throw new IllegalArgumentException("the table name must not be blank");
         }
         if (fields.isEmpty()) {
-            throw new IllegalArgumentException("the list of fields must not be empty");
+            throw new IllegalArgumentException("the list of fields must not be empty for table '" + table + "'");
         }
         //noinspection LanguageMismatch
         return "select " + String.join(", ", quoteAllFields(fields)) + " from " + table;
@@ -56,7 +56,7 @@ public class StatementCreator {
             throw new IllegalArgumentException("the table name must not be blank");
         }
         if (fields.isEmpty()) {
-            throw new IllegalArgumentException("the list of fields must not be empty");
+            throw new IllegalArgumentException("the list of fields must not be empty for table '" + table + "'");
         }
         if (whereField.isBlank()) {
             throw new IllegalArgumentException("the 'where' field must not be blank");

@@ -2,6 +2,7 @@
 
 - Scope.java: rebinding of a variable in a sealed scope is now rejected. There was an error message already, but the rebind did take place.
 - improve access to map values by properly unpacking them from TemporaryAssignable to the real value where needed.
+- small QOL improvements in the toolbox and the ORM module
 
 
 # 0.9.42, 2026-01-19

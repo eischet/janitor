@@ -59,7 +59,7 @@ public abstract class JanitorTest {
     }
 
     protected String getOutput(final @Language("Janitor") String scriptSource, final Consumer<Scope> prepareGlobals, boolean verbose) throws JanitorCompilerException, JanitorRuntimeException {
-        log.debug("parsing: " + scriptSource + "\n");
+        log.debug("parsing: {}\n", scriptSource);
         final JanitorParser.ScriptContext script = JanitorScript.parseScript(scriptSource);
         final ScriptModule module = ScriptModule.unnamed(scriptSource);
         final Script scriptObject = JanitorCompiler.build(TestEnv.env, module, script, scriptSource, verbose);
@@ -77,7 +77,7 @@ public abstract class JanitorTest {
     }
 
     protected JanitorObject evaluate(final @Language("Janitor") String expressionSource, final Consumer<Scope> prepareGlobals) throws JanitorCompilerException, JanitorRuntimeException {
-        log.info("evaluating: " + expressionSource + "\n");
+        log.info("evaluating: {}\n", expressionSource);
         final JanitorParser.ScriptContext script = JanitorScript.parseScript(expressionSource);
         final ScriptModule module = ScriptModule.unnamed(expressionSource);
         try {
