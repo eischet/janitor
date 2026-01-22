@@ -24,21 +24,24 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.collection.CollectRequest;
+import org.eclipse.aether.graph.Dependency;
 import org.eclipse.aether.resolution.ArtifactResult;
+import org.eclipse.aether.resolution.DependencyRequest;
+import org.eclipse.aether.resolution.DependencyResolutionException;
+import org.eclipse.aether.resolution.DependencyResult;
 import org.jetbrains.annotations.NotNull;
 
+import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import org.eclipse.aether.collection.CollectRequest;
-import org.eclipse.aether.resolution.DependencyResolutionException;
-import org.eclipse.aether.graph.Dependency;
-import org.eclipse.aether.resolution.DependencyRequest;
-import org.eclipse.aether.util.artifact.JavaScopes;
-import org.eclipse.aether.resolution.DependencyResult;
-
-import javax.inject.Inject;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 
 @Mojo(name = "run-script-file", defaultPhase = LifecyclePhase.PROCESS_SOURCES)
 public class RunScriptMojo extends AbstractMojo {
@@ -93,6 +96,9 @@ public class RunScriptMojo extends AbstractMojo {
                 g.bind("project", new MavenProjectWrapper(project));
                 g.bind("model", new ModelWrapper(project.getModel()));
                 g.bind("getDependencies", new JNativeMethod((process, arguments) -> resolveDependencies()));
+                g.bind("extractManifestClassPath", new JNativeMethod((process, arguments) -> {
+                    return Janitor.list(extractManifestClassPath(arguments.getRequiredStringValue(0)).stream().map(Janitor::string));
+                }));
             });
 
             if (result != JNull.NULL) {
@@ -127,11 +133,11 @@ public class RunScriptMojo extends AbstractMojo {
     }
 
     private JList resolveDependencies() throws DependencyResolutionException {
-        // TODO: when maven upgrades a dependency transitively, this is not properly reflected here and you'll get the DECLARED dependency versions only... that's not the desired result.
-
-        // I'm not sure why this differs so much from project.artifacts, but this seems to work "better" for me.
         // Create a collect request for the project's dependencies
+        // This will resolve ALL transitive dependencies with proper version mediation
         CollectRequest collectRequest = new CollectRequest();
+
+        // Add the project's direct dependencies as roots
         project.getDependencies().forEach(dependency -> {
             org.eclipse.aether.artifact.Artifact artifact = new org.eclipse.aether.artifact.DefaultArtifact(
                     dependency.getGroupId(),
@@ -140,17 +146,58 @@ public class RunScriptMojo extends AbstractMojo {
                     dependency.getType(),
                     dependency.getVersion()
             );
-            collectRequest.addDependency(new Dependency(artifact, JavaScopes.COMPILE));
+            collectRequest.addDependency(new Dependency(artifact, dependency.getScope()));
         });
-        collectRequest.setRepositories(project.getRemoteProjectRepositories());
-        // Resolve dependencies
-        DependencyRequest dependencyRequest = new DependencyRequest(collectRequest, null);
 
+        // Add managed dependencies for proper version resolution
+        // This ensures transitive dependencies get the correct managed versions
+        if (project.getDependencyManagement() != null && project.getDependencyManagement().getDependencies() != null) {
+            project.getDependencyManagement().getDependencies().forEach(dependency -> {
+                org.eclipse.aether.artifact.Artifact artifact = new org.eclipse.aether.artifact.DefaultArtifact(
+                        dependency.getGroupId(),
+                        dependency.getArtifactId(),
+                        dependency.getClassifier(),
+                        dependency.getType(),
+                        dependency.getVersion()
+                );
+                collectRequest.addManagedDependency(new Dependency(artifact, dependency.getScope()));
+            });
+        }
+
+        collectRequest.setRepositories(project.getRemoteProjectRepositories());
+
+        // Resolve dependencies (this includes all transitives with proper version mediation)
+        DependencyRequest dependencyRequest = new DependencyRequest(collectRequest, null);
         DependencyResult dependencyResult = repoSystem.resolveDependencies(repoSession, dependencyRequest);
+
         return Janitor.list(
                 dependencyResult.getArtifactResults().stream()
                         .map(ArtifactResult::getArtifact)
                         .map(AetherArtifactWrapper::of)
         );
+    }
+
+    /**
+     * Extracts the JAR file names from the Class-Path attribute in a JAR's MANIFEST.MF
+     *
+     * @param jarFileName the path to the JAR file
+     * @return list of JAR file names referenced in the manifest Class-Path
+     * @throws IOException if the JAR file cannot be read or has no manifest
+     */
+    private List<String> extractManifestClassPath(String jarFileName) throws IOException {
+        try (JarFile jarFile = new JarFile(jarFileName)) {
+            Manifest manifest = jarFile.getManifest();
+            if (manifest == null) {
+                return new ArrayList<>();
+            }
+
+            String classPath = manifest.getMainAttributes().getValue("Class-Path");
+            if (classPath == null || classPath.isBlank()) {
+                return new ArrayList<>();
+            }
+
+            // Class-Path entries are space-separated
+            return Arrays.asList(classPath.trim().split("\\s+"));
+        }
     }
 }
