@@ -203,5 +203,15 @@ public interface JanitorObject {
         }
     }
 
+    /**
+     * Display a warning message.
+     * To be used by the runtime and/or addons.
+     * Main use case: DispatchTables use this when a read-only field is written to.
+     * Must be overridden by clients to provide meaningful behavior, e.g. a logging framework.
+     * @param message a warning message
+     */
+    default void janitorWarn(final @NotNull String message) {
+    }
+
 
 }
