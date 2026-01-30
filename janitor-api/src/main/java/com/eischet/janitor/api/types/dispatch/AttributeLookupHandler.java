@@ -14,5 +14,5 @@ public interface AttributeLookupHandler<T extends JanitorObject> {
      * @param instance the instance to look up the attribute on.
      * @return the attribute
      */
-    JanitorObject lookupAttribute(final T instance) throws JanitorGlueException;
+    JanitorObject lookupAttribute(final T instance) throws Exception;
 }

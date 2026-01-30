@@ -317,9 +317,13 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
 
         for (final Map.Entry<JanitorObject, JanitorObject> pair : wrapped.entrySet()) {
             if (pair.getValue() instanceof JsonExportable ex) {
+                /*
+                For Maps, this is not actually what we want! See MapClassTestCase::serializingDefaultValuesInMapsIsNeeded:
+
                 if (ex.isDefaultOrEmpty()) {
                     continue;
                 }
+                */
                 producer.key(pair.getKey().janitorToString());
                 ex.writeJson(producer);
             } else if (pair.getValue() instanceof JsonWriter jw) {

@@ -7,7 +7,6 @@ import com.eischet.dbxs.statements.SelectStatement;
 import com.eischet.dbxs.statements.UpdateStatement;
 import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorScriptProcess;
-import com.eischet.janitor.api.errors.glue.JanitorGlueException;
 import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.errors.runtime.JanitorError;
 import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
@@ -145,7 +144,7 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
                 log.warn("SQL exception on class '{}', column #{} = '{}', field '{}', type hint '{}', column order: {}", className, columnIndex, column, field, columnTypeHint, columns, e);
                 final String message = String.format("SQL exception on class '%s', column '%s', field '%s', type hint '%s'", className, column, field, columnTypeHint);
                 throw new DatabaseError(message, e);
-            } catch (NullPointerException | JanitorGlueException e) {
+            } catch (Exception e) {
                 throw new DatabaseError("invalid field '" + field + "' caused an exception", e);
             }
         }
@@ -429,7 +428,7 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
                 final JanitorObject propertyValue = Objects.requireNonNull(entityDispatch.get(field).lookupAttribute(record), "no value for field '" + field + "' in record " + record + " / column '" + column + "'");
                 final @NotNull ColumnTypeHint columnTypeHint = Objects.requireNonNull(entityDispatch.getMetaData(field, JanitorOrm.MetaData.COLUMN_TYPE), "no column type hint for field '" + field + "' in record " + record + " / column '" + column + "'");
                 CommonDao.writeProperty(conn, className, column, field, propertyValue.janitorUnpack(), ps, columnTypeHint);
-            } catch (JanitorGlueException e) {
+            } catch (Exception e) {
                 throw new SQLException("error writing column '" + column + "' / field '" + field + "' into the database", e);
             }
         }

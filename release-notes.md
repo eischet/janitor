@@ -1,3 +1,13 @@
+# 0.9.44, 2026-01-xx
+
+- When converting JMap (Hashmaps) to JSON, default values are now serialized. Before, `{foo: false}.toJson()` omitted the field "foo". This applies to
+  all types of value that are "primitive" in Java, which means they have a natural default.
+- Made DispatchTable more precise by providing custom function interfaces for getters/setters, making it clearer when primitive fields or (nullable) object
+  fields are used. The getters/setters are now allowed to throw Exception, so it's much easier to interop with code that throws those a lot, like the Java 
+  EWS API.
+   
+
+
 # 0.9.43, 2026-01-26
 
 - Scope.java: rebinding of a variable in a sealed scope is now rejected. There was an error message already, but the rebind did take place.

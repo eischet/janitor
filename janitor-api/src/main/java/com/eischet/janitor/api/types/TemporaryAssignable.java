@@ -1,6 +1,10 @@
 package com.eischet.janitor.api.types;
 
+import com.eischet.janitor.api.JanitorScriptProcess;
+import com.eischet.janitor.api.errors.JanitorException;
 import com.eischet.janitor.api.errors.glue.JanitorGlueException;
+import com.eischet.janitor.api.errors.runtime.JanitorAssignmentException;
+import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -54,8 +58,14 @@ public class TemporaryAssignable implements JAssignable, JanitorObject {
      */
     @Override
     public boolean assign(final JanitorObject value) throws JanitorGlueException {
-        this.setter.accept(value);
-        return true;
+        try {
+            this.setter.accept(value);
+            return true;
+        } catch (JanitorGlueException e) {
+            throw e;
+        }  catch (Exception e) {
+            throw new JanitorGlueException(JanitorAssignmentException::fromGlue, e);
+        }
     }
 
     @Override

@@ -11,7 +11,7 @@ import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
 @FunctionalInterface
 public interface NullableSetter<INSTANCE, PROPERTY> {
-    void set(@NotNull INSTANCE instance, @Nullable PROPERTY value) throws JanitorGlueException;
+    void set(@NotNull INSTANCE instance, @Nullable PROPERTY value) throws Exception;
 
     static <T> NullableSetter<T, Boolean> guard(PrimitiveBooleanSetter<T> setter) {
         return (instance, value) -> {

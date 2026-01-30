@@ -1,6 +1,7 @@
 package com.eischet.janitor.api.errors.runtime;
 
 import com.eischet.janitor.api.JanitorScriptProcess;
+import com.eischet.janitor.api.errors.glue.JanitorGlueException;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -45,4 +46,9 @@ public class JanitorAssignmentException extends JanitorArgumentException {
     public JanitorAssignmentException(final @NotNull JanitorScriptProcess process, final Throwable cause) {
         super(process, cause, JanitorAssignmentException.class);
     }
+
+    public static JanitorAssignmentException fromGlue(final JanitorScriptProcess process, final JanitorGlueException glueException) {
+        return new JanitorAssignmentException(process, glueException.getMessage(), glueException.getCause());
+    }
+
 }

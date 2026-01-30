@@ -118,7 +118,7 @@ public class SimpleWrangler<T extends OrmEntity, U extends Uplink> implements En
                         log.warn("when copying {}, the property {} could not be copied!", simpleClassNameOf(original), attr);
                     }
                 }
-            } catch (JanitorGlueException e) {
+            } catch (Exception e) {
                 throw new JanitorError("error copying attribute " + attr + " from " + original + " to a new copy", e);
             }
         });

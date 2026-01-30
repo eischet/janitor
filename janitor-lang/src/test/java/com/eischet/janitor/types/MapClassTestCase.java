@@ -105,10 +105,16 @@ public class MapClassTestCase extends JanitorTest {
         play.accept("map.foobar == 5.0;");
 
         play.accept("assert(map.missingKey == null);");
-
-
-
-
     }
+
+    @Test void serializeTheEmptyMap() throws Exception {
+        assertEquals("{}\n", getOutput("print({}.toJson())"));
+    }
+
+    @Test void serializingDefaultValuesInMapsIsNeeded() throws Exception {
+        // This used to return {}, but that's nonsense for maps.
+        assertEquals("{\"foo\":false}\n", getOutput("print({foo: false}.toJson())"));
+    }
+
 
 }

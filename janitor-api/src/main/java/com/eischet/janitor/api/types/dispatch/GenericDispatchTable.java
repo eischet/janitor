@@ -4,6 +4,7 @@ import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.glue.JanitorGlueException;
 import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
+import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.metadata.MetaDataBuilder;
 import com.eischet.janitor.api.metadata.MetaDataKey;
@@ -153,7 +154,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
                         throw new JsonException("error writing field '" + name + "' to JSON because it must not be null here");
 
                     }
-                } catch (JanitorGlueException e) {
+                } catch (Exception e) {
                     throw new JsonException("error writing field '" + name + "' to JSON", e);
                 }
             }
@@ -163,7 +164,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
                 final @NotNull X jsonValue = delegate.read(stream);
                 try {
                     setter.set(instance, jsonValue);
-                } catch (final JanitorGlueException e) {
+                } catch (final Exception e) {
                     throw new JsonException("error reading " + jsonValue + " at " + stream.getPath(), e);
                 }
             }
@@ -176,7 +177,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
                         return true;
                     }
                     return delegate.isDefault(propertyValue);
-                } catch (JanitorGlueException e) {
+                } catch (Exception e) {
                     return false; // which will lead to it being written, which will trigger the same exception in write()...
                 }
             }
@@ -200,7 +201,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
                     } else {
                         stream.nullValue();
                     }
-                } catch (JanitorGlueException e) {
+                } catch (Exception e) {
                     throw new JsonException("Error writing list property", e);
                 }
             }
@@ -217,7 +218,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
                     stream.endArray();
                     try {
                         setter.set(instance, listValue);
-                    } catch (final JanitorGlueException e) {
+                    } catch (final Exception e) {
                         throw new JsonException("error reading " + listValue + " at " + stream.getPath(), e);
                     }
                 }
@@ -228,7 +229,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
                 try {
                     final List<X> listValue = getter.get(instance);
                     return listValue == null || listValue.isEmpty();
-                } catch (JanitorGlueException e) {
+                } catch (Exception e) {
                     return false;
                 }
             }
@@ -590,7 +591,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
     public MetaDataBuilder<T> addListProperty(final @NotNull String name, final NullableGetter<T, @Nullable JList> getter) {
         return internalAddProperty(name, instance -> getter.get(instance), new JsonAdapter<>() {
             @Override
-            public void write(final JsonOutputStream stream, final T instance) throws JsonException, JanitorGlueException {
+            public void write(final JsonOutputStream stream, final T instance) throws Exception {
                 final JList list = getter.get(instance);
                 if (list != null) {
                     list.writeJson(stream);
@@ -600,7 +601,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
             }
 
             @Override
-            public void read(final JsonInputStream stream, final T instance) throws JsonException, JanitorGlueException {
+            public void read(final JsonInputStream stream, final T instance) throws Exception {
                 final JList list = getter.get(instance);
                 // Reading the list from JSON will only have an effect if the (possibly temporary) list returned by the getter has an onUpdate listener.
                 // We assume that, if such a listener exists, the list will properly be written back to the instance. If not, fail.
@@ -612,7 +613,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
             }
 
             @Override
-            public boolean isDefault(final T instance) throws JanitorGlueException {
+            public boolean isDefault(final T instance) throws Exception {
                 final JList list = getter.get(instance);
                 return list == null || list.isEmpty();
             }
@@ -839,7 +840,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
     public MetaDataBuilder<T> addDateProperty(final @NotNull String name, final NullableGetter<T, LocalDate> getter, final NullableSetter<T, LocalDate> setter) {
         return internalAddProperty(name, instance -> TemporaryAssignable.of(name, Janitor.getBuiltins().nullableDate(getter.get(instance)), value -> setter.set(instance, dateOrNull(value))), new JsonAdapter<>() {
             @Override
-            public void write(final JsonOutputStream stream, final T instance) throws JsonException, JanitorGlueException {
+            public void write(final JsonOutputStream stream, final T instance) throws Exception {
                 @Nullable final LocalDate value = getter.get(instance);
                 if (value == null) {
                     stream.nullValue();
@@ -849,7 +850,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
             }
 
             @Override
-            public void read(final JsonInputStream stream, final T instance) throws JsonException, JanitorGlueException {
+            public void read(final JsonInputStream stream, final T instance) throws Exception {
                 if (stream.peek() == JsonTokenType.NULL) {
                     setter.set(instance, null);
                 } else {
@@ -864,7 +865,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
             }
 
             @Override
-            public boolean isDefault(final T instance) throws JanitorGlueException {
+            public boolean isDefault(final T instance) throws Exception {
                 return getter.get(instance) == null;
             }
         }).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.DATE); // TODO: support dates
@@ -972,7 +973,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
         return internalAddProperty(name, instance -> TemporaryAssignable.of(name, Janitor.getBuiltins().nullableDateTime(getter.get(instance)),
                 value -> setter.set(instance, dateTimeOrNull(value))), new JsonAdapter<T>() {
             @Override
-            public void write(final JsonOutputStream stream, final T instance) throws JanitorGlueException, JsonException {
+            public void write(final JsonOutputStream stream, final T instance) throws Exception {
                 final LocalDateTime value = getter.get(instance);
                 if (value == null) {
                     stream.nullValue();
@@ -982,7 +983,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
             }
 
             @Override
-            public void read(final JsonInputStream stream, final T instance) throws JsonException, JanitorGlueException {
+            public void read(final JsonInputStream stream, final T instance) throws Exception {
                 if (stream.peek() == JsonTokenType.NULL) {
                     setter.set(instance, null);
                 } else {
@@ -993,7 +994,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
             }
 
             @Override
-            public boolean isDefault(final T instance) throws JanitorGlueException {
+            public boolean isDefault(final T instance) throws Exception {
                 return getter.get(instance) == null;
             }
         }).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.DATETIME);
@@ -1131,7 +1132,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
      * @return the result of the lookup
      */
     @SuppressWarnings("unchecked")
-    public JanitorObject dispatch(final String name, final JanitorWrapper<? extends T> instance) throws JanitorGlueException {
+    public JanitorObject dispatch(final String name, final JanitorWrapper<? extends T> instance) throws Exception {
         final AttributeLookupHandler<T> handler = map.get(name);
         if (handler != null) {
             //noinspection unchecked
@@ -1161,8 +1162,12 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
                 return parentLookupHandler.delegate(instance, process, name);
             }
             return null;
+        } catch (JanitorRuntimeException e) {
+            throw e;
         } catch (JanitorGlueException e) {
             throw e.toRuntimeException(process);
+        } catch (Exception e) {
+            throw new JanitorNativeException(process, "unhandled exception in native code", e);
         }
     }
 
@@ -1182,14 +1187,14 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
                 parentAttributeWriter.writeToJson(stream, instance);
             }
             writeMyAttributes(stream, instance);
-        } catch (JanitorGlueException e) {
+        } catch (Exception e) {
             throw new JsonException("error writing " + instance + " [" + simpleClassNameOf(instance) + "]", e);
         }
         stream.endObject();
     }
 
 
-    private void writeMyAttributes(final JsonOutputStream stream, final T instance) throws JsonException, JanitorGlueException {
+    private void writeMyAttributes(final JsonOutputStream stream, final T instance) throws Exception {
         for (final Attribute<T> attribute : attributes) {
             @Nullable final JsonAdapter<T> attributeAdapter = attribute.jsonAdapter;
             if (attributeAdapter != null) {
@@ -1253,7 +1258,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
                             stream.skipValue(); // TODO: warn
                         }
                     }
-                } catch (JanitorGlueException e) {
+                } catch (Exception e) {
                     throw new JsonException("Cannot read attribute " + key, e);
                 }
             }
@@ -1262,7 +1267,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
         return instance;
     }
 
-    private boolean readAttribute(final JsonInputStream stream, final String key, final T instance) throws JsonException, JanitorGlueException {
+    private boolean readAttribute(final JsonInputStream stream, final String key, final T instance) throws Exception {
         final Attribute<T> matched = attributes.stream().filter(attr -> Objects.equals(attr.name(), key)).findFirst().orElse(null);
         if (matched != null && matched.jsonAdapter != null) {
             matched.jsonAdapter.read(stream, instance);
@@ -1303,12 +1308,12 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
 
     @FunctionalInterface
     private interface ParentAttributeReader<T> {
-        boolean readAttribute(final JsonInputStream stream, final String key, final T instance) throws JsonException, JanitorGlueException;
+        boolean readAttribute(final JsonInputStream stream, final String key, final T instance) throws Exception;
     }
 
     @FunctionalInterface
     private interface ParentAttributeWriter<T> {
-        void writeToJson(final JsonOutputStream stream, T instance) throws JsonException, JanitorGlueException;
+        void writeToJson(final JsonOutputStream stream, T instance) throws Exception;
     }
 
     public record Attribute<T extends JanitorObject>(

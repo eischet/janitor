@@ -11,7 +11,7 @@ public interface RuntimeConsumer<T> {
     /**
      * Accepts the given object.
      * @param object the object to accept.
-     * @throws JanitorGlueException on errors
+     * @throws Exception on errors
      */
-    void accept(T object) throws JanitorGlueException;
+    void accept(T object) throws Exception;
 }
