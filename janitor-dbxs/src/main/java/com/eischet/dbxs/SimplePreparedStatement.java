@@ -158,6 +158,10 @@ public class SimplePreparedStatement {
         return this;
     }
 
+    public SimplePreparedStatement addDate(final LocalDate date) throws SQLException {
+        return addTimestamp(date.atStartOfDay());
+    }
+
     public SimplePreparedStatement addTimestamp(final LocalDate timestamp) throws SQLException {
         final int i = ++col;
         args.add(new Arg(col, timestamp, "timestamp(ldt)"));
