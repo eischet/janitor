@@ -1,11 +1,10 @@
-# 0.9.44, 2026-01-xx
+# 0.9.44, 2026-01-30
 
 - When converting JMap (Hashmaps) to JSON, default values are now serialized. Before, `{foo: false}.toJson()` omitted the field "foo". This applies to
   all types of value that are "primitive" in Java, which means they have a natural default.
-- Made DispatchTable more precise by providing custom function interfaces for getters/setters, making it clearer when primitive fields or (nullable) object
-  fields are used. The getters/setters are now allowed to throw Exception, so it's much easier to interop with code that throws those a lot, like the Java 
-  EWS API.
-   
+- DispatchTable is now more precise, because the Function interfaces wrapping getters and setters were replaced by custom ones that make it clear when
+  a field is nullable and when not, and that explicitly show us when (Java) primitive field types are used (which would throw NPE when assigned null).
+- DispatchTable is now more forgiving, because it allows all getters/setters to throw Exception now, making it easier for users to map their classes.
 
 
 # 0.9.43, 2026-01-26

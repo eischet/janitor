@@ -62,6 +62,15 @@ public class FilterExpression extends JanitorComposed<FilterExpression> {
     private LocalDateTime valueDateTime;
     private LocalDate valueDate;
 
+    private void clearAllValues() {
+        valueString = null;
+        valueBoolean = null;
+        valueDouble = null;
+        valueLong = null;
+        valueDateTime = null;
+        valueDate = null;
+    }
+
     public boolean isString() {
         return valueString != null;
     }
@@ -186,6 +195,7 @@ public class FilterExpression extends JanitorComposed<FilterExpression> {
     }
 
     public void setValueString(final String valueString) {
+        clearAllValues();
         this.valueString = valueString;
     }
 
@@ -194,6 +204,7 @@ public class FilterExpression extends JanitorComposed<FilterExpression> {
     }
 
     public void setValueBoolean(final Boolean valueBoolean) {
+        clearAllValues();
         this.valueBoolean = valueBoolean;
     }
 
@@ -202,6 +213,7 @@ public class FilterExpression extends JanitorComposed<FilterExpression> {
     }
 
     public void setValueDouble(final Double valueNumber) {
+        clearAllValues();
         this.valueDouble = valueNumber;
     }
 
@@ -210,6 +222,7 @@ public class FilterExpression extends JanitorComposed<FilterExpression> {
     }
 
     public void setValueLong(final Long valueLong) {
+        clearAllValues();
         this.valueLong = valueLong;
     }
 
@@ -218,6 +231,7 @@ public class FilterExpression extends JanitorComposed<FilterExpression> {
     }
 
     public void setValueDateTime(final LocalDateTime valueDateTime) {
+        clearAllValues();
         this.valueDateTime = valueDateTime;
     }
 
@@ -226,6 +240,7 @@ public class FilterExpression extends JanitorComposed<FilterExpression> {
     }
 
     public void setValueDate(final LocalDate valueDate) {
+        clearAllValues();
         this.valueDate = valueDate;
     }
 
