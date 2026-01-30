@@ -275,14 +275,33 @@ public abstract class GenericDao<T extends OrmEntity> extends JanitorComposed<Ge
             }
             // might be needed, or not:
 
-            final Prepper prepLong = new NamedPrepper((conn, stmt) -> stmt.addLong(filterExpression.getValueNumber().longValue()), "long=" + (filterExpression.getValueNumber() != null ? filterExpression.getValueNumber().longValue() : "?"));
+            final Prepper prepLong = new NamedPrepper((conn, stmt) -> stmt.addLong(filterExpression.getValueLong().longValue()), "long=" + (filterExpression.getValueLong() != null ? filterExpression.getValueLong().longValue() : "?"));
+            final Prepper prepDate = new NamedPrepper((conn, stmt) -> stmt.addDate(filterExpression.getValueDate()), "date=" + filterExpression.getValueDate());
+            final Prepper prepDateTime = new NamedPrepper((conn, stmt) -> stmt.addTimestamp(filterExpression.getValueDateTime()), "datetime=" + filterExpression.getValueDateTime());
+            final Prepper prepDouble = new NamedPrepper((conn, stmt) -> stmt.addDouble(filterExpression.getValueDouble()), "double=" + filterExpression.getValueDouble());
             final Prepper prepBoolean = new NamedPrepper((conn, stmt) -> stmt.addInt(filterExpression.getValueBoolean() ? 1 : 0), "bool=" + filterExpression.getValueBoolean());
             final Prepper prepString = new NamedPrepper((conn, stmt) -> stmt.addString(filterExpression.getValueString()), "string=" + filterExpression.getValueString());
             final Prepper prepStringLike = new NamedPrepper((conn, stmt) -> stmt.addString(filterExpression.getValueString() + "%"), "string=" + filterExpression.getValueString() + "%");
             final Prepper prepLikeString = new NamedPrepper((conn, stmt) -> stmt.addString("%s" + filterExpression.getValueString()), "string=%" + filterExpression.getValueString());
             final Prepper prepLikeStringLike = new NamedPrepper((conn, stmt) -> stmt.addString("%" + filterExpression.getValueString() + "%"), "string=%" + filterExpression.getValueString() + "%");
 
-            final Prepper simpleEquality = filterExpression.isString() ? prepString : filterExpression.isNumber() ? prepLong : prepBoolean;
+            Prepper eq = prepString;
+            if (filterExpression.isDate()) {
+                eq = prepDate;
+            } else if (filterExpression.isDateTime()) {
+                eq = prepDateTime;
+            }  else if (filterExpression.isDouble()) {
+                eq = prepDouble;
+            } else if (filterExpression.isBoolean()) {
+                eq = prepBoolean;
+            } else if (filterExpression.isLong()) {
+                eq = prepLong;
+            } else if (filterExpression.isDate()) {
+                eq = prepDate;
+            } else if (filterExpression.isDouble()) {
+                eq = prepDouble;
+            }
+            final Prepper simpleEquality = eq;
 
             return switch (filterExpression.getOperatorEnum()) {
                 case EQ -> {
@@ -464,9 +483,7 @@ public abstract class GenericDao<T extends OrmEntity> extends JanitorComposed<Ge
     public void delete(@NotNull final DatabaseConnection conn, @NotNull final T record) throws DatabaseError {
         final StatementCreator creator = new StatementCreator(getDataManager().getDialect());
         final UpdateStatement updateStatement = UpdateStatement.of(creator.createDeleteStatement(tableName, idColumn));
-        conn.update(updateStatement, ps -> {
-            ps.addLong(record.getId());
-        });
+        conn.update(updateStatement, ps -> ps.addLong(record.getId()));
     }
 
     private void writeAllColumns(final DatabaseConnection conn, final T record, final List<String> updatingColumns, final SimplePreparedStatement ps) throws SQLException {

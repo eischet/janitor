@@ -202,7 +202,7 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
                 log.info("updated {} rows", changedRows);
             }
             if (changedRows == 0) {
-                update(conn, record);
+                insert(conn, record);
             }
             if (changedRows > 1) {
                 throw new DatabaseError("multiple rows affected by update");

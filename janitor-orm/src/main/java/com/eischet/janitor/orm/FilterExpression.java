@@ -7,6 +7,8 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -37,32 +39,51 @@ public class FilterExpression extends JanitorComposed<FilterExpression> {
         DISPATCH.addStringProperty("field", FilterExpression::getField, FilterExpression::setField);
         DISPATCH.addStringProperty("operator", FilterExpression::getOperator, FilterExpression::setOperator);
         DISPATCH.addNullableBooleanProperty("ignoreCase", FilterExpression::getIgnoreCase, FilterExpression::setIgnoreCase);
+
         DISPATCH.addStringProperty("valueString", FilterExpression::getValueString, FilterExpression::setValueString);
         DISPATCH.addNullableBooleanProperty("valueBoolean", FilterExpression::getValueBoolean, FilterExpression::setValueBoolean);
-        DISPATCH.addDoubleProperty("valueNumber", FilterExpression::getValueNumber, FilterExpression::setValueNumber);
+        DISPATCH.addNullableDoubleProperty("valueDouble", FilterExpression::getValueDouble, FilterExpression::setValueDouble);
+        DISPATCH.addNullableLongProperty("valueLong", FilterExpression::getValueLong, FilterExpression::setValueLong);
     }
 
     // Für logische Gruppen
     private String logic; // "and" | "or"
     private List<FilterExpression> filters;
+
     // Für Expressions
     private String field;
     private String operator;
     private Boolean ignoreCase;
+
     private String valueString;
     private Boolean valueBoolean;
-    private Double valueNumber;
+    private Double valueDouble;
+    private Long valueLong;
+    private LocalDateTime valueDateTime;
+    private LocalDate valueDate;
 
     public boolean isString() {
         return valueString != null;
     }
 
-    public boolean isNumber() {
-        return valueNumber != null;
+    public boolean isLong() {
+        return valueLong != null;
     }
 
     public boolean isBoolean() {
         return valueBoolean != null;
+    }
+
+    public boolean isDouble() {
+        return valueDouble != null;
+    }
+
+    public boolean isDateTime() {
+        return valueDateTime != null;
+    }
+
+    public boolean isDate() {
+        return valueDate != null;
     }
 
     public FilterExpression() {
@@ -78,8 +99,17 @@ public class FilterExpression extends JanitorComposed<FilterExpression> {
         if (filters != null && !filters.isEmpty()) {
             sb.append(", filters: ").append(filters).append(", ");
         }
-        if (valueNumber != null) {
-            sb.append("valueNumber: ").append(valueNumber).append(", ");
+        if (valueLong != null) {
+            sb.append("valueLong: ").append(valueLong).append(", ");
+        }
+        if (valueDouble != null) {
+            sb.append("valueDouble: ").append(valueDouble).append(", ");
+        }
+        if (valueDate != null) {
+            sb.append("valueDate: ").append(valueDate).append(", ");
+        }
+        if (valueDateTime != null) {
+            sb.append("valueDateTime: ").append(valueDateTime).append(", ");
         }
         if (valueBoolean != null) {
             sb.append("valueBoolean: ").append(valueBoolean).append(", ");
@@ -100,17 +130,6 @@ public class FilterExpression extends JanitorComposed<FilterExpression> {
         return sb.toString();
     }
 
-    /*
-            @Override
-            public String toString() {
-                try {
-                    return toJson();
-                } catch (JsonException e) {
-                    return "unserializable";
-                }
-            }
-        */
-    // Hilfsmethode zur Laufzeitunterscheidung
     public boolean isGroup() {
         return logic != null && filters != null;
     }
@@ -178,12 +197,36 @@ public class FilterExpression extends JanitorComposed<FilterExpression> {
         this.valueBoolean = valueBoolean;
     }
 
-    public Double getValueNumber() {
-        return valueNumber;
+    public Double getValueDouble() {
+        return valueDouble;
     }
 
-    public void setValueNumber(final Double valueNumber) {
-        this.valueNumber = valueNumber;
+    public void setValueDouble(final Double valueNumber) {
+        this.valueDouble = valueNumber;
+    }
+
+    public Long getValueLong() {
+        return valueLong;
+    }
+
+    public void setValueLong(final Long valueLong) {
+        this.valueLong = valueLong;
+    }
+
+    public LocalDateTime getValueDateTime() {
+        return valueDateTime;
+    }
+
+    public void setValueDateTime(final LocalDateTime valueDateTime) {
+        this.valueDateTime = valueDateTime;
+    }
+
+    public LocalDate getValueDate() {
+        return valueDate;
+    }
+
+    public void setValueDate(final LocalDate valueDate) {
+        this.valueDate = valueDate;
     }
 
     @SuppressWarnings("SpellCheckingInspection")
@@ -201,7 +244,8 @@ public class FilterExpression extends JanitorComposed<FilterExpression> {
         ISNULL("isnull"),
         ISNOTNULL("isnotnull"),
         ISEMPTY("isempty"),
-        ISNOTEMPTY("isnotempty");
+        ISNOTEMPTY("isnotempty")
+        ;
 
         private final String code;
 
