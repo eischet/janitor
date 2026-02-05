@@ -3,8 +3,8 @@ package com.eischet.janitor.orm.meta;
 import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import com.eischet.janitor.api.types.dispatch.ValueExpander;
-import com.eischet.janitor.api.types.interop.NullableGetter;
-import com.eischet.janitor.api.types.interop.NullableSetter;
+import com.eischet.janitor.api.types.interop.NotNullGetter;
+import com.eischet.janitor.api.types.interop.NotNullSetter;
 import com.eischet.janitor.orm.JanitorOrm;
 import com.eischet.janitor.orm.dao.Dao;
 import com.eischet.janitor.orm.dao.Uplink;
@@ -14,9 +14,6 @@ import com.eischet.janitor.orm.ref.ForeignKey;
 import com.eischet.janitor.orm.ref.ForeignKeyNull;
 import com.eischet.janitor.orm.sql.ColumnTypeHint;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.function.BiConsumer;
-import java.util.function.Function;
 
 /**
  * Helper interface that makes interacting with {@link OrmEntity} easier.
@@ -35,13 +32,13 @@ public interface EntityWrangler<T extends OrmEntity, U extends Uplink> extends W
     default <V extends OrmObject> void addReference(final DispatchTable<V> dispatch,
                                                     final String propertyName,
                                                     final String columnName,
-                                                    final NullableGetter<V, ForeignKey<T>> getter,
-                                                    final NullableSetter<V, ForeignKey<T>> setter,
+                                                    final NotNullGetter<V, ForeignKey<T>> getter,
+                                                    final NotNullSetter<V, ForeignKey<T>> setter,
                                                     final ValueExpander<V, ForeignKey<T>> expander) {
         dispatch.addObjectPropertyWithSingletonDefault(
                         propertyName,
-                        getter,
-                        setter,
+                        getter::get,
+                        (v, value) -> setter.set(v, value == null ? getNullReference() : value),
                         getNullReference(),
                         expander)
                 .setMetaData(JanitorOrm.MetaData.COLUMN_NAME, columnName)

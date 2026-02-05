@@ -1,3 +1,9 @@
+# 0.9.45-SNAPSHOT, 2026-02-xx
+
+- Further DispatchTable related improvements when mapping foreign keys in the janitor-orm module.
+- 
+
+
 # 0.9.44, 2026-01-30
 
 - When converting JMap (Hashmaps) to JSON, default values are now serialized. Before, `{foo: false}.toJson()` omitted the field "foo". This applies to
