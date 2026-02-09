@@ -44,6 +44,8 @@ public class FilterExpression extends JanitorComposed<FilterExpression> {
         DISPATCH.addNullableBooleanProperty("valueBoolean", FilterExpression::getValueBoolean, FilterExpression::setValueBoolean);
         DISPATCH.addNullableDoubleProperty("valueDouble", FilterExpression::getValueDouble, FilterExpression::setValueDouble);
         DISPATCH.addNullableLongProperty("valueLong", FilterExpression::getValueLong, FilterExpression::setValueLong);
+        DISPATCH.addDateProperty("valueDate", FilterExpression::getValueDate, FilterExpression::setValueDate);
+        DISPATCH.addDateTimeProperty("valueDateTime", FilterExpression::getValueDateTime, FilterExpression::setValueDateTime);
     }
 
     // Für logische Gruppen
@@ -61,6 +63,31 @@ public class FilterExpression extends JanitorComposed<FilterExpression> {
     private Long valueLong;
     private LocalDateTime valueDateTime;
     private LocalDate valueDate;
+
+    public String getValueDescription() {
+        StringBuilder result = new StringBuilder();
+        result.append("{");
+        if (valueString != null) {
+            result.append(valueString).append(" [string] ");
+        }
+        if (valueBoolean != null) {
+            result.append(valueBoolean).append(" [boolean] ");
+        }
+        if (valueDouble != null) {
+            result.append(valueDouble).append(" [double] ");
+        }
+        if (valueLong != null) {
+            result.append(valueLong).append(" [long] ");
+        }
+        if (valueDateTime != null) {
+            result.append(valueDateTime).append(" [datetime] ");
+        }
+        if (valueDate != null) {
+            result.append(valueDate).append(" [date] ");
+        }
+        result.append("}");
+        return result.toString();
+    }
 
     private void clearAllValues() {
         valueString = null;
@@ -270,11 +297,11 @@ public class FilterExpression extends JanitorComposed<FilterExpression> {
 
         public static final List<Operator> OPERATORS = List.of(values());
 
-        public static @NotNull FilterExpression.Operator fromCode(final String code) throws MalformedExpression {
+        public static @NotNull FilterExpression.Operator fromCode(final String code) {
             return OPERATORS.stream()
                     .filter(it -> Objects.equals(it.code, code))
                     .findFirst()
-                    .orElseThrow(() -> new MalformedExpression("invalid operator code '" + code + "'"));
+                    .orElse(Operator.EQ);
         }
 
         public String getCode() {
