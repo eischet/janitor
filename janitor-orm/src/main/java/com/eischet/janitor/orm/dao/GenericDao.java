@@ -280,10 +280,34 @@ public abstract class GenericDao<T extends OrmEntity> extends JanitorComposed<Ge
             final Prepper prepDateTime = new NamedPrepper((conn, stmt) -> stmt.addTimestamp(filterExpression.getValueDateTime()), "datetime=" + filterExpression.getValueDateTime());
             final Prepper prepDouble = new NamedPrepper((conn, stmt) -> stmt.addDouble(filterExpression.getValueDouble()), "double=" + filterExpression.getValueDouble());
             final Prepper prepBoolean = new NamedPrepper((conn, stmt) -> stmt.addInt(filterExpression.getValueBoolean() ? 1 : 0), "bool=" + filterExpression.getValueBoolean());
-            final Prepper prepString = new NamedPrepper((conn, stmt) -> stmt.addString(filterExpression.getValueString()), "string=" + filterExpression.getValueString());
-            final Prepper prepStringLike = new NamedPrepper((conn, stmt) -> stmt.addString(filterExpression.getValueString() + "%"), "string=" + filterExpression.getValueString() + "%");
-            final Prepper prepLikeString = new NamedPrepper((conn, stmt) -> stmt.addString("%s" + filterExpression.getValueString()), "string=%" + filterExpression.getValueString());
-            final Prepper prepLikeStringLike = new NamedPrepper((conn, stmt) -> stmt.addString("%" + filterExpression.getValueString() + "%"), "string=%" + filterExpression.getValueString() + "%");
+            final Prepper prepString = new NamedPrepper((conn, stmt) -> {
+                if (filterExpression.getValueString() != null) {
+                    stmt.addString(filterExpression.getValueString());
+                } else {
+                    stmt.addNullString();
+                }
+            }, filterExpression.getValueString() != null ? ("string='" + filterExpression.getValueString() + "'") : ("string=null"));
+            final Prepper prepStringLike = new NamedPrepper((conn, stmt) -> {
+                if (filterExpression.getValueString() != null) {
+                    stmt.addString(filterExpression.getValueString() + "%");
+                } else {
+                    stmt.addNullString();
+                }
+            }, filterExpression.getValueString() != null ? ("string='" + filterExpression.getValueString() + "%'") : ("string=null"));
+            final Prepper prepLikeString = new NamedPrepper((conn, stmt) -> {
+                if (filterExpression.getValueString() != null) {
+                    stmt.addString("%s" + filterExpression.getValueString());
+                } else {
+                    stmt.addNullString();
+                }
+            }, filterExpression.getValueString() != null ? ("string='%" + filterExpression.getValueString() + "'") : ("string=null"));
+            final Prepper prepLikeStringLike = new NamedPrepper((conn, stmt) -> {
+                if (filterExpression.getValueString() != null) {
+                    stmt.addString("%" + filterExpression.getValueString() + "%");
+                } else {
+                    stmt.addNullString();
+                }
+            }, filterExpression.getValueString() != null ? ("string='%" + filterExpression.getValueString() + "%'") : ("string=null"));
 
             Prepper eq = prepString;
             if (filterExpression.isDate()) {

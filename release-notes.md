@@ -1,7 +1,6 @@
-# 0.9.45-SNAPSHOT, 2026-02-xx
+# 0.9.45, 2026-02-12
 
-- Further DispatchTable related improvements when mapping foreign keys in the janitor-orm module.
-- 
+- ORM: Further DispatchTable related improvements when mapping foreign keys in the janitor-orm module, Filter Expression bug fixes
 
 
 # 0.9.44, 2026-01-30

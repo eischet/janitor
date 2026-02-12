@@ -1,5 +1,6 @@
 package com.eischet.janitor.runtime;
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorRuntime;
 import com.eischet.janitor.api.RunnableScript;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
@@ -31,7 +32,7 @@ public class JanitorScript implements RunnableScript, JsonExportableObject {
 
     private static final Logger log = LoggerFactory.getLogger(JanitorScript.class);
 
-    private final @NotNull JanitorRuntime runtime;
+    private final @NotNull JanitorRuntime runtime; // TODO: remove this. A compiled script should not be tied to a particular runtime. Only when *runnign* it, the runtime should be used.
     private final @NotNull ScriptModule module;
     private final @Nullable Script scriptObject;
     private final @NotNull List<String> issues;
@@ -143,7 +144,7 @@ public class JanitorScript implements RunnableScript, JsonExportableObject {
 
     @Override
     public @NotNull JanitorObject run(final @NotNull Consumer<Scope> prepareGlobals) throws JanitorRuntimeException {
-        final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), module); // new Scope(Location.at(module, 0, 0), BUILTIN_SCOPE, null);
+        final Scope globalScope = Scope.createGlobalScope(Janitor.current(), module); // new Scope(Location.at(module, 0, 0), BUILTIN_SCOPE, null);
         prepareGlobals.accept(globalScope);
         final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, module.getName(), scriptObject);
         try {

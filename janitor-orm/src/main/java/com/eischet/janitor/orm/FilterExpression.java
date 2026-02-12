@@ -3,6 +3,8 @@ package com.eischet.janitor.orm;
 import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
+import com.eischet.janitor.toolbox.json.api.JsonException;
+import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +41,6 @@ public class FilterExpression extends JanitorComposed<FilterExpression> {
         DISPATCH.addStringProperty("field", FilterExpression::getField, FilterExpression::setField);
         DISPATCH.addStringProperty("operator", FilterExpression::getOperator, FilterExpression::setOperator);
         DISPATCH.addNullableBooleanProperty("ignoreCase", FilterExpression::getIgnoreCase, FilterExpression::setIgnoreCase);
-
         DISPATCH.addStringProperty("valueString", FilterExpression::getValueString, FilterExpression::setValueString);
         DISPATCH.addNullableBooleanProperty("valueBoolean", FilterExpression::getValueBoolean, FilterExpression::setValueBoolean);
         DISPATCH.addNullableDoubleProperty("valueDouble", FilterExpression::getValueDouble, FilterExpression::setValueDouble);
@@ -63,6 +64,57 @@ public class FilterExpression extends JanitorComposed<FilterExpression> {
     private Long valueLong;
     private LocalDateTime valueDateTime;
     private LocalDate valueDate;
+
+    public boolean isIncomplete() {
+        if (filters != null && !filters.isEmpty()) {
+            return false;
+        }
+        if (field == null || field.isBlank()) {
+            return true;
+        }
+        if (operator == null || operator.isBlank()) {
+            return true;
+        }
+        // could be more precise, but this should catch most issues we currently have with the corresponding UI component :o)
+        return true;
+    }
+
+    public void compress() {
+        if (filters != null) {
+            filters = new ArrayList<>(filters.stream().filter(f -> !f.isIncomplete()).toList());
+        }
+    }
+
+    public void clear() {
+        logic = "and";
+        filters = null;
+        field = null;
+        operator = null;
+        ignoreCase = null;
+        valueString = null;
+        valueBoolean = null;
+        valueDouble = null;
+        valueLong = null;
+        valueDateTime = null;
+        valueDate = null;
+    }
+
+    public void clearAndSetFromJson(@Language("JSON") final String json) throws JsonException {
+        clear();
+        final FilterExpression temp = DISPATCH.readFromJson(FilterExpression::new, json);
+        logic = temp.logic;
+        filters = temp.filters;
+        field = temp.field;
+        operator = temp.operator;
+        ignoreCase = temp.ignoreCase;
+        valueString = temp.valueString;
+        valueBoolean = temp.valueBoolean;
+        valueDouble = temp.valueDouble;
+        valueLong = temp.valueLong;
+        valueDateTime = temp.valueDateTime;
+        valueDate = temp.valueDate;
+        log.info("parsed {} to {}", json, getValueDescription());
+    }
 
     public String getValueDescription() {
         StringBuilder result = new StringBuilder();
@@ -130,10 +182,10 @@ public class FilterExpression extends JanitorComposed<FilterExpression> {
     public String toString() {
         final StringBuilder sb = new StringBuilder("{");
         if (logic != null) {
-            sb.append(", logic: '").append(logic).append('\'').append(", ");
+            sb.append("logic: '").append(logic).append('\'').append(", ");
         }
         if (filters != null && !filters.isEmpty()) {
-            sb.append(", filters: ").append(filters).append(", ");
+            sb.append("filters: ").append(filters).append(", ");
         }
         if (valueLong != null) {
             sb.append("valueLong: ").append(valueLong).append(", ");
@@ -151,16 +203,16 @@ public class FilterExpression extends JanitorComposed<FilterExpression> {
             sb.append("valueBoolean: ").append(valueBoolean).append(", ");
         }
         if (valueString != null) {
-            sb.append(", valueString: '").append(valueString).append('\'').append(", ");
+            sb.append("valueString: '").append(valueString).append('\'').append(", ");
         }
         if (ignoreCase != null) {
-            sb.append(", ignoreCase: ").append(ignoreCase).append(", ");
+            sb.append("ignoreCase: ").append(ignoreCase).append(", ");
         }
         if (operator != null) {
-            sb.append(", operator: '").append(operator).append('\'').append(", ");
+            sb.append("operator: '").append(operator).append('\'').append(", ");
         }
         if (field != null) {
-            sb.append(", field: '").append(field).append('\'').append(", ");
+            sb.append("field: '").append(field).append('\'').append(", ");
         }
         sb.append('}');
         return sb.toString();
@@ -190,7 +242,7 @@ public class FilterExpression extends JanitorComposed<FilterExpression> {
     }
 
     public void setFilters(final List<FilterExpression> filters) {
-        this.filters = filters;
+        this.filters = filters == null ? null : new ArrayList<>(filters);
     }
 
     public String getField() {
