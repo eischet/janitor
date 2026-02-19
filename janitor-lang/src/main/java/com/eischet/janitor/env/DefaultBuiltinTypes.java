@@ -161,7 +161,7 @@ public class DefaultBuiltinTypes implements BuiltinTypes {
         binaryDispatcher.addMethod("toString", JBinaryClass::__toString);
         binaryDispatcher.addMethod("size", JBinaryClass::__size);
         binaryDispatcher.addStringProperty("string", wrapper -> wrapper.janitorIsTrue() ? new String(wrapper.janitorGetHostValue()) : "");
-        binaryDispatcher.addIntegerProperty("length", wrapper -> wrapper.janitorGetHostValue() == null ? 0 : wrapper.janitorGetHostValue().length);
+        binaryDispatcher.addIntegerProperty("length", wrapper -> wrapper.janitorGetHostValue().length);
 
         binaryDispatcher.addMethod("sha256", JBinaryClass::__sha256);
 
@@ -519,25 +519,6 @@ public class DefaultBuiltinTypes implements BuiltinTypes {
         }
     }
 
-    /**
-     * Create a new JDate.
-     * @param localDate the date
-     * @return the date
-    public static JDate of(final LocalDate localDate) {
-        return new JDate(localDate);
-    }
-     */
-
-    /**
-     * Create a new JDate.
-     * @param year the year
-     * @param month the month
-     * @param day the day
-     * @return the date
-    public static JDate of(final int year, final int month, final int day) {
-        return new JDate(year, month, day);
-    }
-     */
 
     /**
      * Create a new JDate.
