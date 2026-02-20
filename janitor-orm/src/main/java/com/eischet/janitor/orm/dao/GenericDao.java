@@ -10,7 +10,6 @@ import com.eischet.dbxs.statements.SelectStatement;
 import com.eischet.dbxs.statements.UpdateStatement;
 import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorScriptProcess;
-import com.eischet.janitor.api.errors.glue.JanitorGlueException;
 import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.errors.runtime.JanitorError;
 import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
@@ -25,8 +24,9 @@ import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.types.functions.JCallable;
 import com.eischet.janitor.orm.JanitorOrm;
-import com.eischet.janitor.orm.FilterExpression;
+import com.eischet.janitor.orm.filter.FilterExpression;
 import com.eischet.janitor.orm.entity.OrmEntity;
+import com.eischet.janitor.orm.filter.MalformedExpression;
 import com.eischet.janitor.orm.meta.EntityIndex;
 import com.eischet.janitor.orm.sql.ColumnTypeHint;
 import com.eischet.janitor.orm.sql.StatementCreator;
@@ -247,17 +247,10 @@ public abstract class GenericDao<T extends OrmEntity> extends JanitorComposed<Ge
 
     }
 
-    private String expressionToSql(final FilterExpression filterExpression, final Consumer<Prepper> prepperConsumer) throws FilterExpression.MalformedExpression {
+    private String expressionToSql(final FilterExpression filterExpression, final Consumer<Prepper> prepperConsumer) throws MalformedExpression {
         @NotNull final DatabaseDialect dialect = getDataManager().getDialect();
-
         if (filterExpression.getField() != null && INVALID_FIELD.test(filterExpression.getField())) {
-            throw new FilterExpression.MalformedExpression("invalid field '" + filterExpression.getField() + "'");
-        }
-        if (filterExpression.getOperator() != null && INVALID_FIELD.test(filterExpression.getOperator())) {
-            throw new FilterExpression.MalformedExpression("invalid operator '" + filterExpression.getField() + "'");
-        }
-        if (filterExpression.getLogic() != null && INVALID_FIELD.test(filterExpression.getLogic())) {
-            throw new FilterExpression.MalformedExpression("invalid logic '" + filterExpression.getField() + "'");
+            throw new MalformedExpression("invalid field '" + filterExpression.getField() + "'");
         }
         if (filterExpression.isGroup()) {
             return filterExpression.getFilters().stream()
@@ -267,11 +260,11 @@ public abstract class GenericDao<T extends OrmEntity> extends JanitorComposed<Ge
             final String namedField = filterExpression.getField();
             final String column = columnForField.get(namedField);
             if (column == null) {
-                throw new FilterExpression.MalformedExpression("missing column for field '" + namedField + "'");
+                throw new MalformedExpression("missing column for field '" + namedField + "'");
             }
             final @Nullable ColumnTypeHint columnTypeHint = entityDispatch.getMetaData(namedField, JanitorOrm.MetaData.COLUMN_TYPE);
             if (columnTypeHint == null) {
-                throw new FilterExpression.MalformedExpression("missing type for column '" + column + "' of field '" + namedField + "'");
+                throw new MalformedExpression("missing type for column '" + column + "' of field '" + namedField + "'");
             }
             // might be needed, or not:
 
@@ -327,7 +320,11 @@ public abstract class GenericDao<T extends OrmEntity> extends JanitorComposed<Ge
             }
             final Prepper simpleEquality = eq;
 
-            return switch (filterExpression.getOperatorEnum()) {
+            if (filterExpression.getOperator() == null) {
+                throw new MalformedExpression("missing operator in expression " + filterExpression);
+            }
+
+            return switch (filterExpression.getOperator()) {
                 case EQ -> {
                     prepperConsumer.accept(simpleEquality);
                     yield dialect.quoteColumn(column) + " = ?";
@@ -374,7 +371,7 @@ public abstract class GenericDao<T extends OrmEntity> extends JanitorComposed<Ge
                 case ISNOTEMPTY -> "(" + dialect.quoteColumn(column) + " is not null and " + dialect.quoteColumn(column) + " != '')";
             };
         } else {
-            throw new FilterExpression.MalformedExpression("part is neither group nor expression");
+            throw new MalformedExpression("part is neither group nor expression");
         }
     }
 

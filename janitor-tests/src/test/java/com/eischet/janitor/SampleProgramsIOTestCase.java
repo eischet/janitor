@@ -5,6 +5,7 @@ import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.runtime.OutputCatchingTestRuntime;
 import org.intellij.lang.annotations.Language;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.FileNotFoundException;
@@ -15,9 +16,6 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Testing Janitor using <a href="https://sampleprograms.io/">SamplePrograms.io</a>.
@@ -68,7 +66,7 @@ public class SampleProgramsIOTestCase extends JanitorTest {
     @Test
     public void helloWorld() throws JanitorRuntimeException, IOException, JanitorCompilerException {
         final String file = "HelloWorld.janitor";
-        assertEquals("Hello, World!", runScriptAndReturnOutput(file));
+        Assertions.assertEquals("Hello, World!", runScriptAndReturnOutput(file));
     }
 
     /**
@@ -82,28 +80,28 @@ public class SampleProgramsIOTestCase extends JanitorTest {
     public void evenOdd() throws JanitorRuntimeException, IOException, JanitorCompilerException {
         final String file = "EvenOdd.janitor";
         // Even Odd Valid Tests
-        assertEquals("Even", runScriptAndReturnOutput(file, List.of("2")));
-        assertEquals("Odd", runScriptAndReturnOutput(file, List.of("5")));
-        assertEquals("Even", runScriptAndReturnOutput(file, List.of("-14")));
-        assertEquals("Odd", runScriptAndReturnOutput(file, List.of("-27")));
+        Assertions.assertEquals("Even", runScriptAndReturnOutput(file, List.of("2")));
+        Assertions.assertEquals("Odd", runScriptAndReturnOutput(file, List.of("5")));
+        Assertions.assertEquals("Even", runScriptAndReturnOutput(file, List.of("-14")));
+        Assertions.assertEquals("Odd", runScriptAndReturnOutput(file, List.of("-27")));
         // Even Odd Invalid Tests
         final String usage = "Usage: please input a number";
-        assertEquals(usage, runScriptAndReturnOutput(file, Collections.emptyList()));
+        Assertions.assertEquals(usage, runScriptAndReturnOutput(file, Collections.emptyList()));
         // assertEquals(usage, runScriptAndReturnOutput(file, List.of("")));
-        assertEquals(usage, runScriptAndReturnOutput(file, List.of("a")));
+        Assertions.assertEquals(usage, runScriptAndReturnOutput(file, List.of("a")));
     }
 
     @Test
     public void countDuplicateCharacters() throws JanitorRuntimeException, IOException, JanitorCompilerException {
         final String file = "DuplicateCharacterCounter.janitor";
         // Duplicate Character Counter Valid Tests
-        assertEquals("No duplicate characters", runScriptAndReturnOutput(file, List.of("hola")));
-        assertEquals("""
+        Assertions.assertEquals("No duplicate characters", runScriptAndReturnOutput(file, List.of("hola")));
+        Assertions.assertEquals("""
                 o: 2
                 b: 2
                 e: 2""", runScriptAndReturnOutput(file, List.of("goodbyeblues")));
-        assertEquals("Usage: please provide a string", runScriptAndReturnOutput(file, Collections.emptyList()));
-        assertEquals("Usage: please provide a string", runScriptAndReturnOutput(file, List.of("")));
+        Assertions.assertEquals("Usage: please provide a string", runScriptAndReturnOutput(file, Collections.emptyList()));
+        Assertions.assertEquals("Usage: please provide a string", runScriptAndReturnOutput(file, List.of("")));
     }
 
     /**
@@ -138,7 +136,7 @@ public class SampleProgramsIOTestCase extends JanitorTest {
                          ***
                           *""";
         //                 ^ The final newline is stripped off by the test runner, so we need to omit it here, too.
-        assertEquals(expected, runScriptAndReturnOutput("Baklava.janitor"));
+        Assertions.assertEquals(expected, runScriptAndReturnOutput("Baklava.janitor"));
     }
 
     /**
@@ -154,16 +152,16 @@ public class SampleProgramsIOTestCase extends JanitorTest {
         final String good = "RemoveAllWhitespace";
         final String bad = "Usage: please provide a string";
         // Remove All Whitespace Valid Tests
-        assertEquals(good, runScriptAndReturnOutput(file, List.of("RemoveAllWhitespace")));
-        assertEquals(good, runScriptAndReturnOutput(file, List.of(" RemoveAllWhitespace")));
-        assertEquals(good, runScriptAndReturnOutput(file, List.of("RemoveAllWhitespace ")));
-        assertEquals(good, runScriptAndReturnOutput(file, List.of("Remove All Whitespace")));
-        assertEquals(good, runScriptAndReturnOutput(file, List.of("\tRemove\tAll\tWhitespace\t")));
-        assertEquals(good, runScriptAndReturnOutput(file, List.of("\nRemove\nAll\nWhitespace\n")));
-        assertEquals(good, runScriptAndReturnOutput(file, List.of("\rRemove\rAll\rWhitespace\r")));
+        Assertions.assertEquals(good, runScriptAndReturnOutput(file, List.of("RemoveAllWhitespace")));
+        Assertions.assertEquals(good, runScriptAndReturnOutput(file, List.of(" RemoveAllWhitespace")));
+        Assertions.assertEquals(good, runScriptAndReturnOutput(file, List.of("RemoveAllWhitespace ")));
+        Assertions.assertEquals(good, runScriptAndReturnOutput(file, List.of("Remove All Whitespace")));
+        Assertions.assertEquals(good, runScriptAndReturnOutput(file, List.of("\tRemove\tAll\tWhitespace\t")));
+        Assertions.assertEquals(good, runScriptAndReturnOutput(file, List.of("\nRemove\nAll\nWhitespace\n")));
+        Assertions.assertEquals(good, runScriptAndReturnOutput(file, List.of("\rRemove\rAll\rWhitespace\r")));
         // Remove All Whitespace Invalid Tests
-        assertEquals(bad, runScriptAndReturnOutput(file, Collections.emptyList()));
-        assertEquals(bad, runScriptAndReturnOutput(file, List.of("")));
+        Assertions.assertEquals(bad, runScriptAndReturnOutput(file, Collections.emptyList()));
+        Assertions.assertEquals(bad, runScriptAndReturnOutput(file, List.of("")));
     }
 
     /**
@@ -178,16 +176,16 @@ public class SampleProgramsIOTestCase extends JanitorTest {
         final String file = "Fibonacci.janitor";
         final String bad = "Usage: please input the count of fibonacci numbers to output";
         // Fibonacci Valid Tests
-        assertEquals("", runScriptAndReturnOutput(file, List.of("0")));
-        assertEquals("1: 1", runScriptAndReturnOutput(file, List.of("1")));
-        assertEquals("1: 1\n2: 1", runScriptAndReturnOutput(file, List.of("2")));
-        assertEquals("""
+        Assertions.assertEquals("", runScriptAndReturnOutput(file, List.of("0")));
+        Assertions.assertEquals("1: 1", runScriptAndReturnOutput(file, List.of("1")));
+        Assertions.assertEquals("1: 1\n2: 1", runScriptAndReturnOutput(file, List.of("2")));
+        Assertions.assertEquals("""
                 1: 1
                 2: 1
                 3: 2
                 4: 3
                 5: 5""", runScriptAndReturnOutput(file, List.of("5")));
-        assertEquals("""
+        Assertions.assertEquals("""
                 1: 1
                 2: 1
                 3: 2
@@ -200,9 +198,9 @@ public class SampleProgramsIOTestCase extends JanitorTest {
                 10: 55""", runScriptAndReturnOutput(file, List.of("10")));
 
         // Fibonacci Invalid Tests
-        assertEquals(bad, runScriptAndReturnOutput(file, Collections.emptyList()));
-        assertEquals(bad, runScriptAndReturnOutput(file, List.of("")));
-        assertEquals(bad, runScriptAndReturnOutput(file, List.of("a")));
+        Assertions.assertEquals(bad, runScriptAndReturnOutput(file, Collections.emptyList()));
+        Assertions.assertEquals(bad, runScriptAndReturnOutput(file, List.of("")));
+        Assertions.assertEquals(bad, runScriptAndReturnOutput(file, List.of("a")));
     }
 
     /**
@@ -216,12 +214,12 @@ public class SampleProgramsIOTestCase extends JanitorTest {
         final String file = "Rot13.janitor";
         final String bad = "Usage: please provide a string to encrypt";
         // Rot13 Valid Tests
-        assertEquals("gur dhvpx oebja sbk whzcrq bire gur ynml qbt", runScriptAndReturnOutput(file, List.of("the quick brown fox jumped over the lazy dog")));
-        assertEquals("GUR DHVPX OEBJA SBK WHZCRQ BIRE GUR YNML QBT", runScriptAndReturnOutput(file, List.of("THE QUICK BROWN FOX JUMPED OVER THE LAZY DOG")));
-        assertEquals("Gur dhvpx oebja sbk whzcrq. Jnf vg bire gur ynml qbt?", runScriptAndReturnOutput(file, List.of("The quick brown fox jumped. Was it over the lazy dog?")));
+        Assertions.assertEquals("gur dhvpx oebja sbk whzcrq bire gur ynml qbt", runScriptAndReturnOutput(file, List.of("the quick brown fox jumped over the lazy dog")));
+        Assertions.assertEquals("GUR DHVPX OEBJA SBK WHZCRQ BIRE GUR YNML QBT", runScriptAndReturnOutput(file, List.of("THE QUICK BROWN FOX JUMPED OVER THE LAZY DOG")));
+        Assertions.assertEquals("Gur dhvpx oebja sbk whzcrq. Jnf vg bire gur ynml qbt?", runScriptAndReturnOutput(file, List.of("The quick brown fox jumped. Was it over the lazy dog?")));
         // Rot13 Invalid Tests
-        assertEquals(bad, runScriptAndReturnOutput(file, List.of("")));
-        assertEquals(bad, runScriptAndReturnOutput(file, Collections.emptyList()));
+        Assertions.assertEquals(bad, runScriptAndReturnOutput(file, List.of("")));
+        Assertions.assertEquals(bad, runScriptAndReturnOutput(file, Collections.emptyList()));
     }
 
     /**
@@ -235,12 +233,12 @@ public class SampleProgramsIOTestCase extends JanitorTest {
         final String file = "LongestWord.janitor";
         final String bad = "Usage: please provide a string";
         // Longest Word Valid Tests
-        assertEquals("5", runScriptAndReturnOutput(file, List.of("May the force be with you")));
-        assertEquals("29", runScriptAndReturnOutput(file, List.of("Floccinaucinihilipilification")));
-        assertEquals("5", runScriptAndReturnOutput(file, List.of("Hi,\nMy name is Paul!")));
+        Assertions.assertEquals("5", runScriptAndReturnOutput(file, List.of("May the force be with you")));
+        Assertions.assertEquals("29", runScriptAndReturnOutput(file, List.of("Floccinaucinihilipilification")));
+        Assertions.assertEquals("5", runScriptAndReturnOutput(file, List.of("Hi,\nMy name is Paul!")));
         // Longest Word Invalid Tests
-        assertEquals(bad, runScriptAndReturnOutput(file, List.of("")));
-        assertEquals(bad, runScriptAndReturnOutput(file, Collections.emptyList()));
+        Assertions.assertEquals(bad, runScriptAndReturnOutput(file, List.of("")));
+        Assertions.assertEquals(bad, runScriptAndReturnOutput(file, Collections.emptyList()));
     }
 
     @Test
@@ -263,8 +261,8 @@ public class SampleProgramsIOTestCase extends JanitorTest {
                 14
                 FizzBuzz
                 """;
-        assertEquals(expected, runScriptAndReturnOutput("FizzBuzz.janitor").substring(0, expected.length()));
-        assertTrue(runScriptAndReturnOutput("FizzBuzz.janitor").startsWith(expected));
+        Assertions.assertEquals(expected, runScriptAndReturnOutput("FizzBuzz.janitor").substring(0, expected.length()));
+        Assertions.assertTrue(runScriptAndReturnOutput("FizzBuzz.janitor").startsWith(expected));
     }
 
     /**
@@ -286,7 +284,7 @@ public class SampleProgramsIOTestCase extends JanitorTest {
         // We have to trim the final newline added by print(); alternatively, the quine function could remove the final newline
         // from the script code, but then this would break when the script file does not end on a newline.
         final String output = trimTrailingNewline(runtime.getAllOutput());
-        assertEquals(scriptCode, output);
+        Assertions.assertEquals(scriptCode, output);
         // There's a valid point to be taken from this "quine": we do NOT have to do everything in the scripting language but can
         // delegate any boring or complicated stuff to the runtime, which we can freely customize for the task at hand.
     }
@@ -301,18 +299,18 @@ public class SampleProgramsIOTestCase extends JanitorTest {
         final String file = "BinarySearch.janitor";
         final String bad = "Usage: please provide a list of sorted integers (\"1, 4, 5, 11, 12\") and the integer to find (\"11\")";
         // Binary Search Valid Tests
-        assertEquals("true", runScriptAndReturnOutput(file, List.of("1, 3, 5, 7", "1")), "Sample Input: First True");
-        assertEquals("true", runScriptAndReturnOutput(file, List.of("1, 3, 5, 7", "7")), "Sample Input: Last True");
-        assertEquals("true", runScriptAndReturnOutput(file, List.of("1, 3, 5, 7", "5")), "Sample Input: Middle True");
-        assertEquals("true", runScriptAndReturnOutput(file, List.of("5", "5")), "Sample Input: One True");
-        assertEquals("false", runScriptAndReturnOutput(file, List.of("5", "7")), "Sample Input: One False");
-        assertEquals("false", runScriptAndReturnOutput(file, List.of("1, 3, 5, 6", "7")), "Sample Input: Many False");
-        assertEquals("true", runScriptAndReturnOutput(file, List.of("1, 2, 3, 4, 5, 6, 7", "3")), "Sample Input: Middle True");
+        Assertions.assertEquals("true", runScriptAndReturnOutput(file, List.of("1, 3, 5, 7", "1")), "Sample Input: First True");
+        Assertions.assertEquals("true", runScriptAndReturnOutput(file, List.of("1, 3, 5, 7", "7")), "Sample Input: Last True");
+        Assertions.assertEquals("true", runScriptAndReturnOutput(file, List.of("1, 3, 5, 7", "5")), "Sample Input: Middle True");
+        Assertions.assertEquals("true", runScriptAndReturnOutput(file, List.of("5", "5")), "Sample Input: One True");
+        Assertions.assertEquals("false", runScriptAndReturnOutput(file, List.of("5", "7")), "Sample Input: One False");
+        Assertions.assertEquals("false", runScriptAndReturnOutput(file, List.of("1, 3, 5, 6", "7")), "Sample Input: Many False");
+        Assertions.assertEquals("true", runScriptAndReturnOutput(file, List.of("1, 2, 3, 4, 5, 6, 7", "3")), "Sample Input: Middle True");
         // Binary Search Invalid Tests
-        assertEquals(bad, runScriptAndReturnOutput(file, Collections.emptyList()), "No Input");
-        assertEquals(bad, runScriptAndReturnOutput(file, List.of("1,2,3,4")), "Missing Input: Target");
-        assertEquals(bad, runScriptAndReturnOutput(file, List.of("", "5")), "Missing Input: List");
-        assertEquals(bad, runScriptAndReturnOutput(file, List.of("3,5,1,2", "3")), "Out Of Order Input");
+        Assertions.assertEquals(bad, runScriptAndReturnOutput(file, Collections.emptyList()), "No Input");
+        Assertions.assertEquals(bad, runScriptAndReturnOutput(file, List.of("1,2,3,4")), "Missing Input: Target");
+        Assertions.assertEquals(bad, runScriptAndReturnOutput(file, List.of("", "5")), "Missing Input: List");
+        Assertions.assertEquals(bad, runScriptAndReturnOutput(file, List.of("3,5,1,2", "3")), "Out Of Order Input");
     }
 
     /**
@@ -324,9 +322,9 @@ public class SampleProgramsIOTestCase extends JanitorTest {
     @Test
     public void reverseString() throws Exception {
         final String file = "ReverseString.janitor";
-        assertEquals("dlroW ,olleH", runScriptAndReturnOutput(file, List.of("Hello, World")), "Ascii String");
-        assertEquals("", runScriptAndReturnOutput(file, Collections.emptyList()), "No Input");
-        assertEquals("", runScriptAndReturnOutput(file, List.of("")), "Empty Input");
+        Assertions.assertEquals("dlroW ,olleH", runScriptAndReturnOutput(file, List.of("Hello, World")), "Ascii String");
+        Assertions.assertEquals("", runScriptAndReturnOutput(file, Collections.emptyList()), "No Input");
+        Assertions.assertEquals("", runScriptAndReturnOutput(file, List.of("")), "Empty Input");
     }
 
     @Test
@@ -334,14 +332,14 @@ public class SampleProgramsIOTestCase extends JanitorTest {
         final String file = "Capitalize.janitor";
         final String bad = "Usage: please provide a string";
         // Capitalize Valid Tests
-        assertEquals("Hello", runScriptAndReturnOutput(file, List.of("hello")), "Sample Input: Lowercase String");
-        assertEquals("Hello", runScriptAndReturnOutput(file, List.of("Hello")), "Sample Input: Uppercase String");
-        assertEquals("Hello world", runScriptAndReturnOutput(file, List.of("hello world")), "Sample Input: Long String");
-        assertEquals("HeLLo World", runScriptAndReturnOutput(file, List.of("heLLo World")), "Sample Input: Mixed Casing");
-        assertEquals("12345", runScriptAndReturnOutput(file, List.of("12345")), "Sample Input: Symbols");
+        Assertions.assertEquals("Hello", runScriptAndReturnOutput(file, List.of("hello")), "Sample Input: Lowercase String");
+        Assertions.assertEquals("Hello", runScriptAndReturnOutput(file, List.of("Hello")), "Sample Input: Uppercase String");
+        Assertions.assertEquals("Hello world", runScriptAndReturnOutput(file, List.of("hello world")), "Sample Input: Long String");
+        Assertions.assertEquals("HeLLo World", runScriptAndReturnOutput(file, List.of("heLLo World")), "Sample Input: Mixed Casing");
+        Assertions.assertEquals("12345", runScriptAndReturnOutput(file, List.of("12345")), "Sample Input: Symbols");
         // Capitalize Invalid Tests
-        assertEquals(bad, runScriptAndReturnOutput(file, Collections.emptyList()), "No Input");
-        assertEquals(bad, runScriptAndReturnOutput(file, List.of("")), "Empty Input");
+        Assertions.assertEquals(bad, runScriptAndReturnOutput(file, Collections.emptyList()), "No Input");
+        Assertions.assertEquals(bad, runScriptAndReturnOutput(file, List.of("")), "Empty Input");
     }
 
     /**
@@ -354,18 +352,18 @@ public class SampleProgramsIOTestCase extends JanitorTest {
         final String file = "PalindromicNumber.janitor";
         final String bad = "Usage: please input a non-negative integer";
         // Palindromic Number Valid Tests
-        assertEquals("true", runScriptAndReturnOutput(file, List.of("7")), "Sample Input: One Digit");
-        assertEquals("true", runScriptAndReturnOutput(file, List.of("2442")), "Sample Input: Even Digits");
-        assertEquals("true", runScriptAndReturnOutput(file, List.of("232")), "Sample Input: Odd Digits");
-        assertEquals("false", runScriptAndReturnOutput(file, List.of("5215")), "Sample Input: Even Digits Not Palindrome");
-        assertEquals("false", runScriptAndReturnOutput(file, List.of("521")), "Sample Input: Odd Digits Not Palindrome");
+        Assertions.assertEquals("true", runScriptAndReturnOutput(file, List.of("7")), "Sample Input: One Digit");
+        Assertions.assertEquals("true", runScriptAndReturnOutput(file, List.of("2442")), "Sample Input: Even Digits");
+        Assertions.assertEquals("true", runScriptAndReturnOutput(file, List.of("232")), "Sample Input: Odd Digits");
+        Assertions.assertEquals("false", runScriptAndReturnOutput(file, List.of("5215")), "Sample Input: Even Digits Not Palindrome");
+        Assertions.assertEquals("false", runScriptAndReturnOutput(file, List.of("521")), "Sample Input: Odd Digits Not Palindrome");
         // Palindromic Number Invalid Tests
-        assertEquals(bad, runScriptAndReturnOutput(file, Collections.emptyList()), "No Input");
-        assertEquals(bad, runScriptAndReturnOutput(file, List.of("")), "Empty Input");
+        Assertions.assertEquals(bad, runScriptAndReturnOutput(file, Collections.emptyList()), "No Input");
+        Assertions.assertEquals(bad, runScriptAndReturnOutput(file, List.of("")), "Empty Input");
         // I'm not sure why palindromes are restricted to numbers in this context, but we're playing by other people's rules here, so...
-        assertEquals(bad, runScriptAndReturnOutput(file, List.of("a")), "Invalid Input: Not A Number");
-        assertEquals(bad, runScriptAndReturnOutput(file, List.of("-7")), "Invalid Input: Negative Integer");
-        assertEquals(bad, runScriptAndReturnOutput(file, List.of("5.41")), "Invalid Input: Float");
+        Assertions.assertEquals(bad, runScriptAndReturnOutput(file, List.of("a")), "Invalid Input: Not A Number");
+        Assertions.assertEquals(bad, runScriptAndReturnOutput(file, List.of("-7")), "Invalid Input: Negative Integer");
+        Assertions.assertEquals(bad, runScriptAndReturnOutput(file, List.of("5.41")), "Invalid Input: Float");
     }
 
     /**
@@ -378,17 +376,17 @@ public class SampleProgramsIOTestCase extends JanitorTest {
         final String file = "Factorial.janitor";
         final String bad = "Usage: please input a non-negative integer";
         // Factorial Invalid Tests
-        assertEquals(bad, runScriptAndReturnOutput(file, Collections.emptyList()), "No Input");
-        assertEquals(bad, runScriptAndReturnOutput(file, List.of("")), "Empty Input");
-        assertEquals(bad, runScriptAndReturnOutput(file, List.of("a")), "Invalid Input: Not A Number");
-        assertEquals(bad, runScriptAndReturnOutput(file, List.of("-7")), "Invalid Input: Negative");
+        Assertions.assertEquals(bad, runScriptAndReturnOutput(file, Collections.emptyList()), "No Input");
+        Assertions.assertEquals(bad, runScriptAndReturnOutput(file, List.of("")), "Empty Input");
+        Assertions.assertEquals(bad, runScriptAndReturnOutput(file, List.of("a")), "Invalid Input: Not A Number");
+        Assertions.assertEquals(bad, runScriptAndReturnOutput(file, List.of("-7")), "Invalid Input: Negative");
 
         // Factorial Valid Tests
-        assertEquals("1", runScriptAndReturnOutput(file, List.of("0")), "Sample Input: Zero");
-        assertEquals("1", runScriptAndReturnOutput(file, List.of("1")), "Sample Input: One");
-        assertEquals("24", runScriptAndReturnOutput(file, List.of("4")), "Sample Input: Four");
-        assertEquals("40320", runScriptAndReturnOutput(file, List.of("8")), "Sample Input: Eight");
-        assertEquals("3628800", runScriptAndReturnOutput(file, List.of("10")), "Sample Input: Ten");
+        Assertions.assertEquals("1", runScriptAndReturnOutput(file, List.of("0")), "Sample Input: Zero");
+        Assertions.assertEquals("1", runScriptAndReturnOutput(file, List.of("1")), "Sample Input: One");
+        Assertions.assertEquals("24", runScriptAndReturnOutput(file, List.of("4")), "Sample Input: Four");
+        Assertions.assertEquals("40320", runScriptAndReturnOutput(file, List.of("8")), "Sample Input: Eight");
+        Assertions.assertEquals("3628800", runScriptAndReturnOutput(file, List.of("10")), "Sample Input: Ten");
 
 
     }

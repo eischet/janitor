@@ -9,7 +9,11 @@
         <version>${revision}</version>
     </parent>
 
-    <artifactId>janitor-orm</artifactId>
+    <artifactId>janitor-tests</artifactId>
+
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip> <!-- this module contains unit tests only -->
+    </properties>
 
     <dependencies>
         <dependency>
@@ -22,7 +26,19 @@
         </dependency>
         <dependency>
             <groupId>com.eischet.janitor</groupId>
+            <artifactId>janitor-logging</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.eischet.janitor</groupId>
             <artifactId>janitor-toolbox</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.eischet.janitor</groupId>
+            <artifactId>janitor-orm</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.eischet.janitor</groupId>
+            <artifactId>janitor-generator</artifactId>
         </dependency>
         <dependency>
             <groupId>com.eischet.janitor</groupId>
@@ -47,6 +63,19 @@
             <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- Logging stubs for unit testing -->
+        <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-jdk14 -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-jdk14</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+
 
     </dependencies>
 

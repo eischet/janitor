@@ -13,7 +13,7 @@ public class VarArgsTestCase extends JanitorTest {
 
     @Test
     void noArgs() throws JanitorRuntimeException, JanitorCompilerException {
-        final String script = """
+        @Language("Janitor") final String script = """
             function noArgs() {
                 return "ok"
             }
@@ -25,7 +25,7 @@ public class VarArgsTestCase extends JanitorTest {
 
     @Test
     void onePositionalArg() throws JanitorRuntimeException, JanitorCompilerException {
-        final String script = """
+        @Language("Janitor") final String script = """
             function func(text) {
                 return text
             }
@@ -37,7 +37,7 @@ public class VarArgsTestCase extends JanitorTest {
 
     @Test
     void twoPositionalArgs() throws JanitorRuntimeException, JanitorCompilerException {
-        final String script = """
+        @Language("Janitor") final String script = """
             function func(text1, text2) {
                 return text1 + text2
             }
@@ -49,7 +49,7 @@ public class VarArgsTestCase extends JanitorTest {
 
     @Test
     void onlyOneVararg() throws JanitorRuntimeException, JanitorCompilerException {
-        final String script = """
+        @Language("Janitor") final String script = """
             function func(*text) {
                 accum = ""
                 for (element in text) {
@@ -65,7 +65,7 @@ public class VarArgsTestCase extends JanitorTest {
 
     @Test
     void onlyTwoVararg() throws JanitorRuntimeException, JanitorCompilerException {
-        final String script = """
+        @Language("Janitor") final String script = """
             function func(*text) {
                 accum = ""
                 for (element in text) {
@@ -82,7 +82,7 @@ public class VarArgsTestCase extends JanitorTest {
 
     @Test
     void onlyFourVarargs() throws JanitorRuntimeException, JanitorCompilerException {
-        final String script = """
+        @Language("Janitor") final String script = """
             function func(*text) {
                 accum = ""
                 for (element in text) {
@@ -99,7 +99,7 @@ public class VarArgsTestCase extends JanitorTest {
 
     @Test
     void positionalAndVarargs() throws JanitorRuntimeException, JanitorCompilerException {
-        final String script = """
+        @Language("Janitor") final String script = """
             function func(a, b, *c) {
                 li = [a, b]
                 for (element in c) {
@@ -115,7 +115,7 @@ public class VarArgsTestCase extends JanitorTest {
 
     @Test
     void preventVarargsWithinPositionalArgs() {
-        final String script = """
+        @Language("Janitor") final String script = """
             function func(a, *b, c) {
                 return a + b + c
             }
@@ -190,6 +190,5 @@ public class VarArgsTestCase extends JanitorTest {
                 """;
         assertEquals("left & right", evaluate(script).janitorGetHostValue());
     }
-
 
 }

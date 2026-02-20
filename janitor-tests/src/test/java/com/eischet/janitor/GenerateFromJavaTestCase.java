@@ -1,12 +1,12 @@
+package com.eischet.janitor;
+
 import com.eischet.janitor.generator.Generator;
 import com.eischet.janitor.generator.types.SimpleBuiltinType;
 import com.eischet.janitor.generator.writing.TestWriter;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.Nullable;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class GenerateFromJavaTestCase {
 
@@ -21,9 +21,9 @@ public class GenerateFromJavaTestCase {
 
         g.write();
 
-        assertEquals(1, testWriter.getGeneratedFiles().size());
+        Assertions.assertEquals(1, testWriter.getGeneratedFiles().size());
         @Nullable final String contents = testWriter.getGeneratedFiles().get("src/test/java/janitor/test/Foo.java");
-        assertNotNull(contents);
+        Assertions.assertNotNull(contents);
 
         @Language("java")
         final String expected = """
@@ -59,7 +59,7 @@ public class GenerateFromJavaTestCase {
                 }
                 """;
 
-        assertEquals(expected, contents);
+        Assertions.assertEquals(expected, contents);
 
 
     }

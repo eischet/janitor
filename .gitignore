@@ -8,6 +8,7 @@ dependency-reduced-pom.xml
 .run
 janitor.iml
 janitor-lang/janitor-lang.iml
+*.iml
 
 # MacOS junk folders
 .DS_Store

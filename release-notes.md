@@ -1,3 +1,10 @@
+# 0.9.46, 2026-02-20
+
+- Dependency Upgrades: JB Annotations 26.1.0, Parent POM 1.0.10.
+- Centralized all unit tests in new janitor-tests module, which will not be deployed, to simplify and share the required setup code for the interpreter.
+- ORM: Improve Filter Expressions, making them less error-prone to use. (There's an internal UI tool using those to query a DB...)
+
+
 # 0.9.45, 2026-02-12
 
 - ORM: Further DispatchTable related improvements when mapping foreign keys in the janitor-orm module, Filter Expression bug fixes

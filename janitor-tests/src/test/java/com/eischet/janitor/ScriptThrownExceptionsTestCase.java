@@ -5,10 +5,8 @@ import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.errors.runtime.JanitorScriptThrownException;
 import com.eischet.janitor.api.types.functions.JCallable;
 import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class ScriptThrownExceptionsTestCase extends JanitorTest {
 
@@ -17,8 +15,8 @@ public class ScriptThrownExceptionsTestCase extends JanitorTest {
      */
     @Test
     void throwStringAsException() {
-        final JanitorScriptThrownException thrown = assertThrows(JanitorScriptThrownException.class, () -> evaluate("throw 'foo'"));
-        assertEquals("""
+        final JanitorScriptThrownException thrown = Assertions.assertThrows(JanitorScriptThrownException.class, () -> evaluate("throw 'foo'"));
+        Assertions.assertEquals("""
                 Traceback (most recent call last):
                   Module 'unnamed'
                 ScriptThrownException: foo""", thrown.getMessage());
@@ -30,8 +28,8 @@ public class ScriptThrownExceptionsTestCase extends JanitorTest {
      */
     @Test
     void throwNumberAsException() {
-        final JanitorScriptThrownException thrown = assertThrows(JanitorScriptThrownException.class, () -> evaluate("print('foo'); throw 17; print('bar')"));
-        assertEquals("""
+        final JanitorScriptThrownException thrown = Assertions.assertThrows(JanitorScriptThrownException.class, () -> evaluate("print('foo'); throw 17; print('bar')"));
+        Assertions.assertEquals("""
                 Traceback (most recent call last):
                   Module 'unnamed', line 1, column 0
                     print('foo'); throw 17; print('bar')
@@ -47,10 +45,10 @@ public class ScriptThrownExceptionsTestCase extends JanitorTest {
     @Test
     void throwSoCalledRealExceptions() {
         final JCallable.Wrapper wrapper = new JCallable.Wrapper((process, arguments) -> new FumbleException(process), "Fumble");
-        final FumbleException fumble = assertThrows(FumbleException.class, () -> evaluate(
+        final FumbleException fumble = Assertions.assertThrows(FumbleException.class, () -> evaluate(
                 "throw Fumble()",
                 g -> g.bind("Fumble", wrapper)));
-        assertEquals("""
+        Assertions.assertEquals("""
                 Traceback (most recent call last):
                   Module 'unnamed', line 1, column 6
                     throw Fumble()

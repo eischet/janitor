@@ -4,6 +4,7 @@ import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.runtime.JanitorSemantics;
 import com.eischet.janitor.toolbox.memory.Memory;
 import com.eischet.janitor.toolbox.strings.StringHelpers;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
@@ -22,19 +23,19 @@ public class AdditionalCoverageTestCase extends JanitorTest {
 
     @Test
     public void coverage() throws JanitorRuntimeException {
-        assertFalse(JanitorSemantics.isTruthy(null));
+        Assertions.assertFalse(JanitorSemantics.isTruthy(null));
 
     }
 
     @Test
     public void stringHelpers() {
-        assertEquals("f[...]", StringHelpers.cut("foo", 1));
-        assertEquals("C384", StringHelpers.printHexBinary("Ä".getBytes()));
-        assertTrue(StringHelpers.isEmpty(""));
+        Assertions.assertEquals("f[...]", StringHelpers.cut("foo", 1));
+        Assertions.assertEquals("C384", StringHelpers.printHexBinary("Ä".getBytes()));
+        Assertions.assertTrue(StringHelpers.isEmpty(""));
         // The next line is for a special inconvenience provided by IntalliJ. Is this IDE getting crazier or do I just notice it more?
         //noinspection ConstantValue
-        assertTrue(StringHelpers.isEmpty(null));
-        assertFalse(StringHelpers.isEmpty("foo"));
+        Assertions.assertTrue(StringHelpers.isEmpty(null));
+        Assertions.assertFalse(StringHelpers.isEmpty("foo"));
     }
 
     private static class MemoryWithTimer<T> extends Memory<T> {
@@ -69,39 +70,39 @@ public class AdditionalCoverageTestCase extends JanitorTest {
         stringMemory.setTime(100);
         stringMemory.remember("foo");
         List<String> snapshot1 = stringMemory.stream().toList();
-        assertEquals(List.of("foo"), snapshot1);
+        Assertions.assertEquals(List.of("foo"), snapshot1);
         stringMemory.setTime(105); // advance time by 5ms
         List<String> snapshot2 = stringMemory.stream().toList();
-        assertEquals(List.of("foo"), snapshot2);
+        Assertions.assertEquals(List.of("foo"), snapshot2);
         stringMemory.setTime(109); // advance time by another 4ms
         List<String> snapshot3 = stringMemory.stream().toList();
-        assertEquals(List.of("foo"), snapshot3);
+        Assertions.assertEquals(List.of("foo"), snapshot3);
         stringMemory.setTime(110); // one more millisecond
         List<String> snapshot4 = stringMemory.stream().toList();
-        assertEquals(List.of("foo"), snapshot4);
+        Assertions.assertEquals(List.of("foo"), snapshot4);
         stringMemory.setTime(111); // yet another one. This time, the initial 10 ms should have passed.
         List<String> snapshot5 = stringMemory.stream().toList();
-        assertEquals(Collections.emptyList(), snapshot5);
+        Assertions.assertEquals(Collections.emptyList(), snapshot5);
         // now lets try two distinct entries
 
         stringMemory.setTime(1000);
-        assertEquals(0, stringMemory.size());
+        Assertions.assertEquals(0, stringMemory.size());
         stringMemory.remember("me");
-        assertEquals(1, stringMemory.size());
+        Assertions.assertEquals(1, stringMemory.size());
         stringMemory.setTime(1005);
         stringMemory.remember("you");
-        assertEquals(2, stringMemory.size());
-        assertTrue(stringMemory.contains("me") && stringMemory.contains("you"));
+        Assertions.assertEquals(2, stringMemory.size());
+        Assertions.assertTrue(stringMemory.contains("me") && stringMemory.contains("you"));
         stringMemory.setTime(1010);
-        assertEquals(2, stringMemory.size());
-        assertTrue(stringMemory.contains("me") && stringMemory.contains("you"));
+        Assertions.assertEquals(2, stringMemory.size());
+        Assertions.assertTrue(stringMemory.contains("me") && stringMemory.contains("you"));
         stringMemory.setTime(1011);
-        assertEquals(1, stringMemory.size());
-        assertTrue((!stringMemory.contains("me")) && stringMemory.contains("you"));
+        Assertions.assertEquals(1, stringMemory.size());
+        Assertions.assertTrue((!stringMemory.contains("me")) && stringMemory.contains("you"));
         stringMemory.setTime(1020);
-        assertEquals(0, stringMemory.size());
+        Assertions.assertEquals(0, stringMemory.size());
 
-        assertTrue(stringMemory.trick() > 10_000_000L);
+        Assertions.assertTrue(stringMemory.trick() > 10_000_000L);
 
         stringMemory.setTime(5000);
         stringMemory.remember("me");
@@ -109,7 +110,7 @@ public class AdditionalCoverageTestCase extends JanitorTest {
         stringMemory.setTime(5005);
         stringMemory.remember("me");
         stringMemory.setTime(5019);
-        assertEquals(0, stringMemory.size());
+        Assertions.assertEquals(0, stringMemory.size());
 
 
 

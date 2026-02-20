@@ -5,7 +5,7 @@ import com.eischet.dbxs.DatabaseConnection;
 import com.eischet.dbxs.StatementConfigurator;
 import com.eischet.dbxs.exceptions.DatabaseError;
 import com.eischet.janitor.api.types.JanitorObject;
-import com.eischet.janitor.orm.FilterExpression;
+import com.eischet.janitor.orm.filter.FilterExpression;
 import com.eischet.janitor.orm.entity.OrmEntity;
 import com.eischet.janitor.orm.ref.ForeignKeySearchResult;
 import org.intellij.lang.annotations.Language;

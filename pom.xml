@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.eischet.root</groupId>
         <artifactId>lib-public</artifactId>
-        <version>1.0.8</version>
+        <version>1.0.10</version>
     </parent>
 
 
@@ -20,14 +20,12 @@
 
     <properties>
         <!-- project revision -->
-        <revision>0.9.45</revision>
+        <revision>0.9.46</revision>
 
         <!-- project settings -->
         <maven.plugin.validation>VERBOSE</maven.plugin.validation>
 
         <!-- dependency versions -->
-        <deps.jetbrains-annotations>26.0.2-1</deps.jetbrains-annotations>
-        <deps.slf4j>2.0.17</deps.slf4j>
         <deps.autoservice>1.1.1</deps.autoservice>
         <deps.jansi>3.30.6</deps.jansi>
         <deps.jline>3.30.6</deps.jline>
@@ -69,6 +67,7 @@
         <module>janitor-dbxs</module>
         <module>janitor-orm</module>
         <module>janitor-generator</module>
+        <module>janitor-tests</module>
     </modules>
 
 
@@ -214,6 +213,11 @@
             <dependency>
                 <groupId>com.eischet.janitor</groupId>
                 <artifactId>janitor-toolbox</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eischet.janitor</groupId>
+                <artifactId>janitor-orm</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
