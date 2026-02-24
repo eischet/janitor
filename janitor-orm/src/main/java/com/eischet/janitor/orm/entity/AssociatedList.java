@@ -13,10 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -30,13 +27,28 @@ public class AssociatedList<T extends OrmEntity, U extends Uplink> implements As
     protected final OrmEntity parent;
     protected @Nullable List<T> list;
     protected boolean loaded = false;
+    protected @Nullable Comparator<? super T> sorter;
 
-    public AssociatedList(final OrmEntity parent, final Class<T> entityClass, final String foreignKeyColumn, final EntityWrangler<T, U> wrangler, final Supplier<U> uplinkSupplier) {
+    public AssociatedList(final OrmEntity parent,
+                          final Class<T> entityClass,
+                          final String foreignKeyColumn,
+                          final EntityWrangler<T, U> wrangler,
+                          final Supplier<U> uplinkSupplier,
+                          final Comparator<? super T> sorter) {
         this.parent = parent;
         this.foreignKeyColumn = foreignKeyColumn;
         this.entityClass = entityClass;
         this.wrangler = wrangler;
         this.uplinkSupplier = uplinkSupplier;
+        this.sorter = sorter;
+    }
+
+    public AssociatedList(final OrmEntity parent,
+                          final Class<T> entityClass,
+                          final String foreignKeyColumn,
+                          final EntityWrangler<T, U> wrangler,
+                          final Supplier<U> uplinkSupplier) {
+        this(parent, entityClass, foreignKeyColumn, wrangler, uplinkSupplier, null);
     }
 
     public boolean isLoaded() {
@@ -52,12 +64,14 @@ public class AssociatedList<T extends OrmEntity, U extends Uplink> implements As
             final U uplink = uplinkSupplier.get();
             @NotNull final Dao<T> dao = wrangler.retrieveDao(uplink);
             @NotNull @Unmodifiable final List<T> items = dao.lazyLoadByAssociation(foreignKeyColumn, parent);
+            if (sorter != null) {
+                items.sort(sorter);
+            }
             ensureList().addAll(items);
             loaded = true;
         }
         return this;
     }
-
 
     protected @NotNull List<T> ensureList() {
         if (list == null) {

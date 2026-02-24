@@ -1,3 +1,8 @@
+# 0.9.47-SNAPSHOT, 2026-02-xx
+
+- ORM: allow automatically sorting the lazy-loaded entries for AssociatedList objects
+
+
 # 0.9.46, 2026-02-20
 
 - Dependency Upgrades: JB Annotations 26.1.0, Parent POM 1.0.10.
