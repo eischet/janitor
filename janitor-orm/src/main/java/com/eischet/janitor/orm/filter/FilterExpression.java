@@ -88,7 +88,7 @@ public class FilterExpression extends JanitorComposed<FilterExpression> {
     }
 
     public boolean hasValueSet() {
-        return valueString != null || valueBoolean != null || valueDouble != null || valueLong != null || valueDateTime != null;
+        return valueString != null || valueBoolean != null || valueDouble != null || valueLong != null || valueDateTime != null || valueDate != null;
     }
 
     /**
