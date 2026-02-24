@@ -1,6 +1,7 @@
-# 0.9.47-SNAPSHOT, 2026-02-xx
+# 0.9.47, 2026-02-24
 
 - ORM: allow automatically sorting the lazy-loaded entries for AssociatedList objects
+- some dependabot updates
 
 
 # 0.9.46, 2026-02-20
