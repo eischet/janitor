@@ -247,6 +247,69 @@ public abstract class GenericDao<T extends OrmEntity> extends JanitorComposed<Ge
 
     }
 
+    public static final ExpressionPrepperBuilder PREP_LONG = filterExpression -> new NamedPrepper((conn, stmt) -> stmt.addLong(Objects.requireNonNull(filterExpression.getValueLong()).longValue()), "long=" + (filterExpression.getValueLong() != null ? filterExpression.getValueLong().longValue() : "?"));
+    public static final ExpressionPrepperBuilder PREP_DATE = filterExpression -> new NamedPrepper((conn, stmt) -> stmt.addNullableDate(filterExpression.getValueDate()), "date=" + filterExpression.getValueDate());
+    public static final ExpressionPrepperBuilder PREP_DATETIME = filterExpression -> new NamedPrepper((conn, stmt) -> stmt.addNullableDateTime(filterExpression.getValueDateTime()), "datetime=" + filterExpression.getValueDateTime());
+    public static final ExpressionPrepperBuilder PREP_DOUBLE = filterExpression -> new NamedPrepper((conn, stmt) -> stmt.addNullableDouble(filterExpression.getValueDouble()), "double=" + filterExpression.getValueDouble());
+    public static final ExpressionPrepperBuilder PREP_BOOLEAN = filterExpression -> new NamedPrepper((conn, stmt) -> stmt.addInt(Boolean.TRUE == filterExpression.getValueBoolean() ? 1 : 0), "bool=" + filterExpression.getValueBoolean());
+
+    public static final ExpressionPrepperBuilder PREP_STRING = filterExpression -> new NamedPrepper((conn, stmt) -> {
+        if (filterExpression.getValueString() != null) {
+            stmt.addString(filterExpression.getValueString());
+        } else {
+            stmt.addNullString();
+        }
+    }, filterExpression.getValueString() != null ? ("string='" + filterExpression.getValueString() + "'") : ("string=null"));
+
+    public static final ExpressionPrepperBuilder PREP_STARTS_WITH_STRING = filterExpression -> new NamedPrepper((conn, stmt) -> {
+        if (filterExpression.getValueString() != null) {
+            stmt.addString(filterExpression.getValueString() + "%");
+        } else {
+            stmt.addNullString();
+        }
+    }, filterExpression.getValueString() != null ? ("string='" + filterExpression.getValueString() + "%'") : ("string=null"));
+
+    public static final ExpressionPrepperBuilder PREP_ENDS_WITH_STRING = filterExpression -> new NamedPrepper((conn, stmt) -> {
+        if (filterExpression.getValueString() != null) {
+            stmt.addString("%s" + filterExpression.getValueString());
+        } else {
+            stmt.addNullString();
+        }
+    }, filterExpression.getValueString() != null ? ("string='%" + filterExpression.getValueString() + "'") : ("string=null"));
+
+    public static final ExpressionPrepperBuilder PREP_CONTAINS_STRING = filterExpression -> new NamedPrepper((conn, stmt) -> {
+        if (filterExpression.getValueString() != null) {
+            stmt.addString("%" + filterExpression.getValueString() + "%");
+        } else {
+            stmt.addNullString();
+        }
+    }, filterExpression.getValueString() != null ? ("string='%" + filterExpression.getValueString() + "%'") : ("string=null"));
+
+
+    protected @Nullable ExpressionHandler getCustomExpressionHandler(final FilterExpression filterExpression) {
+        return null;
+    }
+
+    protected @NotNull Prepper getPrepper(final FilterExpression filterExpression) {
+        if (filterExpression.isDate()) {
+            return PREP_DATE.getPrepper(filterExpression);
+        } else if (filterExpression.isDateTime()) {
+            return PREP_DATETIME.getPrepper(filterExpression);
+        } else if (filterExpression.isDouble()) {
+            return PREP_DOUBLE.getPrepper(filterExpression);
+        } else if (filterExpression.isBoolean()) {
+            return PREP_BOOLEAN.getPrepper(filterExpression);
+        } else if (filterExpression.isLong()) {
+            return PREP_LONG.getPrepper(filterExpression);
+        } else if (filterExpression.isDate()) {
+            return PREP_DATE.getPrepper(filterExpression);
+        } else if (filterExpression.isDouble()) {
+            return PREP_DOUBLE.getPrepper(filterExpression);
+        } else {
+            return PREP_STRING.getPrepper(filterExpression);
+        }
+    }
+
     private String expressionToSql(final FilterExpression filterExpression, final Consumer<Prepper> prepperConsumer) throws MalformedExpression {
         @NotNull final DatabaseDialect dialect = getDataManager().getDialect();
         if (filterExpression.getField() != null && INVALID_FIELD.test(filterExpression.getField())) {
@@ -257,119 +320,74 @@ public abstract class GenericDao<T extends OrmEntity> extends JanitorComposed<Ge
                     .map((FilterExpression element) -> expressionToSql(element, prepperConsumer))
                     .collect(Collectors.joining(" " + filterExpression.getLogic() + " ", "(", ")"));
         } else if (filterExpression.isExpression()) {
-            final String namedField = filterExpression.getField();
-            final String column = columnForField.get(namedField);
-            if (column == null) {
-                throw new MalformedExpression("missing column for field '" + namedField + "'");
+            @Nullable final ExpressionHandler customExpressionHandler = getCustomExpressionHandler(filterExpression);
+            if (customExpressionHandler != null) {
+                @Nullable final ExpressionPrepperBuilder prepper = customExpressionHandler.buildPrepper();
+                if (prepper != null) {
+                    prepperConsumer.accept(prepper.getPrepper(filterExpression));
+                }
+                return customExpressionHandler.getSqlFragment();
+            } else {
+                final String namedField = filterExpression.getField();
+                final String column = columnForField.get(namedField);
+                if (column == null) {
+                    throw new MalformedExpression("missing column for field '" + namedField + "'");
+                }
+                final @Nullable ColumnTypeHint columnTypeHint = entityDispatch.getMetaData(namedField, JanitorOrm.MetaData.COLUMN_TYPE);
+                if (columnTypeHint == null) {
+                    throw new MalformedExpression("missing type for column '" + column + "' of field '" + namedField + "'");
+                }
+                if (filterExpression.getOperator() == null) {
+                    throw new MalformedExpression("missing operator in expression " + filterExpression);
+                }
+                final Prepper simpleEquality = getPrepper(filterExpression);
+                return switch (filterExpression.getOperator()) {
+                    case EQ -> {
+                        prepperConsumer.accept(simpleEquality);
+                        yield dialect.quoteColumn(column) + " = ?";
+                    }
+                    case NEQ -> {
+                        prepperConsumer.accept(simpleEquality);
+                        yield dialect.quoteColumn(column) + " != ?";
+                    }
+                    case LT -> {
+                        prepperConsumer.accept(simpleEquality);
+                        yield dialect.quoteColumn(column) + " < ?";
+                    }
+                    case LTE -> {
+                        prepperConsumer.accept(simpleEquality);
+                        yield dialect.quoteColumn(column) + " <= ?";
+                    }
+                    case GT -> {
+                        prepperConsumer.accept(simpleEquality);
+                        yield dialect.quoteColumn(column) + " > ?";
+                    }
+                    case GTE -> {
+                        prepperConsumer.accept(simpleEquality);
+                        yield column + " >= ?";
+                    }
+                    case STARTSWITH -> {
+                        prepperConsumer.accept(PREP_STARTS_WITH_STRING.getPrepper(filterExpression));
+                        yield dialect.quoteColumn(column) + " like ?";
+                    }
+                    case ENDSWITH -> {
+                        prepperConsumer.accept(PREP_ENDS_WITH_STRING.getPrepper(filterExpression));
+                        yield dialect.quoteColumn(column) + " like ?";
+                    }
+                    case CONTAINS -> {
+                        prepperConsumer.accept(PREP_CONTAINS_STRING.getPrepper(filterExpression));
+                        yield dialect.quoteColumn(column) + " like ?";
+                    }
+                    case DOESNOTCONTAIN -> {
+                        prepperConsumer.accept(PREP_CONTAINS_STRING.getPrepper(filterExpression));
+                        yield dialect.quoteColumn(column) + " not like ?";
+                    }
+                    case ISNULL -> dialect.quoteColumn(column) + " is null";
+                    case ISNOTNULL -> dialect.quoteColumn(column) + " is not null";
+                    case ISEMPTY -> "(" + dialect.quoteColumn(column) + " is null or " + dialect.quoteColumn(column) + " = '')";
+                    case ISNOTEMPTY -> "(" + dialect.quoteColumn(column) + " is not null and " + dialect.quoteColumn(column) + " != '')";
+                };
             }
-            final @Nullable ColumnTypeHint columnTypeHint = entityDispatch.getMetaData(namedField, JanitorOrm.MetaData.COLUMN_TYPE);
-            if (columnTypeHint == null) {
-                throw new MalformedExpression("missing type for column '" + column + "' of field '" + namedField + "'");
-            }
-            // might be needed, or not:
-
-            final Prepper prepLong = new NamedPrepper((conn, stmt) -> stmt.addLong(filterExpression.getValueLong().longValue()), "long=" + (filterExpression.getValueLong() != null ? filterExpression.getValueLong().longValue() : "?"));
-            final Prepper prepDate = new NamedPrepper((conn, stmt) -> stmt.addDate(filterExpression.getValueDate()), "date=" + filterExpression.getValueDate());
-            final Prepper prepDateTime = new NamedPrepper((conn, stmt) -> stmt.addTimestamp(filterExpression.getValueDateTime()), "datetime=" + filterExpression.getValueDateTime());
-            final Prepper prepDouble = new NamedPrepper((conn, stmt) -> stmt.addDouble(filterExpression.getValueDouble()), "double=" + filterExpression.getValueDouble());
-            final Prepper prepBoolean = new NamedPrepper((conn, stmt) -> stmt.addInt(filterExpression.getValueBoolean() ? 1 : 0), "bool=" + filterExpression.getValueBoolean());
-            final Prepper prepString = new NamedPrepper((conn, stmt) -> {
-                if (filterExpression.getValueString() != null) {
-                    stmt.addString(filterExpression.getValueString());
-                } else {
-                    stmt.addNullString();
-                }
-            }, filterExpression.getValueString() != null ? ("string='" + filterExpression.getValueString() + "'") : ("string=null"));
-            final Prepper prepStringLike = new NamedPrepper((conn, stmt) -> {
-                if (filterExpression.getValueString() != null) {
-                    stmt.addString(filterExpression.getValueString() + "%");
-                } else {
-                    stmt.addNullString();
-                }
-            }, filterExpression.getValueString() != null ? ("string='" + filterExpression.getValueString() + "%'") : ("string=null"));
-            final Prepper prepLikeString = new NamedPrepper((conn, stmt) -> {
-                if (filterExpression.getValueString() != null) {
-                    stmt.addString("%s" + filterExpression.getValueString());
-                } else {
-                    stmt.addNullString();
-                }
-            }, filterExpression.getValueString() != null ? ("string='%" + filterExpression.getValueString() + "'") : ("string=null"));
-            final Prepper prepLikeStringLike = new NamedPrepper((conn, stmt) -> {
-                if (filterExpression.getValueString() != null) {
-                    stmt.addString("%" + filterExpression.getValueString() + "%");
-                } else {
-                    stmt.addNullString();
-                }
-            }, filterExpression.getValueString() != null ? ("string='%" + filterExpression.getValueString() + "%'") : ("string=null"));
-
-            Prepper eq = prepString;
-            if (filterExpression.isDate()) {
-                eq = prepDate;
-            } else if (filterExpression.isDateTime()) {
-                eq = prepDateTime;
-            }  else if (filterExpression.isDouble()) {
-                eq = prepDouble;
-            } else if (filterExpression.isBoolean()) {
-                eq = prepBoolean;
-            } else if (filterExpression.isLong()) {
-                eq = prepLong;
-            } else if (filterExpression.isDate()) {
-                eq = prepDate;
-            } else if (filterExpression.isDouble()) {
-                eq = prepDouble;
-            }
-            final Prepper simpleEquality = eq;
-
-            if (filterExpression.getOperator() == null) {
-                throw new MalformedExpression("missing operator in expression " + filterExpression);
-            }
-
-            return switch (filterExpression.getOperator()) {
-                case EQ -> {
-                    prepperConsumer.accept(simpleEquality);
-                    yield dialect.quoteColumn(column) + " = ?";
-                }
-                case NEQ -> {
-                    prepperConsumer.accept(simpleEquality);
-                    yield dialect.quoteColumn(column) + " != ?";
-                }
-                case LT -> {
-                    prepperConsumer.accept(simpleEquality);
-                    yield dialect.quoteColumn(column) + " < ?";
-                }
-                case LTE -> {
-                    prepperConsumer.accept(simpleEquality);
-                    yield dialect.quoteColumn(column) + " <= ?";
-                }
-                case GT -> {
-                    prepperConsumer.accept(simpleEquality);
-                    yield dialect.quoteColumn(column) + " > ?";
-                }
-                case GTE -> {
-                    prepperConsumer.accept(simpleEquality);
-                    yield column + " >= ?";
-                }
-                case STARTSWITH -> {
-                    prepperConsumer.accept(prepStringLike);
-                    yield dialect.quoteColumn(column) + " like ?";
-                }
-                case ENDSWITH -> {
-                    prepperConsumer.accept(prepLikeString);
-                    yield dialect.quoteColumn(column) + " like ?";
-                }
-                case CONTAINS -> {
-                    prepperConsumer.accept(prepLikeStringLike);
-                    yield dialect.quoteColumn(column) + " like ?";
-                }
-                case DOESNOTCONTAIN -> {
-                    prepperConsumer.accept(prepLikeStringLike);
-                    yield dialect.quoteColumn(column) + " not like ?";
-                }
-                case ISNULL -> dialect.quoteColumn(column) + " is null";
-                case ISNOTNULL -> dialect.quoteColumn(column) + " is not null";
-                case ISEMPTY -> "(" + dialect.quoteColumn(column) + " is null or " + dialect.quoteColumn(column) + " = '')";
-                case ISNOTEMPTY -> "(" + dialect.quoteColumn(column) + " is not null and " + dialect.quoteColumn(column) + " != '')";
-            };
         } else {
             throw new MalformedExpression("part is neither group nor expression");
         }

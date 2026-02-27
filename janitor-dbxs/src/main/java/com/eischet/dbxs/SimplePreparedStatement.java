@@ -7,6 +7,7 @@ package com.eischet.dbxs;
 import com.eischet.dbxs.dialects.DatabaseDialect;
 import com.eischet.dbxs.statements.GenericStatement;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.ByteArrayInputStream;
 import java.io.StringReader;
@@ -158,7 +159,44 @@ public class SimplePreparedStatement {
         return this;
     }
 
-    public SimplePreparedStatement addDate(final LocalDate date) throws SQLException {
+    public SimplePreparedStatement addNullableDate(final @Nullable LocalDate date) throws SQLException {
+        final int i = ++col;
+        if (date != null) {
+            ps.setObject(i, date);
+            args.add(new Arg(col, date, "LocalDate"));
+        } else {
+            ps.setNull(i, Types.DATE);
+            args.add(new Arg(col, null, "LocalDate"));
+        }
+        return this;
+    }
+
+    public SimplePreparedStatement addNullableDateTime(final @Nullable LocalDateTime date) throws SQLException {
+        final int i = ++col;
+        if (date != null) {
+            ps.setObject(i, date);
+            args.add(new Arg(col, date, "LocalDateTime"));
+        } else {
+            ps.setNull(i, Types.TIMESTAMP);
+            args.add(new Arg(col, null, "LocalDateTime"));
+        }
+        return this;
+    }
+
+    public SimplePreparedStatement addNullableDouble(final @Nullable Double value) throws SQLException {
+        final int i = ++col;
+        if (value != null) {
+            ps.setObject(i, value);
+            args.add(new Arg(col, value, "Double"));
+        } else {
+            ps.setNull(i, Types.DOUBLE);
+            args.add(new Arg(col, null, "Double"));
+        }
+        return this;
+    }
+
+
+    public SimplePreparedStatement addDate(final @NotNull LocalDate date) throws SQLException {
         return addTimestamp(date.atStartOfDay());
     }
 

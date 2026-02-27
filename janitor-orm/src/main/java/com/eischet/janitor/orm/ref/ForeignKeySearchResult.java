@@ -141,8 +141,13 @@ public non-sealed class ForeignKeySearchResult<T extends OrmEntity> implements F
 
     @Override
     public boolean equals(final Object o) {
-        if (!(o instanceof final ForeignKeySearchResult<?> that)) return false;
-        return id == that.id && Objects.equals(dao, that.dao);
+        if (this == o) {
+            return true;
+        }
+        if (o instanceof ForeignKey<?> fk) {
+            return ForeignKey.matchesWithUnknownType(this, fk);
+        }
+        return false;
     }
 
     @Override

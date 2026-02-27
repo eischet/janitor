@@ -84,5 +84,13 @@ public final class ForeignKeyNull<T extends OrmEntity> implements ForeignKey<T> 
         return Optional.empty();
     }
 
+    @Override
+    public boolean equals(final Object obj) {
+        return obj instanceof ForeignKeyNull;
+    }
 
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
 }

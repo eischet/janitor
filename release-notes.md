@@ -1,6 +1,8 @@
 # 0.9.48-SNAPSHOT, 2026-02-xx
 
 - ORM: Filter isComplete() check did not look at the date value
+- ORM: improved filter expression handling
+- DXBS: improved date / datetime handling
 
 
 # 0.9.47, 2026-02-24

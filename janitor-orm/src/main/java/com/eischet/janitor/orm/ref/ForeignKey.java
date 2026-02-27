@@ -116,9 +116,6 @@ public sealed interface ForeignKey<T extends OrmEntity> extends JanitorObject, J
         if (a == b) {
             return true;
         }
-        if (Objects.equals(a, b)) {
-            return true;
-        }
         if (a instanceof ForeignKeyNull<?> || b instanceof ForeignKeyNull<?>) {
             return false; // null != null, just like in SQL
         }
@@ -140,6 +137,12 @@ public sealed interface ForeignKey<T extends OrmEntity> extends JanitorObject, J
         if (b instanceof ForeignKeyIdentity<?> bb) {
             return isPointingToWithUnknownType(a, bb);
         }
+        /*
+        Must not call equals here because that would create an infinite loop, as ForeignKey::equals methods use this very method!
+        if (Objects.equals(a, b)) {
+            return true;
+        }
+         */
         return false;
     }
 

@@ -10,6 +10,7 @@ import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Objects;
 import java.util.Optional;
 
 public final class ForeignKeyString<T extends OrmEntity> implements ForeignKey<T> {
@@ -99,4 +100,22 @@ public final class ForeignKeyString<T extends OrmEntity> implements ForeignKey<T
         return key.isEmpty();
     }
 
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o instanceof ForeignKey<?> fk) {
+            return ForeignKey.matchesWithUnknownType(this, fk);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = getKey().hashCode();
+        result = 31 * result + dao.hashCode();
+        result = 31 * result + Objects.hashCode(resolved);
+        return result;
+    }
 }
