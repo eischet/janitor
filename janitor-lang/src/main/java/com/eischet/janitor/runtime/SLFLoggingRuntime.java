@@ -1,5 +1,6 @@
 package com.eischet.janitor.runtime;
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.types.functions.JCallArgs;
@@ -11,6 +12,11 @@ import org.slf4j.Logger;
 public class SLFLoggingRuntime extends BaseRuntime {
 
     protected final Logger log;
+
+    public SLFLoggingRuntime(final Logger log) {
+        this(Janitor.current(), log);
+    }
+
 
     public SLFLoggingRuntime(final JanitorEnvironment env, final Logger log) {
         super(env);
