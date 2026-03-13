@@ -1,3 +1,10 @@
+# 0.9.49, 2026-03-13
+
+- orm: enable subclasses to access more parts of the filter logic, for implementing 'fake column searches' in an internal project
+- simplify SLFLoggingRuntime construction
+- some dependabot updates
+
+
 # 0.9.48, 2026-03-04
 
 - orm: Filter isComplete() check did not look at the date value
