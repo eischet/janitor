@@ -1,3 +1,9 @@
+# 0.9.50, 2026-03-23
+
+- orm: relax the field name check pattern (for an internal app)
+- dependency updates (jansi/jline 4.x, maven resources plugin 3.x)
+
+
 # 0.9.49, 2026-03-13
 
 - orm: enable subclasses to access more parts of the filter logic, for implementing 'fake column searches' in an internal project

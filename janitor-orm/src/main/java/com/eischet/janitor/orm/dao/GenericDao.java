@@ -54,7 +54,7 @@ public abstract class GenericDao<T extends OrmEntity> extends JanitorComposed<Ge
     // TOOD: cache the database version after first retrieving it
 
     public static final DispatchTable<GenericDao<?>> DISPATCH = new DispatchTable<>();
-    private static final Predicate<String> INVALID_FIELD = Pattern.compile("[a-zA-Z0-9_]+").asMatchPredicate().negate();
+    private static final Predicate<String> INVALID_FIELD = Pattern.compile("[a-zA-Z0-9_@-]+").asMatchPredicate().negate();
 
     static {
         DISPATCH.addBooleanProperty("verbose", GenericDao::isVerbose, GenericDao::setVerbose);
