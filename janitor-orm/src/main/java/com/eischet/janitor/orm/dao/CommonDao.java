@@ -108,6 +108,10 @@ public class CommonDao {
                     ps.addNullInteger();
                     return;
                 } else if (propertyValue instanceof ForeignKeyString<?> fkInstance) {
+                    if (fkInstance.getKey().isBlank()) {
+                        ps.addNullNumber();
+                        return;
+                    }
                     try {
                         ps.addLong(fkInstance.resolve(conn).orElseThrow().getId());
                         return;

@@ -1,3 +1,9 @@
+# 0.9.51-SNAPSHOT, 2026-03-30
+
+- new module: janitor-modules will collect a number of "builtin" modules
+- orm: when resolving a foreign key, "" now means NULL instead of throwing an exception.
+
+
 # 0.9.50, 2026-03-23
 
 - orm: relax the field name check pattern (for an internal app)

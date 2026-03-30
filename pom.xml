@@ -68,6 +68,7 @@
         <module>janitor-orm</module>
         <module>janitor-generator</module>
         <module>janitor-tests</module>
+        <module>janitor-modules</module>
     </modules>
 
 
