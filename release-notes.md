@@ -2,7 +2,7 @@
 
 - new module: janitor-modules will collect a number of "builtin" modules
 - orm: when resolving a foreign key, "" now means NULL instead of throwing an exception.
-
+- dependency updates: jansi/jline, jackson
 
 # 0.9.50, 2026-03-23
 
