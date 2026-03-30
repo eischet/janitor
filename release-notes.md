@@ -1,8 +1,14 @@
 # 0.9.51-SNAPSHOT, 2026-03-30
 
-- new module: janitor-modules will collect a number of "builtin" modules
+- new operator: `~=` performs case-insensitive string comparisons, e.g. ("j" ~= "J") == true.
+- new maven module: janitor-modules will collect a number of "builtin" modules, which users can include in their projects as needed
+- new Janitor module "httpclient" brings a simple HTTP client, e.g. for accessing REST APIs
+- new Janitor module "brrr" brings a wrapper class around "brrr.now"'s Message format.
+- both these new modules are by default included in the Maven plugin, meaning I can now send myself a brrr when my build is done...
 - orm: when resolving a foreign key, "" now means NULL instead of throwing an exception.
 - dependency updates: jansi/jline, jackson
+- upgrade Java 17 to 21 because httpclient uses Java 21 feature
+
 
 # 0.9.50, 2026-03-23
 

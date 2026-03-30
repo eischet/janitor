@@ -12,4 +12,19 @@
     <artifactId>httpclient</artifactId>
     <description>Janitor module: simple http client</description>
 
+    <dependencies>
+        <dependency>
+            <groupId>com.eischet.janitor</groupId>
+            <artifactId>janitor-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.eischet.janitor</groupId>
+            <artifactId>janitor-lang</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+        </dependency>
+    </dependencies>
+
 </project>

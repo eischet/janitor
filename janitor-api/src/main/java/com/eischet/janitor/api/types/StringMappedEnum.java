@@ -1,4 +1,4 @@
-package com.eischet.janitor.orm.meta;
+package com.eischet.janitor.api.types;
 
 import org.jetbrains.annotations.NotNull;
 

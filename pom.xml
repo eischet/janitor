@@ -20,7 +20,7 @@
 
     <properties>
         <!-- project revision -->
-        <revision>0.9.51-SNAPSHOT</revision>
+        <revision>0.9.51</revision>
 
         <!-- project settings -->
         <maven.plugin.validation>VERBOSE</maven.plugin.validation>
@@ -29,6 +29,9 @@
         <deps.autoservice>1.1.1</deps.autoservice>
         <deps.jansi>4.0.9</deps.jansi>
         <deps.jline>4.0.9</deps.jline>
+
+        <maven.compiler.release>21</maven.compiler.release>
+
     </properties>
 
     <licenses>
@@ -225,6 +228,20 @@
                 <artifactId>janitor-generator</artifactId>
                 <version>${revision}</version>
             </dependency>
+
+            <!-- modules, nested in janitor-modules -->
+            <dependency>
+                <groupId>com.eischet.janitor</groupId>
+                <artifactId>httpclient</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eischet.janitor</groupId>
+                <artifactId>brrr</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+
             <dependency>
                 <groupId>com.google.code.gson</groupId>
                 <artifactId>gson</artifactId>

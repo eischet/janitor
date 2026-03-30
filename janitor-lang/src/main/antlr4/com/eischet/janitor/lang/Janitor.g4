@@ -97,7 +97,7 @@ expression
     | expression bop=(MUL | DIV | MOD) expression                                                                                   # binaryExpression
     | expression bop=(ADD | SUB) expression                                                                                         # binaryExpression
     | expression bop=(LE | GE | GT | LT) expression                                                                                 # binaryExpression
-    | expression bop=(EQUAL | NOTEQUAL | ALT_NOTEQUAL | MATCH | MATCH_NOT ) expression                                              # binaryExpression
+    | expression bop=(EQUAL | NOTEQUAL | ALT_NOTEQUAL | CI_EQUAL | MATCH | MATCH_NOT ) expression                                   # binaryExpression
     | expression bop=(AND | CAND) expression                                                                                        # binaryExpression
     | expression bop=(OR | COR) expression                                                                                          # binaryExpression
     | <assoc=right> expression bop=QUESTION expression COLON expression                                                             # ternaryExpression
@@ -292,6 +292,7 @@ DIV_ASSIGN:         '/=';
 MOD_ASSIGN:         '%=';
 GT:                 '>';
 LT:                 '<';
+CI_EQUAL:           '~=';
 MATCH:              '~';
 MATCH_NOT:          '!~';
 QUESTION:           '?';

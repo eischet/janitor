@@ -10,7 +10,7 @@ import com.eischet.janitor.api.types.JAssignable;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.*;
 import com.eischet.janitor.orm.meta.EntityIndex;
-import com.eischet.janitor.orm.meta.StringMappedEnum;
+import com.eischet.janitor.api.types.StringMappedEnum;
 import com.eischet.janitor.orm.ref.*;
 import com.eischet.janitor.orm.sql.ColumnTypeHint;
 import org.jetbrains.annotations.NotNull;

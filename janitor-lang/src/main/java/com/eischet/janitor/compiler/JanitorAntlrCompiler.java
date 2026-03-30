@@ -411,6 +411,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
             case JanitorLexer.AND, JanitorLexer.CAND -> new LogicAnd(location(ctx.start, ctx.stop), left, right);
             case JanitorLexer.OR, JanitorLexer.COR -> new LogicOr(location(ctx.start, ctx.stop), left, right);
             case JanitorLexer.EQUAL -> new Equality(location(ctx.start, ctx.stop), left, right);
+            case JanitorLexer.CI_EQUAL -> new CaseInsensitiveEquality(location(ctx.start, ctx.stop), left, right);
             case JanitorLexer.ALT_NOTEQUAL, JanitorLexer.NOTEQUAL -> new NonEquality(location(ctx.start, ctx.stop), left, right);
             case JanitorLexer.MATCH -> new MatchesGlob(location(ctx.start, ctx.stop), left, right);
             case JanitorLexer.MATCH_NOT -> new MatchesNotGlob(location(ctx.start, ctx.stop), left, right);

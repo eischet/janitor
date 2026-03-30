@@ -6,7 +6,6 @@ import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.metadata.MetaDataKey;
 import com.eischet.janitor.api.types.BuiltinTypes;
 import com.eischet.janitor.api.types.JanitorObject;
-import com.eischet.janitor.api.types.TemporaryAssignable;
 import com.eischet.janitor.api.types.builtin.*;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import com.eischet.janitor.toolbox.json.api.JsonException;
@@ -70,6 +69,35 @@ public final class Janitor {
      * the user provider.
      */
     private static @Nullable JanitorEnvironmentProvider userProvider = null;
+
+    private static @NotNull Locale locale = Locale.getDefault();
+    private static final @NotNull ThreadLocal<Locale> threadLocalLocale = ThreadLocal.withInitial( () -> locale);
+
+    /**
+     * Gets the locale associated with the current thread, which is usually a default locale set with Janitor.setDefaultLocale.
+     * This is used, for example, for case insensitive string comparisons, which for some languages are more complicated than for others.
+     * @return the locale associated with the current thread
+     */
+    public static @NotNull Locale getLocale() {
+        return threadLocalLocale.get();
+    }
+
+    /**
+     * Set the default locale for Janitor, which is by default the Locale.getDefault() value.
+     * @param locale the default locale for Janitor
+     */
+    public static void setDefaultLocale(@NotNull final Locale locale) {
+        Janitor.locale = locale;
+    }
+
+    /**
+     * Sets the thread's locale to the given locale.
+     * You can use this in a context where different threads of execution should have non-standard locales.
+     * @param locale the locale
+     */
+    public static void setThreadLocale(@NotNull final Locale locale) {
+        threadLocalLocale.set(locale);
+    }
 
     /**
      * Private constructor, to keep you from creating instances of this singleton / "namespace class".
@@ -765,11 +793,14 @@ public final class Janitor {
          * @param rightValue the right value
          * @return TRUE if the values are equals, or FALSE if not.
          */
-        public static @NotNull JBool areEquals(final JanitorObject leftValue, final JanitorObject rightValue) {
-            return Janitor.toBool(leftValue == rightValue || leftValue.janitorGetHostValue() == rightValue.janitorGetHostValue() || Objects.equals(leftValue.janitorGetHostValue(), rightValue.janitorGetHostValue()) || (leftValue instanceof JNumber leftNumber && rightValue instanceof JNumber rightNumber && 0 == compareNumbers(leftNumber, rightNumber))
-
-            );
+        public static @NotNull JBool areEquals(final @NotNull JanitorObject leftValue, final @NotNull JanitorObject rightValue) {
+            return Janitor.toBool(leftValue == rightValue || leftValue.janitorGetHostValue() == rightValue.janitorGetHostValue() || Objects.equals(leftValue.janitorGetHostValue(), rightValue.janitorGetHostValue()) || (leftValue instanceof JNumber leftNumber && rightValue instanceof JNumber rightNumber && 0 == compareNumbers(leftNumber, rightNumber)));
         }
+
+        public static JanitorObject areCaseInsensitiveEquals(final @NotNull JanitorObject leftValue, final @NotNull JanitorObject rightValue) {
+            return Janitor.toBool(Objects.equals(leftValue.janitorToString().toLowerCase(Janitor.getLocale()), rightValue.janitorToString().toLowerCase(Janitor.getLocale())));
+        }
+
 
         private static int compareNumbers(final JNumber leftNumber, final JNumber rightNumber) {
             return Double.compare(leftNumber.toDouble(), rightNumber.toDouble());
