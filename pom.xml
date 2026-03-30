@@ -28,7 +28,7 @@
         <!-- dependency versions -->
         <deps.autoservice>1.1.1</deps.autoservice>
         <deps.jansi>4.0.9</deps.jansi>
-        <deps.jline>4.0.7</deps.jline>
+        <deps.jline>4.0.9</deps.jline>
 
     </properties>
 
