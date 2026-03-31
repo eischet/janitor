@@ -22,7 +22,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- janitor-lang requires 17, therefore the plugin does, too -->
-        <maven.version>3.9.11</maven.version>
+        <maven.version>3.9.14</maven.version>
 
 
         <deps.maven-resolver>2.0.16</deps.maven-resolver>
