@@ -1,10 +1,11 @@
-# 0.9.52-SNAPSHOT, 2026-04-07
+# 0.9.52, 2026-04-07
 
 - improved equality checks by unpacking left and right and reapplying the operator (Janitor.java, areEquals)
 - improved the brrr module
 - orm: allow ordering to be applied to filter searches 
 - introduce a handy "shift" method for call arguments (java side)
 - the SLFLoggingRuntime can now display a custom "context", e.g. the name of a script file
+- dependency updates: jline, jansi
 
 
 # 0.9.51, 2026-03-30

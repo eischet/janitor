@@ -580,7 +580,7 @@ public abstract class GenericDao<T extends OrmEntity> extends JanitorComposed<Ge
         conn.update(updateStatement, ps -> ps.addLong(record.getId()));
     }
 
-    private void writeAllColumns(final DatabaseConnection conn, final T record, final List<String> updatingColumns, final SimplePreparedStatement ps) throws SQLException {
+    protected void writeAllColumns(final DatabaseConnection conn, final T record, final List<String> updatingColumns, final SimplePreparedStatement ps) throws SQLException {
         if (verbose) {
             log.info("writeAllColumns({})", updatingColumns);
         }
