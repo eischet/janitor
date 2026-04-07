@@ -21,7 +21,7 @@ import java.util.*;
 public class JCallArgs {
 
     private final String functionName;
-    private final @Nullable List<EvaluatedArgument> args;
+    private final @NotNull List<EvaluatedArgument> args;
     private final @NotNull JanitorScriptProcess process;
 
     /**
@@ -353,4 +353,17 @@ public class JCallArgs {
         }
         return instance;
     }
+
+    /**
+     * Return JCallArgs with the first argument removed.
+     * @return the arguments, with the first argument removed
+     */
+    public JCallArgs shift() {
+        if (args.size() == 1) {
+            return new JCallArgs(process, functionName, Collections.emptyList());
+        } else {
+            return new JCallArgs(process, functionName, args.subList(1, args.size()));
+        }
+    }
+
 }

@@ -1,8 +1,18 @@
 package com.eischet.janitor.modules.brrr;
 
 
+import com.eischet.janitor.api.Janitor;
+import com.eischet.janitor.api.JanitorScriptProcess;
+import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
+import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
+import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
+import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
+import com.eischet.janitor.api.types.functions.JCallArgs;
+import com.eischet.janitor.modules.httpclient.HttpException;
+import com.eischet.janitor.modules.httpclient.JanitorHttpClient;
+import com.eischet.janitor.toolbox.json.api.JsonException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -13,6 +23,8 @@ import java.time.LocalDateTime;
  * <a href="https://brrr.now/docs/">docs</a>
  */
 public class BrrrMessage extends JanitorComposed<BrrrMessage> {
+
+    public static final String DUMMY_URL_DISABLED = "disabled";
 
     public static final DispatchTable<BrrrMessage> DISPATCHER = new DispatchTable<>();
 
@@ -25,9 +37,29 @@ public class BrrrMessage extends JanitorComposed<BrrrMessage> {
         DISPATCHER.addStringProperty("image_url", BrrrMessage::getImageUrl, BrrrMessage::setImageUrl);
         DISPATCHER.addDateTimeProperty("expiration_date", BrrrMessage::getExpirationDate, BrrrMessage::setExpirationDate);
         DISPATCHER.addStringProperty("filter_criteria", BrrrMessage::getFilterCriteria, BrrrMessage::setFilterCriteria);
-
         DISPATCHER.addStringProperty("sound", BrrrMessage::getSoundAsString, BrrrMessage::setSoundAsString);
         DISPATCHER.addStringProperty("interruption_level", BrrrMessage::getInterruptionLevelAsString, BrrrMessage::setInterruptionLevelAsString);
+
+        DISPATCHER.addMethod("send", (BrrrMessage::send));
+    }
+
+    public JanitorObject send(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+        final String url = arguments.getOptionalStringValue(0, System.getenv("BRRR_URL"));
+        if (url == null || url.isBlank()) {
+            throw new JanitorArgumentException(process, "send() needs a target URL. Either pass the URL as a string or set the BRRR_URL environment variable.");
+        }
+        if (DUMMY_URL_DISABLED.equals(url)) {
+            process.warn("BrrrMessage.send() is 'disabled'. No message will be sent.");
+            return Janitor.NULL;
+        }
+        try {
+            final JanitorHttpClient client = new JanitorHttpClient();
+            client.postJson(url, this.toJson());
+            client.cleanClose();
+            return Janitor.NULL;
+        } catch (JsonException | HttpException e) {
+            throw new JanitorNativeException(process, "error posting message", e);
+        }
     }
 
     private @Nullable String title;

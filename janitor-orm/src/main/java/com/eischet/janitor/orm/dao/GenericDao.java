@@ -466,6 +466,53 @@ public abstract class GenericDao<T extends OrmEntity> extends JanitorComposed<Ge
         }
     }
 
+    /**
+     * Variant of findByFilter that accepts a custom 'order by' clause.
+     *
+     * @param conn db connection
+     * @param filterExpression filter expression
+     * @param orderBy order by clause, usually starting with "ORDER BY"
+     * @param limit query limit
+     * @return results
+     * @throws DatabaseError on errors
+     */
+    @Override
+    public @NotNull List<T> findByFilter(final @NotNull DatabaseConnection conn, final @NotNull FilterExpression filterExpression, final @Nullable String orderBy, final Integer limit) throws DatabaseError {
+        final @NotNull String finalOrderBy = orderBy == null ? "order by 2" : orderBy;
+
+        final StatementCreator creator = new StatementCreator(getDataManager().getDialect());
+        final List<Prepper> preppers = new LinkedList<>();
+        @Language("SQL") final String sql = creator.createSelectAllStatement(tableName, columns) + "\nWHERE\n  " + expressionToSql(filterExpression, preppers::add);
+        if (verbose) {
+            log.info("findByFilter, sql: {}", sql);
+            log.info("preppers: {}", preppers);
+        }
+        @NotNull final DatabaseVersion databaseVersion = DatabaseVersion.getDatabaseVersion(getDataManager());
+        if (limit != null && limit > 0 && getDataManager().getDialect().canLimitAndOffset(databaseVersion)) {
+            final SelectStatement limited = getDataManager().getDialect().addLimitAndOffset(SelectStatement.of(sql + " " + finalOrderBy));
+            return conn.queryForList(
+                    limited,
+                    stmt -> {
+                        for (final Prepper prepper : preppers) {
+                            prepper.prepare(conn, stmt);
+                        }
+                        getDataManager().getDialect().addLimitAndOffset(stmt, limit, 0);
+                    },
+                    rs -> readAllProperties(conn, rs));
+
+        } else {
+            return conn.queryForList(
+                    new SelectStatement(sql + " " + finalOrderBy),
+                    stmt -> {
+                        for (final Prepper prepper : preppers) {
+                            prepper.prepare(conn, stmt);
+                        }
+                    },
+                    rs -> readAllProperties(conn, rs));
+        }
+    }
+
+
 
     protected T readAllProperties(final DatabaseConnection conn, final SimpleResultSet rs) throws DatabaseError {
         final T value = newValue.get();

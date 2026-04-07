@@ -794,7 +794,24 @@ public final class Janitor {
          * @return TRUE if the values are equals, or FALSE if not.
          */
         public static @NotNull JBool areEquals(final @NotNull JanitorObject leftValue, final @NotNull JanitorObject rightValue) {
-            return Janitor.toBool(leftValue == rightValue || leftValue.janitorGetHostValue() == rightValue.janitorGetHostValue() || Objects.equals(leftValue.janitorGetHostValue(), rightValue.janitorGetHostValue()) || (leftValue instanceof JNumber leftNumber && rightValue instanceof JNumber rightNumber && 0 == compareNumbers(leftNumber, rightNumber)));
+            if (leftValue == rightValue) {
+                return Janitor.TRUE;
+            }
+            if (leftValue.janitorGetHostValue() == rightValue.janitorGetHostValue()) {
+                return Janitor.TRUE;
+            }
+            if (Objects.equals(leftValue.janitorGetHostValue(), rightValue.janitorGetHostValue())) {
+                return Janitor.TRUE;
+            }
+            if ((leftValue instanceof JNumber leftNumber && rightValue instanceof JNumber rightNumber && 0 == compareNumbers(leftNumber, rightNumber))) {
+                return Janitor.TRUE;
+            }
+            @NotNull final JanitorObject extractLeft = leftValue.janitorUnpack();
+            @NotNull final JanitorObject extractRight = rightValue.janitorUnpack();
+            if (extractLeft != leftValue || extractRight != rightValue) {
+                return areEquals(extractLeft, extractRight);
+            }
+            return Janitor.FALSE;
         }
 
         public static JanitorObject areCaseInsensitiveEquals(final @NotNull JanitorObject leftValue, final @NotNull JanitorObject rightValue) {

@@ -51,6 +51,14 @@ public interface Dao<T extends OrmEntity> extends JanitorObject {
 
     @NotNull
     @Unmodifiable
+    List<T> findByFilter(@NotNull DatabaseConnection conn,
+                         @NotNull FilterExpression filterExpression,
+                         @Nullable String orderBy,
+                         @Nullable Integer limit) throws DatabaseError;
+
+
+    @NotNull
+    @Unmodifiable
     default List<T> findByFilter(@NotNull DatabaseConnection conn,
                                  @NotNull FilterExpression filterExpression) throws DatabaseError {
         return findByFilter(conn, filterExpression, null);

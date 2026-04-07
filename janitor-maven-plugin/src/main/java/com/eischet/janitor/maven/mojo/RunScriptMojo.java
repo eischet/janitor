@@ -1,9 +1,12 @@
 package com.eischet.janitor.maven.mojo;
 
 import com.eischet.janitor.api.Janitor;
+import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.JList;
 import com.eischet.janitor.api.types.builtin.JNull;
+import com.eischet.janitor.api.types.functions.JCallable;
+import com.eischet.janitor.compiler.ast.function.ScriptFunction;
 import com.eischet.janitor.lang.JNativeMethod;
 import com.eischet.janitor.maven.env.MavenScriptingEnv;
 import com.eischet.janitor.api.JanitorRuntime;
@@ -42,6 +45,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+
+import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
 @Mojo(name = "run-script-file", defaultPhase = LifecyclePhase.PROCESS_SOURCES)
 public class RunScriptMojo extends AbstractMojo {
@@ -93,6 +98,30 @@ public class RunScriptMojo extends AbstractMojo {
             final JanitorRuntime rt = MavenScriptingEnv.INSTANCE.newRuntime();
             final RunnableScript script = rt.compile(scriptFile == null ? "inline-script" : scriptFile.getName(), contents);
             final @NotNull JanitorObject result = script.run(g -> {
+                /*
+                These were meant to be run after a build. e.g. to send a message via the brrr module, but I currently don't have
+                time do debug them through, so I'm commenting them out for now.
+
+                g.bindF("addSuccessCallback", (process, args) -> {
+                    final JanitorObject callback = args.getRequired(1, JanitorObject.class);
+                    if (callback instanceof JCallable callable) {
+                        Lifecycle.BUILD_SUCCESS_CALLBACKS.add(new ScriptCallback(callable, process.getCurrentScope().capture()));
+                    } else {
+                        throw new JanitorArgumentException(process, "addSuccessCallback expects a callable, got " + simpleClassNameOf(callback));
+                    }
+                    return Janitor.NULL;
+                });
+                g.bindF("addFailureCallback", (process, args) -> {
+                    final JanitorObject callback = args.getRequired(1, JanitorObject.class);
+                    if (callback instanceof JCallable callable) {
+                        Lifecycle.BUILD_FAILURE_CALLBACKS.add(new ScriptCallback(callable, process.getCurrentScope().capture()));
+                    } else {
+                        throw new JanitorArgumentException(process, "addFailureCallback expects a callable, got " + simpleClassNameOf(callback));
+                    }
+                    return Janitor.NULL;
+                });
+
+                 */
                 g.bind("project", new MavenProjectWrapper(project));
                 g.bind("model", new ModelWrapper(project.getModel()));
                 g.bind("getDependencies", new JNativeMethod((process, arguments) -> resolveDependencies()));

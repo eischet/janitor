@@ -20,6 +20,10 @@
         </dependency>
         <dependency>
             <groupId>com.eischet.janitor</groupId>
+            <artifactId>httpclient</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.eischet.janitor</groupId>
             <artifactId>janitor-lang</artifactId>
         </dependency>
         <dependency>

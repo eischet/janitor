@@ -12,11 +12,11 @@ import org.slf4j.Logger;
 public class SLFLoggingRuntime extends BaseRuntime {
 
     protected final Logger log;
+    protected final ThreadLocal<String> context = new ThreadLocal<>();
 
     public SLFLoggingRuntime(final Logger log) {
         this(Janitor.current(), log);
     }
-
 
     public SLFLoggingRuntime(final JanitorEnvironment env, final Logger log) {
         super(env);
@@ -44,12 +44,33 @@ public class SLFLoggingRuntime extends BaseRuntime {
                 output.append(" ");
             }
         }
-        log.info(output.toString());
+        logAtInfoLevel(output.toString());
         return JNull.NULL;
+    }
+
+    protected void logAtInfoLevel(final String message) {
+        final String c = getContext();
+        if (c != null) {
+            log.info("{} - {}", c, message);
+        } else {
+            log.info("{}", message);
+        }
     }
 
     @Override
     protected void exception(final String s, final JanitorRuntimeException e) {
         log.error(s, e);
+    }
+
+    public void setContext(final String context) {
+        this.context.set(context);
+    }
+
+    public String getContext() {
+        return context.get();
+    }
+
+    public void clearContext() {
+        context.remove();
     }
 }
