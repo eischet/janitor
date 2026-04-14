@@ -32,6 +32,16 @@ public class SimplePreparedStatement {
         this.ps = ps;
     }
 
+    public SimplePreparedStatement setQueryTimeout(final int seconds) throws SQLException {
+        this.ps.setQueryTimeout(seconds);
+        return this;
+    }
+
+    public SimplePreparedStatement setMaxRows(final int maxRows) throws SQLException {
+        this.ps.setMaxRows(maxRows); // theoretically there's a long variant of this, but who would load more than Integer.MAX_VALUE rows in one go?
+        return this;
+    }
+
     public int getLatestColumnIndex() {
         return col;
     }

@@ -40,4 +40,12 @@ public class DatabaseError extends Exception {
         }
     }
 
+    /**
+     * Returns true if the cause of this error is a timeout, e.g. caused by exceeding a query timeout.
+     * @return true if the cause is a timeout
+     */
+    public boolean isTimeout() {
+        return getCause() instanceof java.sql.SQLTimeoutException;
+    }
+
 }
