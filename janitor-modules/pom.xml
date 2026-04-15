@@ -9,15 +9,14 @@
         <version>${revision}</version>
     </parent>
 
+    <packaging>pom</packaging>
+    <artifactId>janitor-modules</artifactId>
+    <name>${project.groupId}:${project.artifactId}</name>
     <description>A collection of modules for the Janitor language</description>
 
-    <packaging>pom</packaging>
     <modules>
         <module>httpclient</module>
         <module>brrr</module>
     </modules>
-
-    <artifactId>janitor-modules</artifactId>
-
 
 </project>

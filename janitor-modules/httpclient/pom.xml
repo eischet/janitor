@@ -9,7 +9,9 @@
         <version>${revision}</version>
     </parent>
 
+    <packaging>jar</packaging>
     <artifactId>httpclient</artifactId>
+    <name>${project.groupId}:${project.artifactId}</name>
     <description>Janitor module: simple http client</description>
 
     <dependencies>

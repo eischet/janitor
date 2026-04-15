@@ -10,7 +10,10 @@
         <version>${revision}</version>
     </parent>
 
+    <packaging>jar</packaging>
     <artifactId>janitor-logging</artifactId>
+    <name>${project.groupId}:${project.artifactId}</name>
+    <description>Janitor logging tools based on SLF4J + JUL</description>
 
     <dependencies>
         <dependency>

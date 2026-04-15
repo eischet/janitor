@@ -9,22 +9,21 @@
         <version>${revision}</version>
     </parent>
 
+    <packaging>jar</packaging>
     <artifactId>janitor-toolbox</artifactId>
+    <name>${project.groupId}:${project.artifactId}</name>
+    <description>Utility classes used by Janitor</description>
 
     <dependencies>
-        <!-- logging APIs -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
         </dependency>
-
-        <!-- annotations like @Nullable that are recognized by IntelliJ -->
         <dependency>
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
             <scope>provided</scope>
         </dependency>
-
     </dependencies>
 
 </project>

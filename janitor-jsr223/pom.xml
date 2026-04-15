@@ -9,7 +9,10 @@
         <version>${revision}</version>
     </parent>
 
+    <packaging>jar</packaging>
     <artifactId>janitor-jsr223</artifactId>
+    <name>${project.groupId}:${project.artifactId}</name>
+    <description>Janitor JSR223 support</description>
 
     <dependencies>
         <dependency>

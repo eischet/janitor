@@ -6,9 +6,8 @@
     <parent>
         <groupId>com.eischet.root</groupId>
         <artifactId>lib-public</artifactId>
-        <version>1.0.10</version>
+        <version>1.0.11</version>
     </parent>
-
 
     <groupId>com.eischet.janitor</groupId>
     <artifactId>janitor-project</artifactId>
@@ -46,7 +45,7 @@
             <name>Stefan Eischet</name>
             <email>stefan@eischet.net</email>
             <organization>Eischet Software e.K.</organization>
-            <organizationUrl>https://eischet.com</organizationUrl>
+            <organizationUrl>https://www.eischet.com/</organizationUrl>
         </developer>
     </developers>
 
@@ -120,7 +119,8 @@
                         <id>sign-artifacts</id>
                         <phase>verify</phase>
                         <configuration>
-                            <skip>true</skip> <!-- TODO: enable when building releases -->
+                            <skip>false</skip>
+                            <bestPractices>true</bestPractices>
                         </configuration>
                         <goals>
                             <goal>sign</goal>
@@ -129,52 +129,13 @@
                 </executions>
             </plugin>
 
-
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.5.5</version>
             </plugin>
 
-
         </plugins>
     </build>
-
-    <repositories>
-        <repository>
-            <id>repo-eischet-releases</id>
-            <name>Eischet Software Repository</name>
-            <url>https://repo.srv.eischet.net/releases</url>
-        </repository>
-        <repository>
-            <id>repo-eischet-snapshots</id>
-            <name>Eischet Software Repository</name>
-            <url>https://repo.srv.eischet.net/snapshots</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
-
-    <pluginRepositories>
-        <pluginRepository>
-            <id>repo-eischet-releases</id>
-            <name>Eischet Software Repository</name>
-            <url>https://repo.srv.eischet.net/releases</url>
-        </pluginRepository>
-        <pluginRepository>
-            <id>repo-eischet-snapshots</id>
-            <name>Eischet Software Repository</name>
-            <url>https://repo.srv.eischet.net/snapshots</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </pluginRepository>
-    </pluginRepositories>
-
-
-
-
-    <!-- LATER: add a profile for public maven central deployments! -->
 
 
     <dependencyManagement>
@@ -240,7 +201,6 @@
                 <artifactId>brrr</artifactId>
                 <version>${revision}</version>
             </dependency>
-
 
             <dependency>
                 <groupId>com.google.code.gson</groupId>

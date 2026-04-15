@@ -10,6 +10,8 @@
     </parent>
 
     <artifactId>janitor-demo</artifactId>
+    <name>${project.groupId}:${project.artifactId}</name>
+    <description>Janitor DEMO</description>
 
     <properties>
         <!-- DISABLE deployment of this pom -->

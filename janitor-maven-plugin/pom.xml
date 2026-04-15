@@ -12,8 +12,7 @@
     <packaging>maven-plugin</packaging>
 
     <name>janitor-maven-plugin Maven Plugin</name>
-
-    <url>https://github.com/eischet/janitor</url>
+    <description>A Maven plugin that runs Janitor scripts</description>
 
     <prerequisites>
         <maven>${maven.version}</maven>

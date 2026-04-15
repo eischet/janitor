@@ -9,7 +9,10 @@
         <version>${revision}</version>
     </parent>
 
+    <packaging>jar</packaging>
     <artifactId>janitor-api</artifactId>
+    <name>${project.groupId}:${project.artifactId}</name>
+    <description>Janitor API</description>
 
     <dependencies>
         <dependency>

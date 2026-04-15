@@ -9,7 +9,10 @@
         <version>${revision}</version>
     </parent>
 
+    <packaging>jar</packaging>
     <artifactId>janitor-dbxs</artifactId>
+    <name>${project.groupId}:${project.artifactId}</name>
+    <description>Janitor, extra-small JDBC helpers</description>
 
     <dependencies>
         <dependency>

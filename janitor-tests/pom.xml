@@ -9,7 +9,10 @@
         <version>${revision}</version>
     </parent>
 
+    <packaging>jar</packaging>
     <artifactId>janitor-tests</artifactId>
+    <name>${project.groupId}:${project.artifactId}</name>
+    <description>Unit tests of the Janitor language</description>
 
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip> <!-- this module contains unit tests only -->

@@ -9,7 +9,12 @@
         <version>${revision}</version>
     </parent>
 
+    <packaging>jar</packaging>
     <artifactId>janitor-commons</artifactId>
+    <name>${project.groupId}:${project.artifactId}</name>
+    <description>Janitor, common modules</description>
+
+    <!-- TODO: move these into sub projects of janitor-modules -->
 
     <dependencies>
         <dependency>

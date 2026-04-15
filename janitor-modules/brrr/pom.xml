@@ -9,9 +9,10 @@
         <version>${revision}</version>
     </parent>
 
+    <packaging>jar</packaging>
     <artifactId>brrr</artifactId>
+    <name>${project.groupId}:${project.artifactId}</name>
     <description>Janitor module: brr.now client for sending adhoc notifications</description>
-
 
     <dependencies>
         <dependency>

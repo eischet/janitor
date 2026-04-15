@@ -9,11 +9,10 @@
         <version>${revision}</version>
     </parent>
 
+    <packaging>jar</packaging>
     <artifactId>janitor-repl</artifactId>
-
-    <description>
-        This is an interactive REPL, a.k.a. "read-eval-print-loop", where you can execute Janitor code and expressions.
-    </description>
+    <name>${project.groupId}:${project.artifactId}</name>
+    <description>This is an interactive REPL, a.k.a. "read-eval-print-loop", where you can execute Janitor code and expressions.</description>
 
     <dependencies>
         <dependency>
@@ -62,7 +61,6 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-
                         </configuration>
                     </execution>
 
