@@ -1,3 +1,11 @@
+# 0.9.53-SNAPSHOT, 2026-04-15
+
+- toolbox: the TranslationService allows override values for translation keys to be programmatically set
+- dbxs: add setQueryTimeout and setMaxRows to SimplePreparedStatement, add isTimeout to DatabaseError.
+- orm: Dao interface gets new findByFilter variant that, instead of accumulating more and more special arguments, encapsualtes them all into one single object.
+- dependency updates: jline, jansi 4.0.12
+
+
 # 0.9.52, 2026-04-07
 
 - improved equality checks by unpacking left and right and reapplying the operator (Janitor.java, areEquals)

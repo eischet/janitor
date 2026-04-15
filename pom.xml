@@ -20,15 +20,15 @@
 
     <properties>
         <!-- project revision -->
-        <revision>0.9.52</revision>
+        <revision>0.9.53-SNAPSHOT</revision>
 
         <!-- project settings -->
         <maven.plugin.validation>VERBOSE</maven.plugin.validation>
 
         <!-- dependency versions -->
         <deps.autoservice>1.1.1</deps.autoservice>
-        <deps.jansi>4.0.10</deps.jansi>
-        <deps.jline>4.0.10</deps.jline>
+        <deps.jansi>4.0.12</deps.jansi>
+        <deps.jline>4.0.12</deps.jline>
 
         <maven.compiler.release>21</maven.compiler.release>
 

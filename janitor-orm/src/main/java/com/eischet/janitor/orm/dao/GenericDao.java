@@ -513,6 +513,50 @@ public abstract class GenericDao<T extends OrmEntity> extends JanitorComposed<Ge
     }
 
 
+    @Override
+    public @NotNull @Unmodifiable List<T> findByFilter(@NotNull final DatabaseConnection conn, @NotNull final FilterQuery filterQuery) throws DatabaseError {
+        final @Nullable String orderBy = filterQuery.getOrderByClause();
+        final @Nullable Integer limit = filterQuery.getMaxRows();
+        final @NotNull String finalOrderBy = orderBy == null ? "order by 2" : orderBy;
+
+        final StatementCreator creator = new StatementCreator(getDataManager().getDialect());
+        final List<Prepper> preppers = new LinkedList<>();
+        @Language("SQL") final String sql = creator.createSelectAllStatement(tableName, columns) + "\nWHERE\n  " + expressionToSql(filterQuery.filterExpression, preppers::add);
+        if (verbose) {
+            log.info("findByFilter, sql: {}", sql);
+            log.info("preppers: {}", preppers);
+        }
+        @NotNull final DatabaseVersion databaseVersion = DatabaseVersion.getDatabaseVersion(getDataManager());
+        if (limit != null && limit > 0 && getDataManager().getDialect().canLimitAndOffset(databaseVersion)) {
+            final SelectStatement limited = getDataManager().getDialect().addLimitAndOffset(SelectStatement.of(sql + " " + finalOrderBy));
+            return conn.queryForList(
+                limited,
+                stmt -> {
+                    if (filterQuery.getQueryTimeout() != null) {
+                        stmt.setQueryTimeout(filterQuery.getQueryTimeout());
+                    }
+                    for (final Prepper prepper : preppers) {
+                        prepper.prepare(conn, stmt);
+                    }
+                    getDataManager().getDialect().addLimitAndOffset(stmt, limit, 0);
+                },
+                rs -> readAllProperties(conn, rs));
+
+        } else {
+            return conn.queryForList(
+                new SelectStatement(sql + " " + finalOrderBy),
+                stmt -> {
+                    if (filterQuery.getQueryTimeout() != null) {
+                        stmt.setQueryTimeout(filterQuery.getQueryTimeout());
+                    }
+                    for (final Prepper prepper : preppers) {
+                        prepper.prepare(conn, stmt);
+                    }
+                },
+                rs -> readAllProperties(conn, rs));
+        }
+
+    }
 
     protected T readAllProperties(final DatabaseConnection conn, final SimpleResultSet rs) throws DatabaseError {
         final T value = newValue.get();
