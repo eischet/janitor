@@ -1,9 +1,9 @@
-# 0.9.53-SNAPSHOT, 2026-04-15
+# 0.9.53, 2026-04-15
 
-- Starting with this release, Janitor is now uploaded to Maven Central as com.eischet.janitor:janitor-lang etc.
+- Starting with this release, Janitor is now uploaded to Maven Central as com.eischet.janitor:janitor-lang:0.9.53 etc.
 - toolbox: the TranslationService allows override values for translation keys to be programmatically set
 - dbxs: add setQueryTimeout and setMaxRows to SimplePreparedStatement, add isTimeout to DatabaseError.
-- orm: Dao interface gets new findByFilter variant that, instead of accumulating more and more special arguments, encapsualtes them all into one single object.
+- orm: the Dao interface gets new "findByFilter" variant that, instead of accumulating more and more special arguments, encapsulates them all into one single object.
 - dependency updates: jline, jansi 4.0.12
 
 
