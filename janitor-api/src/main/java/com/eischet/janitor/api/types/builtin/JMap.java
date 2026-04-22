@@ -15,6 +15,8 @@ import com.eischet.janitor.api.types.JIterable;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import com.eischet.janitor.toolbox.json.api.*;
+import org.intellij.lang.annotations.Language;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
@@ -43,6 +45,7 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
      *
      * @return the keys
      */
+    @Contract(pure = true)
     public @NotNull @Unmodifiable Set<JanitorObject> keySet() {
         return Set.copyOf(wrapped.keySet());
     }
@@ -52,6 +55,7 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
      *
      * @return the values
      */
+    @Contract(pure = true)
     public @NotNull @Unmodifiable Collection<JanitorObject> values() {
         return wrapped.values();
     }
@@ -61,6 +65,7 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
      *
      * @return the size
      */
+    @Contract(pure = true)
     public int size() {
         return wrapped.size();
     }
@@ -70,16 +75,19 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
         return wrapped.keySet().iterator();
     }
 
+    @Contract(pure = true)
     @Override
     public @NotNull Map<JanitorObject, JanitorObject> janitorGetHostValue() {
         return new HashMap<>(wrapped);
     }
 
+    @Contract(pure = true)
     @Override
     public @NotNull String janitorToString() {
         return wrapped.toString();
     }
 
+    @Contract(pure = true)
     @Override
     public boolean janitorIsTrue() {
         return !wrapped.isEmpty();
@@ -112,6 +120,7 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
      * @param key   the key
      * @param value the value
      */
+    @Contract(mutates = "this")
     public void put(final String key, final JanitorObject value) {
         wrapped.put(Janitor.nullableString(key), value);
     }
@@ -123,6 +132,7 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
      * @param value the value
      * @return the same map
      */
+    @Contract(mutates = "this")
     public JMap with(final String key, final JanitorObject value) {
         put(key, value);
         return this;
@@ -135,6 +145,7 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
      * @param value the value
      * @return the same map
      */
+    @Contract(mutates = "this")
     public JMap with(final String key, final String value) {
         put(key, value);
         return this;
@@ -146,6 +157,7 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
      * @param key   the key
      * @param value the value
      */
+    @Contract(mutates = "this")
     public void put(final JanitorObject key, final JanitorObject value) {
         wrapped.put(key, value);
     }
@@ -157,6 +169,7 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
      * @param key   the key
      * @param value the value
      */
+    @Contract(mutates = "this")
     public void put(final @NotNull String key, final @Nullable String value) {
         wrapped.put(Janitor.string(key),  Janitor.nullableString(value));
     }
@@ -168,6 +181,7 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
      * @param key   the key
      * @param value the value
      */
+    @Contract(mutates = "this")
     public void put(final @NotNull String key, final boolean value) {
         wrapped.put(Janitor.string(key), Janitor.toBool(value));
     }
@@ -179,6 +193,7 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
      * @param key   the key
      * @param value the value
      */
+    @Contract(mutates = "this")
     public void put(final @NotNull String key, final int value) {
         wrapped.put(Janitor.string(key), Janitor.integer(value));
     }
@@ -189,6 +204,7 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
      * @param key the key
      * @return the value, or NULL if the key is not present or if the associated value IS NULL.
      */
+    @Contract(pure = true)
     public JanitorObject get(final JanitorObject key) {
         return JanitorEnvironment.orNull(wrapped.get(key));
     }
@@ -199,11 +215,13 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
      * @param key the key
      * @return an assignable object representing an indexed lookup
      */
-    public JanitorObject getIndexed(final @NotNull JanitorObject key) {
+    @Contract(pure = true)
+    public TemporaryAssignable getIndexed(final @NotNull JanitorObject key) {
         return TemporaryAssignable.of(key.janitorToString(), get(key), value -> put(key, value));
     }
 
     @Override
+    @Contract(pure = true)
     public String toString() {
         return janitorToString();
     }
@@ -213,6 +231,7 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
      *
      * @return true if the map is empty
      */
+    @Contract(pure = true)
     public boolean isEmpty() {
         return wrapped.isEmpty();
     }
@@ -222,8 +241,17 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
      *
      * @param map the other map
      */
+    @Contract(mutates = "this")
     public void putAll(final @NotNull JMap map) {
         this.wrapped.putAll(map.janitorGetHostValue());
+    }
+
+    /**
+     * Remove all key-value pairs from the map, leaving it empty.
+     */
+    @Contract(mutates = "this")
+    public void clear() {
+        wrapped.clear();
     }
 
     /**
@@ -235,6 +263,7 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
      *                              <p>
      *                                                           TODO: this used to be helpful when Janitor was in a very early stage, but should probably be avoided now
      */
+    @Contract(mutates = "param2")
     public void applyTo(final JanitorScriptProcess process, final JanitorObject target) throws JanitorNameException {
         final Set<JanitorObject> notAssignable = new HashSet<>();
         wrapped.forEach((key, value) -> {
@@ -261,6 +290,7 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
 
 
     @Override
+    @Contract(pure = true)
     public @NotNull String janitorClassName() {
         return "map";
     }
@@ -302,15 +332,18 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
      * @param key the key
      * @return the value, or null if there's no such key
      */
+    @Contract(pure = true)
     public @Nullable JanitorObject getNullable(final JString key) {
         return wrapped.getOrDefault(key, null);
     }
 
+    @Contract(pure = true)
     @Override
     public boolean isDefaultOrEmpty() {
         return wrapped.isEmpty();
     }
 
+    @Contract(mutates = "param")
     @Override
     public void writeJson(final JsonOutputStream producer) throws JsonException {
         producer.beginObject();
@@ -364,4 +397,9 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
         }
         stream.endObject();
     }
+
+    public @Language("JSON") String exportToJson() throws JsonException {
+        return exportToJson(Janitor.current());
+    }
+
 }

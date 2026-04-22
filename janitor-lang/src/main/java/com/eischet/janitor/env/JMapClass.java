@@ -3,6 +3,7 @@ package com.eischet.janitor.env;
 import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.JanitorScriptProcess;
+import com.eischet.janitor.api.types.builtin.JList;
 import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
@@ -126,6 +127,12 @@ public class JMapClass {
         }
         reader.endObject();
         return self;
+    }
+
+    public static JNull __clear(JanitorWrapper<Map<JanitorObject, JanitorObject>> mapJanitorWrapper, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+        arguments.require(0);
+        mapJanitorWrapper.janitorGetHostValue().clear();
+        return JNull.NULL;
     }
 
 }

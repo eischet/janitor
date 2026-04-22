@@ -8,6 +8,8 @@ import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.api.types.JIterable;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.toolbox.json.api.*;
+import org.intellij.lang.annotations.Language;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
 
@@ -215,6 +217,14 @@ public class JList extends JanitorComposed<JList> implements JIterable, Iterable
         notifyUpdateReceivers();
     }
 
+    /**
+     * Remove all elements from the list.
+     */
+    @Contract(mutates = "this")
+    public void clear() {
+        list.clear();
+    }
+
     public void replaceAllElements(final List<JanitorObject> withTheseElements) {
         list.clear();
         list.addAll(withTheseElements);
@@ -311,5 +321,8 @@ public class JList extends JanitorComposed<JList> implements JIterable, Iterable
         return list.toString();
     }
 
+    public @Language("JSON") String exportToJson() throws JsonException {
+        return exportToJson(Janitor.current());
+    }
 
 }

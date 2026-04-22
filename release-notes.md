@@ -1,3 +1,11 @@
+# 0.9.54, 2026-04-22
+
+- add `exportToJson()` to the Java side of JList, JMap which automatically uses the default Janitor env, making calls more compact.
+- add `clear()` to JList and JMap, both Java and Janitor sides.
+- add Jetbrains @Contract annotations, starting with JMap, so IDEs better understand the code.
+- orm: allow rewriting filter queries for testing purposes
+
+
 # 0.9.53, 2026-04-15
 
 - Starting with this release, Janitor is now uploaded to Maven Central as com.eischet.janitor:janitor-lang:0.9.53 etc.

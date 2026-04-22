@@ -122,6 +122,7 @@ public class AssociatedList<T extends OrmEntity, U extends Uplink> implements As
             DISPATCH.addBuilderMethod("add", (self, process, args) -> self.parent.addGeneric(args.get(0)));
             DISPATCH.addMethod("size", (self, process, args) -> Janitor.integer(self.parent.size()));
             DISPATCH.addBuilderMethod("clear", (self, process, args) -> self.parent.clear());
+            DISPATCH.addMethod("asList", (self, process, args) -> self.parent.list == null ? Janitor.list() : Janitor.list(self.parent.list));
         }
         protected final @NotNull AssociatedList<?, ?> parent;
 

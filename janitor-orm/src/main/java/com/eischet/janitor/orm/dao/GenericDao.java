@@ -528,7 +528,7 @@ public abstract class GenericDao<T extends OrmEntity> extends JanitorComposed<Ge
         }
         @NotNull final DatabaseVersion databaseVersion = DatabaseVersion.getDatabaseVersion(getDataManager());
         if (limit != null && limit > 0 && getDataManager().getDialect().canLimitAndOffset(databaseVersion)) {
-            final SelectStatement limited = getDataManager().getDialect().addLimitAndOffset(SelectStatement.of(sql + " " + finalOrderBy));
+            SelectStatement limited = filterQuery.rewriteQuery(getDataManager().getDialect().addLimitAndOffset(SelectStatement.of(sql + " " + finalOrderBy)));
             return conn.queryForList(
                 limited,
                 stmt -> {
@@ -544,7 +544,7 @@ public abstract class GenericDao<T extends OrmEntity> extends JanitorComposed<Ge
 
         } else {
             return conn.queryForList(
-                new SelectStatement(sql + " " + finalOrderBy),
+                SelectStatement.of(filterQuery.rewriteQuery(sql + " " + finalOrderBy)),
                 stmt -> {
                     if (filterQuery.getQueryTimeout() != null) {
                         stmt.setQueryTimeout(filterQuery.getQueryTimeout());

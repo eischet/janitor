@@ -120,6 +120,7 @@ public class DefaultBuiltinTypes implements BuiltinTypes {
         mapDispatcher.addMethod("values", JMapClass::__values);
         mapDispatcher.addMethod("containsKey", JMapClass::__containsKey);
         mapDispatcher.addMethod("containsValue", JMapClass::__containsValue);
+        mapDispatcher.addMethod("clear", JMapClass::__clear);
 
         listDispatcher.addMethod("toJson", JListClass::__toJson);
         listDispatcher.addMethod("parseJson", JListClass::__parseJson);
@@ -141,6 +142,7 @@ public class DefaultBuiltinTypes implements BuiltinTypes {
         listDispatcher.addMethod("sort", JListClass::__sort);
         listDispatcher.addMethod("remove", JListClass::__remove);
         listDispatcher.addMethod("removeAll", JListClass::__removeAll);
+        listDispatcher.addMethod("clear", JListClass::__clear);
 
         setDispatcher.addMethod("add", JSetClass::__add);
         setDispatcher.addMethod("remove", JSetClass::__remove);

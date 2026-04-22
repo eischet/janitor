@@ -241,14 +241,22 @@ public class JListClass {
 
 
     public static JNull __remove(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+        arguments.require(1);
         self.remove(arguments.get(0));
         return JNull.NULL;
     }
 
     public static JNull __removeAll(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+        arguments.require(0);
         for (final JanitorObject jObj : arguments.getRequired(0, JList.class)) {
             self.remove(jObj);
         }
+        return JNull.NULL;
+    }
+
+    public static JNull __clear(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+        arguments.require(0);
+        self.clear();
         return JNull.NULL;
     }
 
