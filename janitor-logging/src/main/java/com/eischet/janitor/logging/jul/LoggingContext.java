@@ -18,8 +18,21 @@ public class LoggingContext {
         localContext.remove();
     }
 
+    public static LocalLoggingContext setEntity(final String entity) { return localContext.get().setEntity(entity);}
+
     protected static ILoggingContext getSnapshot(final boolean forError) {
         return new SnapshotLoggingContext(localContext.get(), forError);
+    }
+
+    public static void withEntity(final String entity, final Runnable runnable) {
+        final LocalLoggingContext myContext = localContext.get();
+        final String previousEntity = myContext.getEntity();
+        myContext.setEntity(entity);
+        try {
+            runnable.run();
+        } finally {
+            myContext.setEntity(previousEntity);
+        }
     }
 
 }

@@ -86,10 +86,6 @@ public class JanitorLogging {
      */
     public static @Nullable File LOG_FOLDER;
 
-    public static @NotNull org.slf4j.Logger getLogger(final @NotNull Class<?> clazz) {
-        return LoggerFactory.getLogger(clazz);
-    }
-
     /**
      * Remove all existing handlers from the root logger.
      */
@@ -312,5 +308,21 @@ public class JanitorLogging {
         }
         return Ansi.Color.DEFAULT;
     }
+
+
+    public static @NotNull JanitorLogger getLogger(final @NotNull Class<?> clazz) {
+        return new JanitorWrappingLogger(LoggerFactory.getLogger(clazz), null);
+    }
+
+    public static @NotNull JanitorLogger  getLogger(final @NotNull Class<?> clazz, final @Nullable String entity) {
+        return new JanitorWrappingLogger(LoggerFactory.getLogger(clazz), entity);
+    }
+
+    public static @NotNull JanitorLogger  getLogger(final @NotNull Class<?> clazz, final Debuggable debuggable) {
+        @NotNull final JanitorLogger log = getLogger(clazz, debuggable.getDebugEntityName());
+        log.setVerbose(debuggable.isDebugModeEnabled());
+        return log;
+    }
+
 
 }

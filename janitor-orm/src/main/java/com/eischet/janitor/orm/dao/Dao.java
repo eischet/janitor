@@ -42,31 +42,6 @@ public interface Dao<T extends OrmEntity> extends JanitorObject {
     @Unmodifiable
     List<T> findByQuery(@NotNull DatabaseConnection conn, @NotNull @Language("SQL") String query, @NotNull StatementConfigurator statementConfigurator) throws DatabaseError;
 
-
-    @Deprecated // use findByFilter(DatabaseConnection, FilterQuery) instead
-    @NotNull
-    @Unmodifiable
-    List<T> findByFilter(@NotNull DatabaseConnection conn,
-                         @NotNull FilterExpression filterExpression,
-                         @Nullable Integer limit) throws DatabaseError;
-
-    @Deprecated // use findByFilter(DatabaseConnection, FilterQuery) instead
-    @NotNull
-    @Unmodifiable
-    List<T> findByFilter(@NotNull DatabaseConnection conn,
-                         @NotNull FilterExpression filterExpression,
-                         @Nullable String orderBy,
-                         @Nullable Integer limit) throws DatabaseError;
-
-
-    @Deprecated // use findByFilter(DatabaseConnection, FilterQuery) instead
-    @NotNull
-    @Unmodifiable
-    default List<T> findByFilter(@NotNull DatabaseConnection conn,
-                                 @NotNull FilterExpression filterExpression) throws DatabaseError {
-        return findByFilter(conn, filterExpression, null);
-    }
-
     @NotNull @Unmodifiable List<T> findByFilter(@NotNull DatabaseConnection conn, @NotNull FilterQuery filterQuery) throws DatabaseError;
 
     int countByFilter(@NotNull DatabaseConnection conn, @Nullable FilterExpression filterExpression) throws DatabaseError;

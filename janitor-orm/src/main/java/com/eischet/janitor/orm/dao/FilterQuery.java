@@ -176,7 +176,7 @@ public class FilterQuery {
      * @param expression the expression to start from
      * @return a new FilterQuery
      */
-    public FilterQuery from(final FilterExpression expression) {
+    public static FilterQuery from(final FilterExpression expression) {
         return new FilterQuery(expression);
     }
 

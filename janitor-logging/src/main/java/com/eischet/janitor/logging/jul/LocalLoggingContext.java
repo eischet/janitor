@@ -1,25 +1,37 @@
 package com.eischet.janitor.logging.jul;
 
-public class LocalLoggingContext implements ILoggingContext {
-    private String app;
-    private String user;
+import org.jetbrains.annotations.Nullable;
 
-    public String getApp() {
+public class LocalLoggingContext implements ILoggingContext {
+    private @Nullable String app;
+    private @Nullable String user;
+    private @Nullable String entity;
+
+    public @Nullable String getApp() {
         return app;
     }
 
-    public LocalLoggingContext setApp(final String app) {
+    public LocalLoggingContext setApp(final @Nullable String app) {
         this.app = app;
         return this;
     }
 
     @Override
-    public String getUser() {
+    public @Nullable String getUser() {
         return user;
     }
 
-    public LocalLoggingContext setUser(final String user) {
+    public LocalLoggingContext setUser(final @Nullable String user) {
         this.user = user;
+        return this;
+    }
+
+    public @Nullable String getEntity() {
+        return entity;
+    }
+
+    public LocalLoggingContext setEntity(final @Nullable String entity) {
+        this.entity = entity;
         return this;
     }
 

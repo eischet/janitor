@@ -432,130 +432,71 @@ public abstract class GenericDao<T extends OrmEntity> extends JanitorComposed<Ge
     }
 
 
-    @Override
-    public @NotNull List<T> findByFilter(final @NotNull DatabaseConnection conn, final @NotNull FilterExpression filterExpression, final Integer limit) throws DatabaseError {
-        final StatementCreator creator = new StatementCreator(getDataManager().getDialect());
-        final List<Prepper> preppers = new LinkedList<>();
-        @Language("SQL") final String sql = creator.createSelectAllStatement(tableName, columns) + "\nWHERE\n  " + expressionToSql(filterExpression, preppers::add);
-        if (verbose) {
-            log.info("findByFilter, sql: {}", sql);
-            log.info("preppers: {}", preppers);
-        }
-        @NotNull final DatabaseVersion databaseVersion = DatabaseVersion.getDatabaseVersion(getDataManager());
-        if (limit != null && limit > 0 && getDataManager().getDialect().canLimitAndOffset(databaseVersion)) {
-            final SelectStatement limited = getDataManager().getDialect().addLimitAndOffset(SelectStatement.of(sql + " order by 2"));
-            return conn.queryForList(
-                    limited,
-                    stmt -> {
-                        for (final Prepper prepper : preppers) {
-                            prepper.prepare(conn, stmt);
-                        }
-                        getDataManager().getDialect().addLimitAndOffset(stmt, limit, 0);
-                    },
-                    rs -> readAllProperties(conn, rs));
+    // TODO: what I actually want to have is a class that contains the SQL and all information to fully prepare the stmt.
+    //   The whole query side, really. A calles can then look at them and e.g. report on them when needed.
+    public static class LimitedSelectStatement extends SelectStatement {
 
-        } else {
-            return conn.queryForList(
-                    new SelectStatement(sql),
-                    stmt -> {
-                        for (final Prepper prepper : preppers) {
-                            prepper.prepare(conn, stmt);
-                        }
-                    },
-                    rs -> readAllProperties(conn, rs));
+        protected final @Nullable Integer rowLimit;
+        @NotNull @Unmodifiable protected final List<Prepper> preppers;
+
+        public LimitedSelectStatement(final @NotNull SelectStatement wrapped, final @Nullable Integer rowLimit, final List<Prepper> preppers) {
+            super(wrapped.getSql());
+            this.rowLimit = rowLimit;
+            this.preppers = List.copyOf(preppers);
+        }
+
+        public LimitedSelectStatement(@NotNull @Language("SQL") final String sql, final @Nullable Integer rowLimit, final List<Prepper> preppers) {
+            super(sql);
+            this.rowLimit = rowLimit;
+            this.preppers = List.copyOf(preppers);
+        }
+
+        public @Nullable Integer getRowLimit() {
+            return rowLimit;
+        }
+
+        public boolean isLimited() {
+            return rowLimit != null;
+        }
+
+        public @NotNull @Unmodifiable List<Prepper> getPreppers() {
+            return preppers;
         }
     }
 
-    /**
-     * Variant of findByFilter that accepts a custom 'order by' clause.
-     *
-     * @param conn db connection
-     * @param filterExpression filter expression
-     * @param orderBy order by clause, usually starting with "ORDER BY"
-     * @param limit query limit
-     * @return results
-     * @throws DatabaseError on errors
-     */
-    @Override
-    public @NotNull List<T> findByFilter(final @NotNull DatabaseConnection conn, final @NotNull FilterExpression filterExpression, final @Nullable String orderBy, final Integer limit) throws DatabaseError {
-        final @NotNull String finalOrderBy = orderBy == null ? "order by 2" : orderBy;
-
-        final StatementCreator creator = new StatementCreator(getDataManager().getDialect());
+    protected LimitedSelectStatement createFindByFilterQuery(@NotNull final FilterQuery filterQuery) {
         final List<Prepper> preppers = new LinkedList<>();
-        @Language("SQL") final String sql = creator.createSelectAllStatement(tableName, columns) + "\nWHERE\n  " + expressionToSql(filterExpression, preppers::add);
-        if (verbose) {
-            log.info("findByFilter, sql: {}", sql);
-            log.info("preppers: {}", preppers);
-        }
-        @NotNull final DatabaseVersion databaseVersion = DatabaseVersion.getDatabaseVersion(getDataManager());
-        if (limit != null && limit > 0 && getDataManager().getDialect().canLimitAndOffset(databaseVersion)) {
-            final SelectStatement limited = getDataManager().getDialect().addLimitAndOffset(SelectStatement.of(sql + " " + finalOrderBy));
-            return conn.queryForList(
-                    limited,
-                    stmt -> {
-                        for (final Prepper prepper : preppers) {
-                            prepper.prepare(conn, stmt);
-                        }
-                        getDataManager().getDialect().addLimitAndOffset(stmt, limit, 0);
-                    },
-                    rs -> readAllProperties(conn, rs));
-
-        } else {
-            return conn.queryForList(
-                    new SelectStatement(sql + " " + finalOrderBy),
-                    stmt -> {
-                        for (final Prepper prepper : preppers) {
-                            prepper.prepare(conn, stmt);
-                        }
-                    },
-                    rs -> readAllProperties(conn, rs));
-        }
-    }
-
-
-    @Override
-    public @NotNull @Unmodifiable List<T> findByFilter(@NotNull final DatabaseConnection conn, @NotNull final FilterQuery filterQuery) throws DatabaseError {
         final @Nullable String orderBy = filterQuery.getOrderByClause();
         final @Nullable Integer limit = filterQuery.getMaxRows();
         final @NotNull String finalOrderBy = orderBy == null ? "order by 2" : orderBy;
-
         final StatementCreator creator = new StatementCreator(getDataManager().getDialect());
-        final List<Prepper> preppers = new LinkedList<>();
         @Language("SQL") final String sql = creator.createSelectAllStatement(tableName, columns) + "\nWHERE\n  " + expressionToSql(filterQuery.filterExpression, preppers::add);
-        if (verbose) {
-            log.info("findByFilter, sql: {}", sql);
-            log.info("preppers: {}", preppers);
-        }
         @NotNull final DatabaseVersion databaseVersion = DatabaseVersion.getDatabaseVersion(getDataManager());
         if (limit != null && limit > 0 && getDataManager().getDialect().canLimitAndOffset(databaseVersion)) {
             SelectStatement limited = filterQuery.rewriteQuery(getDataManager().getDialect().addLimitAndOffset(SelectStatement.of(sql + " " + finalOrderBy)));
-            return conn.queryForList(
-                limited,
-                stmt -> {
-                    if (filterQuery.getQueryTimeout() != null) {
-                        stmt.setQueryTimeout(filterQuery.getQueryTimeout());
-                    }
-                    for (final Prepper prepper : preppers) {
-                        prepper.prepare(conn, stmt);
-                    }
-                    getDataManager().getDialect().addLimitAndOffset(stmt, limit, 0);
-                },
-                rs -> readAllProperties(conn, rs));
-
+            return new LimitedSelectStatement(limited, limit, preppers);
         } else {
-            return conn.queryForList(
-                SelectStatement.of(filterQuery.rewriteQuery(sql + " " + finalOrderBy)),
-                stmt -> {
-                    if (filterQuery.getQueryTimeout() != null) {
-                        stmt.setQueryTimeout(filterQuery.getQueryTimeout());
-                    }
-                    for (final Prepper prepper : preppers) {
-                        prepper.prepare(conn, stmt);
-                    }
-                },
-                rs -> readAllProperties(conn, rs));
+            return new LimitedSelectStatement(filterQuery.rewriteQuery(sql + " " + finalOrderBy), null, preppers);
         }
+    }
 
+    @Override
+    public @NotNull @Unmodifiable List<T> findByFilter(@NotNull final DatabaseConnection conn, @NotNull final FilterQuery filterQuery) throws DatabaseError {
+        final LimitedSelectStatement q = createFindByFilterQuery(filterQuery);
+        return conn.queryForList(
+            q,
+            stmt -> {
+                if (filterQuery.getQueryTimeout() != null) {
+                    stmt.setQueryTimeout(filterQuery.getQueryTimeout());
+                }
+                for (final Prepper prepper : q.getPreppers()) {
+                    prepper.prepare(conn, stmt);
+                }
+                if (q.getRowLimit() != null) {
+                    getDataManager().getDialect().addLimitAndOffset(stmt, q.getRowLimit(), 0);
+                }
+            },
+            rs -> readAllProperties(conn, rs));
     }
 
     protected T readAllProperties(final DatabaseConnection conn, final SimpleResultSet rs) throws DatabaseError {

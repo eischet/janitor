@@ -2,6 +2,7 @@ package com.eischet.janitor.logging.formatter;
 
 
 import com.eischet.janitor.logging.jul.ILoggingContext;
+import org.jetbrains.annotations.Nullable;
 import org.jline.jansi.Ansi;
 import org.slf4j.Marker;
 import org.slf4j.event.KeyValuePair;
@@ -18,11 +19,36 @@ public class ColoredConsoleFormatter extends BasicFormatter {
     protected String formatLogRecord(final ToolLogCategory cat, final String thread, final String ts, final String loggerName, final String message, final List<Object> arguments, final List<KeyValuePair> keyValuePairs, final List<Marker> markers, final Map<String, String> contextMap, final ILoggingContext loggingContext) {
         return Ansi.ansi().reset().fg(Ansi.Color.WHITE).a(ts).a(" ").apply(ansi -> applyCategory(ansi, cat)).a(" ").a(cat.getCompactRepresentation()).a(" ").reset().a(" ").fg(Ansi.Color.WHITE).a(thread).apply(ansi -> {
                     if (loggingContext != null && loggingContext.getApp() != null) {
+                        @Nullable final String app = loggingContext.getApp();
+                        @Nullable final String user = loggingContext.getUser();
+                        @Nullable final String entity = loggingContext.getEntity();
+
+                        if (app != null || user != null || entity != null) {
+                            ansi.a(" <").fg(Ansi.Color.BLUE);
+                            boolean wrote = false;
+                            if (app != null) {
+                                ansi.a(app);
+                                wrote = true;
+                            }
+                            if (user != null) {
+                                if (wrote) ansi.fg(Ansi.Color.WHITE).a(", ").fg(Ansi.Color.BLUE);
+                                ansi.a(user);
+                                wrote = true;
+                            }
+                            if (entity != null) {
+                                if (wrote) ansi.fg(Ansi.Color.WHITE).a(", ").fg(Ansi.Color.BLUE);
+                                ansi.a(entity);
+                            }
+                            ansi.fg(Ansi.Color.WHITE).a(">");
+                        }
+                        /* Alt:
                         ansi.a(" <").fg(Ansi.Color.BLUE).a(loggingContext.getApp()).apply(nestedAnsi -> {
                             if (loggingContext.getUser() != null) {
                                 nestedAnsi.fg(Ansi.Color.WHITE).a(", ").fg(Ansi.Color.BLUE).a(loggingContext.getUser());
                             }
                         }).fg(Ansi.Color.WHITE).a(">");
+
+                         */
                     }
                 }).a(" ").fg(Ansi.Color.YELLOW).a(loggerName).fg(Ansi.Color.WHITE)
 

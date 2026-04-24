@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.eischet.root</groupId>
         <artifactId>lib-public</artifactId>
-        <version>1.0.11</version>
+        <version>1.0.13-SNAPSHOT</version>
     </parent>
 
     <groupId>com.eischet.janitor</groupId>
@@ -19,7 +19,7 @@
 
     <properties>
         <!-- project revision -->
-        <revision>0.9.54</revision>
+        <revision>0.9.55-SNAPSHOT</revision>
 
         <!-- project settings -->
         <maven.plugin.validation>VERBOSE</maven.plugin.validation>
@@ -240,5 +240,30 @@
 
         </dependencies>
     </dependencyManagement>
+
+    <profiles>
+        <profile>
+            <id>deploy-internal</id>
+            <distributionManagement>
+                <repository>
+                    <id>repo-eischet-releases</id>
+                    <name>Eischet Software Repository</name>
+                    <url>https://repo.srv.eischet.net/releases</url>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                </repository>
+                <snapshotRepository>
+                    <id>repo-eischet-snapshots</id>
+                    <name>Eischet Software Repository</name>
+                    <url>https://repo.srv.eischet.net/snapshots</url>
+                    <snapshots>
+                        <enabled>true</enabled>
+                    </snapshots>
+                </snapshotRepository>
+            </distributionManagement>
+        </profile>
+    </profiles>
+
 
 </project>

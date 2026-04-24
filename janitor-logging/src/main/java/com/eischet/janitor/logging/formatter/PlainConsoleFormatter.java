@@ -1,6 +1,7 @@
 package com.eischet.janitor.logging.formatter;
 
 import com.eischet.janitor.logging.jul.ILoggingContext;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Marker;
 import org.slf4j.event.KeyValuePair;
 
@@ -16,10 +17,28 @@ public class PlainConsoleFormatter extends BasicFormatter {
         result.append(ts).append(' ').append(loggerName).append(' ').append(cat).append(' ').append(thread);
 
         if (loggingContext != null) {
-            if (loggingContext.getApp() != null) {
-                result.append(" <").append(loggingContext.getApp());
-                if (loggingContext.getUser() != null) {
-                    result.append(", ").append(loggingContext.getUser());
+            @Nullable final String app = loggingContext.getApp();
+            @Nullable final String user = loggingContext.getUser();
+            @Nullable final String entity = loggingContext.getEntity();
+            if (app != null || user != null || entity != null) {
+                boolean wrote = false;
+                result.append(" <");
+                if (app != null) {
+                    result.append(app);
+                    wrote = true;
+                }
+                if (user != null) {
+                    if (wrote) {
+                        result.append(", ");
+                    }
+                    result.append(user);
+                    wrote = true;
+                }
+                if (entity != null) {
+                    if (wrote) {
+                        result.append(", ");
+                    }
+                    result.append(entity);
                 }
                 result.append('>');
             }

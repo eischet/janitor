@@ -260,6 +260,7 @@
         </plugins>
     </build>
 
+    <!-- this came from the mojo example project; not sure if I'll ever use this...
     <profiles>
         <profile>
             <id>run-its</id>
@@ -293,4 +294,5 @@
             </build>
         </profile>
     </profiles>
+    -->
 </project>
