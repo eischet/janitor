@@ -73,12 +73,12 @@ public class ManualAstTestCase extends JanitorTest {
     @Test
     public void manualAstWithPrint() throws JanitorRuntimeException {
         final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
-        final ArgumentList expressionList = new ArgumentList(null);
-        expressionList.addExpression(new VariableLookupExpression(null, "x"));
+        final ArgumentList expressionList = new ArgumentList(Location.BUILTIN_LOCATION);
+        expressionList.addExpression(new VariableLookupExpression(Location.BUILTIN_LOCATION, "x"));
         //final IR.Statement.PrintStatement printStatement = new IR.Statement.PrintStatement(null, expressionList);
         //final IR.Script script = new IR.Script(null, Lists.immutable.of(printStatement), null);
-        final FunctionCallStatement printCall = new FunctionCallStatement(null, "print", null, expressionList);
-        final Script script = new Script(null, List.of(printCall), null);
+        final FunctionCallStatement printCall = new FunctionCallStatement(Location.BUILTIN_LOCATION, "print", null, expressionList);
+        final Script script = new Script(Location.BUILTIN_LOCATION, List.of(printCall), null);
 
 
         final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), null); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
@@ -98,16 +98,16 @@ public class ManualAstTestCase extends JanitorTest {
     @Test
     public void manualAstAddLiteralsAndPrint() throws JanitorRuntimeException {
         final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
-        final Addition addition = new Addition(null,
-            new VariableLookupExpression(null, "a"),
-            new IntegerLiteral(null,  Janitor.integer(4)));
-        final ArgumentList expressionList = new ArgumentList(null);
+       final Addition addition = new Addition(Location.BUILTIN_LOCATION,
+            new VariableLookupExpression(Location.BUILTIN_LOCATION, "a"),
+            new IntegerLiteral(Location.BUILTIN_LOCATION,  Janitor.integer(4)));
+        final ArgumentList expressionList = new ArgumentList(Location.BUILTIN_LOCATION);
         expressionList.addExpression(addition);
         //final IR.Statement.PrintStatement printStatement = new IR.Statement.PrintStatement(null, expressionList);
         //final IR.Script script = new IR.Script(null, Lists.immutable.of(printStatement), null);
 
-        final FunctionCallStatement printCall = new FunctionCallStatement(null, "print", null, expressionList);
-        final Script script = new Script(null, List.of(printCall), null);
+        final FunctionCallStatement printCall = new FunctionCallStatement(Location.BUILTIN_LOCATION, "print", null, expressionList);
+        final Script script = new Script(Location.BUILTIN_LOCATION, List.of(printCall), null);
 
 
         final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), null); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
@@ -121,13 +121,13 @@ public class ManualAstTestCase extends JanitorTest {
     @Test
     public void manualAstAddVarsAndPrint() throws JanitorRuntimeException {
         final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
-        final Addition addition = new Addition(null,
-            new VariableLookupExpression(null, "a"),
-            new VariableLookupExpression(null, "b"));
-        final ArgumentList expressionList = new ArgumentList(null);
+        final Addition addition = new Addition(Location.BUILTIN_LOCATION,
+            new VariableLookupExpression(Location.BUILTIN_LOCATION, "a"),
+            new VariableLookupExpression(Location.BUILTIN_LOCATION, "b"));
+        final ArgumentList expressionList = new ArgumentList(Location.BUILTIN_LOCATION);
         expressionList.addExpression(addition);
-        final FunctionCallStatement printCall = new FunctionCallStatement(null, "print", null, expressionList);
-        final Script script = new Script(null, List.of(printCall), null);
+        final FunctionCallStatement printCall = new FunctionCallStatement(Location.BUILTIN_LOCATION, "print", null, expressionList);
+        final Script script = new Script(Location.BUILTIN_LOCATION, List.of(printCall), null);
 
         final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), null); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
         globalScope.bind("a", Janitor.integer(17));

@@ -119,7 +119,7 @@ public class Script extends Statement implements JsonExportableList {
     }
 
     public static Script wrapperForCallback(final JCallable callable, final List<JanitorObject> args) {
-        return new Script(null, List.of(new CallbackWrapper(null, callable, List.copyOf(args))), null);
+        return new Script(Location.BUILTIN_LOCATION, List.of(new CallbackWrapper(Location.BUILTIN_LOCATION, callable, List.copyOf(args))), null);
     }
 
 }
