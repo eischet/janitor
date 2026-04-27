@@ -13,6 +13,29 @@
     <artifactId>janitor-modules-all</artifactId>
     <name>${project.groupId}:${project.artifactId}</name>
 
+    <dependencies>
+        <dependency>
+            <groupId>com.eischet.janitor.modules</groupId>
+            <artifactId>os</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.eischet.janitor.modules</groupId>
+            <artifactId>files</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.eischet.janitor.modules</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.eischet.janitor.modules</groupId>
+            <artifactId>brrr</artifactId>
+            <version>${revision}</version>
+        </dependency>
+    </dependencies>
+
     <build>
         <plugins>
             <plugin>
@@ -28,14 +51,13 @@
                         <configuration>
                             <artifactSet>
                                 <includes>
-                                    <include>com.eischet.janitor.modules:brr</include>
-                                    <include>com.eischet.janitor.modules:files</include>
-                                    <include>com.eischet.janitor.modules:httpclient</include>
-                                    <include>com.eischet.janitor.modules:os</include>
+                                    <include>com.eischet.janitor.modules:*</include>
                                 </includes>
                             </artifactSet>
-                            <!-- wichtig: erzeugt ein reduziertes POM mit den nicht gebündelten Dependencies -->
                             <createDependencyReducedPom>true</createDependencyReducedPom>
+                            <createSourcesJar>true</createSourcesJar>
+                            <minimizeJar>false</minimizeJar>
+                            <promoteTransitiveDependencies>true</promoteTransitiveDependencies>
                         </configuration>
                     </execution>
                 </executions>
