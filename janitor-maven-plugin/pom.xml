@@ -11,7 +11,7 @@
     <artifactId>janitor-maven-plugin</artifactId>
     <packaging>maven-plugin</packaging>
 
-    <name>janitor-maven-plugin Maven Plugin</name>
+    <name>${project.groupId}:${project.artifactId}</name>
     <description>A Maven plugin that runs Janitor scripts</description>
 
     <prerequisites>
@@ -47,10 +47,6 @@
         </dependency>
         <dependency>
             <groupId>com.eischet.janitor</groupId>
-            <artifactId>janitor-commons</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.eischet.janitor</groupId>
             <artifactId>janitor-generator</artifactId>
         </dependency>
         <dependency>
@@ -62,13 +58,26 @@
             <groupId>com.google.auto.service</groupId>
             <artifactId>auto-service-annotations</artifactId>
         </dependency>
+
         <dependency>
-            <groupId>com.eischet.janitor</groupId>
-            <artifactId>httpclient</artifactId>
+            <groupId>com.eischet.janitor.modules</groupId>
+            <artifactId>brrr</artifactId>
+            <version>${revision}</version>
         </dependency>
         <dependency>
-            <groupId>com.eischet.janitor</groupId>
-            <artifactId>brrr</artifactId>
+            <groupId>com.eischet.janitor.modules</groupId>
+            <artifactId>files</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.eischet.janitor.modules</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.eischet.janitor.modules</groupId>
+            <artifactId>os</artifactId>
+            <version>${revision}</version>
         </dependency>
 
 

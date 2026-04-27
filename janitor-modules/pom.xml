@@ -10,6 +10,7 @@
     </parent>
 
     <packaging>pom</packaging>
+    <groupId>com.eischet.janitor.modules</groupId>
     <artifactId>janitor-modules</artifactId>
     <name>${project.groupId}:${project.artifactId}</name>
     <description>A collection of modules for the Janitor language</description>
@@ -17,6 +18,25 @@
     <modules>
         <module>httpclient</module>
         <module>brrr</module>
+        <module>files</module>
+        <module>os</module>
     </modules>
+
+    <!-- these common dependencies are inherited by all nested modules -->
+    <dependencies>
+        <dependency>
+            <groupId>com.eischet.janitor</groupId>
+            <artifactId>janitor-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.eischet.janitor</groupId>
+            <artifactId>janitor-lang</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+        </dependency>
+    </dependencies>
+
 
 </project>

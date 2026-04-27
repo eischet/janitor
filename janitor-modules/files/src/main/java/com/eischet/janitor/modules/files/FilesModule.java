@@ -1,16 +1,20 @@
-package com.eischet.janitor.commons;
+package com.eischet.janitor.modules.files;
 
-import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.Janitor;
-import com.eischet.janitor.api.types.builtin.*;
-import com.eischet.janitor.api.types.functions.JCallArgs;
+import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.modules.JanitorModule;
 import com.eischet.janitor.api.modules.JanitorModuleRegistration;
 import com.eischet.janitor.api.types.JanitorObject;
+import com.eischet.janitor.api.types.builtin.JBinary;
+import com.eischet.janitor.api.types.builtin.JBool;
+import com.eischet.janitor.api.types.builtin.JList;
+import com.eischet.janitor.api.types.builtin.JNull;
+import com.eischet.janitor.api.types.builtin.JString;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
+import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.runtime.DateTimeUtilities;
 
 import java.io.File;

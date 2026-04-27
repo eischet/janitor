@@ -29,10 +29,6 @@
         </dependency>
         <dependency>
             <groupId>com.eischet.janitor</groupId>
-            <artifactId>janitor-commons</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.eischet.janitor</groupId>
             <artifactId>janitor-dbxs</artifactId>
         </dependency>
         <dependency>

@@ -10,16 +10,8 @@
     </parent>
 
     <packaging>jar</packaging>
-    <artifactId>brrr</artifactId>
+    <artifactId>files</artifactId>
     <name>${project.groupId}:${project.artifactId}</name>
-    <description>Janitor module: brr.now client for sending adhoc notifications</description>
-
-    <dependencies>
-        <dependency>
-            <groupId>com.eischet.janitor.modules</groupId>
-            <artifactId>httpclient</artifactId>
-            <version>${revision}</version>
-        </dependency>
-    </dependencies>
+    <description>Janitor module: simple module for reading/writing files</description>
 
 </project>

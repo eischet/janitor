@@ -19,7 +19,7 @@
 
     <properties>
         <!-- project revision -->
-        <revision>0.9.55</revision>
+        <revision>0.9.56-SNAPSHOT</revision>
 
         <!-- project settings -->
         <maven.plugin.validation>VERBOSE</maven.plugin.validation>
@@ -62,7 +62,6 @@
         <module>janitor-demo</module>
         <module>janitor-jsr223</module>
         <module>janitor-maven-plugin</module>
-        <module>janitor-commons</module>
         <module>janitor-repl</module>
         <module>janitor-logging</module>
         <module>janitor-dbxs</module>
@@ -70,6 +69,7 @@
         <module>janitor-generator</module>
         <module>janitor-tests</module>
         <module>janitor-modules</module>
+        <module>janitor-modules-all</module>
     </modules>
 
 
@@ -171,11 +171,6 @@
             </dependency>
             <dependency>
                 <groupId>com.eischet.janitor</groupId>
-                <artifactId>janitor-commons</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.eischet.janitor</groupId>
                 <artifactId>janitor-toolbox</artifactId>
                 <version>${revision}</version>
             </dependency>
@@ -189,19 +184,11 @@
                 <artifactId>janitor-generator</artifactId>
                 <version>${revision}</version>
             </dependency>
-
-            <!-- modules, nested in janitor-modules -->
             <dependency>
                 <groupId>com.eischet.janitor</groupId>
-                <artifactId>httpclient</artifactId>
+                <artifactId>janitor-modules-all</artifactId>
                 <version>${revision}</version>
             </dependency>
-            <dependency>
-                <groupId>com.eischet.janitor</groupId>
-                <artifactId>brrr</artifactId>
-                <version>${revision}</version>
-            </dependency>
-
             <dependency>
                 <groupId>com.google.code.gson</groupId>
                 <artifactId>gson</artifactId>

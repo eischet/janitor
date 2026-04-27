@@ -1,4 +1,4 @@
-package com.eischet.janitor.commons;
+package com.eischet.janitor.modules.os;
 
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;

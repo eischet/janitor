@@ -1,12 +1,12 @@
 package com.eischet.janitor.maven.env;
 
 import com.eischet.janitor.api.JanitorRuntime;
-import com.eischet.janitor.commons.FilesModule;
-import com.eischet.janitor.commons.OperatingSystemModule;
 import com.eischet.janitor.env.JanitorDefaultEnvironment;
 import com.eischet.janitor.generator.GeneratorModule;
 import com.eischet.janitor.modules.brrr.BrrrModule;
+import com.eischet.janitor.modules.files.FilesModule;
 import com.eischet.janitor.modules.httpclient.HttpClientModule;
+import com.eischet.janitor.modules.os.OperatingSystemModule;
 import com.eischet.janitor.runtime.JanitorFormattingLocale;
 import com.eischet.janitor.runtime.modules.CollectionsModule;
 import org.apache.maven.plugin.logging.SystemStreamLog;

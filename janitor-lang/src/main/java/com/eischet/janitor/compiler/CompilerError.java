@@ -1,6 +1,11 @@
 package com.eischet.janitor.compiler;
 
+import java.io.Serial;
+
 public class CompilerError extends RuntimeException {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     public CompilerError() {
     }

@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>com.eischet.janitor</groupId>
+        <groupId>com.eischet.janitor.modules</groupId>
         <artifactId>janitor-modules</artifactId>
         <version>${revision}</version>
     </parent>
@@ -13,20 +13,5 @@
     <artifactId>httpclient</artifactId>
     <name>${project.groupId}:${project.artifactId}</name>
     <description>Janitor module: simple http client</description>
-
-    <dependencies>
-        <dependency>
-            <groupId>com.eischet.janitor</groupId>
-            <artifactId>janitor-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.eischet.janitor</groupId>
-            <artifactId>janitor-lang</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jetbrains</groupId>
-            <artifactId>annotations</artifactId>
-        </dependency>
-    </dependencies>
 
 </project>
