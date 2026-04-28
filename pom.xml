@@ -69,7 +69,7 @@
         <module>janitor-generator</module>
         <module>janitor-tests</module>
         <module>janitor-modules</module>
-        <module>janitor-modules-all</module>
+        <module>janitor-modules-common</module>
     </modules>
 
 
@@ -186,7 +186,7 @@
             </dependency>
             <dependency>
                 <groupId>com.eischet.janitor</groupId>
-                <artifactId>janitor-modules-all</artifactId>
+                <artifactId>janitor-modules-common</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>

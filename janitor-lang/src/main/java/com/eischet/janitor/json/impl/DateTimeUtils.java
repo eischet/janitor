@@ -85,6 +85,14 @@ public class DateTimeUtils {
         return oldDate.toInstant().atZone(getZoneId()).toLocalDateTime();
     }
 
+    public static LocalDate convertDateToLocalDate(final Date oldDate) {
+        if (oldDate == null) {
+            return null;
+        }
+        return oldDate.toInstant().atZone(getZoneId()).toLocalDate();
+    }
+
+
     public static Date convert(final LocalDateTime date) {
         if (date == null) {
             return null;

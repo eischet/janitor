@@ -1,6 +1,7 @@
 package com.eischet.janitor.api.types.wrapped;
 
 import com.eischet.janitor.api.types.JanitorObject;
+import com.eischet.janitor.api.types.builtin.JMap;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.api.types.dispatch.GenericDispatchTable;
 
@@ -36,4 +37,5 @@ public class WrapperDispatchTable<T> extends GenericDispatchTable<JanitorWrapper
                                                           final Function<JanitorWrapper<T>, P> caster) {
         super(parent, caster);
     }
+
 }

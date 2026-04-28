@@ -585,4 +585,15 @@ public class DefaultBuiltinTypes implements BuiltinTypes {
     public @NotNull JanitorObject nullableNumeric(final Double v) {
         return v == null ? JNull.NULL : numeric(v);
     }
+
+    @Override
+    public @NotNull JanitorObject nullableLegacyDate(@Nullable final Date legacyDate) {
+        return legacyDate == null ? Janitor.NULL : date(DateTimeUtilities.convert(legacyDate).toLocalDate());
+    }
+
+    @Override
+    public @NotNull JanitorObject nullableLegacyDateTime(@Nullable final Date legacyDateTime) {
+        return legacyDateTime == null ? Janitor.NULL : dateTime(DateTimeUtilities.convert(legacyDateTime));
+    }
+
 }

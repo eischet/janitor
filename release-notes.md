@@ -1,6 +1,10 @@
 # 0.9.56-SNAPSHOT, 2026-04-27
 
-- revised the structure of the `janitor-modules` subproject, removed the predecessor, "janitor-commons", and added a convenience "kitchen sink" jar, `janitor-modules-all`.
+- revised the structure of the `janitor-modules` subproject, removed the predecessor, "janitor-commons", and added a convenience "kitchen sink" jar, `janitor-modules-common`.
+  The "common" dependency will always strive to include all modules, except for those that come with huge external dependencies.
+- New module: "mustang". These are some (minimal) wrappers around the Mustang E-Invoicing library. This module comes with a load of dependencies.
+- All objects based on a GenericDispatchTable now come with an `apply` method that takes a map and automatically copies the map values into the object.
+  This pattern has proven very popular with users in my "upstream project". Applying properties that do not exist or do not fit will throw an exception.
 
 
 # 0.9.55, 2026-04-23 (internal release only)

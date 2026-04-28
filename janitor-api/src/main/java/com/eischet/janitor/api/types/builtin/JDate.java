@@ -1,15 +1,19 @@
 package com.eischet.janitor.api.types.builtin;
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.JConstant;
+import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonInputStream;
 import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.Objects;
 
 /**
@@ -161,5 +165,25 @@ public class JDate extends JanitorComposed<JDate> implements JConstant {
         final LocalDate unpacked = unpackLocalDate(date);
         return unpacked == null ? 0 : unpacked.getDayOfMonth();
     }
+
+    /**
+     * Convert a JDate to a legacy Java Date.
+     * @param date the date
+     * @return the legacy Java Date (via java.sql.Date.valueOf)
+     */
+    public static @Nullable Date toLegacyJavaDate(final @Nullable JDate date) {
+        if (date == null) {
+            return null;
+        }
+        return java.sql.Date.valueOf(date.janitorGetHostValue());
+    }
+
+    public static @Nullable Date toLegacyJavaDate(final @Nullable LocalDate date) {
+        if (date == null) {
+            return null;
+        }
+        return java.sql.Date.valueOf(date);
+    }
+
 
 }

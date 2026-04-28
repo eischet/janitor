@@ -6,6 +6,8 @@ import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
 import org.jetbrains.annotations.NotNull;
 
+import java.math.BigDecimal;
+
 /**
  * A float object, representing a floating-point number.
  */
@@ -52,6 +54,11 @@ public class JFloat extends JanitorWrapper<Double> implements JNumber {
     @Override
     public long toLong() {
         return wrapped.longValue();
+    }
+
+    @Override
+    public BigDecimal toBigDecimal() {
+        return BigDecimal.valueOf(wrapped);
     }
 
 

@@ -405,6 +405,8 @@ public final class Janitor {
         return getBuiltins().nullableDateTime(dateTime);
     }
 
+
+
     /**
      * Returns a new JDateTime.
      *
@@ -493,6 +495,14 @@ public final class Janitor {
 
     public static @NotNull JanitorObject nullableDateTimeFromJsonString(@Nullable String jsonString) throws JsonException {
         return getBuiltins().nullableDateTimeFromJsonString(jsonString);
+    }
+
+    public static @NotNull JanitorObject nullableLegacyDate(@Nullable Date legacyDate) {
+        return getBuiltins().nullableLegacyDate(legacyDate);
+    }
+
+    public static @NotNull JanitorObject nullableLegacyDateTime(@Nullable Date legacyDateTime) {
+        return getBuiltins().nullableLegacyDateTime(legacyDateTime);
     }
 
     /**

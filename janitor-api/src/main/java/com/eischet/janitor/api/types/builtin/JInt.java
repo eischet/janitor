@@ -6,6 +6,7 @@ import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
 import org.jetbrains.annotations.NotNull;
 
+import java.math.BigDecimal;
 import java.util.Objects;
 
 /**
@@ -99,4 +100,10 @@ public class JInt extends JanitorWrapper<Long> implements JNumber {
     public long toLong() {
         return wrapped;
     }
+
+    @Override
+    public BigDecimal toBigDecimal() {
+        return BigDecimal.valueOf(wrapped);
+    }
+
 }

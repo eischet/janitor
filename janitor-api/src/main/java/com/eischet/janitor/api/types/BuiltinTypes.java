@@ -10,6 +10,7 @@ import org.jetbrains.annotations.Nullable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
@@ -161,5 +162,18 @@ public interface BuiltinTypes {
      */
     @NotNull JanitorObject nullableNumeric(Double v);
 
+    /**
+     * Returns a JDate or Janitor.NULL from a legacy Date.
+     * @param legacyDate a legacy Date
+     * @return a JDate or Janitor.NULL
+     */
+    @NotNull JanitorObject nullableLegacyDate(@Nullable Date legacyDate);
+
+    /**
+     * Returns a JDateTime or Janitor.NULL from a legacy Date.
+     * @param legacyDateTime a legacy Date
+     * @return a JDateTime or Janitor.NULL
+     */
+    @NotNull JanitorObject nullableLegacyDateTime(@Nullable Date legacyDateTime);
 
 }

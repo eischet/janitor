@@ -10,8 +10,11 @@
     </parent>
 
     <packaging>jar</packaging>
-    <artifactId>janitor-modules-all</artifactId>
+    <artifactId>janitor-modules-common</artifactId>
     <name>${project.groupId}:${project.artifactId}</name>
+    <description>Convenience module that includes commonly used modules in a single JAR.</description>
+
+
 
     <dependencies>
         <dependency>
@@ -34,6 +37,7 @@
             <artifactId>brrr</artifactId>
             <version>${revision}</version>
         </dependency>
+        <!-- omitted: mustang, because it includes transitive dependencies that are rather large -->
     </dependencies>
 
     <build>

@@ -5,6 +5,8 @@ import org.jetbrains.annotations.NotNull;
 import com.eischet.janitor.api.types.JConstant;
 import com.eischet.janitor.toolbox.json.api.JsonExportablePrimitive;
 
+import java.math.BigDecimal;
+
 public interface JNumber extends JConstant, JsonExportablePrimitive, Comparable<JNumber> {
 
     /**
@@ -28,6 +30,8 @@ public interface JNumber extends JConstant, JsonExportablePrimitive, Comparable<
      * @return the inner/host value, as a long
      */
     long toLong();
+
+    BigDecimal toBigDecimal();
 
     @Override
     default int compareTo(@NotNull JNumber o) {

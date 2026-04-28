@@ -53,7 +53,7 @@ public class MetaDataTestCase extends JanitorTest {
         final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         rt.compile("test", "print(dir(simpy));")
                 .run(g -> g.bind("simpy", new Simpleton()));
-        assertEquals("[stoopid]\n", rt.getAllOutput());
+        assertEquals("[apply, stoopid]\n", rt.getAllOutput()); // apply is now automatically added by the GenericDispatchTable
     }
 
     /* this cannot work right now, because simply.stoopid will return false, which does not

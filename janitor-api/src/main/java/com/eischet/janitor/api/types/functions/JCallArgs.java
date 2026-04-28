@@ -160,6 +160,14 @@ public class JCallArgs {
         throw new JanitorArgumentException(process, "%s: argument %s must be a string value, but the caller provided: %s".formatted(functionName, i, args));
     }
 
+    public JNumber getRequiredJNumber(final int i) throws JanitorArgumentException {
+        final JanitorObject arg = get(i);
+        if (arg instanceof JNumber num) {
+            return num;
+        }
+        throw new JanitorArgumentException(process, "%s: argument %s must be a numeric value, but the caller provided: %s".formatted(functionName, i, args));
+    }
+
     public int getRequiredIntValue(final int i) throws JanitorArgumentException {
         final JanitorObject arg = get(i);
         if (arg instanceof JInt num) {

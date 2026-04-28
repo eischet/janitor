@@ -94,6 +94,12 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
         parentAttributeReader = null;
         parentAttributeWriter = null;
         this.javaDefaultConstructor = javaDefaultConstructor;
+
+        addMethod("apply", (self, process, args) -> {
+            final JMap data = args.getRequired(0, JMap.class);
+            data.applyTo(process, self);
+            return self;
+        });
     }
 
     /*
@@ -1062,6 +1068,27 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
 
 
     /**
+     * Adds a constructor method.
+     * This is meant for constructor of <strong>another</strong> objects, for use in factories and modules.
+     * @param name name of the constructor, e.g. "String" for "Foo", conventionally starting with an upper case letter
+     * @param constructor the constructor (taking no arguments)
+     * @return a meta-data builder for adding additional information
+     * @param <X> any JanitorObject
+     */
+    public <X extends JanitorObject> MetaDataBuilder<T> addConstructor(final @NotNull String name, final DefaultConstructor<X> constructor) {
+        return addMethod(name, (self, process, args) -> {
+            final X instance = constructor.create();
+            if (args.size() == 1) {
+                final JMap data = args.getRequired(0, JMap.class);
+                data.applyTo(process, self);
+            }
+            return instance;
+        });
+    }
+
+
+
+    /**
      * Adds a read-write object property.
      *
      * @param name   property name
@@ -1092,6 +1119,13 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
                 instance -> TemporaryAssignable.of(name, Janitor.nullableObject(getter.get(instance)), value -> setter.set(instance, expander.expandValue(instance, value))),
                 adapt(name, shim(() -> singletonDefault), getter, setter));
     }
+
+
+
+
+
+
+
 
 
     private <X extends JanitorObject> @NotNull JsonSupport<X> shim(final DefaultConstructor<X> constructor) {
@@ -1305,6 +1339,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
     public @Nullable Supplier<T> getJavaDefaultConstructor() {
         return javaDefaultConstructor;
     }
+
 
     @FunctionalInterface
     private interface ParentAttributeReader<T> {

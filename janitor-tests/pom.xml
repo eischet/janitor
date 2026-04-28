@@ -45,7 +45,7 @@
         </dependency>
         <dependency>
             <groupId>com.eischet.janitor</groupId>
-            <artifactId>janitor-modules-all</artifactId>
+            <artifactId>janitor-modules-common</artifactId>
         </dependency>
         <dependency>
             <groupId>com.eischet.janitor</groupId>
