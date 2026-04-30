@@ -5,7 +5,9 @@
 - New module: "mustang". These are some (minimal) wrappers around the Mustang E-Invoicing library. This module comes with a load of dependencies.
 - All objects based on a GenericDispatchTable now come with an `apply` method that takes a map and automatically copies the map values into the object.
   This pattern has proven very popular with users in my "upstream project". Applying properties that do not exist or do not fit will throw an exception.
+- janitor-orm: add utility methods for Java-Stream-friendly nullness checking to `ForeignKey`.
 - dependency updates: jline, jansi, shade plugin
+
 
 # 0.9.55, 2026-04-23 (internal release only)
 

@@ -14,6 +14,19 @@ import java.util.function.Function;
 
 import static com.eischet.janitor.api.Janitor.nullable;
 
+/**
+ * A foreign key.
+ * <p>Foreign Keys are "first-class objects" here. When reading data from a database, we'll usually pick the minimum usable FK type to represent it.
+ * For example, when a FK reference is a numeric ID in the database, this is nicely represented as a ForeignKeyInteger, without having to do any sub-selects
+ * or lookups at query time.</p>
+ * <p>The FK implementations act as lazy proxies for the values they point to, interacting with the responsible DAO to load them when requested. While every
+ * call site will have to deal with the typical database exceptions that come with database operations, only the first load will have to do the actual work.
+ * In my experience, this works nicely with caching and my own usual access patterns, while at the same time keeping the client code reasonably clean.</p>
+ * <p>Notice that database NULL is not represented by Java null, but by a special {@link ForeignKeyNull} instance, of which every FK type should provide a typed singleton.
+ * This simplifies NULL handling tremendously and allows us to mark any foreign key references as @NotNull, removing the need for lots of branches in client code.</p>
+ * @param <T>
+ */
+
 public sealed interface ForeignKey<T extends OrmEntity> extends JanitorObject, JsonWriter permits ForeignKeyNull, ForeignKeyInteger, ForeignKeyString, ForeignKeyIdentity, ForeignKeySearchResult {
 
     long getId();
@@ -61,6 +74,25 @@ public sealed interface ForeignKey<T extends OrmEntity> extends JanitorObject, J
      * @return true if the foreign key is null or undefined, false otherwise
      */
     boolean isNull();
+
+    /**
+     * Check if the foreign key is not null nor undefined.
+     * This is simply the inverse of isNull() (in the default implementation).
+     * @return true if the foreign key is not null nor undefined, false otherwise
+     */
+    default boolean isNonNull() {
+        return !isNull();
+    }
+
+    /**
+     * Check if the foreign key is not null nor undefined.
+     * This resembles {@link Objects#nonNull} for ForeignKey objects.
+     * @param fk the foreign key to check
+     * @return true if the foreign key is not null nor undefined, false otherwise
+     */
+    static boolean nonNull(@NotNull ForeignKey<?> fk) {
+        return fk.isNonNull();
+    }
 
     /**
      * Check whether two foreign keys refer to the same object.
