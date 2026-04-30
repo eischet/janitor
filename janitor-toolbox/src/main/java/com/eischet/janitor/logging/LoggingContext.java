@@ -1,4 +1,5 @@
-package com.eischet.janitor.logging.jul;
+package com.eischet.janitor.logging;
+
 
 public class LoggingContext {
 
@@ -20,7 +21,7 @@ public class LoggingContext {
 
     public static LocalLoggingContext setEntity(final String entity) { return localContext.get().setEntity(entity);}
 
-    protected static ILoggingContext getSnapshot(final boolean forError) {
+    public static ILoggingContext getSnapshot(final boolean forError) {
         return new SnapshotLoggingContext(localContext.get(), forError);
     }
 

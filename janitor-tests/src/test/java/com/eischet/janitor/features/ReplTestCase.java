@@ -3,13 +3,12 @@ package com.eischet.janitor.features;
 import com.eischet.janitor.JanitorTest;
 import com.eischet.janitor.api.errors.glue.JanitorControlFlowException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
+import com.eischet.janitor.logging.JanitorLogger;
 import com.eischet.janitor.repl.JanitorRepl;
 import com.eischet.janitor.repl.PartialParseResult;
 import com.eischet.janitor.repl.ReplIO;
 import com.eischet.janitor.runtime.OutputCatchingTestRuntime;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
@@ -19,7 +18,7 @@ public class ReplTestCase extends JanitorTest {
 
 
     static class FakeLoggingIO implements ReplIO {
-        protected static final Logger log = LoggerFactory.getLogger(ReplTestCase.class);
+        protected static final JanitorLogger log = JanitorLogger.getLogger(ReplTestCase.class);
 
         @Override
         public String readLine(final String prompt) throws IOException {

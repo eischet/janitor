@@ -15,6 +15,7 @@ import com.eischet.janitor.compiler.JanitorCompiler;
 import com.eischet.janitor.compiler.ast.statement.Script;
 import com.eischet.janitor.lang.JanitorLexer;
 import com.eischet.janitor.lang.JanitorParser;
+import com.eischet.janitor.logging.JanitorLogger;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonExportableObject;
 import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
@@ -22,15 +23,13 @@ import org.antlr.v4.runtime.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.function.Consumer;
 
 public class JanitorScript implements RunnableScript, JsonExportableObject {
 
-    private static final Logger log = LoggerFactory.getLogger(JanitorScript.class);
+    private static final JanitorLogger log = JanitorLogger.getLogger(JanitorScript.class);
 
     private final @NotNull JanitorRuntime runtime; // TODO: remove this. A compiled script should not be tied to a particular runtime. Only when *runnign* it, the runtime should be used.
     private final @NotNull ScriptModule module;
@@ -38,19 +37,6 @@ public class JanitorScript implements RunnableScript, JsonExportableObject {
     private final @NotNull List<String> issues;
     private @Nullable Exception compilerException;
 
-    @Override
-    public @Nullable Exception getCompilerException() {
-        return compilerException;
-    }
-
-    public static @Nullable String hostString(final JanitorObject obj) {
-        return obj == null || obj == JNull.NULL ? null : obj.janitorToString();
-    }
-
-    @Override
-    public @NotNull @Unmodifiable List<String> getIssues() {
-        return List.copyOf(issues);
-    }
 
     public JanitorScript(final @NotNull JanitorRuntime runtime,
                          final @NotNull String moduleName,
@@ -103,6 +89,19 @@ public class JanitorScript implements RunnableScript, JsonExportableObject {
     }
 
     // LATER: eigentlich ist es bescheuert, die Exception beim Check nicht zu werfen, denn es ist ja trotzdem ein Fehler
+    @Override
+    public @Nullable Exception getCompilerException() {
+        return compilerException;
+    }
+
+    public static @Nullable String hostString(final JanitorObject obj) {
+        return obj == null || obj == JNull.NULL ? null : obj.janitorToString();
+    }
+
+    @Override
+    public @NotNull @Unmodifiable List<String> getIssues() {
+        return List.copyOf(issues);
+    }
 
     public static JanitorParser.ScriptContext parseScript(final @NotNull String text) throws JanitorCompilerException {
         final JanitorANTLRErrorListener listener = new JanitorANTLRErrorListener(text);

@@ -19,13 +19,12 @@ import com.eischet.janitor.api.types.functions.JUnboundMethod;
 import com.eischet.janitor.api.types.functions.JVoidMethod;
 import com.eischet.janitor.api.types.interop.*;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
+import com.eischet.janitor.logging.JanitorLogger;
 import com.eischet.janitor.toolbox.json.api.*;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -41,8 +40,7 @@ import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
 public abstract class GenericDispatchTable<T extends JanitorObject> implements Dispatcher<T> {
 
-
-    private static final Logger log = LoggerFactory.getLogger(GenericDispatchTable.class);
+    private static final JanitorLogger log = JanitorLogger.getLogger(GenericDispatchTable.class);
 
     protected final JsonSupportDelegate<String> JSON_STRING = new JsonSupportDelegate<>(JsonInputStream::nextString, JsonOutputStream::value, String::isEmpty);
 

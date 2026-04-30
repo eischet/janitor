@@ -3,13 +3,12 @@ package com.eischet.janitor.orm.filter;
 import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
+import com.eischet.janitor.logging.JanitorLogger;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -25,7 +24,7 @@ import java.util.stream.Stream;
  */
 public class FilterExpression extends JanitorComposed<FilterExpression> {
 
-    private static final Logger log = LoggerFactory.getLogger(FilterExpression.class);
+    private static final JanitorLogger log = JanitorLogger.getLogger(FilterExpression.class);
 
     public static DispatchTable<FilterExpression> DISPATCH = new DispatchTable<>(FilterExpression::new);
 

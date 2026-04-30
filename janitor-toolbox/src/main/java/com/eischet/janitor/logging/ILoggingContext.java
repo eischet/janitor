@@ -1,7 +1,6 @@
-package com.eischet.janitor.logging.jul;
+package com.eischet.janitor.logging;
 
 
-import com.eischet.janitor.logging.formatter.ColoredConsoleFormatter;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -12,7 +11,9 @@ import org.jetbrains.annotations.Nullable;
  *     <li><strong>Entity:</strong> An acting entity in whose context the action happens.</li>
  * </ul>
  * <p>
- *     The {@link ColoredConsoleFormatter} and {@link com.eischet.janitor.logging.formatter.PlainConsoleFormatter} are responsible for rendering these values
+ *     The {@code com.eischet.janitor.logging.formatter.ColoredConsoleFormatter}
+ *     and {@code com.eischet.janitor.logging.formatter.PlainConsoleFormatter}
+ *     in module {@code }janitor-logging} are responsible for rendering these values
  *     into the log.
  * </p>
  * <p>

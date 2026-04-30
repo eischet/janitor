@@ -16,7 +16,7 @@ public class JulLogRecord extends LogRecord {
     private @Nullable List<Object> arguments;
     private Map<String, String> contextMap;
 
-    private ILoggingContext loggingContext;
+    private com.eischet.janitor.logging.ILoggingContext loggingContext;
 
     public JulLogRecord(final Level level, final String msg) {
         super(level, msg);
@@ -74,11 +74,11 @@ public class JulLogRecord extends LogRecord {
         this.contextMap = contextMap;
     }
 
-    public void setLoggingContext(final ILoggingContext loggingContext) {
+    public void setLoggingContext(final com.eischet.janitor.logging.ILoggingContext loggingContext) {
         this.loggingContext = loggingContext;
     }
 
-    public ILoggingContext getLoggingContext() {
+    public com.eischet.janitor.logging.ILoggingContext getLoggingContext() {
         return loggingContext;
     }
 }

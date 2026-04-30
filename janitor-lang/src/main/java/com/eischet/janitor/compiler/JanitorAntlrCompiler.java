@@ -32,13 +32,12 @@ import com.eischet.janitor.compiler.ast.statement.specops.PrefixIncrement;
 import com.eischet.janitor.lang.JanitorBaseVisitor;
 import com.eischet.janitor.lang.JanitorLexer;
 import com.eischet.janitor.lang.JanitorParser;
+import com.eischet.janitor.logging.JanitorLogger;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -52,8 +51,9 @@ import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
  */
 public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements JanitorCompiler {
 
+    private static final JanitorLogger log = JanitorLogger.getLogger(JanitorAntlrCompiler.class);
+
     public static final String INDEXED_GET_METHOD = "__get__";
-    private static final Logger log = LoggerFactory.getLogger(JanitorAntlrCompiler.class);
     private static final BooleanLiteral LITERAL_TRUE = new BooleanLiteral(Location.builtin(), JBool.TRUE);
     private static final BooleanLiteral LITERAL_FALSE = new BooleanLiteral(Location.builtin(), JBool.FALSE);
     private final ScriptModule module;

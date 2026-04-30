@@ -3,19 +3,18 @@ package com.eischet.janitor.modules.mustang;
 import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
+import com.eischet.janitor.logging.JanitorLogger;
 import org.jetbrains.annotations.Nullable;
 import org.mustangproject.ZUGFeRD.IExportableTransaction;
 import org.mustangproject.ZUGFeRD.IZUGFeRDExporter;
 import org.mustangproject.ZUGFeRD.ZUGFeRDExporterFromA1;
 import org.mustangproject.ZUGFeRD.ZUGFeRDExporterFromA3;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
 public class MustangExporter extends JanitorWrapper<IZUGFeRDExporter> {
 
-    public static final Logger log = LoggerFactory.getLogger(MustangExporter.class);
+    public static final JanitorLogger log = JanitorLogger.getLogger(MustangExporter.class);
 
     public static WrapperDispatchTable<IZUGFeRDExporter> DISPATCH = new WrapperDispatchTable<>(MustangExporter::new);
 

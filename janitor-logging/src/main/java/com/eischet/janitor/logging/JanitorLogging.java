@@ -4,14 +4,11 @@ package com.eischet.janitor.logging;
 import com.eischet.janitor.logging.formatter.ColoredConsoleFormatter;
 import com.eischet.janitor.logging.formatter.PlainConsoleFormatter;
 import com.eischet.janitor.logging.formatter.ToolLogCategory;
-import com.eischet.janitor.logging.jul.LoggerPins;
 import com.eischet.jul.rolling.RenamingBackupPolicy;
 import com.eischet.jul.rolling.RollingFileHandler;
 import com.eischet.jul.rolling.TimeRollingPolicy;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jline.jansi.Ansi;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -310,19 +307,6 @@ public class JanitorLogging {
     }
 
 
-    public static @NotNull JanitorLogger getLogger(final @NotNull Class<?> clazz) {
-        return new JanitorWrappingLogger(LoggerFactory.getLogger(clazz), null);
-    }
-
-    public static @NotNull JanitorLogger  getLogger(final @NotNull Class<?> clazz, final @Nullable String entity) {
-        return new JanitorWrappingLogger(LoggerFactory.getLogger(clazz), entity);
-    }
-
-    public static @NotNull JanitorLogger  getLogger(final @NotNull Class<?> clazz, final Debuggable debuggable) {
-        @NotNull final JanitorLogger log = getLogger(clazz, debuggable.getDebugEntityName());
-        log.setVerbose(debuggable.isDebugModeEnabled());
-        return log;
-    }
 
 
 }

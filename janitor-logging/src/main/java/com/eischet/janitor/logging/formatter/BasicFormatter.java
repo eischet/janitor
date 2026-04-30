@@ -1,6 +1,6 @@
 package com.eischet.janitor.logging.formatter;
 
-import com.eischet.janitor.logging.jul.ILoggingContext;
+import com.eischet.janitor.logging.ILoggingContext;
 import com.eischet.janitor.logging.jul.JulLogRecord;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Marker;

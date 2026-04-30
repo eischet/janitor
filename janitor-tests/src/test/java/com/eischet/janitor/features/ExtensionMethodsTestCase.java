@@ -9,13 +9,13 @@ import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.JNull;
 import com.eischet.janitor.env.JanitorDefaultEnvironment;
+import com.eischet.janitor.logging.JanitorLogger;
 import com.eischet.janitor.runtime.JanitorFormattingGerman;
 import com.eischet.janitor.runtime.SLFLoggingRuntime;
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
-import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -44,7 +44,7 @@ public class ExtensionMethodsTestCase extends JanitorTest {
      * Create a runtime.
      * It's not particularly important for this test case.
      */
-    private final SLFLoggingRuntime RT = new SLFLoggingRuntime(ENV, LoggerFactory.getLogger(ExtensionMethodsTestCase.class)) {
+    private final SLFLoggingRuntime RT = new SLFLoggingRuntime(ENV, JanitorLogger.getLogger(ExtensionMethodsTestCase.class)) {
         @Override
         public JanitorObject print(final JanitorScriptProcess process, final JCallArgs args) {
             // not needed for this test

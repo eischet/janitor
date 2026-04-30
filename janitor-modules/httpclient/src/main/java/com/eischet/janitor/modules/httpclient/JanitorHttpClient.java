@@ -13,6 +13,7 @@ import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import com.eischet.janitor.json.impl.GsonOutputStream;
 import com.eischet.janitor.json.impl.JsonExportControls;
+import com.eischet.janitor.logging.JanitorLogger;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonExportable;
 import com.eischet.janitor.toolbox.json.api.JsonOutputSupport;
@@ -20,8 +21,6 @@ import com.eischet.janitor.toolbox.json.api.JsonWriter;
 import com.eischet.janitor.toolbox.memory.RefCounter;
 import com.eischet.janitor.toolbox.strings.StringHelpers;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -48,7 +47,7 @@ import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 public class JanitorHttpClient extends JanitorComposed<JanitorHttpClient> implements JanitorCleanupRequired {
 
     private static final DispatchTable<JanitorHttpClient> DISPATCH = new DispatchTable<>();
-    private static final Logger log = LoggerFactory.getLogger(JanitorHttpClient.class);
+    private static final JanitorLogger log = JanitorLogger.getLogger(JanitorHttpClient.class);
     private static final String authHeaderName = "Authorization";
 
     static {

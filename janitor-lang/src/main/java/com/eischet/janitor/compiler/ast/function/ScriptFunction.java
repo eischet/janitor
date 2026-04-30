@@ -20,12 +20,11 @@ import com.eischet.janitor.compiler.ast.AstNode;
 import com.eischet.janitor.compiler.ast.expression.Expression;
 import com.eischet.janitor.compiler.ast.statement.controlflow.Block;
 import com.eischet.janitor.compiler.ast.statement.controlflow.ReturnStatement;
+import com.eischet.janitor.logging.JanitorLogger;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonExportableObject;
 import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
@@ -35,7 +34,7 @@ import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
  */
 public class ScriptFunction extends AstNode implements Expression, JanitorObject, JCallable, JsonExportableObject {
 
-    private static final Logger log = LoggerFactory.getLogger(ScriptFunction.class);
+    private static final JanitorLogger log = JanitorLogger.getLogger(ScriptFunction.class);
 
     private final String name;
     private final FormalParameters formalParameters;

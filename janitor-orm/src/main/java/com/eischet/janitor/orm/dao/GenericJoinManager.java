@@ -2,6 +2,7 @@ package com.eischet.janitor.orm.dao;
 
 import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
+import com.eischet.janitor.logging.JanitorLogger;
 import com.eischet.janitor.orm.JanitorOrm;
 import com.eischet.janitor.orm.entity.OrmEntity;
 import com.eischet.janitor.orm.entity.OrmJoiner;
@@ -9,8 +10,6 @@ import com.eischet.janitor.orm.meta.EntityWrangler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -20,7 +19,7 @@ public class GenericJoinManager<
         R extends OrmEntity,
         U extends Uplink> implements JoinManager<J, L, R> {
 
-    protected final Logger log = LoggerFactory.getLogger(getClass());
+    protected final JanitorLogger log = JanitorLogger.getLogger(getClass());
 
     protected final DispatchTable<J> dispatch;
     protected final EntityWrangler<L, U> leftWrangler;

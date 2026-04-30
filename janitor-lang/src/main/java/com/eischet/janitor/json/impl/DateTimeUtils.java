@@ -1,9 +1,8 @@
 package com.eischet.janitor.json.impl;
 
+import com.eischet.janitor.logging.JanitorLogger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.nio.file.attribute.FileTime;
 import java.time.*;
@@ -17,7 +16,7 @@ import java.util.stream.Collectors;
  */
 public class DateTimeUtils {
 
-    private static final Logger log = LoggerFactory.getLogger(DateTimeUtils.class);
+    private static final JanitorLogger log = JanitorLogger.getLogger(DateTimeUtils.class);
 
     public interface TimeZoneSource {
         @Nullable ZoneId getLocalTimeZone();

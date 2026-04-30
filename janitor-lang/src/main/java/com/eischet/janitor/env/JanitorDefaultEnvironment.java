@@ -26,6 +26,7 @@ import com.eischet.janitor.api.util.ObjectUtilities;
 import com.eischet.janitor.json.impl.GsonInputStream;
 import com.eischet.janitor.json.impl.GsonOutputStream;
 import com.eischet.janitor.json.impl.JsonExportControls;
+import com.eischet.janitor.logging.JanitorLogger;
 import com.eischet.janitor.runtime.DateTimeUtilities;
 import com.eischet.janitor.runtime.JanitorSemantics;
 import com.eischet.janitor.api.modules.ModuleResolver;
@@ -34,8 +35,6 @@ import com.eischet.janitor.toolbox.json.api.JsonInputStream;
 import com.eischet.janitor.toolbox.json.api.JsonWriter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -188,7 +187,7 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
         if (o instanceof Boolean bool) {
             return Janitor.toBool(bool);
         }
-        Logger log = LoggerFactory.getLogger(JanitorObject.class);
+        JanitorLogger log = JanitorLogger.getLogger(JanitorObject.class);
         log.warn("nativeToScript(object={} [{}]) --> don't know how to convert this into a script variable!", o, ObjectUtilities.simpleClassNameOf(o));
         return null;
 

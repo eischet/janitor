@@ -13,14 +13,13 @@ import com.eischet.janitor.compiler.JanitorCompiler;
 import com.eischet.janitor.compiler.ast.statement.Script;
 import com.eischet.janitor.json.impl.DateTimeUtils;
 import com.eischet.janitor.lang.JanitorParser;
+import com.eischet.janitor.logging.JanitorLogger;
 import com.eischet.janitor.logging.JanitorUnitTestLogging;
 import com.eischet.janitor.runtime.JanitorScript;
 import com.eischet.janitor.runtime.OutputCatchingTestRuntime;
 import com.eischet.janitor.runtime.RunningScriptProcess;
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.BeforeAll;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.function.Consumer;
 
@@ -29,7 +28,7 @@ public abstract class JanitorTest {
     public static final Consumer<Scope> NO_GLOBALS = globals -> {
     };
 
-    protected final Logger log = LoggerFactory.getLogger(getClass());
+    protected final JanitorLogger log = JanitorLogger.getLogger(getClass());
 
     @BeforeAll
     static void setUp() {

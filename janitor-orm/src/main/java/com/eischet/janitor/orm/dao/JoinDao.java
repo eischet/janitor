@@ -22,6 +22,7 @@ import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.types.functions.JCallable;
+import com.eischet.janitor.logging.JanitorLogger;
 import com.eischet.janitor.orm.JanitorOrm;
 import com.eischet.janitor.orm.entity.OrmEntity;
 import com.eischet.janitor.orm.entity.OrmJoined;
@@ -33,8 +34,6 @@ import com.eischet.janitor.toolbox.json.api.JsonException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -58,7 +57,7 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
         DISPATCH.addVoidMethod("delete", JoinDao::deleteForScript);
     }
 
-    protected final Logger log = LoggerFactory.getLogger(getClass());
+    protected final JanitorLogger log = JanitorLogger.getLogger(getClass());
     protected final @NotNull String tableName;
     protected final @NotNull
     @Unmodifiable List<String> columns;

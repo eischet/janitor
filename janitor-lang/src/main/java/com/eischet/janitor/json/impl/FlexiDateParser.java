@@ -1,12 +1,11 @@
 package com.eischet.janitor.json.impl;
 
+import com.eischet.janitor.logging.JanitorLogger;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import org.jetbrains.annotations.Unmodifiable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Type;
 import java.time.LocalDateTime;
@@ -17,7 +16,7 @@ import java.util.List;
 
 public class FlexiDateParser implements JsonDeserializer<LocalDateTime> {
 
-    private static final Logger log = LoggerFactory.getLogger(FlexiDateParser.class);
+    private static final JanitorLogger log = JanitorLogger.getLogger(FlexiDateParser.class);
 
     private static final @Unmodifiable List<DateTimeFormatter> FORMATTERS = List.of(
         DateTimeFormatter.ISO_LOCAL_DATE_TIME,

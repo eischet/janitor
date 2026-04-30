@@ -8,10 +8,9 @@ import com.eischet.dbxs.DatabaseConnection;
 import com.eischet.dbxs.dialects.DatabaseDialect;
 import com.eischet.dbxs.metadata.SqlTypeInterpreter;
 import com.eischet.dbxs.metadata.SqlTypes;
+import com.eischet.janitor.logging.JanitorLogger;
 import com.eischet.janitor.toolbox.memory.Interner;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,7 +27,7 @@ import java.util.List;
  */
 public class SimpleResultSet {
 
-    private static final Logger log = LoggerFactory.getLogger(SimpleResultSet.class);
+    private static final JanitorLogger log = JanitorLogger.getLogger(SimpleResultSet.class);
 
     private final DatabaseDialect dialect;
     private final ResultSet rs;

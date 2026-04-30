@@ -25,6 +25,7 @@
  */
 package com.eischet.janitor.logging.jul;
 
+import com.eischet.janitor.logging.LoggingContext;
 import org.slf4j.Logger;
 import org.slf4j.Marker;
 import org.slf4j.event.EventConstants;

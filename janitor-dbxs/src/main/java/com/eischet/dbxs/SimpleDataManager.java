@@ -11,11 +11,10 @@ import com.eischet.dbxs.results.ResultSetReader;
 import com.eischet.dbxs.results.SimpleResultSet;
 import com.eischet.dbxs.statements.SelectStatement;
 import com.eischet.dbxs.statements.UpdateStatement;
+import com.eischet.janitor.logging.JanitorLogger;
 import com.eischet.janitor.toolbox.memory.Flag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
 import java.io.Closeable;
@@ -31,7 +30,7 @@ import java.util.concurrent.atomic.AtomicLong;
 @SuppressWarnings("unused") // this is not unused, it's our main API, currently all the tests are hidden from the public in an app though...
 public class SimpleDataManager implements DataManager {
 
-    protected static final Logger log = LoggerFactory.getLogger(SimpleDataManager.class);
+    protected final JanitorLogger log;
     protected final ThreadLocal<ConnectionWrapper> connHolder = new ThreadLocal<>();
     protected final String defaultSchema;
     protected final AtomicLong transId = new AtomicLong();
@@ -47,6 +46,7 @@ public class SimpleDataManager implements DataManager {
                              final @Nullable String defaultSchema,
                              final @Nullable List<String> initStatements) {
         this.name = name;
+        this.log = JanitorLogger.getLogger(SimpleDataManager.class, name);
         this.dataSource = dataSource;
         this.dialect = dialect;
         this.defaultSchema = defaultSchema;

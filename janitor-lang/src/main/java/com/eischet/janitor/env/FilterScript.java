@@ -12,10 +12,9 @@ import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.types.builtin.JBool;
 import com.eischet.janitor.api.types.JanitorObject;
+import com.eischet.janitor.logging.JanitorLogger;
 import com.eischet.janitor.runtime.JanitorScript;
 import com.eischet.janitor.runtime.SLFLoggingRuntime;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.function.Consumer;
 
@@ -26,7 +25,7 @@ import java.util.function.Consumer;
  */
 public class FilterScript implements FilterPredicate {
 
-    private static final Logger log = LoggerFactory.getLogger(FilterScript.class);
+    private static final JanitorLogger log = JanitorLogger.getLogger(FilterScript.class);
 
     private final RunnableScript script;
     private final SLFLoggingRuntime runtime;

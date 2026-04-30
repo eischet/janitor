@@ -6,6 +6,8 @@
 - All objects based on a GenericDispatchTable now come with an `apply` method that takes a map and automatically copies the map values into the object.
   This pattern has proven very popular with users in my "upstream project". Applying properties that do not exist or do not fit will throw an exception.
 - janitor-orm: add utility methods for Java-Stream-friendly nullness checking to `ForeignKey`.
+- janitor-logging: this module is an SLF4J provider and should never be a dependency of library projects, only of apps.
+  All "library-facing" parts have been moved to the `janitor-toolbox` module, because it is included by all other modules.
 - dependency updates: jline, jansi, shade plugin
 
 

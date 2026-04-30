@@ -1,5 +1,6 @@
-package com.eischet.janitor.logging.jul;
+package com.eischet.janitor.logging;
 
+import com.eischet.janitor.logging.ILoggingContext;
 import org.jetbrains.annotations.Nullable;
 
 public class LocalLoggingContext implements ILoggingContext {

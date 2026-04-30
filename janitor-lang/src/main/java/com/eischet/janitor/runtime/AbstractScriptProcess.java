@@ -12,10 +12,9 @@ import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.types.builtin.JNull;
 import com.eischet.janitor.api.types.builtin.JString;
 import com.eischet.janitor.api.types.JanitorObject;
+import com.eischet.janitor.logging.JanitorLogger;
 import com.eischet.janitor.template.TemplateParser;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -23,7 +22,7 @@ import java.util.List;
 
 public abstract class AbstractScriptProcess implements JanitorScriptProcess {
 
-    private static final Logger log = LoggerFactory.getLogger(AbstractScriptProcess.class);
+    private static final JanitorLogger log = JanitorLogger.getLogger(AbstractScriptProcess.class);
 
     private final JanitorRuntime runtime;
     private final Scope mainScope;

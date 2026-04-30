@@ -23,13 +23,10 @@
             <groupId>com.eischet.janitor</groupId>
             <artifactId>janitor-lang</artifactId>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-nop -->
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
-            <scope>test</scope>
+            <groupId>com.eischet.janitor</groupId>
+            <artifactId>janitor-logging</artifactId>
         </dependency>
-
     </dependencies>
 
     <!-- TODO: properly package this

@@ -1,4 +1,4 @@
-package com.eischet.janitor.logging.jul;
+package com.eischet.janitor.logging;
 
 public class SnapshotLoggingContext implements ILoggingContext {
     private final String app;

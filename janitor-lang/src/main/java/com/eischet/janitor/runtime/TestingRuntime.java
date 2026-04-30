@@ -1,12 +1,11 @@
 package com.eischet.janitor.runtime;
 
 import com.eischet.janitor.env.JanitorDefaultEnvironment;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.eischet.janitor.logging.JanitorLogger;
 
 public class TestingRuntime extends SLFLoggingRuntime {
 
-    private static final Logger LOG = LoggerFactory.getLogger(TestingRuntime.class);
+    private static final JanitorLogger LOG = JanitorLogger.getLogger(TestingRuntime.class);
 
     public TestingRuntime() {
         super(new JanitorDefaultEnvironment(new JanitorFormattingGerman()) {

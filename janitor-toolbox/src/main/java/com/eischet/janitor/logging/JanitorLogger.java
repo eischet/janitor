@@ -7,9 +7,9 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Wrapper for SLF4J's Logger interface.
- *
+ * <p>
  * This wrapper adds a "verbose" mode, which boils down to a variant of "info" that is controlled not by the developer but by the user.
- *
+ * </p>
  */
 public interface JanitorLogger extends Logger {
 
@@ -74,34 +74,33 @@ public interface JanitorLogger extends Logger {
 
     /**
      * Get a logger for the given class.
-     * Shorthand for {@link JanitorLogging#getLogger(Class)}, requiring one less import statement in your source code.
      * @param clazz the class
      * @return the logger
      */
     static @NotNull JanitorLogger getLogger(final @NotNull Class<?> clazz) {
-        return JanitorLogging.getLogger(clazz);
+        return new JanitorWrappingLogger(LoggerFactory.getLogger(clazz), null);
     }
 
     /**
      * Get a logger for the given class and entity.
-     * Shorthand for {@link JanitorLogging#getLogger(Class, String)}, requiring one less import statement in your source code.
      * @param clazz the class
      * @param entity the entity
      * @return the logger
      */
     static @NotNull JanitorLogger  getLogger(final @NotNull Class<?> clazz, final @Nullable String entity) {
-        return JanitorLogging.getLogger(clazz, entity);
+        return new JanitorWrappingLogger(LoggerFactory.getLogger(clazz), entity);
     }
 
     /**
      * Get a logger for the given class and debuggable entity.
-     * Shorthand for {@link JanitorLogging#getLogger(Class, Debuggable)}, requiring one less import statement in your source code.
      * @param clazz the class
      * @param debuggable the debuggable entity
      * @return the logger
      */
     static @NotNull JanitorLogger  getLogger(final @NotNull Class<?> clazz, final Debuggable debuggable) {
-        return JanitorLogging.getLogger(clazz, debuggable);
+        @NotNull final JanitorLogger log = getLogger(clazz, debuggable.getDebugEntityName());
+        log.setVerbose(debuggable.isDebugModeEnabled());
+        return log;
     }
 
 }

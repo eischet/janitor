@@ -6,16 +6,15 @@ package com.eischet.dbxs.metadata;
 
 import com.eischet.dbxs.DataManager;
 import com.eischet.dbxs.exceptions.DatabaseError;
+import com.eischet.janitor.logging.JanitorLogger;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 
 public class DatabaseVersion {
 
-    private static final Logger log = LoggerFactory.getLogger(DatabaseVersion.class);
+    private static final JanitorLogger log = JanitorLogger.getLogger(DatabaseVersion.class);
 
     private int majorVersion;
     private int minorVersion;

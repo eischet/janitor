@@ -1,7 +1,6 @@
 package com.eischet.janitor.modules.httpclient;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.eischet.janitor.logging.JanitorLogger;
 
 import javax.net.ssl.*;
 import java.io.IOException;
@@ -23,7 +22,7 @@ import java.security.cert.X509Certificate;
  */
 public class BlindSSLSocketFactory extends SSLSocketFactory {
 
-    private static final Logger log = LoggerFactory.getLogger(BlindSSLSocketFactory.class);
+    private static final JanitorLogger log = JanitorLogger.getLogger(BlindSSLSocketFactory.class);
 
     public static final SSLSocketFactory defaultFactory = new BlindSSLSocketFactory();
 

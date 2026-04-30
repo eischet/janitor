@@ -23,6 +23,7 @@ import com.eischet.janitor.compiler.ast.expression.literal.DurationLiteral;
 import com.eischet.janitor.compiler.ast.statement.Script;
 import com.eischet.janitor.lang.JNativeMethod;
 import com.eischet.janitor.lang.JanitorParser;
+import com.eischet.janitor.logging.JanitorLogger;
 import com.eischet.janitor.repl.ConsoleReplIO;
 import com.eischet.janitor.repl.JanitorRepl;
 import com.eischet.janitor.repl.PartialParseResult;
@@ -36,8 +37,6 @@ import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
@@ -46,11 +45,9 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 public class FirstParserTestCase extends JanitorTest {
 
-    protected static final Logger log = LoggerFactory.getLogger(FirstParserTestCase.class);
+    protected static final JanitorLogger log = JanitorLogger.getLogger(FirstParserTestCase.class);
 
     private static final Consumer<Scope> NO_GLOBALS = s -> {};
 
@@ -1329,7 +1326,7 @@ public class FirstParserTestCase extends JanitorTest {
         final JanitorParser.ScriptContext script = JanitorScript.parseScript(scriptSource);
         final ScriptModule module = ScriptModule.unnamed(scriptSource);
         final Script scriptObject = JanitorCompiler.build(TestEnv.env, module, script, scriptSource);
-        final SLFLoggingRuntime runtime = new SLFLoggingRuntime(TestEnv.env, LoggerFactory.getLogger(getClass()));
+        final SLFLoggingRuntime runtime = new SLFLoggingRuntime(TestEnv.env, JanitorLogger.getLogger(getClass()));
 
         runtime.setTraceListener(message -> {
             runtime.getLog().info("trace: {}", message);

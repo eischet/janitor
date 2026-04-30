@@ -9,21 +9,20 @@ import com.eischet.janitor.api.errors.glue.JanitorGlueException;
 import com.eischet.janitor.api.types.JAssignable;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.*;
+import com.eischet.janitor.logging.JanitorLogger;
 import com.eischet.janitor.orm.meta.EntityIndex;
 import com.eischet.janitor.api.types.StringMappedEnum;
 import com.eischet.janitor.orm.ref.*;
 import com.eischet.janitor.orm.sql.ColumnTypeHint;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
 import java.util.NoSuchElementException;
 
 public class CommonDao {
 
-    private static final Logger log = LoggerFactory.getLogger(CommonDao.class);
+    protected static final JanitorLogger log = JanitorLogger.getLogger(CommonDao.class);
 
     public static void readProperty(final EntityIndex entityIndex,
                                     final String columnName,
