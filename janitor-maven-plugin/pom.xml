@@ -20,10 +20,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <!-- janitor-lang requires 17, therefore the plugin does, too -->
-        <maven.version>3.9.11</maven.version>
-
-
+        <maven.version>3.9.15</maven.version> <!-- should IMO be synchronized with the mvnw wrapper version used -->
         <deps.maven-resolver>2.0.16</deps.maven-resolver>
 
         <!-- TODO: with current dependency versions, the (old?) unit test does not work anymore.
