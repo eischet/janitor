@@ -20,7 +20,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.version>3.9.15</maven.version> <!-- should IMO be synchronized with the mvnw wrapper version used -->
+        <maven.version>3.9.11</maven.version> <!-- latest IDEA bundled version. I'd upgrade and/or use the mvn wrapper, but IntelliJ ignores it (looks like yet another bug) -->
         <deps.maven-resolver>2.0.16</deps.maven-resolver>
 
         <!-- TODO: with current dependency versions, the (old?) unit test does not work anymore.
