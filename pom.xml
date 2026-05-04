@@ -26,8 +26,7 @@
 
         <!-- dependency versions -->
         <deps.autoservice>1.1.1</deps.autoservice>
-        <deps.jansi>4.0.13</deps.jansi>
-        <deps.jline>4.0.13</deps.jline>
+        <deps.jansi-and-jline>4.0.14</deps.jansi-and-jline>
 
         <maven.compiler.release>21</maven.compiler.release>
 
@@ -217,12 +216,12 @@
             <dependency>
                 <groupId>org.jline</groupId>
                 <artifactId>jline</artifactId>
-                <version>${deps.jline}</version>
+                <version>${deps.jansi-and-jline}</version>
             </dependency>
             <dependency>
                 <groupId>org.jline</groupId>
                 <artifactId>jansi</artifactId>
-                <version>${deps.jansi}</version>
+                <version>${deps.jansi-and-jline}</version>
             </dependency>
 
         </dependencies>
