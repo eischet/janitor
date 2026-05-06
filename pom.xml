@@ -26,7 +26,7 @@
 
         <!-- dependency versions -->
         <deps.autoservice>1.1.1</deps.autoservice>
-        <deps.jansi-and-jline>4.0.14</deps.jansi-and-jline>
+        <deps.jansi-and-jline>4.1.0</deps.jansi-and-jline>
 
         <maven.compiler.release>21</maven.compiler.release>
 
