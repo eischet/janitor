@@ -15,8 +15,11 @@ import com.eischet.janitor.api.types.builtin.JString;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import com.eischet.janitor.api.types.functions.JCallArgs;
+import com.eischet.janitor.env.JElement;
+import com.eischet.janitor.env.JanitorXmlParser;
 import com.eischet.janitor.runtime.DateTimeUtilities;
 
+import javax.xml.stream.XMLStreamException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -33,6 +36,7 @@ public class FilesModule extends JanitorComposed<FilesModule> implements Janitor
         dispatcher.addMethod("exists", FilesModule::fileExists);
         dispatcher.addMethod("write", FilesModule::writeString);
         dispatcher.addMethod("read", FilesModule::readString);
+        dispatcher.addMethod("readXml", FilesModule::readXml);
         dispatcher.addMethod("writeBinary", FilesModule::writeBinary);
         dispatcher.addMethod("readBinary", FilesModule::readBinary);
         dispatcher.addMethod("list", FilesModule::list);
@@ -90,6 +94,27 @@ public class FilesModule extends JanitorComposed<FilesModule> implements Janitor
             );
         } catch (IOException e) {
             throw new JanitorNativeException(runningScript, "error reading file", e);
+        }
+    }
+
+    public JElement readXml(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+        try {
+            final String contents = Files.readString(
+                Path.of(arguments.require(1, 2).getString(0).janitorGetHostValue()),
+                Charset.forName(arguments.getOptionalStringValue(2, "UTF-8"))
+            );
+            return JanitorXmlParser.parseXml(contents);
+        } catch (IOException | XMLStreamException e) {
+            throw new JanitorNativeException(process, "error reading file", e);
+        }
+    }
+
+    public JElement parseXml(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+        try {
+            final String contents = arguments.require(1).getRequiredStringValue(0);
+            return JanitorXmlParser.parseXml(contents);
+        } catch (XMLStreamException e) {
+            throw new JanitorNativeException(process, "error reading file", e);
         }
     }
 

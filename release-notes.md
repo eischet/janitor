@@ -1,4 +1,4 @@
-# 0.9.56-SNAPSHOT, 2026-05-20
+# 0.9.56, 2026-05-20 (internal release only)
 
 - revised the structure of the `janitor-modules` subproject, removed the predecessor, "janitor-commons", and added a convenience "kitchen sink" jar, `janitor-modules-common`.
   The "common" dependency will always strive to include all modules, except for those that come with huge external dependencies.
@@ -8,6 +8,8 @@
 - janitor-orm: add utility methods for Java-Stream-friendly nullness checking to `ForeignKey`.
 - date objects can now be turned into strings via the string or format method (still need to settle on one name instead of having two alias names),
   just like datetime objects already can.
+- JsonException is now a RuntimeException to make using the various JSON-related methods less cumbersome
+- added a simple XML parser, accessible via the default files module: files.readXml(filename, encoding); files.parseXml(string).
 - janitor-logging: this module is an SLF4J provider and should never be a dependency of library projects, only of apps.
   All "library-facing" parts have been moved to the `janitor-toolbox` module, because it is included by all other modules.
 - dependency updates: jline, jansi, shade plugin, maven invoker

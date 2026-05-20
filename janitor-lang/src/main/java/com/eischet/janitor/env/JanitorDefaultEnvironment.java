@@ -248,12 +248,12 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
 
     @Override
     public @NotNull JMap parseJsonToMap(final String json) throws JsonException {
-        return JMapClass.parseJson(getBuiltinTypes().map(), json, this);
+        return JMapClass.parseJson(getBuiltinTypes().map(), json);
     }
 
     @Override
     public @NotNull JList parseJsonToList(final String json) throws JsonException {
-        return JListClass.parseJson(getBuiltinTypes().list(), json, this);
+        return JListClass.parseJson(getBuiltinTypes().list(), json);
     }
 
     @Override

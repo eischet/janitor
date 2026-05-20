@@ -1,6 +1,6 @@
 package com.eischet.janitor.toolbox.json.api;
 
-public class JsonException extends Exception {
+public class JsonException extends RuntimeException {
     public JsonException() {
     }
 

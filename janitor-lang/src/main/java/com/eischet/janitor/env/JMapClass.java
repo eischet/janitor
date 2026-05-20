@@ -15,6 +15,7 @@ import com.eischet.janitor.api.types.builtin.JString;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonInputStream;
 import com.eischet.janitor.toolbox.json.api.JsonTokenType;
+import org.intellij.lang.annotations.Language;
 
 import java.util.Map;
 
@@ -49,7 +50,7 @@ public class JMapClass {
      */
     public static JMap __parseJson(final JanitorWrapper<Map<JanitorObject, JanitorObject>> self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         try {
-            return parseJson((JMap) self, arguments.require(1).getString(0).janitorGetHostValue(), process.getRuntime().getEnvironment());
+            return parseJson((JMap) self, arguments.require(1).getString(0).janitorGetHostValue());
         } catch (JsonException e) {
             throw new JanitorNativeException(process, "error parsing json", e);
         }
@@ -97,17 +98,16 @@ public class JMapClass {
      * Parse a JSON string into a map.
      *
      * @param json the JSON string
-     * @param env  the environment
      * @return the map
      * @throws JsonException on JSON errors
      */
-    public static JMap parseJson(final JMap self, final String json, final JanitorEnvironment env) throws JsonException {
+    public static JMap parseJson(final JMap self, @Language("JSON") final String json) throws JsonException {
         if (json == null || json.isBlank()) {
             return self;
         }
-        final JsonInputStream reader = env.getLenientJsonConsumer(json);
+        final JsonInputStream reader = Janitor.current().getLenientJsonConsumer(json);
         // final JsonInputStream reader = GsonInputStream.lenient(json);
-        return parseJson(self, reader, env);
+        return parseJson(self, reader);
     }
 
     /**
@@ -117,13 +117,13 @@ public class JMapClass {
      * @return the map
      * @throws JsonException if the JSON is invalid, e.g. it's not really a map
      */
-    public static JMap parseJson(final JMap self, final JsonInputStream reader, final JanitorEnvironment env) throws JsonException {
+    public static JMap parseJson(final JMap self, final JsonInputStream reader) throws JsonException {
         reader.beginObject();
         while (reader.hasNext()) {
             if (reader.peek() == JsonTokenType.END_OBJECT) {
                 break;
             }
-            self.put(env.getBuiltinTypes().nullableString(reader.nextKey()), JCollection.parseJsonValue(reader, env));
+            self.put(Janitor.nullableString(reader.nextKey()), JCollection.parseJsonValue(reader));
         }
         reader.endObject();
         return self;

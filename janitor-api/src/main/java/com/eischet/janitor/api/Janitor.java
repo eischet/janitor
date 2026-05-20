@@ -198,6 +198,17 @@ public final class Janitor {
         return getBuiltins().list();
     }
 
+    @NotNull
+    JMap parseJsonToMap(@Language("JSON") final String json) throws JsonException {
+        return current().parseJsonToMap(json);
+    }
+
+    @NotNull
+    JList parseJsonToList(@Language("JSON") final String json) throws JsonException {
+        return current().parseJsonToList(json);
+    }
+
+
     /**
      * Returns a new empty list, preallocated for the specified number of elements.
      * Even though this is probably a negligible optimization, if you know the required list size before creating the list,

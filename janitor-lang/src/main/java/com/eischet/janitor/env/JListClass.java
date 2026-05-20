@@ -1,7 +1,6 @@
 package com.eischet.janitor.env;
 
 import com.eischet.janitor.api.Janitor;
-import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
@@ -25,7 +24,7 @@ public class JListClass {
 
     public static JList __parseJson(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         try {
-            return parseJson(self, arguments.require(1).getString(0).janitorGetHostValue(), process.getRuntime().getEnvironment());
+            return parseJson(self, arguments.require(1).getString(0).janitorGetHostValue());
         } catch (JsonException e) {
             throw new JanitorNativeException(process, "error parsing json", e);
         }
@@ -35,16 +34,15 @@ public class JListClass {
      * Read a JSON string, representing a list, into this list.
      *
      * @param json the JSON string
-     * @param env  the environment
      * @return this list
      * @throws JsonException if the JSON is invalid, e.g. it's not really a list
      */
-    public static JList parseJson(final JList self, @Language("JSON") final String json, final JanitorEnvironment env) throws JsonException {
+    public static JList parseJson(final JList self, @Language("JSON") final String json) throws JsonException {
         if (json == null || json.isBlank()) {
             return self;
         }
-        final JsonInputStream reader = env.getLenientJsonConsumer(json);
-        return parseJson(self, reader, env);
+        final JsonInputStream reader = Janitor.current().getLenientJsonConsumer(json);
+        return parseJson(self, reader);
     }
 
 
@@ -55,10 +53,10 @@ public class JListClass {
      * @return this list
      * @throws JsonException if the JSON is invalid, e.g. it's not really a list
      */
-    public static JList parseJson(final JList self, final JsonInputStream reader, final JanitorEnvironment env) throws JsonException {
+    public static JList parseJson(final JList self, final JsonInputStream reader) throws JsonException {
         reader.beginArray();
         while (reader.hasNext()) {
-            self.add(JCollection.parseJsonValue(reader, env));
+            self.add(JCollection.parseJsonValue(reader));
         }
         reader.endArray();
         return self;
