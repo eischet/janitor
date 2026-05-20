@@ -1,5 +1,6 @@
 package com.eischet.janitor.api.i18n;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 
@@ -36,4 +37,6 @@ public interface JanitorFormatting {
      * @return the formatted string
      */
     String formatDateTimeNoSeconds(final LocalDateTime hostValue);
+
+    String formatDate(final LocalDate date);
 }

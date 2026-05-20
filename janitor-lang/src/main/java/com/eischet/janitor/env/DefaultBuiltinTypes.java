@@ -193,7 +193,8 @@ public class DefaultBuiltinTypes implements BuiltinTypes {
         dateDispatch.addLongProperty("year", JDate::getYear);
         dateDispatch.addLongProperty("month", JDate::getMonth);
         dateDispatch.addLongProperty("day", JDate::getDayOfMonth);
-
+        dateDispatch.addMethod("format", JDateClass::__format);
+        dateDispatch.addMethod("string", JDateClass::__format);
     }
 
 

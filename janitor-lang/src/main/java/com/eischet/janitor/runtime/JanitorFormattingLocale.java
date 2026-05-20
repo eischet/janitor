@@ -2,6 +2,7 @@ package com.eischet.janitor.runtime;
 
 import com.eischet.janitor.api.i18n.JanitorFormatting;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.chrono.Chronology;
@@ -15,6 +16,7 @@ public class JanitorFormattingLocale implements JanitorFormatting {
     private final DateTimeFormatter noSeconds;
     private final DateTimeFormatter hoursAndMinutes;
     private final DateTimeFormatter dateTimeFormatter;
+    private final DateTimeFormatter dateFormatter;
 
     public JanitorFormattingLocale(final Locale locale) {
         String fullDateFormat = DateTimeFormatterBuilder.getLocalizedDateTimePattern(FormatStyle.MEDIUM,
@@ -25,6 +27,9 @@ public class JanitorFormattingLocale implements JanitorFormatting {
                 FormatStyle.SHORT,
                 Chronology.ofLocale(locale),
                 locale);
+        // Date only:
+        dateFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale);
+
         noSeconds = DateTimeFormatter.ofPattern(fullDateFormatWithoutSeconds);
         hoursAndMinutes = DateTimeFormatter.ofPattern("HH:mm");
         dateTimeFormatter = DateTimeFormatter.ofPattern(fullDateFormat);
@@ -50,4 +55,10 @@ public class JanitorFormattingLocale implements JanitorFormatting {
     public String formatDateTimeNoSeconds(final LocalDateTime hostValue) {
         return noSeconds.format(hostValue);
     }
+
+    @Override
+    public String formatDate(final LocalDate date) {
+        return dateFormatter.format(date);
+    }
+
 }
