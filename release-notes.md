@@ -1,4 +1,4 @@
-# 0.9.56-SNAPSHOT, 2026-05-19
+# 0.9.56-SNAPSHOT, 2026-05-20
 
 - revised the structure of the `janitor-modules` subproject, removed the predecessor, "janitor-commons", and added a convenience "kitchen sink" jar, `janitor-modules-common`.
   The "common" dependency will always strive to include all modules, except for those that come with huge external dependencies.
@@ -43,7 +43,7 @@
 - orm: allow ordering to be applied to filter searches 
 - introduce a handy "shift" method for call arguments (java side)
 - the SLFLoggingRuntime can now display a custom "context", e.g. the name of a script file
-- dependency updates: jline, jansi
+- dependency updates: jline, jansi, maven stuff
 
 
 # 0.9.51, 2026-03-30
