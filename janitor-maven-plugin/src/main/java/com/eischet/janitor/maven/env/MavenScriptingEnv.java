@@ -4,6 +4,7 @@ import com.eischet.janitor.api.JanitorRuntime;
 import com.eischet.janitor.env.JanitorDefaultEnvironment;
 import com.eischet.janitor.generator.GeneratorModule;
 import com.eischet.janitor.modules.brrr.BrrrModule;
+import com.eischet.janitor.modules.commonmark.CommonMarkModule;
 import com.eischet.janitor.modules.files.FilesModule;
 import com.eischet.janitor.modules.httpclient.HttpClientModule;
 import com.eischet.janitor.modules.os.OperatingSystemModule;
@@ -28,6 +29,7 @@ public class MavenScriptingEnv extends JanitorDefaultEnvironment {
         addModule(GeneratorModule.REGISTRATION);
         addModule(HttpClientModule.REGISTRATION);
         addModule(BrrrModule.REGISTRATION);
+        addModule(CommonMarkModule.REGISTRATION);
     }
 
     @Override

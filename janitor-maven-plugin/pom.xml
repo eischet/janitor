@@ -57,24 +57,12 @@
         </dependency>
 
         <dependency>
-            <groupId>com.eischet.janitor.modules</groupId>
-            <artifactId>brrr</artifactId>
-            <version>${revision}</version>
+            <groupId>com.eischet.janitor</groupId>
+            <artifactId>janitor-modules-common</artifactId>
         </dependency>
         <dependency>
             <groupId>com.eischet.janitor.modules</groupId>
-            <artifactId>files</artifactId>
-            <version>${revision}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.eischet.janitor.modules</groupId>
-            <artifactId>httpclient</artifactId>
-            <version>${revision}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.eischet.janitor.modules</groupId>
-            <artifactId>os</artifactId>
-            <version>${revision}</version>
+            <artifactId>commonmark</artifactId>
         </dependency>
 
 
