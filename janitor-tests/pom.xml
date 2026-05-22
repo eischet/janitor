@@ -48,6 +48,10 @@
             <artifactId>janitor-modules-common</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.eischet.janitor.modules</groupId>
+            <artifactId>commonmark</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.eischet.janitor</groupId>
             <artifactId>janitor-dbxs</artifactId>
         </dependency>

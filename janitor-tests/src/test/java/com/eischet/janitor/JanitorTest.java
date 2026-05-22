@@ -19,6 +19,7 @@ import com.eischet.janitor.runtime.JanitorScript;
 import com.eischet.janitor.runtime.OutputCatchingTestRuntime;
 import com.eischet.janitor.runtime.RunningScriptProcess;
 import org.intellij.lang.annotations.Language;
+import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.BeforeAll;
 
 import java.util.function.Consumer;
@@ -76,15 +77,23 @@ public abstract class JanitorTest {
     }
 
     protected JanitorObject evaluate(final @Language("Janitor") String expressionSource, final Consumer<Scope> prepareGlobals) throws JanitorCompilerException, JanitorRuntimeException {
+        return evaluate(expressionSource, null, prepareGlobals);
+    }
+
+    protected JanitorObject evaluate(final @Language("Janitor") String expressionSource,
+                                     final @Nullable Consumer<JanitorEnvironment> environmentConfigurer,
+                                     final @Nullable Consumer<Scope> prepareGlobals) throws JanitorCompilerException, JanitorRuntimeException {
         log.info("evaluating: {}\n", expressionSource);
         final JanitorParser.ScriptContext script = JanitorScript.parseScript(expressionSource);
         final ScriptModule module = ScriptModule.unnamed(expressionSource);
         try {
             final Script scriptObject = JanitorCompiler.build(TestEnv.env, module, script, expressionSource);
-            final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
+            final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh(environmentConfigurer);
 
             final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), module); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
-            prepareGlobals.accept(globalScope);
+            if (prepareGlobals != null) {
+                prepareGlobals.accept(globalScope);
+            }
             final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, "manual", scriptObject);
             return process.run();
         } catch (CompilerError e) {

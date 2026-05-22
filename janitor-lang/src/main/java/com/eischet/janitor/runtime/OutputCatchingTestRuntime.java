@@ -8,15 +8,24 @@ import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.env.JanitorDefaultEnvironment;
 import com.eischet.janitor.runtime.modules.CollectionsModule;
 
+import java.util.function.Consumer;
+
 public class OutputCatchingTestRuntime extends BaseRuntime {
 
     public static OutputCatchingTestRuntime fresh() {
+        return fresh(null);
+    }
+
+    public static OutputCatchingTestRuntime fresh(final Consumer<JanitorEnvironment> environmentConfigurer) {
         final JanitorEnvironment env = new JanitorDefaultEnvironment(new JanitorFormattingGerman()) {
             @Override
             public void warn(final String message) {
                 System.err.println(message);
             }
         };
+        if (environmentConfigurer != null) {
+            environmentConfigurer.accept(env);
+        }
         env.addModule(CollectionsModule.REGISTRATION);
         return new OutputCatchingTestRuntime(env);
     }

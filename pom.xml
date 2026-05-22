@@ -19,7 +19,7 @@
 
     <properties>
         <!-- project revision -->
-        <revision>0.9.56-SNAPSHOT</revision>
+        <revision>0.9.57-SNAPSHOT</revision>
 
         <!-- project settings -->
         <maven.plugin.validation>VERBOSE</maven.plugin.validation>
@@ -69,6 +69,7 @@
         <module>janitor-tests</module>
         <module>janitor-modules</module>
         <module>janitor-modules-common</module>
+        <module>janitor-modules/commonmark</module>
     </modules>
 
 
@@ -226,11 +227,28 @@
                 <artifactId>janitor-generator</artifactId>
                 <version>${revision}</version>
             </dependency>
+
+            <!-- most modules are included in janitor-modules-common -->
             <dependency>
                 <groupId>com.eischet.janitor</groupId>
                 <artifactId>janitor-modules-common</artifactId>
                 <version>${revision}</version>
             </dependency>
+
+            <!-- these modules are not included in janitor-modules-common -->
+            <dependency>
+                <groupId>com.eischet.janitor.modules</groupId>
+                <artifactId>commonmark</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eischet.janitor.modules</groupId>
+                <artifactId>mustang</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+
+            <!-- external dependencies -->
             <dependency>
                 <groupId>com.google.code.gson</groupId>
                 <artifactId>gson</artifactId>
@@ -247,11 +265,6 @@
                 <version>${deps.slf4j}</version>
             </dependency>
             <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-core</artifactId>
-                <version>2.21.3</version>
-            </dependency>
-            <dependency>
                 <groupId>com.google.auto.service</groupId>
                 <artifactId>auto-service-annotations</artifactId>
                 <version>${deps.autoservice}</version>
@@ -266,6 +279,13 @@
                 <artifactId>jansi</artifactId>
                 <version>${deps.jansi-and-jline}</version>
             </dependency>
+
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>2.21.3</version>
+            </dependency>
+
 
         </dependencies>
     </dependencyManagement>

@@ -1,3 +1,8 @@
+# 0.9.57-SNAPSHOT, 2026-05-2
+
+- new module "commonmark", wraps the commonmark-java library.
+
+
 # 0.9.56, 2026-05-20 (internal release only)
 
 - revised the structure of the `janitor-modules` subproject, removed the predecessor, "janitor-commons", and added a convenience "kitchen sink" jar, `janitor-modules-common`.

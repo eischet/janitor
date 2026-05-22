@@ -56,9 +56,9 @@ public class ImportClause extends Statement implements JsonExportableObject {
         // Load qualified modules:
         if (qname != null) {
             if (qname.getParts().size() == 1) {
-                final JanitorModule m = process.getEnvironment().getModuleByQualifier(process, qname.getParts().get(0));
+                final JanitorModule m = process.getEnvironment().getModuleByQualifier(process, qname.getParts().getFirst());
                 if (alias == null) {
-                    process.getMainScope().bind(process, qname.getParts().get(0), m);
+                    process.getMainScope().bind(process, qname.getParts().getFirst(), m);
                 } else {
                     process.getMainScope().bind(process, alias.getText(), m);
                 }
