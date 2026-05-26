@@ -19,7 +19,6 @@
         <dependency>
             <groupId>com.eischet</groupId>
             <artifactId>jul-rolling-logs</artifactId>
-            <version>1.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>

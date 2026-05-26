@@ -1067,10 +1067,10 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
 
     /**
      * Adds a constructor method.
-     * This is meant for constructor of <strong>another</strong> objects, for use in factories and modules.
+     * This is meant for constructors of <strong>another</strong> objects, for use in factories and modules.
      * @param name name of the constructor, e.g. "String" for "Foo", conventionally starting with an upper case letter
      * @param constructor the constructor (taking no arguments)
-     * @return a meta-data builder for adding additional information
+     * @return a metadata builder for adding additional information
      * @param <X> any JanitorObject
      */
     public <X extends JanitorObject> MetaDataBuilder<T> addConstructor(final @NotNull String name, final DefaultConstructor<X> constructor) {
@@ -1078,7 +1078,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
             final X instance = constructor.create();
             if (args.size() == 1) {
                 final JMap data = args.getRequired(0, JMap.class);
-                data.applyTo(process, self);
+                data.applyTo(process, instance);
             }
             return instance;
         });
