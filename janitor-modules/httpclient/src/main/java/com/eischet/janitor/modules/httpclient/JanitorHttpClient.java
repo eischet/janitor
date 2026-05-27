@@ -46,9 +46,11 @@ import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
  */
 public class JanitorHttpClient extends JanitorComposed<JanitorHttpClient> implements JanitorCleanupRequired {
 
-    private static final DispatchTable<JanitorHttpClient> DISPATCH = new DispatchTable<>();
-    private static final JanitorLogger log = JanitorLogger.getLogger(JanitorHttpClient.class);
-    private static final String authHeaderName = "Authorization";
+    public static final DispatchTable<JanitorHttpClient> DISPATCH = new DispatchTable<>();
+
+    public static final String authHeaderName = "Authorization";
+
+    protected static final JanitorLogger log = JanitorLogger.getLogger(JanitorHttpClient.class);
 
     static {
         DISPATCH.addBuilderMethod("proxy", (self, process, args) -> self.setProxy(args.getString(0).janitorGetHostValue(), args.getInt(1).getAsInt()));

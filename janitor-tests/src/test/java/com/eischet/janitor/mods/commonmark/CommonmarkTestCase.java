@@ -38,12 +38,12 @@ public class CommonmarkTestCase extends JanitorTest {
             import commonmark;
             
             // Build document
-            heading = commonmark.Heading(); // {level: 2});
-            heading.level = 2;
+            heading = commonmark.Heading({level: 2});
+            // heading.level = 2;
             
             // ??? does not work ??? heading.appendChild(commonmark.Text({literal: "My heading"}));
-            text = commonmark.Text();
-            text.literal = "My heading";
+            text = commonmark.Text({literal: "My heading"});
+            // text.literal = "My heading";
             
             heading.appendChild(text);
             
