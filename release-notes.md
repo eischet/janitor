@@ -1,4 +1,4 @@
-# 0.9.57-SNAPSHOT, 2026-05-26
+# 0.9.57, 2026-05-28 (internal release only)
 
 - new module "commonmark", wraps the commonmark-java library.
 - Bugfix: GenericDispatchTable::addConstructor apply the optional map arg to itself instead of the created instance
