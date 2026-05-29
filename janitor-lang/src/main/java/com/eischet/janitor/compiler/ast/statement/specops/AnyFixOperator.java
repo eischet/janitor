@@ -42,6 +42,7 @@ public abstract class AnyFixOperator extends Statement implements Expression, Js
         process.setCurrentLocation(getLocation());
         process.trace(() -> this + " : expr=" + expr);
         if (expr instanceof Identifier) {
+            process.countInstruction();
             final String id = ((Identifier) expr).getText();
             final ResultAndScope scoped = process.lookupScopedVar(id);
             if (scoped == null) {

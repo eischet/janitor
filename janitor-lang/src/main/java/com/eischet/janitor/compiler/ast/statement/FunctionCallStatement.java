@@ -76,6 +76,7 @@ public class FunctionCallStatement extends Statement implements Expression, Json
         }
         final JanitorObject finalFunction = function;
         process.trace(() -> "1 trying to call function: " + finalFunction);
+        process.countInstruction();
 
         final JCallArgs args = expressionList == null ? JCallArgs.empty(functionName, process) : expressionList.toCallArguments(functionName, process);
 

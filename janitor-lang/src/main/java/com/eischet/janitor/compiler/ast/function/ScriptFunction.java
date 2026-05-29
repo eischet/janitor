@@ -91,6 +91,7 @@ public class ScriptFunction extends AstNode implements Expression, JanitorObject
 
     @Override
     public JanitorObject call(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+        process.countInstruction();
         try {
             arguments.requireAtLeast(formalParameters.minSize());
             try {

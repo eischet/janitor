@@ -38,6 +38,7 @@ public class WhileLoop extends Statement implements JsonExportableObject {
             process.setCurrentLocation(getLocation());
             while (JanitorSemantics.isTruthy(expression.evaluate(process).janitorUnpack())) {
                 try {
+                    process.countInstruction();
                     block.execute(process);
                 } catch (ContinueStatement.Continue ignored) {
                 }

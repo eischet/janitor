@@ -24,6 +24,7 @@ public class ThrowStatement extends Statement implements JsonExportableObject {
     @Override
     public void execute(final JanitorScriptProcess process) throws JanitorRuntimeException, JanitorControlFlowException {
         final JanitorObject throwable = expression.evaluate(process);
+        process.countInstruction();
         if (throwable instanceof JanitorRuntimeException runtimeException) {
             throw runtimeException;
         }

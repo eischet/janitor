@@ -49,6 +49,16 @@ public class ManualAstTestCase extends JanitorTest {
                 return null; // why is this even here?
             }
 
+            @Override
+            public void countInstruction() throws JanitorRuntimeException {
+
+            }
+
+            @Override
+            public void setMaxInstructionCount(final long maxInstructionCount) {
+
+            }
+
 
             @Override
             public void warn(String warning) {

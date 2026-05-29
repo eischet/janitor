@@ -49,6 +49,7 @@ public class ForLoop extends Statement implements JsonExportableObject {
                 while (iterator.hasNext()) {
                     try {
                         process.enterBlock(getLocation());
+                        process.countInstruction();
                         final JanitorObject next = iterator.next().janitorUnpack();
                         process.getCurrentScope().bind(process, loopVar, next);
                         try {

@@ -41,6 +41,7 @@ public abstract class Assignment extends Statement implements JsonExportableObje
     public void execute(final JanitorScriptProcess process) throws JanitorRuntimeException {
         process.setCurrentLocation(getLocation());
         process.trace(() -> "executing " + this + " with left " + left + " and right " + right);
+        process.countInstruction();
         if (left instanceof Identifier) {
             final String id = ((Identifier) left).getText();
             process.trace(() -> "assigning to identifier " + id);

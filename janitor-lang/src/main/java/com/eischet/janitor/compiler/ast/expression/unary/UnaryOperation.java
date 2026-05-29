@@ -35,6 +35,7 @@ public abstract class UnaryOperation extends AstNode implements Expression {
     public @NotNull JanitorObject evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException {
         final JanitorObject variable = parameter.evaluate(process).janitorUnpack();
         process.setCurrentLocation(getLocation());
+        process.countInstruction();
         return functor.perform(process, variable);
     }
 

@@ -2,10 +2,10 @@ package com.eischet.janitor.runtime;
 
 import com.eischet.janitor.api.JanitorRuntime;
 import com.eischet.janitor.api.errors.glue.JanitorControlFlowException;
+import com.eischet.janitor.api.errors.runtime.JanitorInstructionLimitExceededException;
 import com.eischet.janitor.api.errors.runtime.JanitorInternalException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.Scope;
-import com.eischet.janitor.api.types.JanitorCleanupRequired;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.compiler.ast.statement.Script;
 import com.eischet.janitor.compiler.ast.statement.controlflow.ReturnStatement;
@@ -14,6 +14,8 @@ import org.jetbrains.annotations.NotNull;
 public class RunningScriptProcess extends AbstractScriptProcess {
 
     private final Script script;
+    private long instructionCounter = 0;
+    private long maxInstructionCount = 0;
 
     public RunningScriptProcess(final JanitorRuntime runtime, final Scope parentScope, final @NotNull String processName, final Script script, final boolean wrapScope) {
         super(runtime, wrapScope ? Scope.createMainScope(parentScope) : parentScope, processName);
@@ -22,6 +24,27 @@ public class RunningScriptProcess extends AbstractScriptProcess {
 
     public RunningScriptProcess(final JanitorRuntime runtime, final Scope globalScope, final @NotNull String processName, final Script script) {
         this(runtime, globalScope, processName, script, false);
+    }
+
+    @Override
+    public void countInstruction() throws JanitorRuntimeException {
+        ++instructionCounter;
+        if (maxInstructionCount > 0 && instructionCounter > maxInstructionCount) {
+            throw new JanitorInstructionLimitExceededException(this, maxInstructionCount);
+        }
+    }
+
+    public long getInstructionCounter() {
+        return instructionCounter;
+    }
+
+    public long getMaxInstructionCount() {
+        return maxInstructionCount;
+    }
+
+    @Override
+    public void setMaxInstructionCount(final long maxInstructionCount) {
+        this.maxInstructionCount = maxInstructionCount;
     }
 
     @Override

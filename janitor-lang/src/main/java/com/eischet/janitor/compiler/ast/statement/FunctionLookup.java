@@ -57,6 +57,8 @@ public class FunctionLookup extends Statement implements Expression, JsonExporta
     @Override
     public @NotNull JanitorObject evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException {
         process.setCurrentLocation(getLocation());
+        process.countInstruction();
+
         JanitorObject function = null;
 
         process.trace(() -> String.format("this=%s; evaluate onExpression=%s, functionName=%s, guarded=%s", this, onExpression, functionName, guarded));
@@ -109,7 +111,7 @@ public class FunctionLookup extends Statement implements Expression, JsonExporta
 
         process.trace(() -> "check-2");
 
-        if (expressionList == null && function != null) { // war: instanceof MangedObject, mal gucken ob das noch funktioniert...
+        if (expressionList == null && function != null) {
             process.trace(() -> "the 'function' is a managed object and there's no expr. list --> returning it");
             return function;
         }

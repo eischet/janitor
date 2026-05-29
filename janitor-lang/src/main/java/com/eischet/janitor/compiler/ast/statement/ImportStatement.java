@@ -38,6 +38,7 @@ public class ImportStatement extends Statement implements JsonExportableObject {
         for (final ImportClause clause : clauses) {
             clause.execute(process);
         }
+        process.countInstruction();
     }
 
     @Override

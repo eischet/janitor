@@ -58,6 +58,7 @@ public class ReturnStatement extends Statement implements JsonExportableObject {
     @Override
     public void execute(final JanitorScriptProcess process) throws JanitorRuntimeException, Return {
         process.setCurrentLocation(getLocation());
+        process.countInstruction();
         if (expression != null) {
             final JanitorObject returnValue = expression.evaluate(process).janitorUnpack();
             process.trace(() -> "return value: " + returnValue);

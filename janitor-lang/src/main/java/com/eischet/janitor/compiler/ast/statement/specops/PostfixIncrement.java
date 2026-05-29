@@ -39,6 +39,7 @@ public class PostfixIncrement extends Statement implements Expression, JsonExpor
     public @NotNull JanitorObject evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException {
         process.setCurrentLocation(getLocation());
         process.trace(() -> "postfix increment: expr=" + expr);
+        process.countInstruction();
         if (expr instanceof Identifier) {
             final String id = ((Identifier) expr).getText();
             final ResultAndScope scoped = process.lookupScopedVar(id);

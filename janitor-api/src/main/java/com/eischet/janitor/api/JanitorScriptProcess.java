@@ -1,15 +1,15 @@
 package com.eischet.janitor.api;
 
-import com.eischet.janitor.api.types.BuiltinTypes;
-import com.eischet.janitor.api.types.JanitorCleanupRequired;
-import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.i18n.JanitorFormatting;
 import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.api.scopes.ResultAndScope;
 import com.eischet.janitor.api.scopes.Scope;
-import com.eischet.janitor.api.types.builtin.JString;
+import com.eischet.janitor.api.types.BuiltinTypes;
+import com.eischet.janitor.api.types.JanitorCleanupRequired;
 import com.eischet.janitor.api.types.JanitorObject;
+import com.eischet.janitor.api.types.builtin.JString;
+import com.eischet.janitor.api.types.functions.JCallArgs;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -36,12 +36,14 @@ public interface JanitorScriptProcess {
 
     /**
      * Returns a name for the process.
+     *
      * @return a name for the process
      */
     @NotNull String getProcessName();
 
     /**
      * Retrieve the source code, if available, of the currently running script's main module.
+     *
      * @return source code
      */
     @Nullable String getSource();
@@ -58,13 +60,13 @@ public interface JanitorScriptProcess {
 
     ResultAndScope lookupScopedVar(String id);
 
-    void setScriptResult(JanitorObject scriptResult);
-
     Location getCurrentLocation();
 
     void setCurrentLocation(Location ip);
 
     JanitorObject getScriptResult();
+
+    void setScriptResult(JanitorObject scriptResult);
 
     default void trace(Supplier<String> traceMessageSupplier) {
         getRuntime().trace(traceMessageSupplier);
@@ -84,7 +86,8 @@ public interface JanitorScriptProcess {
 
     /**
      * Expand a template with arguments.
-     * @param template the template to expand
+     *
+     * @param template  the template to expand
      * @param arguments the arguments to expand with
      * @return the expanded template
      * @throws JanitorRuntimeException on errors
@@ -122,9 +125,19 @@ public interface JanitorScriptProcess {
 
     /**
      * When scripts create objects that should be cleaned up after a script terminates, this method receives them.
+     *
      * @param cleanable the object to clean up
      */
     void registerCleanable(JanitorCleanupRequired cleanable);
+
+    /**
+     * Internal method to count the number of instructions executed.
+     *
+     * @throws JanitorRuntimeException when exceeded
+     */
+    void countInstruction() throws JanitorRuntimeException;
+
+    void setMaxInstructionCount(final long maxInstructionCount);
 
     @FunctionalInterface
     interface ProtectedCall {

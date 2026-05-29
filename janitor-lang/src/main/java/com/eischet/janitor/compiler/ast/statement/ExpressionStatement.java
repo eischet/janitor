@@ -39,6 +39,7 @@ public class ExpressionStatement extends Statement implements JsonExportableObje
     @Override
     public void execute(final JanitorScriptProcess process) throws JanitorRuntimeException, JanitorControlFlowException {
         process.setCurrentLocation(getLocation());
+        process.countInstruction();
         process.setScriptResult(expression.evaluate(process).janitorUnpack());
     }
 

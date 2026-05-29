@@ -57,6 +57,7 @@ public class ForRangeLoop extends Statement implements JsonExportableObject {
                 for (long i = startInt.getValue(); i <= endIntValue; i++) {
                     try {
                         process.enterBlock(getLocation());
+                        process.countInstruction();
                         process.getCurrentScope().bind(process, loopVar, Janitor.integer(i));
                         try {
                             block.execute(process);

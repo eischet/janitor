@@ -42,6 +42,7 @@ public abstract class BinaryOperation extends AstNode implements Expression {
     @Override
     public @NotNull JanitorObject evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException {
         process.setCurrentLocation(getLocation());
+        process.countInstruction();
         final JanitorObject leftObject = left.evaluate(process);
         final JanitorObject rightObject = right.evaluate(process);
         process.trace(() -> String.format("evaluating %s with left = %s ==> %s [%s] -- right = %s ==> %s [%s]",

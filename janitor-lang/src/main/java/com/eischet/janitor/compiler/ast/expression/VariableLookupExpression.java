@@ -1,6 +1,7 @@
 package com.eischet.janitor.compiler.ast.expression;
 
 import com.eischet.janitor.api.JanitorScriptProcess;
+import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.compiler.ast.AstNode;
@@ -29,8 +30,9 @@ public class VariableLookupExpression extends AstNode implements Expression, Jso
     }
 
     @Override
-    public @NotNull JanitorObject evaluate(final JanitorScriptProcess process) {
+    public @NotNull JanitorObject evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException {
         process.setCurrentLocation(getLocation());
+        process.countInstruction();
         return process.lookup(variableName).janitorUnpack();
     }
 

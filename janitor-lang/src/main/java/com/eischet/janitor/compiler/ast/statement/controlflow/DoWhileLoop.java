@@ -39,6 +39,7 @@ public class DoWhileLoop extends Statement implements JsonExportableObject {
             process.setCurrentLocation(getLocation());
             do {
                 try {
+                    process.countInstruction();
                     block.execute(process);
                 } catch (ContinueStatement.Continue ignored) {
                 }
