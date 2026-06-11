@@ -33,6 +33,9 @@ import com.eischet.janitor.orm.meta.EntityIndex;
 import com.eischet.janitor.orm.sql.ColumnTypeHint;
 import com.eischet.janitor.orm.sql.StatementCreator;
 import com.eischet.janitor.toolbox.json.api.JsonException;
+import com.eischet.janitor.toolbox.listeners.ListenerRegistration;
+import com.eischet.janitor.toolbox.listeners.ListenerSet;
+import com.eischet.janitor.toolbox.listeners.ListenerSetStandard;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -99,6 +102,7 @@ public abstract class GenericDao<T extends OrmEntity> extends JanitorComposed<Ge
     }
 
     protected final JanitorLogger log = JanitorLogger.getLogger(getClass());
+    protected final ListenerSet<EntityChangeListener<T>> entityChangeListeners= new ListenerSetStandard<>();
     protected final @NotNull String tableName;
     protected final @NotNull String idColumn;
     protected final @NotNull
@@ -543,6 +547,7 @@ public abstract class GenericDao<T extends OrmEntity> extends JanitorComposed<Ge
             // unsinnig / schädlich: ps.addLong(generatedId);
             writeAllColumns(conn, record, insertingColumns, ps);
         });
+        entityChangeListeners.fire(listener -> listener.onChange(EntityChangeListener.Type.INSERT, record));
     }
 
     @Override
@@ -555,6 +560,7 @@ public abstract class GenericDao<T extends OrmEntity> extends JanitorComposed<Ge
             writeAllColumns(conn, record, updatingColumns, ps);
             ps.addLong(record.getId());
         });
+        entityChangeListeners.fire(listener -> listener.onChange(EntityChangeListener.Type.UPDATE, record));
     }
 
     @Override
@@ -562,6 +568,7 @@ public abstract class GenericDao<T extends OrmEntity> extends JanitorComposed<Ge
         final StatementCreator creator = new StatementCreator(getDataManager().getDialect());
         final UpdateStatement updateStatement = UpdateStatement.of(creator.createDeleteStatement(tableName, idColumn));
         conn.update(updateStatement, ps -> ps.addLong(record.getId()));
+        entityChangeListeners.fire(listener -> listener.onChange(EntityChangeListener.Type.DELETE, record));
     }
 
     protected void writeAllColumns(final DatabaseConnection conn, final T record, final List<String> updatingColumns, final SimplePreparedStatement ps) throws SQLException {
@@ -773,4 +780,10 @@ public abstract class GenericDao<T extends OrmEntity> extends JanitorComposed<Ge
     public int hashCode() {
         return Objects.hashCode(tableName);
     }
+
+    @Override
+    public ListenerRegistration addChangeListener(final EntityChangeListener<T> listener) {
+        return entityChangeListeners.add(listener);
+    }
+
 }

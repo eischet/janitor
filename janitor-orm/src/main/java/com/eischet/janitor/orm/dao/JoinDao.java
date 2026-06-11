@@ -31,6 +31,9 @@ import com.eischet.janitor.orm.ref.ForeignKey;
 import com.eischet.janitor.orm.sql.ColumnTypeHint;
 import com.eischet.janitor.orm.sql.StatementCreator;
 import com.eischet.janitor.toolbox.json.api.JsonException;
+import com.eischet.janitor.toolbox.listeners.ListenerRegistration;
+import com.eischet.janitor.toolbox.listeners.ListenerSet;
+import com.eischet.janitor.toolbox.listeners.ListenerSetStandard;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
@@ -57,6 +60,7 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
         DISPATCH.addVoidMethod("delete", JoinDao::deleteForScript);
     }
 
+    protected final ListenerSet<EntityChangeListener<T>> entityChangeListeners= new ListenerSetStandard<>();
     protected final JanitorLogger log = JanitorLogger.getLogger(getClass());
     protected final @NotNull String tableName;
     protected final @NotNull
@@ -177,6 +181,7 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
         if (changedRows > 1) {
             throw new DatabaseError("multiple rows affected by insert");
         }
+        entityChangeListeners.fire(listener -> listener.onChange(EntityChangeListener.Type.INSERT, record));
     }
 
     public void merge(@NotNull DatabaseConnection conn, @NotNull T record) throws DatabaseError {
@@ -230,6 +235,7 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
         if (changedRows > 1) {
             throw new DatabaseError("multiple rows affected by update");
         }
+        entityChangeListeners.fire(listener -> listener.onChange(EntityChangeListener.Type.UPDATE, record));
     }
 
     public void delete(@NotNull final DatabaseConnection conn, @NotNull final T record) throws DatabaseError {
@@ -245,6 +251,7 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
         if (changedRows > 1) {
             throw new DatabaseError("multiple rows affected by delete");
         }
+        entityChangeListeners.fire(listener -> listener.onChange(EntityChangeListener.Type.DELETE, record));
     }
 
     public T convertToEntity(final @NotNull JanitorScriptProcess process, final @NotNull JCallArgs arguments, final OrmEntity parent) throws JanitorRuntimeException {
@@ -475,6 +482,10 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
         } catch (DatabaseError e) {
             throw new JanitorError(e.getMessage(), e);
         }
+    }
+
+    public ListenerRegistration addChangeListener(final EntityChangeListener<T> listener) {
+        return entityChangeListeners.add(listener);
     }
 
 }

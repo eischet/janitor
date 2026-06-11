@@ -8,6 +8,7 @@ import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.orm.filter.FilterExpression;
 import com.eischet.janitor.orm.entity.OrmEntity;
 import com.eischet.janitor.orm.ref.ForeignKeySearchResult;
+import com.eischet.janitor.toolbox.listeners.ListenerRegistration;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -98,5 +99,6 @@ public interface Dao<T extends OrmEntity> extends JanitorObject {
         return new ForeignKeySearchResult<>(this, entity.getId(), entity.getKey(), entity.getName(), entity.isSoftDeleted());
     }
 
+    ListenerRegistration addChangeListener(EntityChangeListener<T> listener);
 }
 

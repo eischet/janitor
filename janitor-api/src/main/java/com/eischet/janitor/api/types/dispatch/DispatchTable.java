@@ -35,4 +35,16 @@ public class DispatchTable<T extends JanitorObject> extends GenericDispatchTable
         super(parent, caster);
     }
 
+    /**
+     * Convenience method to create a new dispatch table that extends this one.
+     * <p>
+     *     Use this in a JanitorComposed constructor when you need to have instance-specific properties, for example.
+     *     You can then have a static "DISPATCH" and an instance-specific "dispatch" which extends the static one.
+     * </p>
+     * @return a new dispatch table that extends this one
+     */
+    public DispatchTable<T> extend() {
+        return new DispatchTable<>(this, it -> it);
+    }
+
 }

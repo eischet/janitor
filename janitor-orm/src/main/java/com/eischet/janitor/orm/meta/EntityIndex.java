@@ -2,6 +2,7 @@ package com.eischet.janitor.orm.meta;
 
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
+import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.orm.dao.Dao;
 import com.eischet.janitor.orm.dao.JoinDao;
 import com.eischet.janitor.orm.entity.OrmEntity;
@@ -11,6 +12,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.*;
+import java.util.function.BiConsumer;
 
 public class EntityIndex {
 
@@ -58,5 +60,12 @@ public class EntityIndex {
     public JoinDao<? extends OrmJoined> getJoinDao(final @Nullable String className) {
         return joinDaos.get(className);
     }
+
+    public void forEachDispatchTable(final BiConsumer<String, Dispatcher<?>> consumer) {
+        mapping.forEach(consumer);
+        joinDaos.forEach((n, d) -> consumer.accept(n, d.getDispatcher()));
+    }
+
+
 
 }

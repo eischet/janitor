@@ -1,3 +1,8 @@
+# 0.9.58, 2026-06-09 (wip)
+
+- orm: the DAOs now have listeners that can notify you about inserts, updates, and deletes.
+
+
 # 0.9.57, 2026-05-28 (internal release only)
 
 - new module "commonmark", wraps the commonmark-java library.
