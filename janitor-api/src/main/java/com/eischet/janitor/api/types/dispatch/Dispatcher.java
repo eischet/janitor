@@ -34,6 +34,8 @@ public interface Dispatcher<T extends JanitorObject> extends HasMetaData {
 
     void writeToJson(JsonOutputStream stream, T instance) throws JsonException;
 
+    void writeSchemaToJson(JsonOutputStream stream) throws JsonException;
+
     @Language("JSON") String writeToJson(T instance)  throws JsonException;
 
     T readFromJson(Supplier<T> constructor, JsonInputStream stream) throws JsonException;
@@ -112,6 +114,12 @@ public interface Dispatcher<T extends JanitorObject> extends HasMetaData {
             @Override
             public Stream<String> streamAttributeNames() {
                 return Stream.concat(child.streamAttributeNames(), parent.streamAttributeNames());
+            }
+
+            @Override
+            public void writeSchemaToJson(final JsonOutputStream stream) throws JsonException {
+                child.writeSchemaToJson(stream);
+                // TODO: might need to rethink this whole approach, because I don't see how I could include 'parent' here?!
             }
         };
 

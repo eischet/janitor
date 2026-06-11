@@ -44,6 +44,11 @@ public class DispatcherChain<T extends JanitorObject> implements Dispatcher<T> {
     }
 
     @Override
+    public void writeSchemaToJson(final JsonOutputStream stream) throws JsonException {
+        // TODO: how would we implement this here...?
+    }
+
+    @Override
     public String writeToJson(final T instance) throws JsonException {
         return Janitor.current().writeJson(producer -> writeToJson(producer, instance));
     }

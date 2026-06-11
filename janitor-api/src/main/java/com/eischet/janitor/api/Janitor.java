@@ -8,7 +8,9 @@ import com.eischet.janitor.api.types.BuiltinTypes;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.*;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
+import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.toolbox.json.api.JsonException;
+import com.eischet.janitor.toolbox.json.api.JsonType;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -777,7 +779,7 @@ public final class Janitor {
         public static final MetaDataKey<String> CLASS = new MetaDataKey<>("class", String.class);
 
         /**
-         * Helper for emitting TS defs for Janutor objects: A property points to a class of this name.
+         * Helper for emitting TS defs for Janitor objects: A property points to a class of this name.
          * To be used where type hints are not possible, because they refer to builtin types only.
          */
         public static final MetaDataKey<String> REF = new MetaDataKey<>("ref", String.class);
@@ -787,6 +789,15 @@ public final class Janitor {
          */
         public static final MetaDataKey<Boolean> HOST_NULLABLE = new MetaDataKey<>("host_nullable", Boolean.class);
 
+        /**
+         * Specify the JSON type for a property, for JSON Schema exports.
+         */
+        public static final MetaDataKey<JsonType> JSON_TYPE = new MetaDataKey<>("json_type", JsonType.class);
+
+        /**
+         * Specify the (optional) Dispatcher for a property, e.g. for JSON Schema exports.
+         */
+        public static final MetaDataKey<Dispatcher<?>> DISPATCHER = new MetaDataKey<>("dispatcher", Dispatcher.class);
 
         /**
          * Private constructor, to keep you from creating instances of this singleton / "namespace class".

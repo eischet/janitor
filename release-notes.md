@@ -1,6 +1,7 @@
 # 0.9.58, 2026-06-09 (wip)
 
 - orm: the DAOs now have listeners that can notify you about inserts, updates, and deletes.
+- orm: the DAOs now have a `jsonSchema` property that returns a JSON representation of the schema.
 
 
 # 0.9.57, 2026-05-28 (internal release only)

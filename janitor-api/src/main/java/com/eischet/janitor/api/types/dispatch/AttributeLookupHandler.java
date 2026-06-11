@@ -1,6 +1,5 @@
 package com.eischet.janitor.api.types.dispatch;
 
-import com.eischet.janitor.api.errors.glue.JanitorGlueException;
 import com.eischet.janitor.api.types.JanitorObject;
 
 /**

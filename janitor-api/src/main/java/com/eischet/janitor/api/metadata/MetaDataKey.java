@@ -7,9 +7,10 @@ public class MetaDataKey<T> {
     private final String name;
     private final Class<T> type;
 
-    public MetaDataKey(String name, Class<T> type) {
+    public MetaDataKey(String name, Class<?> type) {
         this.name = name;
-        this.type = type;
+        //noinspection unchecked
+        this.type = (Class<T>) type;
     }
 
     public String getName() {

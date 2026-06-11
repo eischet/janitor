@@ -58,6 +58,7 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
         DISPATCH.addMethod("update", JoinDao::updateForScript);
         DISPATCH.addMethod("merge", JoinDao::mergeForScript);
         DISPATCH.addVoidMethod("delete", JoinDao::deleteForScript);
+        DISPATCH.addStringProperty("jsonSchema", self -> Janitor.current().writeJson(self.entityDispatch::writeSchemaToJson));
     }
 
     protected final ListenerSet<EntityChangeListener<T>> entityChangeListeners= new ListenerSetStandard<>();
