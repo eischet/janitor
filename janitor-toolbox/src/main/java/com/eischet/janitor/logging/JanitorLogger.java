@@ -39,6 +39,17 @@ public interface JanitorLogger extends Logger {
     }
 
     /**
+     * Log an INFO message if this logger is in verbose mode or the debuggable is enabled.
+     * @param flag the debuggable
+     * @param msg the message
+     */
+    default void verbose(Debuggable flag, String msg) {
+        if (isVerbose() || flag.isDebugModeEnabled()) {
+            info(msg);
+        }
+    }
+
+    /**
      * Log a formatted INFO message if this logger is in verbose mode.
      * @param format the message format
      * @param arg argument
@@ -46,6 +57,18 @@ public interface JanitorLogger extends Logger {
     default void verbose(String format, Object arg) {
         if (isVerbose()) {
             info(format, arg);
+        }
+    }
+
+    /**
+     * Log a formatted INFO message if this logger is in verbose mode or the debuggable is enabled.
+     * @param flag the debuggable
+     * @param msg the message
+     * @param arg argument
+     */
+    default void verbose(Debuggable flag, String msg, Object arg) {
+        if (isVerbose() || flag.isDebugModeEnabled()) {
+            info(msg, arg);
         }
     }
 
@@ -62,6 +85,19 @@ public interface JanitorLogger extends Logger {
     }
 
     /**
+     * Log a formatted INFO message if this logger is in verbose mode or the debuggable is enabled.
+     * @param format the message format
+     * @param arg1 the first argument
+     * @param arg2 the second argument
+     */
+    default void verbose(final Debuggable flag, String format, Object arg1, Object arg2) {
+        if (isVerbose() || flag.isDebugModeEnabled()) {
+            info(format, arg1, arg2);
+        }
+    }
+
+
+    /**
      * Log a formatted INFO message if this logger is in verbose mode.
      * @param format the message format
      * @param arguments the arguments
@@ -71,6 +107,18 @@ public interface JanitorLogger extends Logger {
             info(format, arguments);
         }
     }
+
+    /**
+     * Log a formatted INFO message if this logger is in verbose mode or the debuggable is enabled.
+     * @param format the message format
+     * @param arguments the arguments
+     */
+    default void verbose(final Debuggable flag, String format, Object... arguments) {
+        if (isVerbose() || flag.isDebugModeEnabled()) {
+            info(format, arguments);
+        }
+    }
+
 
     /**
      * Get a logger for the given class.

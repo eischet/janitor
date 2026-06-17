@@ -1,3 +1,8 @@
+# 0.9.59, 2026-06-12 (internal release only)
+
+- logging: added some facilities to configure logs via scripting
+
+
 # 0.9.58, 2026-06-11 (internal release only)
 
 - orm: the DAOs now have listeners that can notify you about inserts, updates, and deletes.
