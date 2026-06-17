@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.eischet.root</groupId>
         <artifactId>lib-public</artifactId>
-        <version>1.0.13-SNAPSHOT</version>
+        <version>1.0.13</version>
     </parent>
 
     <groupId>com.eischet.janitor</groupId>
@@ -19,7 +19,7 @@
 
     <properties>
         <!-- project revision -->
-        <revision>0.9.59-SNAPSHOT</revision>
+        <revision>0.9.59</revision>
 
         <!-- project settings -->
         <maven.plugin.validation>VERBOSE</maven.plugin.validation>
