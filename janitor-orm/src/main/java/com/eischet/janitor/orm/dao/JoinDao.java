@@ -370,8 +370,9 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
             } catch (DatabaseError e) {
                 throw new JanitorNativeException(process, e.getMessage(), e);
             }
+        } else {
+            throw new JanitorArgumentException(process, "invalid argument " + param + " [" + simpleClassNameOf(param) + "], expected Map or " + entityClass.getName() + " instead");
         }
-        throw new JanitorArgumentException(process, "invalid argument " + param + " [" + simpleClassNameOf(param) + "]");
     }
 
 

@@ -1,3 +1,9 @@
+# 0.9.60, 2026-06-xx
+
+- orm: make toString methods for ForeignKey instances more compact and readable
+- orm: do not fall through to throwing an illegal arg exception in JoinDao::deleteForScript
+
+
 # 0.9.59, 2026-06-12 (internal release only)
 
 - logging: added some facilities to configure logs via scripting
