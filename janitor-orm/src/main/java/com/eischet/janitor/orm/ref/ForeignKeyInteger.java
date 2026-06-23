@@ -73,11 +73,7 @@ public final class ForeignKeyInteger<T extends OrmEntity> implements ForeignKey<
 
     @Override
     public String toString() {
-        return "ForeignKeyInteger{" +
-               "id=" + id +
-               ", dao=" + dao +
-               ", resolved=" + (resolved != null) +
-               '}';
+        return "FK{id=" + id + ", " + getReferencedEntityClassName() + ", " + (resolved != null ? "resolved" : "unresolved") + "}";
     }
 
     @Override

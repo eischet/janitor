@@ -89,10 +89,7 @@ public non-sealed class ForeignKeySearchResult<T extends OrmEntity> implements F
 
     @Override
     public String toString() {
-        return "ForeignKeySearchResult{" +
-               "id=" + id +
-               ", dao=" + dao +
-               '}';
+        return "FK{id=" + id + ", " + getReferencedEntityClassName() + ", SR}";
     }
 
     @Override

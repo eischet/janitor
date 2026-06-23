@@ -76,14 +76,9 @@ public final class ForeignKeyString<T extends OrmEntity> implements ForeignKey<T
         return Janitor.nullableObject(resolved);
     }
 
-
     @Override
     public String toString() {
-        return "ForeignKeyString{" +
-               "key=" + key +
-               ", dao=" + dao +
-               ", resolved=" + (resolved != null) +
-               '}';
+        return "FK{key=" + key + ", " + getReferencedEntityClassName() + ", " + (resolved != null ? "resolved" : "unresolved") + "}";
     }
 
     @Override
