@@ -2,7 +2,7 @@
 
 - orm: make toString methods for ForeignKey instances more compact and readable
 - orm: do not fall through to throwing an illegal arg exception in JoinDao::deleteForScript
-
+- deps: jansi 4.1.3, mustangproject 2.23.1
 
 # 0.9.59, 2026-06-12 (internal release only)
 

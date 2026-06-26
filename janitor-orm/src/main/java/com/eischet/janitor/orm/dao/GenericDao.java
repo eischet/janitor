@@ -33,8 +33,6 @@ import com.eischet.janitor.orm.meta.EntityIndex;
 import com.eischet.janitor.orm.sql.ColumnTypeHint;
 import com.eischet.janitor.orm.sql.StatementCreator;
 import com.eischet.janitor.toolbox.json.api.JsonException;
-import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
-import com.eischet.janitor.toolbox.json.api.JsonWriter;
 import com.eischet.janitor.toolbox.listeners.ListenerRegistration;
 import com.eischet.janitor.toolbox.listeners.ListenerSet;
 import com.eischet.janitor.toolbox.listeners.ListenerSetStandard;
@@ -162,6 +160,10 @@ public abstract class GenericDao<T extends OrmEntity> extends JanitorComposed<Ge
      * @return a data manager object
      */
     protected abstract DataManager getDataManager();
+
+    public boolean isChangeTracked() {
+        return false;
+    }
 
     @Override
     public JanitorObject call(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {

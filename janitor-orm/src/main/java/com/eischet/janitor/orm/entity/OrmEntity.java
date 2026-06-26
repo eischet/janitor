@@ -8,9 +8,9 @@ import java.util.Comparator;
 
 /**
  * Base interface for all ORM entities, which are represented as tables in the database.
- * As a lowest common denominator, we assume that entities should have the following fields/columns:
+ * As the lowest common denominator, we assume that entities should have the following fields/columns:
  * <ul>
- *     <li>a unique "id", represented a a long, e.g. person_id</li>
+ *     <li>a unique "id", represented by a long, e.g. person_id</li>
  *     <li>a unique "key", a short name of the object that can be used to look it up, e.g. a login</li>
  *     <li>a non-unique "name", as a more descriptive label that the object carries, e.g. a person's full name</li>
  *     <li>a flag that tells us if an entity has been soft-deleted</li>
