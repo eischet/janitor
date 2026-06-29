@@ -1,4 +1,4 @@
-# 0.9.60, 2026-06-xx
+# 0.9.60, 2026-06-29
 
 - orm: make toString methods for ForeignKey instances more compact and readable
 - orm: do not fall through to throwing an illegal arg exception in JoinDao::deleteForScript
