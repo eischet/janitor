@@ -1,4 +1,9 @@
-# 0.9.60, 2026-06-29 (internal release only)
+# 0.9.61-SNAPSHOT
+
+- deps: commonmark 0.29.0, mustangproject 2.24.0, jline/jansi 4.2.1
+
+
+ # 0.9.60, 2026-06-29 (internal release only)
 
 - orm: make toString methods for ForeignKey instances more compact and readable
 - orm: do not fall through to throwing an illegal arg exception in JoinDao::deleteForScript
