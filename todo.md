@@ -1,5 +1,9 @@
 # Things to do
 
+TODO: Operator precedence issue with "~".
+  This code should not require parens, but right now it does:
+  if (not (field.shortCode ~ "TEST*")) { continue; }
+
 TODO: *args and **kwargs are now implemented in the Grammar and the compiler, but not in the runtime yet.
 
 TODO: templates need unit tests. TemplatingTestCase.java is a small start.
