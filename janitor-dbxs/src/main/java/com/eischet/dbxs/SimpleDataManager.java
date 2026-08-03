@@ -310,6 +310,11 @@ public class SimpleDataManager implements DataManager {
         }
 
         @Override
+        public String toString() {
+            return name;
+        }
+
+        @Override
         public QuerySummary queryForEach(final @NotNull SelectStatement sql, final @NotNull StatementConfigurator sc, final @NotNull ResultSetConsumer consumer) throws DatabaseError {
             return queryForEach(sql, sc, consumer, null, null);
         }
@@ -358,7 +363,7 @@ public class SimpleDataManager implements DataManager {
                 if (sps == null) {
                     throw new DatabaseError(sql, e);
                 } else {
-                    throw new DatabaseError(sps, e);
+                    throw new DatabaseError(name, sps, e);
                 }
             } finally {
                 close(rs);
@@ -383,7 +388,7 @@ public class SimpleDataManager implements DataManager {
                 if (sps == null) {
                     throw new DatabaseError(e);
                 } else {
-                    throw new DatabaseError(sps, e);
+                    throw new DatabaseError(name, sps, e);
                 }
             } finally {
                 close(stmt);
@@ -413,7 +418,7 @@ public class SimpleDataManager implements DataManager {
                 if (sps == null) {
                     throw new DatabaseError(e);
                 } else {
-                    throw new DatabaseError(sps, e);
+                    throw new DatabaseError(name, sps, e);
                 }
             } finally {
                 close(stmt);
