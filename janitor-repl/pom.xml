@@ -12,7 +12,15 @@
     <packaging>jar</packaging>
     <artifactId>janitor-repl</artifactId>
     <name>${project.groupId}:${project.artifactId}</name>
-    <description>This is an interactive REPL, a.k.a. "read-eval-print-loop", where you can execute Janitor code and expressions.</description>
+    <description>This is an interactive REPL, a.k.a. "read-eval-print-loop", where you can execute Janitor code and
+        expressions.
+    </description>
+
+    <properties>
+        <deps.install4j>13.0.2</deps.install4j>
+        <!-- only run Install4j when requested via profile: -->
+        <install4j.skip>true</install4j.skip>
+    </properties>
 
     <dependencies>
         <dependency>
@@ -61,14 +69,52 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
+                            <finalName>janitor</finalName>
                         </configuration>
                     </execution>
 
                 </executions>
             </plugin>
+
+
+            <plugin>
+                <groupId>com.install4j</groupId>
+                <artifactId>install4j-maven</artifactId>
+                <version>${deps.install4j}</version>
+                <executions>
+                    <execution>
+                        <id>install4j</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${install4j.skip}</skip>
+                            <projectFile>./janitor.install4j</projectFile>
+                            <release>${revision}</release>
+                            <!-- <destination>./target</destination> -->
+                            <!-- <buildSelected>true</buildSelected> -->
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
 
+
     </build>
+
+    <profiles>
+        <profile>
+            <id>install4j</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <properties>
+                <install4j.skip>false</install4j.skip>
+            </properties>
+        </profile>
+    </profiles>
 
 
 </project>
