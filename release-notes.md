@@ -1,7 +1,9 @@
 # 0.9.61-SNAPSHOT
 
 - deps: commonmark 0.29.0, mustangproject 2.24.0, jline/jansi 4.2.1
-
+- janitor-repl can now be built as a Windows installer, via the `install4j` profile. This requires a license for
+  install4j, so it's disabled by default.
+- added module "docusign", which wraps the docusign-java-client library
 
  # 0.9.60, 2026-06-29 (internal release only)
 

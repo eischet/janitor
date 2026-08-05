@@ -52,6 +52,10 @@
             <artifactId>commonmark</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.eischet.janitor.modules</groupId>
+            <artifactId>docusign</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.eischet.janitor</groupId>
             <artifactId>janitor-dbxs</artifactId>
         </dependency>

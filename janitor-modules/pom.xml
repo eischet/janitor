@@ -21,6 +21,8 @@
         <module>files</module>
         <module>os</module>
         <module>mustang</module>
+        <module>commonmark</module>
+        <module>docusign</module>
     </modules>
 
     <!-- these common dependencies are inherited by all nested modules -->

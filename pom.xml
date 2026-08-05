@@ -30,6 +30,10 @@
 
         <maven.compiler.release>21</maven.compiler.release>
 
+        <!-- assorted external dependencies -->
+        <deps.bouncycastle>1.85</deps.bouncycastle>
+        <deps.docusign>6.5.0</deps.docusign>
+
     </properties>
 
     <licenses>
@@ -69,13 +73,12 @@
         <module>janitor-tests</module>
         <module>janitor-modules</module>
         <module>janitor-modules-common</module>
-        <module>janitor-modules/commonmark</module>
     </modules>
 
 
     <build>
         <pluginManagement>
-            <!-- lock down plugins versions -->
+            <!-- lock down plugin versions -->
             <plugins>
                 <plugin>
                     <artifactId>maven-clean-plugin</artifactId>
@@ -235,7 +238,8 @@
                 <version>${revision}</version>
             </dependency>
 
-            <!-- these modules are not included in janitor-modules-common -->
+            <!-- these modules are not included in janitor-modules-common because of heavier dependency sets,
+                 so users should include them individually as needed -->
             <dependency>
                 <groupId>com.eischet.janitor.modules</groupId>
                 <artifactId>commonmark</artifactId>
@@ -244,6 +248,11 @@
             <dependency>
                 <groupId>com.eischet.janitor.modules</groupId>
                 <artifactId>mustang</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eischet.janitor.modules</groupId>
+                <artifactId>docusign</artifactId>
                 <version>${revision}</version>
             </dependency>
 
@@ -290,6 +299,13 @@
                 <artifactId>jackson-core</artifactId>
                 <version>2.22.1</version>
             </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>2.22.1</version>
+                <scope>compile</scope>
+            </dependency>
+
 
 
         </dependencies>
