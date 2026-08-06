@@ -32,7 +32,7 @@
 
         <!-- assorted external dependencies -->
         <deps.bouncycastle>1.85</deps.bouncycastle>
-        <deps.docusign>6.5.0</deps.docusign>
+        <deps.docusign>6.7.0</deps.docusign>
 
     </properties>
 
