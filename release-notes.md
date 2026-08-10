@@ -1,4 +1,4 @@
-# 0.9.61-SNAPSHOT
+# 0.9.61, 2026-08-10 (internal release only)
 
 - operator precedence mistake fixed: "not" was too high up in the precedence hierarchy, causing "not foo ~ 'bar*'" to be
   evaluated as "(not foo) ~ 'bar*'" instead of "not (foo ~ 'bar*')", which was intended.
