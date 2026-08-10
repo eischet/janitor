@@ -21,7 +21,6 @@ public class CaseInsensitiveComparionTestCase extends JanitorTest {
         Assertions.assertEquals(JBool.FALSE, rt.compile("test", "'X' ~= 'Y'").run(JanitorTest.NO_GLOBALS));
         Assertions.assertEquals(JBool.FALSE, rt.compile("test", "'x' ~= 'y'").run(JanitorTest.NO_GLOBALS));
         Assertions.assertEquals(JBool.FALSE, rt.compile("test", "'X' ~= 'y'").run(JanitorTest.NO_GLOBALS));
-
     }
 
 }

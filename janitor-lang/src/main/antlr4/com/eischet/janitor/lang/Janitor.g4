@@ -93,11 +93,11 @@ expression
     | expression LBRACK expression RBRACK                                                                                           # indexExpression
     | expression postfix=( INC | DEC )                                                                                              # postfixExpression
     | prefix=( ADD | SUB | INC | DEC ) expression                                                                                   # prefixExpression
-    | prefix=( NOT | ALT_NOT ) expression                                                                                           # notExpression
     | expression bop=(MUL | DIV | MOD) expression                                                                                   # binaryExpression
     | expression bop=(ADD | SUB) expression                                                                                         # binaryExpression
     | expression bop=(LE | GE | GT | LT) expression                                                                                 # binaryExpression
     | expression bop=(EQUAL | NOTEQUAL | ALT_NOTEQUAL | CI_EQUAL | MATCH | MATCH_NOT ) expression                                   # binaryExpression
+    | prefix=( NOT | ALT_NOT ) expression                                                                                           # notExpression
     | expression bop=(AND | CAND) expression                                                                                        # binaryExpression
     | expression bop=(OR | COR) expression                                                                                          # binaryExpression
     | <assoc=right> expression bop=QUESTION expression COLON expression                                                             # ternaryExpression

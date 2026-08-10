@@ -4,6 +4,7 @@ import com.eischet.janitor.JanitorTest;
 import com.eischet.janitor.TestEnv;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
+import com.eischet.janitor.api.errors.runtime.JanitorTypeException;
 import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.scopes.ScriptModule;
 import com.eischet.janitor.api.types.builtin.JBool;
@@ -170,14 +171,14 @@ public class SimpleExpressionTestCase extends JanitorTest {
     @Test
     public void matchingOperator() throws JanitorCompilerException, JanitorRuntimeException {
         // final Interpreter interpreter = new Interpreter();
-        assertTrue((Boolean) eval("'abc' ~ 'a*'").janitorGetHostValue());
-        assertTrue((Boolean) eval("'abc' ~ 'a*c'").janitorGetHostValue());
-        assertTrue((Boolean) eval("'abc' ~ '*c'").janitorGetHostValue());
-        assertTrue((Boolean) eval("'abc' ~ 'abc'").janitorGetHostValue());
-        assertTrue((Boolean) eval("'abc' ~ '*c*'").janitorGetHostValue());
-        assertTrue((Boolean) eval("'abc' ~ '*b*'").janitorGetHostValue());
-        assertTrue((Boolean) eval("'abc' ~ '*a*'").janitorGetHostValue());
-        assertFalse((Boolean) eval("'abc' ~ '*d*'").janitorGetHostValue());
+        assertEquals(true, (Boolean) eval("'abc' ~ 'a*'").janitorGetHostValue());
+        assertEquals(true, (Boolean) eval("'abc' ~ 'a*c'").janitorGetHostValue());
+        assertEquals(true, (Boolean) eval("'abc' ~ '*c'").janitorGetHostValue());
+        assertEquals(true, (Boolean) eval("'abc' ~ 'abc'").janitorGetHostValue());
+        assertEquals(true, (Boolean) eval("'abc' ~ '*c*'").janitorGetHostValue());
+        assertEquals(true, (Boolean) eval("'abc' ~ '*b*'").janitorGetHostValue());
+        assertEquals(true, (Boolean) eval("'abc' ~ '*a*'").janitorGetHostValue());
+        assertEquals(false, (Boolean) eval("'abc' ~ '*d*'").janitorGetHostValue());
 
         assertEquals("nix",
             eval("if USR_SC ~ 'Z*_20*' then 'Achtung!|Markt geschlossen!' else 'nix'",
@@ -200,6 +201,16 @@ public class SimpleExpressionTestCase extends JanitorTest {
                 g -> g.bind("count", 1)
                 .bind("score", 100)
                 .bind("shortCode", "Z12345_20191121")));
+
+        // should work without the parens!
+        assertEquals(JBool.TRUE,
+                eval("count == 1 and score == 100 and not shortCode ~ 'Z*_20*'",
+                        g -> g.bind("count", 1)
+                                .bind("score", 100)
+                                .bind("shortCode", "12345")));
+
+        // should throw when used incorrectly, e.g. on a bool:
+        assertThrows(JanitorTypeException.class, () -> eval("false ~ 'foo*'"));
 
     }
 
