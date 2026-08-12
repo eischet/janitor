@@ -374,4 +374,7 @@ public class JCallArgs {
         }
     }
 
+    public void notAllowed() throws JanitorRuntimeException {
+        require(0);
+    }
 }

@@ -4,15 +4,12 @@ import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.errors.glue.JanitorGlueException;
 import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.JanitorScriptProcess;
-import com.eischet.janitor.api.types.TemporaryAssignable;
+import com.eischet.janitor.api.types.*;
 import com.eischet.janitor.api.errors.runtime.JanitorNameException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
-import com.eischet.janitor.api.types.JAssignable;
-import com.eischet.janitor.api.types.JIterable;
-import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import com.eischet.janitor.toolbox.json.api.*;
 import org.intellij.lang.annotations.Language;
@@ -102,6 +99,16 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
         // this is very important for cases where the map is supposed to be used as an implicit object and for map.key access within scripts: return the map key by name
         @NotNull final JString nameAsString = Janitor.string(name);
         // return wrapped.get(nameAsString); -- wrong, this returns Java null when the key is missing, but we want Janitor null instead!
+
+
+        if (!required) {
+            return TemporaryAssignable.of(name, wrapped.getOrDefault(nameAsString, Janitor.NULL), new RuntimeConsumer<JanitorObject>() {
+                @Override
+                public void accept(JanitorObject object) throws Exception {
+                    wrapped.put(nameAsString, object);
+                }
+            });
+        }
 
         final JanitorObject value = wrapped.get(nameAsString);
         if (value != null) {

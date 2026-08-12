@@ -1,9 +1,7 @@
 package com.eischet.janitor.env;
 
 import com.eischet.janitor.api.Janitor;
-import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.JanitorScriptProcess;
-import com.eischet.janitor.api.types.builtin.JList;
 import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
@@ -92,6 +90,22 @@ public class JMapClass {
 
     public static JanitorObject __containsValue(JanitorWrapper<Map<JanitorObject, JanitorObject>> mapJanitorWrapper, JanitorScriptProcess process, JCallArgs jCallArgs) throws JanitorRuntimeException {
         return Janitor.toBool(mapJanitorWrapper.janitorGetHostValue().containsValue(jCallArgs.require(1).get(0)));
+    }
+
+    /**
+     * Creates a shallow copy of the map.
+     *
+     * @param self map
+     * @param process process
+     * @param args args, must be empty
+     * @return a shallow copy of the map
+     * @throws JanitorRuntimeException on runtime errors
+     */
+    public static JanitorObject __copy(JanitorWrapper<Map<JanitorObject, JanitorObject>> self, JanitorScriptProcess process, JCallArgs args) throws JanitorRuntimeException {
+        args.notAllowed();
+        final var copy = Janitor.map();
+        self.janitorGetHostValue().forEach(copy::put);
+        return copy;
     }
 
     /**

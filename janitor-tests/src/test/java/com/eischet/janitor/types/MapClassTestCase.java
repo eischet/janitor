@@ -7,6 +7,7 @@ import com.eischet.janitor.api.RunnableScript;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.builtin.JMap;
+import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.runtime.OutputCatchingTestRuntime;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import org.intellij.lang.annotations.Language;
@@ -105,6 +106,38 @@ public class MapClassTestCase extends JanitorTest {
         play.accept("map.foobar == 5.0;");
 
         play.accept("assert(map.missingKey == null);");
+
+        // new copy method:
+        play.accept("""
+                m1 = {}
+                m1["foo"] = "bar"
+                m2 = m1.copy()
+                assert(m1.foo == "bar")
+                assert(m2.foo == "bar")
+                m2["foo"] = "whoop"
+                assert(m1.foo == "bar")
+                assert(m2.foo == "whoop")
+                """);
+
+        // map.foo = "bar" as shorthand for map["foo"] = "bar":
+        play.accept("""
+                m1 = {}
+                m1.foo = "bar"
+                assert(m1["foo"] == "bar")
+                assert(m1.foo == "bar")
+                m1["foo"] = "baz";
+                assert(m1["foo"] == "baz")
+                assert(m1.foo == "baz")
+                m1.foo = "bar"
+                assert(m1["foo"] == "bar")
+                assert(m1.foo == "bar")
+                
+                m1["isEmpty"] = 17;
+                assert(not m1.isEmpty()); // still calls the method!
+                assert(m1["isEmpty"] == 17); // retrieves the value
+                """);
+
+
     }
 
     @Test void serializeTheEmptyMap() throws Exception {

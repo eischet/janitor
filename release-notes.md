@@ -1,3 +1,11 @@
+# 0.9.61-SNAPSHOT
+
+- Lists and Maps now come with a `copy` method that creates a shallow copy.
+- Maps now support shorthand assignment, e.g. `m1["foo"] = "bar"` can be replaced with m1.foo = "bar".
+  Exception: you cannot assign to pre-defined attributes. E.g. `m.isEmpty = 17` will fail because it will try to assign
+  to the bound method.
+
+
 # 0.9.61, 2026-08-10 (internal release only)
 
 - operator precedence mistake fixed: "not" was too high up in the precedence hierarchy, causing "not foo ~ 'bar*'" to be

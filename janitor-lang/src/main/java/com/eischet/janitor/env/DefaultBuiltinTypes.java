@@ -121,6 +121,7 @@ public class DefaultBuiltinTypes implements BuiltinTypes {
         mapDispatcher.addMethod("containsKey", JMapClass::__containsKey);
         mapDispatcher.addMethod("containsValue", JMapClass::__containsValue);
         mapDispatcher.addMethod("clear", JMapClass::__clear);
+        mapDispatcher.addMethod("copy", JMapClass::__copy);
 
         listDispatcher.addMethod("toJson", JListClass::__toJson);
         listDispatcher.addMethod("parseJson", JListClass::__parseJson);

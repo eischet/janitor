@@ -190,6 +190,20 @@ public class JListClass {
         return JNull.NULL;
     }
 
+    /**
+     * Copy the list.
+     *
+     * @param self list
+     * @param process process
+     * @param arguments args, must be empty
+     * @return a shallow copy of the list
+     * @throws JanitorRuntimeException on runtime errors
+     */
+    public static JList __copy(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+        arguments.notAllowed();
+        return Janitor.list(self.janitorGetHostValue());
+    }
+
     public static JanitorObject __get(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         if (arguments.size() == 1) {
             return self.get(arguments.require(1).getInt(0));
