@@ -6,13 +6,14 @@ package com.eischet.dbxs.dialects;
 
 import com.eischet.dbxs.SimplePreparedStatement;
 import com.eischet.dbxs.metadata.DatabaseVersion;
+import com.eischet.dbxs.metadata.SqlTypeInterpreter;
 import com.eischet.dbxs.statements.SelectStatement;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.sql.Clob;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -20,15 +21,15 @@ import java.sql.SQLException;
 
 public interface DatabaseDialect {
 
-    default String quoteColumn(String columnName) {
+    default @NotNull String quoteColumn(@NotNull String columnName) {
         return columnName;
     }
 
-    default String quoteTableName(String tableName) {
+    default @NotNull String quoteTableName(@NotNull String tableName) {
         return quoteTableName(null, tableName);
     }
 
-    default String quoteTableName(String schema, String tableName) {
+    default @NotNull String quoteTableName(@Nullable String schema, @NotNull String tableName) {
         if (schema == null || schema.isEmpty()) {
             return tableName;
         } else {
@@ -39,8 +40,8 @@ public interface DatabaseDialect {
     boolean limitAndOffsetRequiresOrderBy();
     boolean canLimitAndOffset(final DatabaseVersion databaseVersion);
 
-    SelectStatement addLimitAndOffset(SelectStatement selectStatement);
-    SimplePreparedStatement addLimitAndOffset(SimplePreparedStatement statement, int limit, int offset) throws SQLException;
+    @NotNull SelectStatement addLimitAndOffset(@NotNull SelectStatement selectStatement);
+    @NotNull SimplePreparedStatement addLimitAndOffset(@NotNull SimplePreparedStatement statement, int limit, int offset) throws SQLException;
 
     /**
      * Gibt ein Statement zurück, das den nächsten Wert aus der angegebenen Sequence holt.
@@ -54,44 +55,46 @@ public interface DatabaseDialect {
      * @return eine Abfrage für den nächsten Wert der Sequence, oder null wenn die Datenbank keine Sequences kennt
      */
     @Nullable
-    SelectStatement getNextValueQuery(String schema, String seq);
+    SelectStatement getNextValueQuery(@Nullable String schema, @NotNull String seq);
 
     @Nullable
-    default SelectStatement getNextValueQuery(String sequence) {
+    default SelectStatement getNextValueQuery(@NotNull String sequence) {
         return getNextValueQuery(null, sequence);
     }
 
     @Nullable
-    SelectStatement getCurrentValueQuery(String schema, String seq);
+    SelectStatement getCurrentValueQuery(@Nullable String schema, @NotNull String seq);
 
-    default void addClobToStatement(PreparedStatement ps, int i, StringReader clob) throws SQLException {
+    default void addClobToStatement(@NotNull PreparedStatement ps, int i, StringReader clob) throws SQLException {
         ps.setClob(i, clob);
     }
 
-    default String readNationalClob(ResultSet rs, int col) throws SQLException {
+    default @Nullable String readNationalClob(@NotNull ResultSet rs, int col) throws SQLException {
         final Clob clob = rs.getClob(col);
         if (clob == null) {
             return null;
         }
-        try (final Reader reader = clob.getCharacterStream()) {
-            final StringWriter writer = new StringWriter();
-            reader.transferTo(writer);
-            return writer.toString();
+        try (final @Nullable Reader reader = clob.getCharacterStream()) {
+            if (reader == null) {
+                return null;
+            }
+            return SqlTypeInterpreter.transferToString(reader);
         } catch (IOException e) {
             throw new SQLException(e);
         }
 
     }
 
-    default String readRegularClob(ResultSet rs, int col) throws SQLException {
+    default @Nullable String readRegularClob(@NotNull ResultSet rs, int col) throws SQLException {
         final Clob clob = rs.getClob(col);
         if (clob == null) {
             return null;
         }
-        try (final Reader reader = clob.getCharacterStream()) {
-            final StringWriter writer = new StringWriter();
-            reader.transferTo(writer);
-            return writer.toString();
+        try (final @Nullable Reader reader = clob.getCharacterStream()) {
+            if (reader == null) {
+                return null;
+            }
+            return SqlTypeInterpreter.transferToString(reader);
         } catch (IOException e) {
             throw new SQLException(e);
         }

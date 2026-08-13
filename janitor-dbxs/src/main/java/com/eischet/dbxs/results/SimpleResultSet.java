@@ -11,6 +11,7 @@ import com.eischet.dbxs.metadata.SqlTypes;
 import com.eischet.janitor.logging.JanitorLogger;
 import com.eischet.janitor.toolbox.memory.Interner;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,7 +41,9 @@ public class SimpleResultSet {
     private int rowNumber = -1;
     private int colNumber = 1;
 
-    public SimpleResultSet(final DatabaseDialect dialect, final ResultSet rs, final DatabaseConnection connection) throws SQLException {
+    public SimpleResultSet(@NotNull final DatabaseDialect dialect,
+                           @NotNull final ResultSet rs,
+                           @NotNull final DatabaseConnection connection) throws SQLException {
         this.dialect = dialect;
         this.rs = rs;
         this.metaData = rs.getMetaData();
@@ -66,11 +69,11 @@ public class SimpleResultSet {
         this.types = types;
     }
 
-    public DatabaseConnection getConnection() {
+    public @NotNull DatabaseConnection getConnection() {
         return connection;
     }
 
-    public SqlTypes typeOf(int column) {
+    public @NotNull SqlTypes typeOf(int column) {
         if (column > types.size()) {
             return SqlTypes.UNKNOWN;
         } else {
@@ -86,7 +89,7 @@ public class SimpleResultSet {
         return rowNumber;
     }
 
-    public ResultSet getRealResultSet() {
+    public @NotNull ResultSet getRealResultSet() {
         return rs;
     }
 
@@ -104,21 +107,19 @@ public class SimpleResultSet {
         rs.close();
     }
 
-    public String getString(final int columnIndex) throws SQLException {
+    public @Nullable String getString(final int columnIndex) throws SQLException {
         return SqlTypeInterpreter.readStringAndIntern(rs, columnIndex);
     }
 
-    public String getString() throws SQLException {
+    public @Nullable String getString() throws SQLException {
         return getString(colNumber++);
     }
 
-    @NotNull
-    public Integer getInt(final int columnIndex) throws SQLException {
+    public @Nullable Integer getInt(final int columnIndex) throws SQLException {
         return SqlTypeInterpreter.readIntegerAndIntern(rs, columnIndex);
     }
 
-    @NotNull
-    public Integer getInt() throws SQLException {
+    public @Nullable Integer getInt() throws SQLException {
         return getInt(colNumber++);
     }
 
@@ -130,7 +131,7 @@ public class SimpleResultSet {
         return getLong(colNumber++);
     }
 
-    public Long getLongInstance(final int columnIndex) throws SQLException {
+    public @Nullable Long getLongInstance(final int columnIndex) throws SQLException {
         final long mappedValue = rs.getLong(columnIndex);
         if (rs.wasNull()) {
             return null;
@@ -139,7 +140,7 @@ public class SimpleResultSet {
         }
     }
 
-    public Long getLongInstance() throws SQLException {
+    public @Nullable Long getLongInstance() throws SQLException {
         return getLongInstance(colNumber++);
     }
 
@@ -151,27 +152,27 @@ public class SimpleResultSet {
         return getFloat(colNumber++);
     }
 
-    public Timestamp getTimestamp(final int columnIndex) throws SQLException {
+    public @Nullable Timestamp getTimestamp(final int columnIndex) throws SQLException {
         return rs.getTimestamp(columnIndex);
     }
 
-    public Timestamp getTimestamp() throws SQLException {
+    public @Nullable Timestamp getTimestamp() throws SQLException {
         return getTimestamp(colNumber++);
     }
 
-    public Clob getClob(final int columnIndex) throws SQLException {
+    public @Nullable Clob getClob(final int columnIndex) throws SQLException {
         return rs.getClob(columnIndex);
     }
 
-    public Clob getClob() throws SQLException {
+    public @Nullable Clob getClob() throws SQLException {
         return getClob(colNumber++);
     }
 
-    public InputStream getBinaryStream(final int columnIndex) throws SQLException {
+    public @Nullable InputStream getBinaryStream(final int columnIndex) throws SQLException {
         return rs.getBinaryStream(columnIndex);
     }
 
-    public InputStream getBinaryStream() throws SQLException {
+    public @Nullable InputStream getBinaryStream() throws SQLException {
         return getBinaryStream(colNumber++);
     }
 
@@ -183,23 +184,23 @@ public class SimpleResultSet {
         return getDouble(colNumber++);
     }
 
-    public Date getDate(final int columnIndex) throws SQLException {
+    public @Nullable Date getDate(final int columnIndex) throws SQLException {
         return rs.getDate(columnIndex);
     }
 
-    public Date getDate() throws SQLException {
+    public @Nullable Date getDate() throws SQLException {
         return getDate(colNumber++);
     }
 
-    public LocalDateTime getLocalDateTime(final int columnIndex) throws SQLException {
+    public @Nullable LocalDateTime getLocalDateTime(final int columnIndex) throws SQLException {
         return date(rs.getTimestamp(columnIndex));
     }
 
-    public LocalDateTime getLocalDateTime() throws SQLException {
+    public @Nullable LocalDateTime getLocalDateTime() throws SQLException {
         return getLocalDateTime(colNumber++);
     }
 
-    public LocalDate getLocalDate() throws SQLException {
+    public @Nullable LocalDate getLocalDate() throws SQLException {
         final LocalDateTime ldt = getLocalDateTime();
         if (ldt == null) {
             return null;
@@ -211,7 +212,7 @@ public class SimpleResultSet {
         return rowNumber == 0;
     }
 
-    public Integer getInteger(final int col) throws SQLException {
+    public @Nullable Integer getInteger(final int col) throws SQLException {
         final int mappedValue = rs.getInt(col);
         if (rs.wasNull()) {
             return null;
@@ -220,11 +221,11 @@ public class SimpleResultSet {
         }
     }
 
-    public Integer getInteger() throws SQLException {
+    public @Nullable Integer getInteger() throws SQLException {
         return getInteger(colNumber++);
     }
 
-    public Double getDoubleInstance(final int col) throws SQLException {
+    public @Nullable Double getDoubleInstance(final int col) throws SQLException {
         final double mappedValue = rs.getDouble(col);
         if (rs.wasNull()) {
             return null;
@@ -233,12 +234,11 @@ public class SimpleResultSet {
         }
     }
 
-    public Double getDoubleInstance() throws SQLException {
+    public @Nullable Double getDoubleInstance() throws SQLException {
         return getDoubleInstance(colNumber++);
     }
 
-
-    public byte[] readBlob(final int col) throws SQLException {
+    public byte @Nullable [] readBlob(final int col) throws SQLException {
         final InputStream stream = rs.getBinaryStream(col);
         if (rs.wasNull() || stream == null) {
             return null;
@@ -248,30 +248,29 @@ public class SimpleResultSet {
         } catch (IOException e) {
             throw new SQLException("error reading BLOB", e);
         }
-
     }
 
-    public byte[] readBlob() throws SQLException {
+    public byte @Nullable [] readBlob() throws SQLException {
         return readBlob(colNumber++);
     }
 
-    public String readNationalClob(final int col) throws SQLException {
+    public @Nullable String readNationalClob(final int col) throws SQLException {
         return dialect.readNationalClob(rs, col);
     }
 
-    public String readClob(final int col) throws SQLException {
+    public @Nullable String readClob(final int col) throws SQLException {
         return dialect.readRegularClob(rs, col);
     }
 
-    public String readNationalClob() throws SQLException {
+    public @Nullable String readNationalClob() throws SQLException {
         return readNationalClob(colNumber++);
     }
 
-    public String readClob() throws SQLException {
+    public @Nullable String readClob() throws SQLException {
         return readClob(colNumber++);
     }
 
-    public Timestamp getOptionalTimestamp(final int i) throws SQLException {
+    public @Nullable Timestamp getOptionalTimestamp(final int i) throws SQLException {
         if (numberOfColumns >= i) {
             return getTimestamp(i);
         } else {
@@ -280,7 +279,7 @@ public class SimpleResultSet {
     }
 
 
-    protected LocalDateTime date(final Timestamp timestamp) {
+    protected @Nullable LocalDateTime date(final @Nullable Timestamp timestamp) {
         return timestamp == null ? null : timestamp.toLocalDateTime();
     }
 

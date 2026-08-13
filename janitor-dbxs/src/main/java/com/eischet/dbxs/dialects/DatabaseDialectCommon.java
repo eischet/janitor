@@ -4,6 +4,7 @@ package com.eischet.dbxs.dialects;
 import com.eischet.dbxs.SimplePreparedStatement;
 import com.eischet.dbxs.metadata.DatabaseVersion;
 import com.eischet.dbxs.statements.SelectStatement;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.sql.SQLException;
@@ -21,22 +22,22 @@ public abstract class DatabaseDialectCommon implements DatabaseDialect {
     }
 
     @Override
-    public SelectStatement addLimitAndOffset(final SelectStatement selectStatement) {
+    public @NotNull SelectStatement addLimitAndOffset(final @NotNull SelectStatement selectStatement) {
         return selectStatement;
     }
 
     @Override
-    public SimplePreparedStatement addLimitAndOffset(final SimplePreparedStatement statement, final int limit, final int offset) throws SQLException {
+    public @NotNull SimplePreparedStatement addLimitAndOffset(final @NotNull SimplePreparedStatement statement, final int limit, final int offset) throws SQLException {
         return statement;
     }
 
     @Override
-    public @Nullable SelectStatement getNextValueQuery(final String schema, final String seq) {
+    public @Nullable SelectStatement getNextValueQuery(final @Nullable String schema, final @NotNull String seq) {
         return null;
     }
 
     @Override
-    public @Nullable SelectStatement getCurrentValueQuery(final String schema, final String seq) {
+    public @Nullable SelectStatement getCurrentValueQuery(final @Nullable String schema, final @NotNull String seq) {
         return null;
     }
 }

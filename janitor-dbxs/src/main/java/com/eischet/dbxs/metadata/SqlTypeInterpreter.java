@@ -5,6 +5,8 @@
 package com.eischet.dbxs.metadata;
 
 import com.eischet.janitor.toolbox.memory.Interner;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
 import java.sql.ResultSet;
@@ -67,39 +69,31 @@ public enum SqlTypeInterpreter {
         }
     });
 
-    public static String readStringAndIntern(final ResultSet rs, final int index) throws SQLException {
-        return Interner.maybeIntern(rs.getString(index));
-    }
-
-    private final String typeName;
+    private final @NotNull String typeName;
     private final int typeCode;
-    private final Extractor extractor;
+    private final @NotNull Extractor extractor;
 
-    SqlTypeInterpreter(final String typeName, final int typeCode, final SimpleExtractor extractor) {
+    SqlTypeInterpreter(final @NotNull String typeName, final int typeCode, final @NotNull SimpleExtractor extractor) {
         this.typeName = typeName;
         this.typeCode = typeCode;
         this.extractor = wrap(extractor);
     }
 
-    public static SqlTypeInterpreter byTypeName(final String n) {
-        return Arrays.stream(values()).filter(it -> Objects.equals(it.typeName, n)).findFirst().orElse(null);
-    }
-
-    public Extractor getExtractor() {
-        return extractor;
-    }
-
-    SqlTypeInterpreter(final String typeName, final int typeCode, final Extractor extractor) {
+    SqlTypeInterpreter(final @NotNull String typeName, final int typeCode, final @NotNull Extractor extractor) {
         this.typeName = typeName;
         this.typeCode = typeCode;
         this.extractor = extractor;
     }
 
-    public static Integer readIntegerAndIntern(final ResultSet rs, final int index) throws SQLException {
+    public @NotNull Extractor getExtractor() {
+        return extractor;
+    }
+
+    public static @Nullable Integer readIntegerAndIntern(final @NotNull ResultSet rs, final int index) throws SQLException {
         return Interner.maybeIntern(rs.getInt(index));
     }
 
-    public static byte[] readAsBinaryStream(final ResultSet rs, final int index) throws SQLException {
+    public static byte @Nullable [] readAsBinaryStream(final @NotNull ResultSet rs, final int index) throws SQLException {
         final InputStream stream = rs.getBinaryStream(index);
         if (stream == null) {
             return null;
@@ -112,7 +106,7 @@ public enum SqlTypeInterpreter {
         }
     }
 
-    public static byte[] toByteArray(final InputStream stream) throws IOException {
+    public static byte @Nullable [] toByteArray(final @Nullable InputStream stream) throws IOException {
         if (stream == null) {
             return new byte[0];
         }
@@ -121,17 +115,17 @@ public enum SqlTypeInterpreter {
         return baos.toByteArray();
     }
 
-    public static String transferToString(final Reader stream) throws IOException {
+    public static @NotNull String transferToString(final @NotNull Reader stream) throws IOException {
         final StringWriter out = new StringWriter();
         stream.transferTo(out);
         return out.toString();
     }
 
 
-    public static String readAsTextStream(final ResultSet rs, final int index) throws SQLException {
+    public static @Nullable String readAsTextStream(final @NotNull ResultSet rs, final int index) throws SQLException {
         final Reader stream = rs.getCharacterStream(index);
         if (stream == null) {
-            return "";
+            return null;
         } else {
             try {
                 return Interner.maybeIntern(transferToString(stream));
@@ -141,22 +135,19 @@ public enum SqlTypeInterpreter {
         }
     }
 
-
-
-    public String getTypeName() {
+    public @NotNull String getTypeName() {
         return toString();
     }
 
-
     public interface Extractor {
-        Object extract(final ResultSet rs, final int index, final boolean numReal) throws SQLException;
+        @Nullable Object extract(final @NotNull ResultSet rs, final int index, final boolean numReal) throws SQLException;
     }
 
     public interface SimpleExtractor {
-        Object extract(final ResultSet rs, final int index) throws SQLException;
+        @Nullable Object extract(final @NotNull ResultSet rs, final int index) throws SQLException;
     }
 
-    private Extractor wrap(final SimpleExtractor wrappee) {
+    private @NotNull Extractor wrap(final @NotNull SimpleExtractor wrappee) {
         return (rs, index, numReal) -> wrappee.extract(rs, index);
     }
 
@@ -170,12 +161,20 @@ public enum SqlTypeInterpreter {
         }
     }
 
-    public static Map<String, SqlTypeInterpreter> getNamedInterpreters() {
+    public static @NotNull Map<String, SqlTypeInterpreter> getNamedInterpreters() {
         return namedInterpreters;
     }
 
-    public static SqlTypeInterpreter forSqlTypeCode(int code) {
+    public static @NotNull SqlTypeInterpreter forSqlTypeCode(int code) {
         return interpreters.getOrDefault(code, UNKNOWN);
+    }
+
+    public static @Nullable SqlTypeInterpreter byTypeName(final String n) {
+        return Arrays.stream(values()).filter(it -> Objects.equals(it.typeName, n)).findFirst().orElse(null);
+    }
+
+    public static @Nullable String readStringAndIntern(final ResultSet rs, final int index) throws SQLException {
+        return Interner.maybeIntern(rs.getString(index));
     }
 
 }

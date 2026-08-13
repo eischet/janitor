@@ -4,6 +4,10 @@
 
 package com.eischet.dbxs.results;
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -15,22 +19,24 @@ public class ResultSetRow<T> {
     private final T value;
     private int col = 0;
 
-    public ResultSetRow(final SimpleResultSet rs, final T value) {
+    public ResultSetRow(final @NotNull SimpleResultSet rs, final T value) {
         this.rs = rs;
         this.value = value;
     }
 
-    public ResultSetRow<T> readString(BiConsumer<T, String> consumer) throws SQLException {
+    @Contract("_ -> this")
+    public @NotNull ResultSetRow<T> readString(@NotNull BiConsumer<T, String> consumer) throws SQLException {
         consumer.accept(value, rs.getString(++col));
         return this;
     }
 
-    public ResultSetRow<T> readTimestampAsLocalDateTime(BiConsumer<T, LocalDateTime> consumer) throws SQLException {
+    @Contract("_ -> this")
+    public @NotNull ResultSetRow<T> readTimestampAsLocalDateTime(BiConsumer<T, LocalDateTime> consumer) throws SQLException {
         consumer.accept(value, date(rs.getTimestamp(++col)));
         return this;
     }
 
-    protected LocalDateTime date(final Timestamp timestamp) {
+    protected @Nullable LocalDateTime date(final @Nullable Timestamp timestamp) {
         return timestamp == null ? null : timestamp.toLocalDateTime();
     }
 

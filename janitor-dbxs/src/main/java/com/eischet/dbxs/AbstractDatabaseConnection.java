@@ -11,6 +11,8 @@ import com.eischet.dbxs.statements.SelectStatement;
 import com.eischet.dbxs.statements.UpdateStatement;
 import com.eischet.janitor.toolbox.memory.Keeper;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -23,13 +25,15 @@ public abstract class AbstractDatabaseConnection implements DatabaseConnection {
     }
 
     @Override
-    public long queryForLong(final @NotNull SelectStatement sql, final @NotNull StatementConfigurator sc) throws DatabaseError {
+    public long queryForLong(final @NotNull SelectStatement sql,
+                             final @NotNull StatementConfigurator sc) throws DatabaseError {
         return queryForList(sql, sc, rs -> rs.getLong(1)).stream().filter(Objects::nonNull).findFirst().orElse(0L);
     }
 
 
     @Override
-    public Long queryForLongInstance(final @NotNull SelectStatement sql, final @NotNull StatementConfigurator sc) throws DatabaseError {
+    public @Nullable Long queryForLongInstance(final @NotNull SelectStatement sql,
+                                               final @NotNull StatementConfigurator sc) throws DatabaseError {
         return queryForList(sql, sc, rs -> rs.getLong(1)).stream().filter(Objects::nonNull).findFirst().orElse(null);
     }
 
@@ -40,39 +44,43 @@ public abstract class AbstractDatabaseConnection implements DatabaseConnection {
     }
 
     @Override
-    public LocalDateTime queryForLocalDateTime(final @NotNull SelectStatement sql) throws DatabaseError {
+    public @Nullable LocalDateTime queryForLocalDateTime(final @NotNull SelectStatement sql) throws DatabaseError {
         return queryForObject(sql, rs -> rs.getLocalDateTime(1));
     }
 
     @Override
-    public LocalDateTime queryForLocalDateTime(final @NotNull SelectStatement sql, final @NotNull StatementConfigurator sc) throws DatabaseError {
+    public @Nullable LocalDateTime queryForLocalDateTime(final @NotNull SelectStatement sql,
+                                                         final @NotNull StatementConfigurator sc) throws DatabaseError {
         return queryForObject(sql, sc, rs -> rs.getLocalDateTime(1));
     }
 
     @Override
-    public int queryForInt(final @NotNull SelectStatement sql, final @NotNull StatementConfigurator sc) throws DatabaseError {
+    public int queryForInt(final @NotNull SelectStatement sql,
+                           final @NotNull StatementConfigurator sc) throws DatabaseError {
         return queryForList(sql, sc, rs -> rs.getInt(1)).stream().filter(Objects::nonNull).findFirst().orElse(0);
     }
 
     @Override
-    public Integer queryForInteger(final @NotNull SelectStatement sql, final @NotNull StatementConfigurator sc) throws DatabaseError {
+    public @Nullable Integer queryForInteger(final @NotNull SelectStatement sql,
+                                             final @NotNull StatementConfigurator sc) throws DatabaseError {
         return queryForList(sql, sc, rs -> rs.getInt(1)).stream().filter(Objects::nonNull).findFirst().orElse(null);
     }
 
     @Override
-    public String queryForString(final @NotNull SelectStatement sql) throws DatabaseError {
+    public @Nullable String queryForString(final @NotNull SelectStatement sql) throws DatabaseError {
         return queryForString(sql, ps -> {});
     }
 
     @Override
-    public String queryForString(final @NotNull SelectStatement sql, final @NotNull StatementConfigurator sc) throws DatabaseError {
+    public @Nullable String queryForString(final @NotNull SelectStatement sql,
+                                           final @NotNull StatementConfigurator sc) throws DatabaseError {
         // .filter(Objects::nonNull) ist entscheidend wichtig, denn wenn der String NULL ist, gibt es sonst in findFirst() einen NPE!!!
         return queryForList(sql, sc, rs -> rs.getString(1)).stream().filter(Objects::nonNull).findFirst().orElse(null);
     }
 
 
     @Override
-    public QuerySummary queryForEach(final @NotNull SelectStatement sql, @NotNull final ResultSetConsumer consumer) throws DatabaseError {
+    public @NotNull QuerySummary queryForEach(final @NotNull SelectStatement sql, @NotNull final ResultSetConsumer consumer) throws DatabaseError {
         return queryForEach(sql, ps -> {}, consumer);
     }
 
@@ -94,24 +102,24 @@ public abstract class AbstractDatabaseConnection implements DatabaseConnection {
     }
 
     @Override
-    public <T> List<T> queryForList(final @NotNull SelectStatement sql, final @NotNull ResultSetReader<T> reader) throws DatabaseError {
+    public <T> @NotNull @Unmodifiable List<T> queryForList(final @NotNull SelectStatement sql, final @NotNull ResultSetReader<T> reader) throws DatabaseError {
         return queryForList(sql, ps -> {}, reader);
     }
 
     @Override
-    public <T> List<T> queryForList(final @NotNull SelectStatement sql, final @NotNull StatementConfigurator sc, final @NotNull ResultSetReader<T> reader) throws DatabaseError {
+    public <T> @NotNull @Unmodifiable List<T> queryForList(final @NotNull SelectStatement sql, final @NotNull StatementConfigurator sc, final @NotNull ResultSetReader<T> reader) throws DatabaseError {
         final List<T> results = new ArrayList<>();
         queryForEach(sql, sc, rs -> results.add(reader.read(rs)));
         return results;
     }
 
     @Override
-    public <T> Set<T> queryForSet(final @NotNull SelectStatement sql, final @NotNull ResultSetReader<T> reader) throws DatabaseError {
+    public @NotNull @Unmodifiable <T> Set<T> queryForSet(final @NotNull SelectStatement sql, final @NotNull ResultSetReader<T> reader) throws DatabaseError {
         return queryForSet(sql, ps -> {}, reader);
     }
 
     @Override
-    public <T> Set<T> queryForSet(final @NotNull SelectStatement sql, final @NotNull StatementConfigurator sc, final @NotNull ResultSetReader<T> reader) throws DatabaseError {
+    public <T> @NotNull @Unmodifiable Set<T> queryForSet(final @NotNull SelectStatement sql, final @NotNull StatementConfigurator sc, final @NotNull ResultSetReader<T> reader) throws DatabaseError {
         final Set<T> results = new HashSet<>();
         queryForEach(sql, sc, rs -> results.add(reader.read(rs)));
         return results;

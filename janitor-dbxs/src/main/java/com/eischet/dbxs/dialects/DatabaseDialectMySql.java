@@ -5,6 +5,7 @@
 package com.eischet.dbxs.dialects;
 
 import com.eischet.dbxs.statements.SelectStatement;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
@@ -16,7 +17,7 @@ public class DatabaseDialectMySql extends DatabaseDialectCommon {
     private static final Set<String> KEYWORDS = new HashSet<>(Arrays.asList("key", "read_only", "function"));
 
     @Override
-    public String quoteColumn(final String columnName) {
+    public @NotNull String quoteColumn(final @NotNull String columnName) {
         if (columnName != null && KEYWORDS.contains(columnName.toLowerCase())) {
             return "`" + columnName + "`";
         } else {
@@ -25,7 +26,7 @@ public class DatabaseDialectMySql extends DatabaseDialectCommon {
     }
 
     @Override
-    public SelectStatement getNextValueQuery(final String schema, final String seq) {
+    public SelectStatement getNextValueQuery(final @Nullable String schema, final @NotNull String seq) {
         if (schema == null || schema.isEmpty()) {
             return new SelectStatement("select next value for " + seq);
         } else {
@@ -34,7 +35,7 @@ public class DatabaseDialectMySql extends DatabaseDialectCommon {
     }
 
     @Override
-    public @Nullable SelectStatement getCurrentValueQuery(final String schema, final String seq) {
+    public @Nullable SelectStatement getCurrentValueQuery(final @Nullable String schema, final @NotNull String seq) {
         if (schema == null || schema.isEmpty()) {
             return new SelectStatement("select previous value for " + seq);
         } else {

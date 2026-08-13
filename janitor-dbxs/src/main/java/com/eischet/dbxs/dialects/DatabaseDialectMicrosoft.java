@@ -7,6 +7,7 @@ package com.eischet.dbxs.dialects;
 import com.eischet.dbxs.SimplePreparedStatement;
 import com.eischet.dbxs.metadata.DatabaseVersion;
 import com.eischet.dbxs.statements.SelectStatement;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.sql.SQLException;
@@ -30,20 +31,20 @@ public class DatabaseDialectMicrosoft extends DatabaseDialectCommon {
 
 
     @Override
-    public SelectStatement addLimitAndOffset(final SelectStatement selectStatement) {
+    public @NotNull SelectStatement addLimitAndOffset(final @NotNull SelectStatement selectStatement) {
         return new SelectStatement(selectStatement.getSql() + " OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
     }
 
     // LATER: es wird zwei Varianten geben müssen: eine, die ZUERST limit/offset setzt, und diese hier die es am Ende tut. Glaube ich.
 
     @Override
-    public SimplePreparedStatement addLimitAndOffset(final SimplePreparedStatement statement, final int limit, final int offset) throws SQLException {
+    public @NotNull SimplePreparedStatement addLimitAndOffset(final @NotNull SimplePreparedStatement statement, final int limit, final int offset) throws SQLException {
         return statement.addInt(offset).addInt(limit);
     }
 
 
     @Override
-    public String quoteColumn(final String columnName) {
+    public @NotNull String quoteColumn(final @NotNull String columnName) {
         if (columnName != null && KEYWORDS.contains(columnName.toLowerCase())) {
             return "[" + columnName + "]";
         } else {
@@ -52,7 +53,7 @@ public class DatabaseDialectMicrosoft extends DatabaseDialectCommon {
     }
 
     @Override
-    public SelectStatement getNextValueQuery(final String schema, final String seq) {
+    public SelectStatement getNextValueQuery(final @Nullable String schema, final @NotNull String seq) {
         if (schema == null || schema.isEmpty()) {
             return new SelectStatement("select next value for " + seq);
         } else {
@@ -61,7 +62,7 @@ public class DatabaseDialectMicrosoft extends DatabaseDialectCommon {
     }
 
     @Override
-    public @Nullable SelectStatement getCurrentValueQuery(final String schema, final String seq) {
+    public @Nullable SelectStatement getCurrentValueQuery(final @Nullable String schema, final @NotNull String seq) {
         return null;
     }
 

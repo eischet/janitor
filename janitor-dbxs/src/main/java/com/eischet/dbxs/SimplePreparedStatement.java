@@ -6,8 +6,10 @@ package com.eischet.dbxs;
 
 import com.eischet.dbxs.dialects.DatabaseDialect;
 import com.eischet.dbxs.statements.GenericStatement;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
 
 import java.io.ByteArrayInputStream;
 import java.io.StringReader;
@@ -32,11 +34,15 @@ public class SimplePreparedStatement {
         this.ps = ps;
     }
 
+    @NotNull
+    @Contract("_ -> this")
     public SimplePreparedStatement setQueryTimeout(final int seconds) throws SQLException {
         this.ps.setQueryTimeout(seconds);
         return this;
     }
 
+    @NotNull
+    @Contract("_ -> this")
     public SimplePreparedStatement setMaxRows(final int maxRows) throws SQLException {
         this.ps.setMaxRows(maxRows); // theoretically there's a long variant of this, but who would load more than Integer.MAX_VALUE rows in one go?
         return this;
@@ -50,6 +56,8 @@ public class SimplePreparedStatement {
         return statement;
     }
 
+    @NotNull
+    @Contract("_ -> this")
     public SimplePreparedStatement addLongInstance(final Long v) throws SQLException {
         if (v == null) {
             return addNullInteger();
@@ -61,6 +69,8 @@ public class SimplePreparedStatement {
         }
     }
 
+    @NotNull
+    @Contract("_ -> this")
     public SimplePreparedStatement addLong(final Long v) throws SQLException {
         if (v == null) {
             return addNullInteger();
@@ -72,6 +82,8 @@ public class SimplePreparedStatement {
         }
     }
 
+    @NotNull
+    @Contract("_ -> this")
     public SimplePreparedStatement addInt(final Integer v) throws SQLException {
         if (v == null) {
             return addNullInteger();
@@ -83,10 +95,14 @@ public class SimplePreparedStatement {
         }
     }
 
+    @NotNull
+    @Contract("_ -> this")
     public SimplePreparedStatement addIntFrom(final @NotNull ValueSource<Integer> source) throws SQLException {
         return addInt(source.getValue());
     }
 
+    @NotNull
+    @Contract("-> this")
     public SimplePreparedStatement addNull() throws SQLException {
         final int i = ++col;
         args.add(new Arg(col, "NULL", "null"));
@@ -94,6 +110,8 @@ public class SimplePreparedStatement {
         return this;
     }
 
+    @NotNull
+    @Contract("_ -> this")
     public SimplePreparedStatement addDouble(final double v) throws SQLException {
         final int i = ++col;
         args.add(new Arg(col, v, "double"));
@@ -101,6 +119,8 @@ public class SimplePreparedStatement {
         return this;
     }
 
+    @NotNull
+    @Contract("_ -> this")
     public SimplePreparedStatement addDoubleInstance(final Double v) throws SQLException {
         final int i = ++col;
         args.add(new Arg(col, v, "Double"));
@@ -112,13 +132,14 @@ public class SimplePreparedStatement {
         return this;
     }
 
+    @NotNull
+    @Contract("_ -> this")
     public SimplePreparedStatement addDoubleInstanceFrom(final @NotNull ValueSource<Double> source) throws SQLException {
         return addDoubleInstance(source.getValue());
     }
 
-
-
-
+    @NotNull
+    @Contract("_ -> this")
     public SimplePreparedStatement addInts(final Integer... values) throws SQLException {
         for (final Integer value : values) {
             addInt(value);
@@ -126,6 +147,8 @@ public class SimplePreparedStatement {
         return this;
     }
 
+    @NotNull
+    @Contract("_ -> this")
     public SimplePreparedStatement addString(final String v) throws SQLException {
         final int i = ++col;
         args.add(new Arg(col, v, "string"));
@@ -133,11 +156,15 @@ public class SimplePreparedStatement {
         return this;
     }
 
+    @NotNull
+    @Contract("_ -> this")
     public SimplePreparedStatement addStringFrom(final @NotNull ValueSource<String> source) throws SQLException {
         return addString(source.getValue());
     }
 
 
+    @NotNull
+    @Contract("_ -> this")
     public SimplePreparedStatement addStrings(final String... values) throws SQLException {
         for (final String value : values) {
             addString(value);
@@ -145,6 +172,8 @@ public class SimplePreparedStatement {
         return this;
     }
 
+    @NotNull
+    @Contract("_ -> this")
     public SimplePreparedStatement addLong(final long v) throws SQLException {
         final int i = ++col;
         args.add(new Arg(col, v, "long"));
@@ -152,12 +181,14 @@ public class SimplePreparedStatement {
         return this;
     }
 
+    @NotNull
+    @Contract("_ -> this")
     public SimplePreparedStatement addLongFrom(final @NotNull ValueSource<Long> source) throws SQLException {
         return addLong(source.getValue());
     }
 
-
-    @SuppressWarnings("UnusedReturnValue")
+    @NotNull
+    @Contract("_ -> this")
     public SimplePreparedStatement addDate(final Date date) throws SQLException {
         final int i = ++col;
         args.add(new Arg(col, date, "Date"));
@@ -169,6 +200,8 @@ public class SimplePreparedStatement {
         return this;
     }
 
+    @NotNull
+    @Contract("_ -> this")
     public SimplePreparedStatement addNullableDate(final @Nullable LocalDate date) throws SQLException {
         final int i = ++col;
         if (date != null) {
@@ -181,6 +214,8 @@ public class SimplePreparedStatement {
         return this;
     }
 
+    @NotNull
+    @Contract("_ -> this")
     public SimplePreparedStatement addNullableDateTime(final @Nullable LocalDateTime date) throws SQLException {
         final int i = ++col;
         if (date != null) {
@@ -193,6 +228,8 @@ public class SimplePreparedStatement {
         return this;
     }
 
+    @NotNull
+    @Contract("_ -> this")
     public SimplePreparedStatement addNullableDouble(final @Nullable Double value) throws SQLException {
         final int i = ++col;
         if (value != null) {
@@ -206,10 +243,14 @@ public class SimplePreparedStatement {
     }
 
 
+    @NotNull
+    @Contract("_ -> this")
     public SimplePreparedStatement addDate(final @NotNull LocalDate date) throws SQLException {
         return addTimestamp(date.atStartOfDay());
     }
 
+    @NotNull
+    @Contract("_ -> this")
     public SimplePreparedStatement addTimestamp(final LocalDate timestamp) throws SQLException {
         final int i = ++col;
         args.add(new Arg(col, timestamp, "timestamp(ldt)"));
@@ -217,6 +258,8 @@ public class SimplePreparedStatement {
         return this;
     }
 
+    @NotNull
+    @Contract("_ -> this")
     public SimplePreparedStatement addTimestamp(final LocalDateTime timestamp) throws SQLException {
         final int i = ++col;
         args.add(new Arg(col, timestamp, "timestamp(ldt)"));
@@ -224,6 +267,8 @@ public class SimplePreparedStatement {
         return this;
     }
 
+    @NotNull
+    @Contract("_ -> this")
     public SimplePreparedStatement addLocalDateTime(final LocalDateTime timestamp) throws SQLException {
         final int i = ++col;
         args.add(new Arg(col, timestamp, "timestamp(ldt)"));
@@ -231,18 +276,24 @@ public class SimplePreparedStatement {
         return this;
     }
 
+    @NotNull
+    @Contract("_ -> this")
     public SimplePreparedStatement addLocalDateTimeFrom(final @NotNull ValueSource<LocalDateTime> source) throws SQLException {
         return addLocalDateTime(source.getValue());
     }
 
+    @Nullable
     private Timestamp timestamp(final LocalDate dt) {
         return dt == null ? null : Timestamp.valueOf(dt.atStartOfDay());
     }
 
+    @Nullable
     private Timestamp timestamp(final LocalDateTime dt) {
         return dt == null ? null : Timestamp.valueOf(dt);
     }
 
+    @NotNull
+    @Contract("_ -> this")
     public SimplePreparedStatement addTimestamp(final Timestamp timestamp) throws SQLException {
         final int i = ++col;
         args.add(new Arg(col, timestamp, "timestamp"));
@@ -250,15 +301,21 @@ public class SimplePreparedStatement {
         return this;
     }
 
+    @NotNull
+    @Contract("_ -> this")
     public SimplePreparedStatement addNationalClob(final String clob) throws SQLException {
         // LATER: NCLOB muss wahrscheinlich anders behandelt werden als clob!
         return addClob(new StringReader(clob == null ? "" : clob));
     }
 
+    @NotNull
+    @Contract("_ -> this")
     public SimplePreparedStatement addClob(final String clob) throws SQLException {
         return addClob(new StringReader(clob == null ? "" : clob));
     }
 
+    @NotNull
+    @Contract("_ -> this")
     public SimplePreparedStatement addClob(final StringReader clob) throws SQLException {
         final int i = ++col;
         args.add(new Arg(col, clob, "clob"));
@@ -266,6 +323,8 @@ public class SimplePreparedStatement {
         return this;
     }
 
+    @NotNull
+    @Contract("_ -> this")
     public SimplePreparedStatement addBytes(final byte[] data) throws SQLException {
         // LATER: nur für sqlite!
         final int i = ++col;
@@ -278,6 +337,8 @@ public class SimplePreparedStatement {
         return this;
     }
 
+    @NotNull
+    @Contract("_ -> this")
     public SimplePreparedStatement addBlob(final byte[] data) throws SQLException {
         final int i = ++col;
         args.add(new Arg(col, data, "blob"));
@@ -289,6 +350,8 @@ public class SimplePreparedStatement {
         return this;
     }
 
+    @NotNull
+    @Contract("_ -> this")
     public SimplePreparedStatement addBlobWithLongRawWorkaround(final byte[] data) throws SQLException {
         if (dialect.isLegacySetBytesRequired()) {
             final int i = ++col;
@@ -300,6 +363,8 @@ public class SimplePreparedStatement {
         return this;
     }
 
+    @NotNull
+    @Contract("-> this")
     public SimplePreparedStatement addNullInteger() throws SQLException {
         final int i = ++col;
         args.add(new Arg(col, null, "int"));
@@ -307,6 +372,8 @@ public class SimplePreparedStatement {
         return this;
     }
 
+    @NotNull
+    @Contract("-> this")
     public SimplePreparedStatement addNullNumber() throws SQLException {
         final int i = ++col;
         args.add(new Arg(col, null, "number"));
@@ -314,6 +381,8 @@ public class SimplePreparedStatement {
         return this;
     }
 
+    @NotNull
+    @Contract("-> this")
     public SimplePreparedStatement addNullString()  throws SQLException {
         final int i = ++col;
         args.add(new Arg(col, null, "string"));
@@ -321,14 +390,19 @@ public class SimplePreparedStatement {
         return this;
     }
 
+    @NotNull
+    @Unmodifiable
     public List<Arg> getArgs() {
-        return args;
+        return List.copyOf(args);
     }
 
+    @NotNull
+    @Contract("_ -> this")
     public SimplePreparedStatement add(final long v) throws SQLException {
         return addLong(v);
     }
 
+    @NotNull
     @Override
     public String toString() {
         return "SimplePreparedStatement{" + "statement=" + statement + ", args=" + args + '}';

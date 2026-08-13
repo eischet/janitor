@@ -4,7 +4,6 @@
 
 package com.eischet.dbxs.exceptions;
 
-import com.eischet.dbxs.DatabaseConnection;
 import com.eischet.dbxs.SimplePreparedStatement;
 import com.eischet.dbxs.statements.GenericStatement;
 import org.jetbrains.annotations.Nullable;

@@ -8,6 +8,7 @@ import com.eischet.dbxs.DataManager;
 import com.eischet.dbxs.exceptions.DatabaseError;
 import com.eischet.janitor.logging.JanitorLogger;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
@@ -21,8 +22,8 @@ public class DatabaseVersion {
     private String productName;
     private String productVersion;
 
-    private static String reflow(final String s) {
-        if (s == null || s.isEmpty() || !s.contains("\n")) {
+    private static @Nullable String reflow(final @Nullable String s) {
+        if (s == null || !s.contains("\n")) {
             return s;
         } else {
             return s.replace("\n", " ").replace("  ", " ");

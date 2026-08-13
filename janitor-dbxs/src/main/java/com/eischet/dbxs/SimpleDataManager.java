@@ -315,16 +315,16 @@ public class SimpleDataManager implements DataManager {
         }
 
         @Override
-        public QuerySummary queryForEach(final @NotNull SelectStatement sql, final @NotNull StatementConfigurator sc, final @NotNull ResultSetConsumer consumer) throws DatabaseError {
+        public @NotNull QuerySummary queryForEach(final @NotNull SelectStatement sql, final @NotNull StatementConfigurator sc, final @NotNull ResultSetConsumer consumer) throws DatabaseError {
             return queryForEach(sql, sc, consumer, null, null);
         }
 
         @Override
-        public QuerySummary queryForEach(final @NotNull SelectStatement sql,
-                                         final @NotNull StatementConfigurator sc,
-                                         final @NotNull ResultSetConsumer consumer,
-                                         final @Nullable Long limit,
-                                         final @Nullable Flag abortFlag)
+        public @NotNull QuerySummary queryForEach(final @NotNull SelectStatement sql,
+                                                  final @NotNull StatementConfigurator sc,
+                                                  final @NotNull ResultSetConsumer consumer,
+                                                  final @Nullable Long limit,
+                                                  final @Nullable Flag abortFlag)
             throws DatabaseError {
             log.debug("{} starting query {}, limit={}", getName(), sql, limit);
             long readRows = 0;
@@ -431,7 +431,7 @@ public class SimpleDataManager implements DataManager {
         }
 
         @Override
-        public Connection getJdbcConnection() {
+        public @NotNull Connection getJdbcConnection() {
             return conn.getConn();
         }
 
