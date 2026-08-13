@@ -70,9 +70,9 @@
         <module>janitor-dbxs</module>
         <module>janitor-orm</module>
         <module>janitor-generator</module>
-        <module>janitor-tests</module>
         <module>janitor-modules</module>
         <module>janitor-modules-common</module>
+        <module>janitor-tests</module>
     </modules>
 
 

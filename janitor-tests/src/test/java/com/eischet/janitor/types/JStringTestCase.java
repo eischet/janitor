@@ -256,7 +256,30 @@ public class JStringTestCase extends JanitorTest {
         testStringMethod("'foo'[:8]", "foo"); // was a problem up to and including 0.9.22
     }
     
-    
+    @Test void scopingIssues() throws Exception {
+        // these tests have been duplicated to solve a couple of scoping issues
+
+        // formatting, C-Style
+        testStringMethod("'Hello %s!'.format('world')", "Hello world!");
+
+        // Formatting, JSP style
+        // Expand a template from local variables
+        testStringMethod("""
+                a = 1;
+                b = 2;
+                c = "foobar";
+                return "${a} <%= b %> ${c}".expand();
+                """, "1 2 foobar");
+
+        // Override one local variable
+        testStringMethod("""
+                a = 1;
+                b = 2;
+                c = "foobar";
+                return "${a} <%= b %> ${c}".expand({a: 3});
+                """, "3 2 foobar");
+
+    }
     
 
 }
