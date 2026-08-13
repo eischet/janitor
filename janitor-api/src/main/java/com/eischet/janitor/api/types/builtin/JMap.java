@@ -409,4 +409,86 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
         return exportToJson(Janitor.current());
     }
 
+    public @NotNull JanitorObject readonlyView() {
+        return new JMapReadonly();
+    }
+
+    private class JMapReadonly implements JanitorObject {
+
+        @Override
+        public @Nullable Object janitorGetHostValue() {
+            return JanitorObject.super.janitorGetHostValue();
+        }
+
+        @Override
+        public @NotNull String janitorToString() {
+            return JanitorObject.super.janitorToString() + "[ro]";
+        }
+
+        @Override
+        public boolean janitorIsTrue() {
+            return JanitorObject.super.janitorIsTrue();
+        }
+
+        @Override
+        public @NotNull JanitorObject janitorUnpack() {
+            return JanitorObject.super.janitorUnpack();
+        }
+
+        @Override
+        public @NotNull String janitorClassName() {
+            return JanitorObject.super.janitorClassName();
+        }
+
+        @Override
+        public @NotNull @Unmodifiable List<JanitorObject> janitorUnpackAll() {
+            return JanitorObject.super.janitorUnpackAll();
+        }
+
+        @Override
+        public void janitorLeaveScope() {
+            JanitorObject.super.janitorLeaveScope();
+        }
+
+        @Override
+        public void janitorEnterScope() {
+            JanitorObject.super.janitorEnterScope();
+        }
+
+        @Override
+        public @Nullable <T extends JanitorObject> T janitorCoerce(@NotNull Class<T> type) {
+            return JanitorObject.super.janitorCoerce(type);
+        }
+
+        @Override
+        public void janitorWarn(@NotNull String message) {
+            JanitorObject.super.janitorWarn(message);
+        }
+
+        @Override
+        public String toString() {
+            return JMap.this.toString() + "[ro]";
+        }
+
+        @Override
+        public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess process, final @NotNull String name, final boolean required) throws JanitorRuntimeException {
+            // System.out.println("Getting attribute " + name + " from map " + this);
+            @Nullable final JanitorObject attr = JMap.super.janitorGetAttribute(process, name, required);
+            if (attr != null) {
+                // System.out.println("  in super: " + attr);
+                return attr;
+            }
+            @NotNull final JString nameAsString = Janitor.string(name);
+            final JanitorObject value = wrapped.get(nameAsString);
+            if (value != null) {
+                // System.out.println("  in wrapped: " + attr);
+                return value;
+            }
+            if (required) {
+                return JNull.NULL; // required lookup: return "Janitor null" for maps
+            } else {
+                return null; // not a required lookup: return "Java null" so a caller can walk up to the next scope
+            }
+        }
+    }
 }

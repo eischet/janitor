@@ -4,6 +4,7 @@
 - Maps now support shorthand assignment, e.g. `m1["foo"] = "bar"` can be replaced with m1.foo = "bar".
   Exception: you cannot assign to pre-defined attributes. E.g. `m.isEmpty = 17` will fail because it will try to assign
   to the bound method.
+- JavaDocs and nullability annotations have been improved in the dbxs module.
 
 
 # 0.9.61, 2026-08-10 (internal release only)
