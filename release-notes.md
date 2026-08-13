@@ -1,10 +1,11 @@
-# 0.9.61-SNAPSHOT
+# 0.9.62-SNAPSHOT
 
 - Lists and Maps now come with a `copy` method that creates a shallow copy.
 - Maps now support shorthand assignment, e.g. `m1["foo"] = "bar"` can be replaced with m1.foo = "bar".
   Exception: you cannot assign to pre-defined attributes. E.g. `m.isEmpty = 17` will fail because it will try to assign
   to the bound method.
 - JavaDocs and nullability annotations have been improved in the dbxs module.
+- updated deps: mustang, commonmark, junit 
 
 
 # 0.9.61, 2026-08-10 (internal release only)
@@ -16,11 +17,13 @@
   install4j, so it's disabled by default.
 - added module "docusign", which wraps the docusign-java-client library
 
+
  # 0.9.60, 2026-06-29 (internal release only)
 
 - orm: make toString methods for ForeignKey instances more compact and readable
 - orm: do not fall through to throwing an illegal arg exception in JoinDao::deleteForScript
 - deps: jansi 4.1.3, mustangproject 2.23.1
+
 
 # 0.9.59, 2026-06-12 (internal release only)
 
