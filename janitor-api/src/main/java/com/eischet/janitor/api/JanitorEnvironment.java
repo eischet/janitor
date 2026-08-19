@@ -57,7 +57,6 @@ public interface JanitorEnvironment extends JsonOutputSupport {
      */
     void addModuleResolver(final ModuleResolver resolver);
 
-
     /**
      * Convert a native object to a script object.
      * @param obj the object to convert
@@ -132,4 +131,8 @@ public interface JanitorEnvironment extends JsonOutputSupport {
 
     void autoDiscoverModules();
 
+
+    @Nullable Scope.ImplicitObjectProvider getImplicitTemplateObjectProvider();
+
+    void setImplicitTemplateObjectProvider(@Nullable Scope.ImplicitObjectProvider implicitTemplateObjectProvider);
 }

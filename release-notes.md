@@ -1,10 +1,15 @@
-# 0.9.62-SNAPSHOT
+# 0.9.62, 2026-08-19 (internal release only)
 
 - Lists and Maps now come with a `copy` method that creates a shallow copy.
 - Maps now support shorthand assignment, e.g. `m1["foo"] = "bar"` can be replaced with m1.foo = "bar".
   Exception: you cannot assign to pre-defined attributes. E.g. `m.isEmpty = 17` will fail because it will try to assign
   to the bound method.
 - JavaDocs and nullability annotations have been improved in the dbxs module.
+- improved nullability annotations for dispatch table addXXX methods
+- removed deprecated FilterScript constructor
+- rewrote how templates get default values, so callers can now extend the default set of template vars automatically.
+  Instead of one fixed object, we now allow one per-process implicit object and one per environment. Configuration is
+  easier because, instead of one fixed object, you can now supply a function String → JanitorObject for lookups.
 - updated deps: mustang, commonmark, junit 
 
 

@@ -491,4 +491,27 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
             }
         }
     }
+
+    @Override
+    public Scope.ImplicitObjectProvider asImplicitObjectProvider() {
+        return readonlyView().asImplicitObjectProvider();
+    }
+
+    /*
+
+            if (implicitObject instanceof JMap map) {
+        // when maps grew the shorthand "map.prop = value", this changed lookup semantics in a way that masks away
+        // any vars bound at a higher level; we simply restore the old behavior for this case by returning a readonly view
+        // of the map
+        // System.out.println("Setting implicit object to readonly view of map " + map);
+        this.implicitObject = map.readonlyView();
+    } else {
+        // System.out.println("Setting implicit object to " + implicitObject);
+        this.implicitObject = implicitObject;
+    }
+
+     */
+
+
+
 }

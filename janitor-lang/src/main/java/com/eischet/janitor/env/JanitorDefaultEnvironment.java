@@ -56,6 +56,7 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
     private final JanitorFormatting formatting;
     private final List<JanitorModuleRegistration> moduleRegistrations = new ArrayList<>();
     private final List<ModuleResolver> resolvers = new ArrayList<>();
+    protected @Nullable Scope.ImplicitObjectProvider implicitTemplateObjectProvider = null;
 
     private final Scope builtinScope = Scope.createBuiltinScope(this, Location.virtual(ScriptModule.builtin()));
 
@@ -213,7 +214,7 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
         }
         // TODO accidentally broke the build here; add tests for old/new style filter scripts!
         try {
-            return new FilterScript(this, name, code);
+            return new FilterScript(this, name, code, g -> {});
         } catch (JanitorCompilerException janitorParserException) {
             warn("error compiling filter: " + code + ":" + janitorParserException);
             // TODO: report an exception -> exception(JanitorParserException);
@@ -303,4 +304,13 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
         throw new JanitorNameException(process, "Module not found: '" + name + "'");
     }
 
+    @Override
+    public @Nullable Scope.ImplicitObjectProvider getImplicitTemplateObjectProvider() {
+        return implicitTemplateObjectProvider;
+    }
+
+    @Override
+    public void setImplicitTemplateObjectProvider(@Nullable Scope.ImplicitObjectProvider implicitTemplateObjectProvider) {
+        this.implicitTemplateObjectProvider = implicitTemplateObjectProvider;
+    }
 }

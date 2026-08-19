@@ -2,6 +2,7 @@ package com.eischet.janitor.api.types.interop;
 
 import com.eischet.janitor.api.errors.glue.JanitorGlueException;
 import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
+import com.eischet.janitor.api.errors.runtime.JanitorAssignmentException;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.toolbox.strings.StringHelpers;
 import org.jetbrains.annotations.NotNull;
@@ -11,6 +12,17 @@ import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
 @FunctionalInterface
 public interface NullableSetter<INSTANCE, PROPERTY> {
+
+    static @NotNull <T extends JanitorObject, U> NullableSetter<T, U> ofNullable(@NotNull final String name, @Nullable NullableSetter<T, U> setter) {
+        if (setter != null) {
+            return setter;
+        } else {
+            return (instance, value) -> {
+                throw new JanitorGlueException(JanitorAssignmentException::fromGlue, "The field " + name + " cannot be assigned to!");
+            };
+        }
+    }
+
     void set(@NotNull INSTANCE instance, @Nullable PROPERTY value) throws Exception;
 
     static <T> NullableSetter<T, Boolean> guard(PrimitiveBooleanSetter<T> setter) {

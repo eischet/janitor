@@ -5,6 +5,7 @@ import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorNameException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
+import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.types.builtin.JString;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -213,5 +214,14 @@ public interface JanitorObject {
     default void janitorWarn(final @NotNull String message) {
     }
 
-
+    default Scope.ImplicitObjectProvider asImplicitObjectProvider() {
+        return (process, name) -> {
+            try {
+                return janitorGetAttribute(process, name, false);
+            } catch (JanitorRuntimeException e) {
+                process.warn("Failed to get attribute " + name + ": " + e.getMessage());
+                return null;
+            }
+        };
+    }
 }

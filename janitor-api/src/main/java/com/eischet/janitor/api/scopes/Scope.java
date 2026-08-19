@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 /**
  * A scope is the basic building block of how the interpreter operates.
@@ -42,13 +43,34 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class Scope implements JanitorObject {
 
+    @FunctionalInterface
+    public interface ImplicitObjectProvider {
+        @Nullable JanitorObject getImplicitObject(final @NotNull JanitorScriptProcess process, final @NotNull String name);
+
+        static @NotNull ImplicitObjectProvider combine(final @NotNull ImplicitObjectProvider first, final @NotNull ImplicitObjectProvider second) {
+            return (process, name) -> {
+                final var firstMatch = first.getImplicitObject(process, name);
+                if (firstMatch != null) {
+                    return firstMatch;
+                }
+                return second.getImplicitObject(process, name);
+            };
+        }
+
+        static final @NotNull ImplicitObjectProvider NONE = (process, name) -> null;
+
+        static @NotNull ImplicitObjectProvider combineNullable(final @Nullable ImplicitObjectProvider first, final @Nullable ImplicitObjectProvider second) {
+            return combine(first == null ? NONE : first, second == null ? NONE : second);
+        }
+    }
+
     private final @Nullable Scope parent;
     private final Map<String, JanitorObject> _variables;
     private final @Nullable Location location;
     private final @Nullable Scope moduleScope;
     private final JanitorEnvironment env;
     private @Nullable Location ip;
-    private @Nullable JanitorObject implicitObject;
+    private @Nullable ImplicitObjectProvider implicitObjectProvider;
     private boolean sealed = false;
 
     private Scope(final JanitorEnvironment env, final @Nullable Location location, final @Nullable Scope parent, final @Nullable Scope moduleScope, final boolean threadEnabled) {
@@ -134,33 +156,8 @@ public class Scope implements JanitorObject {
         }
     }
 
-    /**
-     * Get the implicit object.
-     * This object is used as a fallback for lookups in the scope.
-     *
-     * @return the implicit object
-     */
-    public @Nullable JanitorObject getImplicitObject() {
-        return implicitObject;
-    }
-
-    /**
-     * Set the implicit object.
-     * This object is used as a fallback for lookups in the scope.
-     *
-     * @param implicitObject the implicit object
-     */
-    public void setImplicitObject(final @Nullable JanitorObject implicitObject) {
-        if (implicitObject instanceof JMap map) {
-            // when maps grew the shorthand "map.prop = value", this changed lookup semantics in a way that masks away
-            // any vars bound at a higher level; we simply restore the old behavior for this case by returning a readonly view
-            // of the map
-            // System.out.println("Setting implicit object to readonly view of map " + map);
-            this.implicitObject = map.readonlyView();
-        } else {
-            // System.out.println("Setting implicit object to " + implicitObject);
-            this.implicitObject = implicitObject;
-        }
+    public void setImplicitObjectProvider(final @Nullable ImplicitObjectProvider implicitObjectProvider) {
+        this.implicitObjectProvider = implicitObjectProvider;
     }
 
     /**
@@ -219,13 +216,30 @@ public class Scope implements JanitorObject {
      * @return the variable or null
      */
     public JanitorObject lookupLocally(final JanitorScriptProcess process, final String variableName) {
-        if (implicitObject != null) {
-            final JanitorObject impVar = getOptionalMethod(implicitObject, process, variableName);
+        // The template engine actually calls "lookup", not this method here, but leaving this for now... maybe remove.
+        /*
+        if (implicitObjectProvider != null) {
+            // System.err.println("implicit local lookup: <" + implicitObjectProvider.getClass().getSimpleName() + ">.<null>.<null> --> <null>");
+            final JanitorObject impVar = implicitObjectProvider.getImplicitObject(process, variableName);
             // log.info("implicit local lookup: <{} {}>.{} --> {}", implicitObject.getClass().getSimpleName(), implicitObject, variableName, impVar);
-            if (impVar != JNull.NULL) {
+            if (impVar != null) {
                 return impVar;
             }
+            // Since the "implicit object" lookup can short-circuit local variable lookups, we're only using it if an implicit object provider is set,
+            // but not in the general case.
+            @Nullable final ImplicitObjectProvider processImplicitObjectProvider = env.getImplicitTemplateObjectProvider();
+            if (processImplicitObjectProvider != null) {
+                //System.err.println("  with template provider");
+                //System.out.println("implicit local lookup: <" + implicitObjectProvider.getClass().getSimpleName() + ">.<null>.<null> --> <null>");
+                final JanitorObject procImpVar = processImplicitObjectProvider.getImplicitObject(process, variableName);
+                if (procImpVar != null) {
+                    return procImpVar;
+                }
+            //} else {
+              //  System.err.println("  without template provider");
+            }
         }
+         */
         return getVariable(variableName);
     }
 
@@ -272,11 +286,25 @@ public class Scope implements JanitorObject {
      * @return the variable or null
      */
     public JanitorObject lookup(final JanitorScriptProcess process, final String variableName, @Nullable final List<Scope> closureScopes) {
-        if (implicitObject != null) {
-            final JanitorObject impVar = getOptionalMethod(implicitObject, process, variableName);
+        //System.err.println("looking for " + variableName + " in " + this + " with iop = " + implicitObjectProvider);
+        if (implicitObjectProvider != null) {
+            final JanitorObject impVar = implicitObjectProvider.getImplicitObject(process, variableName);
             // log.debug("implicit lookup: <{} {}>.{} --> {}", implicitObject.getClass().getSimpleName(), implicitObject, variableName, impVar);
             if (impVar != null) {
                 return impVar;
+            }
+            // Since the "implicit object" lookup can short-circuit local variable lookups, we're only using it if an implicit object provider is set,
+            // but not in the general case.
+            @Nullable final ImplicitObjectProvider processImplicitObjectProvider = env.getImplicitTemplateObjectProvider();
+            if (processImplicitObjectProvider != null) {
+                //System.err.println("  with template provider");
+                //System.out.println("implicit local lookup: <" + implicitObjectProvider.getClass().getSimpleName() + ">.<null>.<null> --> <null>");
+                final JanitorObject procImpVar = processImplicitObjectProvider.getImplicitObject(process, variableName);
+                if (procImpVar != null) {
+                    return procImpVar;
+                }
+            //} else {
+              //  System.err.println("  without template provider");
             }
         }
         final @Nullable JanitorObject existing = getVariable(variableName);
@@ -320,8 +348,8 @@ public class Scope implements JanitorObject {
      * @param variable      the variable
      * @return this scope (for chained, builder-style calls)
      */
-    public Scope bind(final JanitorScriptProcess process, final String variableName, final JanitorObject variable) {
-        final String name = process.getBuiltins().intern(variableName);
+    public Scope bind(final @NotNull JanitorScriptProcess process, final @NotNull String variableName, final @Nullable JanitorObject variable) {
+        final @NotNull String name = Objects.requireNonNull(process.getBuiltins().intern(variableName));
         process.trace(() -> "binding in" + (sealed ? " SEALED" : "") + " scope " + this + ": " + name + " = " + variable);
         //log.debug("binding in scope {}: {} = {}", this.getLocation(), name, variable);
         if (sealed) {

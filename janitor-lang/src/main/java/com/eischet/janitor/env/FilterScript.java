@@ -31,23 +31,12 @@ public class FilterScript implements FilterPredicate {
     private final SLFLoggingRuntime runtime;
     private final Consumer<Scope> globalsProvider;
     private final String name;
-    private final boolean explicitBind;
-
-    @Deprecated
-    public FilterScript(final JanitorEnvironment env, final String name, final String source) throws JanitorCompilerException {
-        this.name = name;
-        runtime = new SLFLoggingRuntime(env, log);
-        script = new JanitorScript(runtime, "filter", source);
-        this.globalsProvider = null;
-        this.explicitBind = false; // TODO: remove this flag once this constructor has been removed!
-    }
 
     public FilterScript(final JanitorEnvironment env, final String name, final String source, final Consumer<Scope> globalsProvider) throws JanitorCompilerException {
         this.name = name;
         runtime = new SLFLoggingRuntime(env, log);
         this.globalsProvider = globalsProvider;
         script = new JanitorScript(runtime, "filter", source);
-        explicitBind = true;
     }
 
 
@@ -58,13 +47,8 @@ public class FilterScript implements FilterPredicate {
                 if (globalsProvider != null) {
                     globalsProvider.accept(g);
                 }
-                if (explicitBind) {
-                    g.bind("value", t);
-                } else {
-                    // historic error - using the implicit object instead here was a bad idea
-                    // must change the existing (closed source) client code first before this can be removed...
-                    g.setImplicitObject(t);
-                }
+                g.bind("value", t);
+                g.setImplicitObjectProvider(t.asImplicitObjectProvider());
             });
         } catch (JanitorRuntimeException e) {
             log.warn("{}: filter script error: {}", name, e.getMessage());

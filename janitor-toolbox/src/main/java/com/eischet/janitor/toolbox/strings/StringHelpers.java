@@ -1,5 +1,9 @@
 package com.eischet.janitor.toolbox.strings;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
+
 import java.util.Collection;
 import java.util.stream.IntStream;
 
@@ -28,7 +32,7 @@ public class StringHelpers {
         return cut(s.replaceAll("\\s+", " "), size);
     }
 
-    public static String join(String sep, Collection<String> collection) {
+    public static @NotNull String join(@NotNull String sep, @NotNull @Unmodifiable Collection<String> collection) {
         StringBuilder out = new StringBuilder();
         int count = 0;
         for (String element : collection) {
@@ -41,23 +45,27 @@ public class StringHelpers {
         return out.toString();
     }
 
-    public static String disarm(String s) {
+    public static @NotNull String disarm(@Nullable String s) {
         return s == null ? "" : s.replace("&", "&amp;").replace(">", "&gt;").replace("<", "&lt;");
+    }
+
+    public static String disarmAndPreformat(final @Nullable String s) {
+        return disarm(s).replace("\n", "<br/>");
     }
 
     public static String removeLastCharacter(final String s) {
         return (s == null || s.length() < 1) ? "" : s.substring(0, s.length() - 1);
     }
 
-    public static boolean nullOrEmpty(final String s) {
+    public static boolean nullOrEmpty(@Nullable final String s) {
         return s == null || s.isEmpty();
     }
 
-    public static boolean notEmpty(final String s) {
+    public static boolean notEmpty(@Nullable final String s) {
         return !nullOrEmpty(s);
     }
 
-    public static boolean containText(final String text, final String... candidates) {
+    public static boolean containText(@Nullable final String text, final String... candidates) {
         if (text == null || text.isEmpty()) {
             return true;
         }
@@ -70,7 +78,7 @@ public class StringHelpers {
         return false;
     }
 
-    public static String repeat(final String s, final long num) {
+    public static @NotNull String repeat(final @NotNull String s, final long num) {
         StringBuilder repetitions = new StringBuilder();
         for (long i = 0; i < num; i++) {
             repetitions.append(s);
@@ -78,7 +86,7 @@ public class StringHelpers {
         return repetitions.toString();
     }
 
-    public static Long asLongInstance(final String s) {
+    public static @Nullable Long asLongInstance(final @Nullable String s) {
         if (s == null || s.isEmpty()) {
             return null;
         }
@@ -89,7 +97,7 @@ public class StringHelpers {
         }
     }
 
-    public static int asInt(final String s) {
+    public static int asInt(final @Nullable String s) {
         if (s == null || s.isEmpty()) {
             return 0;
         }
@@ -100,23 +108,23 @@ public class StringHelpers {
         }
     }
 
-    public static String toUpper(final String s) {
+    public static @Nullable String toUpper(final @Nullable String s) {
         return s == null ? s : s.toUpperCase();
     }
 
-    public static boolean isNullOrEmpty(final String string) {
+    public static boolean isNullOrEmpty(final @Nullable String string) {
         return string == null || string.isEmpty();
     }
 
-    public static boolean isNotNullOrEmpty(final String string) {
+    public static boolean isNotNullOrEmpty(final @Nullable String string) {
         return !isNullOrEmpty(string);
     }
 
-    public static String cutNullable(String s, int size) {
+    public static String cutNullable(@Nullable String s, int size) {
         return s == null ? null : cut(s, size);
     }
 
-    public static String toValidFilename(String filename) {
+    public static @Nullable String toValidFilename(@Nullable String filename) {
         if (filename == null || filename.isEmpty()) {
             return filename;
         }
@@ -137,11 +145,11 @@ public class StringHelpers {
         return filename;
     }
 
-    public static String coalesce(final String str) {
+    public static @NotNull String coalesce(final @Nullable String str) {
         return str == null ? "" : str;
     }
 
-    public static String coalesceNullOrBlank(final String str, final String fallback) {
+    public static @NotNull String coalesceNullOrBlank(final String str, final String fallback) {
         return str == null || str.isBlank() ? fallback : str;
     }
 
@@ -149,7 +157,7 @@ public class StringHelpers {
         return coalesce(s1).compareTo(coalesce(s2));
     }
 
-    public static String formatBytes(final long size) {
+    public static @NotNull String formatBytes(final long size) {
         if (size < 1024) {
             return size + " bytes";
         }

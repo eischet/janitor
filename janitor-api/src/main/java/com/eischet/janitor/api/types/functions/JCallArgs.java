@@ -320,6 +320,7 @@ public class JCallArgs {
         return args == null ? Collections.emptyList() : args.stream().map(EvaluatedArgument::getValue).toList();
     }
 
+
     @Override
     public String toString() {
         return "JCallArgs{" +
@@ -377,4 +378,19 @@ public class JCallArgs {
     public void notAllowed() throws JanitorRuntimeException {
         require(0);
     }
+
+    /**
+     * Return all list arguments, throwing an exception if any keyword arguments are present.
+     * @return the list of arguments
+     * @throws JanitorRuntimeException if any keyword arguments are present
+     */
+    public List<JanitorObject> requireArgListOnly() throws JanitorRuntimeException {
+        JMap existingKwArgs = asKwargs(Set.of());
+        if (!existingKwArgs.isEmpty()) {
+            throw new JanitorArgumentException(process, "%s: does not accept keyword arguments, but got: %s".formatted(functionName, existingKwArgs.keySet()));
+        } else {
+            return args.stream().map(EvaluatedArgument::getValue).toList();
+        }
+    }
+
 }

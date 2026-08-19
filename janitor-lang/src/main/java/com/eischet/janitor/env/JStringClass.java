@@ -9,6 +9,7 @@ import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.*;
 import com.eischet.janitor.api.types.builtin.*;
 import com.eischet.janitor.toolbox.strings.StringHelpers;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
@@ -24,7 +25,8 @@ import java.util.regex.Pattern;
 
 /**
  * Operations for string objects.
- * TODO: wrap these with a DispatchTable, to allow greater customisation options to hosts.
+ *
+ * {@see com.eischet.janitor.env.DefaultBuiltinTypes}
  */
 public class JStringClass {
 
@@ -38,31 +40,31 @@ public class JStringClass {
 
     public static final String STRING_LENGTH = "String.length(): Returns the number of characters in the string.";
 
-    public static JanitorObject length(final JString self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static @NotNull JanitorObject length(final @NotNull JString self, final @NotNull JanitorScriptProcess process, final @NotNull JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);
         return process.getBuiltins().integer(self.janitorGetHostValue().length());
     }
 
     public static final String STRING_TRIM = "String.trim(): Returns the String with leading and trailing spaces removed";
 
-    public static JString trim(final JString self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static JString trim(final @NotNull JString self, final @NotNull JanitorScriptProcess process, final @NotNull JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);
         return process.getBuiltins().string(self.janitorGetHostValue().trim());
     }
 
-    public static JString format(final JString self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
-        return process.getBuiltins().string(self.janitorGetHostValue().formatted(arguments.getList().stream().map(JanitorObject::janitorGetHostValue).toArray()));
+    public static @NotNull JString format(final @NotNull JString self, final @NotNull JanitorScriptProcess process, final @NotNull JCallArgs arguments) throws JanitorRuntimeException {
+        return process.getBuiltins().string(self.janitorGetHostValue().formatted(arguments.requireArgListOnly().stream().map(JanitorObject::janitorGetHostValue).toArray()));
     }
 
-    public static JString expand(final JString self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static @NotNull JString expand(final @NotNull JString self, final @NotNull JanitorScriptProcess process, final @NotNull JCallArgs arguments) throws JanitorRuntimeException {
         return process.expandTemplate(self, arguments);
     }
 
-    public static JBinary toBinaryUtf8(final JString self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static @NotNull JBinary toBinaryUtf8(final @NotNull JString self, final @NotNull JanitorScriptProcess process, final @NotNull JCallArgs arguments) throws JanitorRuntimeException {
         return process.getBuiltins().binary(self.janitorGetHostValue().getBytes(StandardCharsets.UTF_8));
     }
 
-    public static JBinary encode(final JString self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static @NotNull JBinary encode(final @NotNull JString self, final @NotNull JanitorScriptProcess process, final @NotNull JCallArgs arguments) throws JanitorRuntimeException {
         final String enc = arguments.getOptionalStringValue(0, "UTF-8");
         try {
             return process.getBuiltins().binary(self.janitorGetHostValue().getBytes(enc));
@@ -72,7 +74,7 @@ public class JStringClass {
     }
 
 
-    public static JString indexedGet(final JString self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static @NotNull JString indexedGet(final @NotNull JString self, final @NotNull JanitorScriptProcess process, final @NotNull JCallArgs arguments) throws JanitorRuntimeException {
         final String string = self.janitorGetHostValue();
         if (arguments.size() == 1) {
             int len = string.length();
@@ -124,9 +126,9 @@ public class JStringClass {
         throw new JanitorArgumentException(process, "invalid arguments: " + arguments);
     }
 
-    public static JFloat toFloat(final JString self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static @NotNull JFloat toFloat(final @NotNull JString self, final @NotNull JanitorScriptProcess process, final @NotNull JCallArgs arguments) throws JanitorRuntimeException {
         final String string = self.janitorGetHostValue();
-        if ("".equals(string) || string.isBlank()) {
+        if (string.isBlank()) {
             return process.getBuiltins().floatingPoint(0);
         }
         try {
@@ -138,9 +140,10 @@ public class JStringClass {
     }
 
 
-    public static JInt toInt(final JString self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static @NotNull JInt toInt(final @NotNull JString self, final @NotNull JanitorScriptProcess process, final @NotNull JCallArgs arguments) throws JanitorRuntimeException {
+        arguments.notAllowed();
         final String string = self.janitorGetHostValue();
-        if ("".equals(string) || string.isBlank()) {
+        if (string.isBlank()) {
             return process.getBuiltins().integer(0);
         }
         try {
@@ -151,17 +154,17 @@ public class JStringClass {
         }
     }
 
-    public static JString toUpperCase(final JString self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static @NotNull JString toUpperCase(final @NotNull JString self, final @NotNull JanitorScriptProcess process, final @NotNull JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);
         return process.getBuiltins().string(self.janitorGetHostValue().toUpperCase(Locale.ROOT));
     }
 
-    public static JString toLowerCase(final JString self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static @NotNull JString toLowerCase(final @NotNull JString self, final @NotNull JanitorScriptProcess process, final @NotNull JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);
         return process.getBuiltins().string(self.janitorGetHostValue().toLowerCase(Locale.ROOT));
     }
 
-    public static JInt count(final JString self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+    public static @NotNull JInt count(final JString self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         return process.getBuiltins().integer(StringHelpers.countMatches(self.janitorGetHostValue(), arguments.require(1).getString(0).janitorGetHostValue()));
     }
 
@@ -170,8 +173,6 @@ public class JStringClass {
         final String what = arguments.getString(0).janitorGetHostValue();
         final String with = arguments.getString(1).janitorGetHostValue();
         final String result = self.janitorGetHostValue().replace(what, with);
-        // System.out.println("arguments: " + arguments);
-        // System.out.printf("'%s'.replaceAll('%s', '%s') --> %s%n", self.string, what, with, result);
         return process.getBuiltins().string(result);
     }
 
@@ -180,8 +181,6 @@ public class JStringClass {
         final String what = arguments.getString(0).janitorGetHostValue();
         final String with = arguments.getString(1).janitorGetHostValue();
         final String result = self.janitorGetHostValue().replaceFirst(what, with);
-        // System.out.println("arguments: " + arguments);
-        // System.out.printf("'%s'.replaceAll('%s', '%s') --> %s%n", self.string, what, with, result);
         return process.getBuiltins().string(result);
     }
 
@@ -190,8 +189,6 @@ public class JStringClass {
         final String what = arguments.getString(0).janitorGetHostValue();
         final String with = arguments.getString(1).janitorGetHostValue();
         final String result = self.janitorGetHostValue().replaceAll(what, with);
-        // System.out.println("arguments: " + arguments);
-        // System.out.printf("'%s'.replaceAll('%s', '%s') --> %s%n", self.string, what, with, result);
         return process.getBuiltins().string(result);
     }
 
@@ -316,33 +313,39 @@ public class JStringClass {
     }
 
 
-    public static JanitorObject urlEncode(final JString self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
-        arguments.require(0);
+    public static JanitorObject urlEncode(final @NotNull JString self, final @NotNull JanitorScriptProcess process, final @NotNull JCallArgs arguments) throws JanitorRuntimeException {
+        arguments.notAllowed();
         return process.getBuiltins().string(URLEncoder.encode(self.janitorGetHostValue(), StandardCharsets.UTF_8));
     }
 
-    public static JanitorObject urlDecode(final JString self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
-        arguments.require(0);
+    public static JanitorObject urlDecode(final @NotNull JString self, final @NotNull JanitorScriptProcess process, final @NotNull JCallArgs arguments) throws JanitorRuntimeException {
+        arguments.notAllowed();
         return process.getBuiltins().string(URLDecoder.decode(self.janitorGetHostValue(), StandardCharsets.UTF_8));
     }
 
-    public static JanitorObject decodeBase64(final JString self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
-        arguments.require(0);
+    public static JanitorObject decodeBase64(final @NotNull JString self, final @NotNull JanitorScriptProcess process, final @NotNull JCallArgs arguments) throws JanitorRuntimeException {
+        arguments.notAllowed();
         return process.getBuiltins().binary(Base64.getDecoder().decode(self.janitorGetHostValue()));
     }
 
-    public static JString toConstantCase(final JString self, final JanitorScriptProcess process, final JCallArgs args) throws JanitorRuntimeException {
-        args.require(0);
+    public static JString toConstantCase(final @NotNull JString self, final @NotNull JanitorScriptProcess process, final @NotNull JCallArgs args) throws JanitorRuntimeException {
+        args.notAllowed();
+        if (self.janitorGetHostValue().isBlank()) {
+            return Janitor.emptyString();
+        }
         return process.getBuiltins().string(toConstant(self.janitorGetHostValue()));
     }
 
-    public static JString toCamelCase(final JString self, final JanitorScriptProcess process, final JCallArgs args) throws JanitorRuntimeException {
-        args.require(0);
+    public static JString toCamelCase(final @NotNull JString self, final @NotNull JanitorScriptProcess process, final @NotNull JCallArgs args) throws JanitorRuntimeException {
+        args.notAllowed();
+        if (self.janitorGetHostValue().isBlank()) {
+            return Janitor.emptyString();
+        }
         return process.getBuiltins().string(camelize(self.janitorGetHostValue()));
     }
 
 
-    public static String toConstant(final String string) {
+    public static @Nullable String toConstant(final @Nullable String string) {
         if (string == null || string.isEmpty()) {
             return null;
         }
@@ -357,7 +360,7 @@ public class JStringClass {
         }
     }
 
-    public static String camelize(final String string) {
+    public static @Nullable String camelize(final @Nullable String string) {
         if (string == null || string.isEmpty()) {
             return null;
         }
@@ -397,6 +400,7 @@ public class JStringClass {
                 return list;
             }
         }
+        // TODO: shouldn't we throw a script exception here?
         return null;
     }
 }

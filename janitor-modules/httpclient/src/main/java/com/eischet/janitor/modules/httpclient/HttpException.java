@@ -100,10 +100,10 @@ public class HttpException extends JanitorException implements JanitorAware {
         private static final WrapperDispatchTable<HttpException> DISPATCHER = new WrapperDispatchTable<>();
 
         static {
-            DISPATCHER.addStringProperty("url", self -> self.janitorGetHostValue().getUrl(), null);
-            DISPATCHER.addStringProperty("method", self -> self.janitorGetHostValue().getMethod(), null);
-            DISPATCHER.addStringProperty("body", self -> self.janitorGetHostValue().getBody(), null);
-            DISPATCHER.addIntegerProperty("code", self -> self.janitorGetHostValue().getCode(), null);
+            DISPATCHER.addStringProperty("url", self -> self.janitorGetHostValue().getUrl());
+            DISPATCHER.addStringProperty("method", self -> self.janitorGetHostValue().getMethod());
+            DISPATCHER.addStringProperty("body", self -> self.janitorGetHostValue().getBody());
+            DISPATCHER.addIntegerProperty("code", self -> self.janitorGetHostValue().getCode());
             DISPATCHER.addObjectProperty("headers", self -> {
                 final @NotNull JMap map = Janitor.map();
                 self.janitorGetHostValue().getHeaders().forEach(map::put);

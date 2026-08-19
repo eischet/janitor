@@ -4,6 +4,7 @@ import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorRuntime;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.RunnableScript;
+import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
@@ -12,6 +13,7 @@ import com.eischet.janitor.api.types.functions.JCallable;
 import com.eischet.janitor.api.types.builtin.JNull;
 import com.eischet.janitor.api.types.builtin.JString;
 import com.eischet.janitor.api.types.JanitorObject;
+import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -144,16 +146,15 @@ public class TemplateParser {
         }
 
         try {
-            final String scriptSource = parser.toScript(TemplateParser::plainRenderer);
+            @Language("Janitor") final String scriptSource = parser.toScript(TemplateParser::plainRenderer);
             RunnableScript script = runtime.compile("TEMPLATE", scriptSource);
             arguments.require(0, 1);
             final JanitorObject values = arguments.size() > 0 ? arguments.get(0) : null;
 
-
             final StringBuilder stringBuilder = new StringBuilder();
 
             final JCallable writer = (runningScript, arguments1) -> {
-                for (final JanitorObject jObj : arguments1.getList()) {
+                for (final JanitorObject jObj : arguments1.requireArgListOnly()) {
                     if (jObj != JNull.NULL) {
                         stringBuilder.append(jObj.janitorToString());
                     }
@@ -165,12 +166,19 @@ public class TemplateParser {
                 return JNull.NULL;
             };
 
+
+
             script.runInScope(g -> {
                         g.bind("__POP__", popper.asObject("__POP__"));
                         g.bind("__OUT__", writer.asObject("__OUT__"));
                         if (values != null) {
-                            // System.out.println("Setting implicit object: " + values);
-                            g.setImplicitObject(values);
+                            System.err.println("setting implicit object provider to values=" + values);
+                            g.setImplicitObjectProvider(values.asImplicitObjectProvider());
+                        } else {
+                            System.err.println("setting implcit object provider to NONE");
+                            // we only look up the environment's implicit object provide when a provider is attached,
+                            // so in this case here attach the NONE dummy provider to trigger that behaviour:
+                            g.setImplicitObjectProvider(Scope.ImplicitObjectProvider.NONE);
                         }
                     }, process.getCurrentScope()
             );
