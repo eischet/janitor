@@ -102,9 +102,9 @@
                 <configuration>
                     <showWarnings>true</showWarnings>
                     <showDeprecation>true</showDeprecation>
-                    <compilerArguments>
+                    <compilerArgs>
                         <Xlint/>
-                    </compilerArguments>
+                    </compilerArgs>
                 </configuration>
             </plugin>
 

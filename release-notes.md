@@ -1,3 +1,8 @@
+# 0.9.63-SNAPSHOT
+
+- Maps: stuffing a function into a map and then calling it as map.foo() broke after enabling shorthand assignment. Fixed.
+
+
 # 0.9.62, 2026-08-19 (internal release only)
 
 - Lists and Maps now come with a `copy` method that creates a shallow copy.

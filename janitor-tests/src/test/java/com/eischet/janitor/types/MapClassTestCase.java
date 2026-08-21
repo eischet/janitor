@@ -8,9 +8,11 @@ import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.builtin.JMap;
 import com.eischet.janitor.api.types.functions.JCallArgs;
+import com.eischet.janitor.api.types.functions.JCallable;
 import com.eischet.janitor.runtime.OutputCatchingTestRuntime;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import org.intellij.lang.annotations.Language;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -149,5 +151,18 @@ public class MapClassTestCase extends JanitorTest {
         assertEquals("{\"foo\":false}\n", getOutput("print({foo: false}.toJson())"));
     }
 
+    @Test void callingFunctionsInMaps() throws Exception {
+        final JCallable someDummyFunction = (process, arguments) -> Janitor.NULL;
+        @NotNull final JMap data = Janitor.map();
+        data.put("dummy", new JCallable.Wrapper(someDummyFunction, "dummy"));
+        // Fails in 0.9.62:
+        // NameException: member is not callable: dummy; on: {dummy=JCallable.Wrapper([function dummy])}[JMap] = TemporaryAssignable{name='dummy', value=Wrapper} [TemporaryAssignable]
+        // While long, it's to the point: the map now returns a TemporaryAssignable to enable shorthand assignment to map properties. This, however, is not callable, so the unprepared
+        // MemberCallExpression has to fail.
+        evaluate("data.dummy()", g -> g.bind("data", data));
+
+
+
+    }
 
 }

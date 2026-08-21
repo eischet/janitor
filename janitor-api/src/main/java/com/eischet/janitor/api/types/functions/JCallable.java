@@ -77,5 +77,9 @@ public interface JCallable {
             return "Function";
         }
 
+        @Override
+        public String toString() {
+            return "JCallable.Wrapper(" + functionName + ")";
+        }
     }
 }

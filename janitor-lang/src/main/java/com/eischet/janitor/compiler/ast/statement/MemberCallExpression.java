@@ -6,8 +6,8 @@ import com.eischet.janitor.api.errors.glue.JanitorControlFlowException;
 import com.eischet.janitor.api.errors.runtime.JanitorNameException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.Location;
+import com.eischet.janitor.api.types.JAssignable;
 import com.eischet.janitor.api.types.JanitorObject;
-import com.eischet.janitor.api.types.TemporaryAssignable;
 import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.types.functions.JCallable;
 import com.eischet.janitor.compiler.ast.expression.Expression;
@@ -60,6 +60,11 @@ public class MemberCallExpression extends Statement implements Expression {
                 throw new JanitorNameException(process, "member not found: " + identifier + "; on: " + object + "[" + simpleClassNameOf(object) + "]");
             }
         }
+        // The new feature in JMap requires unpacking of the JAssignable to get the contained callable.
+        // We'll apply this to anything, not just JAssignable, to enable custom wrappers to work, too, as long
+        // as the "innermost" value is actually callable.
+        attribute = attribute.janitorUnpackUntil(it -> it instanceof JCallable);
+
         if (attribute instanceof JCallable callable) {
             return callable.call(process, args == null ? JCallArgs.empty(identifier, process) : args.toCallArguments(identifier, process));
         }

@@ -13,6 +13,7 @@ import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * A JanitorObject is a value that can be used in a Janitor script.
@@ -108,7 +109,44 @@ public interface JanitorObject {
         return this;
     }
 
+    /**
+     * Applies the predicate to this object and its inner objects until the predicate is matched.
+     * @param matchingPredicate a predicate applied to all nested objects
+     * @return the first matching object, or null if no match was found
+     */
+    default @Nullable JanitorObject janitorUnpackUntil(final Predicate<JanitorObject> matchingPredicate) {
+        if (matchingPredicate.test(this)) {
+            return this;
+        }
+        @NotNull JanitorObject next = janitorUnpack();
+        while (next != this) {
+            if (matchingPredicate.test(next)) {
+                return next;
+            }
+            next = next.janitorUnpack();
+        }
+        return null;
+    }
+
+    /**
+     * Unpacks this object until the innermost object is reached.
+     * @return the innermost object
+     */
+    default @NotNull JanitorObject janitorUnpackInnermost() {
+        @NotNull JanitorObject next = janitorUnpack();
+        if (next != this) {
+            return next.janitorUnpackInnermost();
+        } else {
+            return this;
+        }
+    }
+
+    /**
+     * Unpacks all objects from this one to the innermost object.
+     * @return a list of all objects from this one to the innermost object
+     */
     default @NotNull @Unmodifiable List<JanitorObject> janitorUnpackAll() {
+        // TODO: the temporary lists used here make me unhappy. This should be done differently, I think.
         @NotNull final JanitorObject first = janitorUnpack();
         if (this == first) {
             return List.of(this);
@@ -119,6 +157,7 @@ public interface JanitorObject {
             return list;
         }
     }
+
 
     /**
      * Called on an Object when it leaves a scripting scope.
@@ -224,4 +263,5 @@ public interface JanitorObject {
             }
         };
     }
+
 }
