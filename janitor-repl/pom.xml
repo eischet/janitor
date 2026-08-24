@@ -17,7 +17,7 @@
     </description>
 
     <properties>
-        <deps.install4j>13.0.2</deps.install4j>
+        <deps.install4j>13.1</deps.install4j>
         <!-- only run Install4j when requested via profile: -->
         <install4j.skip>true</install4j.skip>
     </properties>
