@@ -41,39 +41,35 @@ public class TryCatchFinally extends Statement implements JsonExportableObject {
 
     @Override
     public void execute(final JanitorScriptProcess process) throws JanitorRuntimeException, JanitorControlFlowException {
-        if (catchBlock != null) {
-            try {
+        try {
+            if (catchBlock != null) {
+                try {
+                    tryBlock.execute(process);
+                } catch (RuntimeException runtimeException) {
+                    throw new JanitorNativeException(process, runtimeException.getMessage(), runtimeException);
+                } catch (JanitorRuntimeException e) {
+                    try {
+                        process.enterBlock(null);
+                        process.getCurrentScope().bind(process, catchBind, e);
+                        catchBlock.execute(process);
+                    } finally {
+                        process.exitBlock();
+                    }
+                }
+            } else {
                 try {
                     tryBlock.execute(process);
                 } catch (RuntimeException runtimeException) {
                     throw new JanitorNativeException(process, runtimeException.getMessage(), runtimeException);
                 }
-            } catch (JanitorRuntimeException e) {
-                try {
-                    process.enterBlock(null);
-                    process.getCurrentScope().bind(process, catchBind, e);
-                    catchBlock.execute(process);
-                } finally {
-                    process.exitBlock();
-                }
             }
+        } finally {
+            // This must run on every way out of the try/catch above: normal completion, a JanitorRuntimeException
+            // (caught above or not, e.g. thrown again from inside the catch block), and also a control flow
+            // signal (return/break/continue), which is a checked Exception, not a RuntimeException, and would
+            // otherwise sail right past a catch(RuntimeException)/catch(JanitorRuntimeException) here.
             if (finallyBlock != null) {
                 finallyBlock.execute(process);
-            }
-        } else {
-            JanitorRuntimeException error = null;
-            try {
-                try {
-                    tryBlock.execute(process);
-                } catch (RuntimeException runtimeException) {
-                    throw new JanitorNativeException(process, runtimeException.getMessage(), runtimeException);
-                }
-            } catch (JanitorRuntimeException e) {
-                error = e;
-            }
-            finallyBlock.execute(process);
-            if (error != null) {
-                throw error;
             }
         }
     }
