@@ -1,3 +1,8 @@
+# 0.9.64-SNAPSHOT
+
+- Bugfix: LogicOr did not short-circuit from the left side, but instead evaluated both sides. Fixed.
+
+
 # 0.9.63, 2026-08-25 (internal release only)
 
 - Maps: stuffing a function into a map and then calling it as map.foo() broke after enabling shorthand assignment. Fixed.
