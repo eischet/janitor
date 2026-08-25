@@ -821,6 +821,123 @@ public class FirstParserTestCase extends JanitorTest {
 
     }
 
+    /**
+     * Regression tests for a bug where a "finally" block was skipped whenever the "try" block
+     * exited via return/break/continue, because those are implemented as checked control-flow
+     * exceptions (JanitorControlFlowException extends Exception, not RuntimeException), and the
+     * old code only caught RuntimeException/JanitorRuntimeException around the finally call.
+     */
+    @Test
+    public void tryFinallyRunsOnControlFlow() throws JanitorCompilerException, JanitorRuntimeException {
+
+        // finally must run when the try block exits via "return", and the catch block (if the
+        // return happens in the try, not in code called from it) must NOT be invoked, because a
+        // return is a control-flow signal, not a catchable error.
+        final OutputCatchingTestRuntime rtReturnNoCatch = OutputCatchingTestRuntime.fresh();
+        final RunnableScript returnNoCatch = rtReturnNoCatch.compile("returnNoCatch", """
+                function f() {
+                    try {
+                        return "returned";
+                    } finally {
+                        print("cleanup");
+                    }
+                }
+                print(f());
+                """);
+        returnNoCatch.run();
+        Assertions.assertEquals("cleanup\nreturned\n", rtReturnNoCatch.getAllOutput());
+
+        final OutputCatchingTestRuntime rtReturnWithCatch = OutputCatchingTestRuntime.fresh();
+        final RunnableScript returnWithCatch = rtReturnWithCatch.compile("returnWithCatch", """
+                function f() {
+                    try {
+                        return "returned";
+                    } catch (e) {
+                        print("should not be reached: " + e);
+                        return "caught";
+                    } finally {
+                        print("cleanup");
+                    }
+                }
+                print(f());
+                """);
+        returnWithCatch.run();
+        Assertions.assertEquals("cleanup\nreturned\n", rtReturnWithCatch.getAllOutput());
+
+        // finally must run every time a loop body exits via "continue", not just on normal
+        // completion of the try block.
+        final OutputCatchingTestRuntime rtContinue = OutputCatchingTestRuntime.fresh();
+        final RunnableScript continueScript = rtContinue.compile("continueInTry", """
+                i = 0;
+                while (i < 6) {
+                    i = i + 1;
+                    try {
+                        if (i % 2 == 0) {
+                            continue;
+                        }
+                        print("odd " + i);
+                    } finally {
+                        print("fin " + i);
+                    }
+                }
+                """);
+        continueScript.run();
+        Assertions.assertEquals("""
+                odd 1
+                fin 1
+                fin 2
+                odd 3
+                fin 3
+                fin 4
+                odd 5
+                fin 5
+                fin 6
+                """, rtContinue.getAllOutput());
+
+        // finally must run when a loop body exits via "break", and the break must still actually
+        // terminate the loop afterward (the finally block must not swallow the break).
+        final OutputCatchingTestRuntime rtBreak = OutputCatchingTestRuntime.fresh();
+        final RunnableScript breakScript = rtBreak.compile("breakInTry", """
+                i = 0;
+                while (i < 10) {
+                    try {
+                        if (i == 3) {
+                            break;
+                        }
+                        print(i);
+                    } finally {
+                        print("fin " + i);
+                    }
+                    i = i + 1;
+                }
+                print("done");
+                """);
+        breakScript.run();
+        Assertions.assertEquals("""
+                0
+                fin 0
+                1
+                fin 1
+                2
+                fin 2
+                fin 3
+                done
+                """, rtBreak.getAllOutput());
+
+        // regression check: a "real" runtime exception with no catch block must still run the
+        // finally block and then keep propagating out (not be swallowed).
+        final OutputCatchingTestRuntime rtExceptionNoCatch = OutputCatchingTestRuntime.fresh();
+        final RunnableScript exceptionNoCatch = rtExceptionNoCatch.compile("exceptionNoCatch", """
+                try {
+                    i = 1 / 0;
+                } finally {
+                    print("cleanup");
+                }
+                """);
+        Assertions.assertThrows(JanitorRuntimeException.class, exceptionNoCatch::run);
+        Assertions.assertEquals("cleanup\n", rtExceptionNoCatch.getAllOutput());
+    }
+
     @Test
 
     public void detectIllegalAssignment() throws Exception {
