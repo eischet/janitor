@@ -1,4 +1,4 @@
-# 0.9.63-SNAPSHOT
+# 0.9.63, 2026-08-25 (internal release only)
 
 - Maps: stuffing a function into a map and then calling it as map.foo() broke after enabling shorthand assignment. Fixed.
 
