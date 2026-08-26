@@ -3,8 +3,11 @@ package com.eischet.janitor.modules.httpclient;
 import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.JanitorScriptProcess;
+import com.eischet.janitor.api.errors.JanitorException;
 import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
+import com.eischet.janitor.api.errors.runtime.JanitorInternalException;
 import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
+import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.JanitorCleanupRequired;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.JMap;
@@ -50,6 +53,12 @@ public class JanitorHttpClient extends JanitorComposed<JanitorHttpClient> implem
 
     public static final String authHeaderName = "Authorization";
 
+    /**
+     * If you enable this, module users will be able to ignore "security issues".
+     * In a perfect world, this should never be enabled.
+     */
+    public static final boolean ALLOW_IGNORE_SECURITY_ISSUES = false;
+
     protected static final JanitorLogger log = JanitorLogger.getLogger(JanitorHttpClient.class);
 
     static {
@@ -59,7 +68,12 @@ public class JanitorHttpClient extends JanitorComposed<JanitorHttpClient> implem
         DISPATCH.addBuilderMethod("verbose", (self, process, args) -> self.verbose());
         DISPATCH.addBuilderMethod("setTimeout", (self, process, args) -> self.setConnectTimeoutSeconds(args.getInt(0).getAsInt()));
         DISPATCH.addBuilderMethod("setRequestTimeout", (self, process, args) -> self.requestTimeoutSeconds = args.getInt(0).getAsInt());
-        DISPATCH.addBuilderMethod("ignoreSecurityIssues", (self, process, args) -> self.ignoreSecurityIssues(args.get(0).janitorIsTrue()));
+        DISPATCH.addBuilderMethod("ignoreSecurityIssues", (self, process, args) -> {
+            if (!ALLOW_IGNORE_SECURITY_ISSUES) {
+                throw new JanitorArgumentException(process, "ignoreSecurityIssues is not allowed");
+            }
+            self.ignoreSecurityIssues(args.get(0).janitorIsTrue());
+        });
         DISPATCH.addBuilderMethod("addHeader", (self, process, args) -> self.addHeader(args.getRequiredStringValue(0), args.getRequiredStringValue(1)));
         DISPATCH.addBuilderMethod("setBearerToken", (self, process, args) -> self.setBearerToken(args.getRequiredStringValue(0)));
         DISPATCH.addBuilderMethod("setPrettyJson", (self, process, args) -> self.prettyJson = args.get(0).janitorIsTrue());
@@ -147,8 +161,13 @@ public class JanitorHttpClient extends JanitorComposed<JanitorHttpClient> implem
     private boolean insecure;
     private InetSocketAddress proxy;
     private boolean convertJsonToPureAscii = false;
-    private boolean mustRebuild = false;
-    private HttpClient builtClient = null;
+    // builtClient/mustRebuild can be read/written from concurrently running scripts that share the
+    // same JanitorHttpClient instance (e.g. one bound at module scope, imported by several scripts
+    // running in parallel), so both need volatile visibility, and buildClient()/close() need to be
+    // mutually exclusive -- see buildClient()/close() below.
+    private volatile boolean mustRebuild = false;
+    private volatile HttpClient builtClient = null;
+    private final Object clientLock = new Object();
     private final RefCounter refCounter = new RefCounter(this::cleanClose);
 
     public JanitorHttpClient() {
@@ -220,11 +239,13 @@ public class JanitorHttpClient extends JanitorComposed<JanitorHttpClient> implem
     }
 
     private HttpClient buildClient() {
-        if (builtClient == null || mustRebuild) {
-            builtClient = _buildClient();
-            mustRebuild = false;
+        synchronized (clientLock) {
+            if (builtClient == null || mustRebuild) {
+                builtClient = _buildClient();
+                mustRebuild = false;
+            }
+            return builtClient;
         }
-        return builtClient;
     }
 
     private HttpClient _buildClient() {
@@ -609,18 +630,28 @@ public class JanitorHttpClient extends JanitorComposed<JanitorHttpClient> implem
         close();
     }
 
+    /**
+     * Close the currently built HTTP client, if any, and reset our state so that the next call that
+     * needs a client (e.g. getString(), postJson(), ...) transparently builds a fresh one via
+     * buildClient() -- self-healing, so that closing this object (whether intentionally, via
+     * janitorCleanup(), or via a script/closure-scope leaving) never leaves it stuck holding a dead
+     * client. This matters in particular because a JanitorHttpClient bound at module scope can be
+     * shared and reused by many scripts over a long time, possibly running concurrently -- it must
+     * keep working correctly after being "closed" once, not just the first time it's used.
+     */
     public void close() {
-        if (builtClient != null && !builtClient.isTerminated()) {
+        final HttpClient clientToClose;
+        synchronized (clientLock) {
+            clientToClose = builtClient;
+            builtClient = null;
+            mustRebuild = false;
+        }
+        if (clientToClose != null && !clientToClose.isTerminated()) {
             if (verbose) {
                 log.info("closing HTTP client");
             }
             // client.close can go into a loop for one full day (!) when called, so we work around that by spawning a shutdown thread.
-            final Thread cleanupThread = new Thread() {
-                @Override
-                public void run() {
-                    builtClient.shutdownNow();
-                }
-            };
+            final Thread cleanupThread = new Thread(clientToClose::shutdownNow);
             cleanupThread.setDaemon(true);
             cleanupThread.start();
         }
@@ -652,10 +683,13 @@ public class JanitorHttpClient extends JanitorComposed<JanitorHttpClient> implem
 
     @Override
     public void janitorCleanup() {
-        if (builtClient != null && !builtClient.isTerminated()) {
-            log.info("auto-closing HTTP client");
-            builtClient.close();
+        // Used to call builtClient.close() directly here -- the one that can block for up to a full
+        // day (see close() above) -- reintroducing exactly the hang close() was written to avoid.
+        // Delegating to close() gets the same safe, non-blocking, self-healing behavior here too.
+        if (verbose) {
+            log.info("auto-closing HTTP client (janitorCleanup)");
         }
+        close();
     }
 
     private static class PrettyEnvWrapper implements JsonOutputSupport {

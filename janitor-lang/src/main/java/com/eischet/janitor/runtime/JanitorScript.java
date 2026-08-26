@@ -145,12 +145,15 @@ public class JanitorScript implements RunnableScript, JsonExportableObject {
     public @NotNull JanitorObject run(final @NotNull Consumer<Scope> prepareGlobals) throws JanitorRuntimeException {
         final Scope globalScope = Scope.createGlobalScope(Janitor.current(), module); // new Scope(Location.at(module, 0, 0), BUILTIN_SCOPE, null);
         prepareGlobals.accept(globalScope);
+        // RunningScriptProcess is constructed here with wrapScope=false (the 4-arg constructor), so
+        // its mainScope IS this globalScope instance, not a fresh child of it. process.run() already
+        // calls getMainScope().janitorLeaveScope() in its own finally block -- calling
+        // globalScope.janitorLeaveScope() again here used to double-fire janitorLeaveScope() on every
+        // object bound in this scope (one janitorEnterScope() call per binding, but two
+        // janitorLeaveScope() calls), which is exactly why ref-counted cleanup objects like
+        // JanitorHttpClient logged a "RefCounter was already zeroed" warning on essentially every run.
         final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, module.getName(), scriptObject);
-        try {
-            return process.run();
-        } finally {
-            globalScope.janitorLeaveScope();
-        }
+        return process.run();
     }
 
     @Override

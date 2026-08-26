@@ -67,17 +67,50 @@ running scripts. In a multi-tenant embedding this is a serious,
 cross-tenant MITM risk and a clear contradiction of the "sandboxed by
 default" goal.
 
-### 🔴 🔒/DoS `janitorCleanup()` reintroduces exactly the hang `close()` was meant to avoid
-[JanitorHttpClient.java:605-627 (close) vs. 653-659 (janitorCleanup)](janitor-modules/httpclient/src/main/java/com/eischet/janitor/modules/httpclient/JanitorHttpClient.java)
+### ✅ RESOLVED — `janitorCleanup()` reintroduced exactly the hang `close()` was meant to avoid
+[JanitorHttpClient.java](janitor-modules/httpclient/src/main/java/com/eischet/janitor/modules/httpclient/JanitorHttpClient.java)
 
 `close()` carries a comment saying "`client.close` can hang for up to a full
 day, hence the workaround via a shutdown thread using `shutdownNow()`".
 `janitorCleanup()` — invoked synchronously during script-process teardown
-via `AbstractScriptProcess.processCleanups()`
-([AbstractScriptProcess.java:207-211](janitor-lang/src/main/java/com/eischet/janitor/runtime/AbstractScriptProcess.java)) —
-calls `builtClient.close()` directly, the exact blocking call `close()`
-deliberately avoids. Any script that uses an HTTP client can therefore block
-the (potentially shared) execution thread indefinitely during cleanup.
+via `AbstractScriptProcess.processCleanups()` — used to call
+`builtClient.close()` directly, the exact blocking call `close()`
+deliberately avoided.
+
+While investigating, we also found and fixed a closely related, independent
+bug: `JanitorScript.run(Consumer<Scope>)` used to call
+`globalScope.janitorLeaveScope()` a second, redundant time after
+`RunningScriptProcess.run()` had already done so on the very same scope
+instance, so every ref-counted object (like `JanitorHttpClient`, via
+`com.eischet.janitor.toolbox.memory.RefCounter`) got `janitorLeaveScope()`
+called twice for one `janitorEnterScope()` — logging a spurious "RefCounter
+was already zeroed" warning on essentially every script run that used an
+HTTP client (see
+[ScopeEnterLeaveBalanceTestCase.java](janitor-tests/src/test/java/com/eischet/janitor/internals/ScopeEnterLeaveBalanceTestCase.java)).
+Fixed by removing the redundant call.
+
+That investigation also surfaced a deeper design question: a `JanitorHttpClient`
+bound at a *module* scope (via `runAndKeepGlobals`, cached and reused across
+many, possibly concurrent, script runs) can have its resources torn down as
+soon as the module is first loaded/compiled, regardless of the ref-counter
+fix above, and can be shut down while other scripts are still using it.
+Rather than trying to get scope-lifecycle timing exactly right for a
+shared/cached module (which turned out to be architecturally ambiguous —
+there's no single script whose "completion" a shared module's lifetime could
+be tied to), we made `JanitorHttpClient` self-healing instead: `close()` now
+resets `builtClient`/`mustRebuild` (and does so under a lock, since the
+client can genuinely be shared across concurrently running scripts), so
+`buildClient()`'s existing lazy-rebuild check transparently constructs a
+fresh client on the next real use, no matter when or how many times `close()`
+fires. `janitorCleanup()` now simply delegates to `close()` instead of
+calling the blocking `builtClient.close()` directly, which resolves this
+item. See
+[JanitorHttpClientCloseTestCase.java](janitor-modules/httpclient/src/test/java/com/eischet/janitor/modules/httpclient/JanitorHttpClientCloseTestCase.java).
+<br>
+Note: `JanitorHttpClient` is (deliberately) the only resource-owning,
+`janitorCleanup()`-using builtin type in the codebase; this kind of
+self-healing design is the recommended pattern for any future type that owns
+an external resource, rather than relying on precise scope-lifecycle timing.
 
 ### 🔴 🔒/DoS `os.exec` can deadlock on a full pipe buffer
 [OperatingSystemModule.java:52-53, 65-66](janitor-modules/os/src/main/java/com/eischet/janitor/modules/os/OperatingSystemModule.java)
@@ -102,36 +135,28 @@ No try-with-resources/finally around `fis`. If `zos.putNextEntry(...)`
 is never reached. Since scripts can call `addFile()` in loops, this is a
 realistic path to file-handle exhaustion.
 
-### 🟡 `StringHelpers.containText` checks the containment direction inverted
-[StringHelpers.java:68-79](janitor-toolbox/src/main/java/com/eischet/janitor/toolbox/strings/StringHelpers.java)
-
-The name/parameter order (`text`, `candidates...`) suggests "does `text`
-contain one of the `candidates`". What's actually checked is the opposite:
-`candidate.contains(text)`. For the obvious use case (`text` as the
-haystack, `candidates` as short search terms), the method always returns
-`false`. (No callers found in the repo currently, but it's a public utility
-method — a trap for embedders.)
-
-### ⚪ Info: `files`/`os` modules have no built-in sandbox restriction
+### ✅ RESOLVED (accepted, not a bug) — `files`/`os` modules have no built-in sandbox restriction
 [FilesModule.java](janitor-modules/files/src/main/java/com/eischet/janitor/modules/files/FilesModule.java)
 
 Arbitrary absolute paths, arbitrary env var names, arbitrary commands —
-`normalize()` (line 170-179) only does `getCanonicalPath()`, no containment
-check against a base directory. Presumably intentional by design (privileged
-modules meant to be explicitly opted into by the host), but worth
-double-checking that these modules are never auto-registered for untrusted
-scripts.
-
-### ⚪ Info: no built-in execution budget/interrupt check in the core runtime
-No time/instruction limit found in `BaseRuntime`/`AbstractScriptProcess`
-that would bound a `while(true){}` script loop on its own — the host must
-interrupt the executing thread externally. An architectural gap, not a
-one-line bug.
+`normalize()` only does `getCanonicalPath()`, no containment check against a
+base directory. This is intentional: these modules are privileged and only
+ever available to a script if the host explicitly registers them (they are
+never auto-registered). Checked for prior art on flagging "dangerous"
+modules in other embedded scripting/polyglot runtimes (GraalVM Polyglot,
+Luau) — neither annotates modules as dangerous; they either gate individual
+capabilities behind explicit opt-in flags at the runtime/context level
+(GraalVM's `allowIO`/`allowCreateProcess`/...) or simply omit unsafe
+functionality from the sandboxed environment entirely (Luau). Janitor's
+existing opt-in module registration already matches the latter pattern, at
+module granularity. Decision: no code change; document the risk (host is
+responsible for not registering `files`/`os` for untrusted scripts) and
+leave it at that.
 
 ---
 
 ## Prioritized summary (tackle first)
 
 1. `ignoreSecurityIssues` disables TLS verification JVM-wide ([JanitorHttpClient.java:235](janitor-modules/httpclient/src/main/java/com/eischet/janitor/modules/httpclient/JanitorHttpClient.java)) – security hole in multi-tenant scenarios.
-2. `os.exec` deadlock on heavy process output ([OperatingSystemModule.java](janitor-modules/os/src/main/java/com/eischet/janitor/modules/os/OperatingSystemModule.java)) and `janitorCleanup()` hang on HttpClient ([JanitorHttpClient.java](janitor-modules/httpclient/src/main/java/com/eischet/janitor/modules/httpclient/JanitorHttpClient.java)) – both potential DoS vectors.
-3. `ZipFile.addFile` leaks a `FileInputStream` on exceptions ([ZipFile.java:98-106](janitor-modules/files/src/main/java/com/eischet/janitor/modules/files/ZipFile.java)) and `StringHelpers.containText` has its containment check inverted ([StringHelpers.java:68-79](janitor-toolbox/src/main/java/com/eischet/janitor/toolbox/strings/StringHelpers.java)).
+2. `os.exec` deadlock on heavy process output ([OperatingSystemModule.java](janitor-modules/os/src/main/java/com/eischet/janitor/modules/os/OperatingSystemModule.java)) – potential DoS vector.
+3. `ZipFile.addFile` leaks a `FileInputStream` on exceptions ([ZipFile.java:98-106](janitor-modules/files/src/main/java/com/eischet/janitor/modules/files/ZipFile.java)).
