@@ -65,18 +65,6 @@ public class StringHelpers {
         return !nullOrEmpty(s);
     }
 
-    public static boolean containText(@Nullable final String text, final String... candidates) {
-        if (text == null || text.isEmpty()) {
-            return true;
-        }
-        final String lowText = text.toLowerCase();
-        for (final String candidate : candidates) {
-            if (candidate != null && candidate.toLowerCase().contains(lowText)) {
-                return true;
-            }
-        }
-        return false;
-    }
 
     public static @NotNull String repeat(final @NotNull String s, final long num) {
         StringBuilder repetitions = new StringBuilder();
