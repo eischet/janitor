@@ -557,8 +557,9 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
                         setter.set(instance, null);
                     } else if (value instanceof JNumber number) {
                         setter.set(instance, new BigDecimal(number.toDouble()));
+                    } else {
+                        throw new JanitorGlueException(JanitorArgumentException::fromGlue, "Expected a numeric value but got " + value.janitorClassName() + ".");
                     }
-                    throw new JanitorGlueException(JanitorArgumentException::fromGlue, "Expected a numeric value but got " + value.janitorClassName() + ".");
                 }),
             adapt(name, JSON_BIGD, getter, setter),
             JsonType.NUMBER, null

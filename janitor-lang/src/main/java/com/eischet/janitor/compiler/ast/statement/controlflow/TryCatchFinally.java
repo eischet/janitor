@@ -68,6 +68,14 @@ public class TryCatchFinally extends Statement implements JsonExportableObject {
             // (caught above or not, e.g. thrown again from inside the catch block), and also a control flow
             // signal (return/break/continue), which is a checked Exception, not a RuntimeException, and would
             // otherwise sail right past a catch(RuntimeException)/catch(JanitorRuntimeException) here.
+            //
+            // This used to be handled with an explicit catch-into-a-variable-then-rethrow instead of a real
+            // Java "finally" block. That only ever caught JanitorRuntimeException, so a return/break/continue
+            // thrown from the try block would skip the finallyBlock.execute(...) call entirely -- e.g.
+            // "try { return 1; } finally { cleanup(); }" never ran cleanup(). Wrapping everything in a plain
+            // Java try/finally fixes this for every exception type at once: finally always runs, and whatever
+            // was in flight (an exception, or a control-flow signal) keeps propagating afterward automatically,
+            // with no explicit rethrow needed -- see FirstParserTestCase#tryFinallyRunsOnControlFlow for tests.
             if (finallyBlock != null) {
                 finallyBlock.execute(process);
             }

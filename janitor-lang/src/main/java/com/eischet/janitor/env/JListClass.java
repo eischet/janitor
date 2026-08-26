@@ -218,11 +218,9 @@ public class JListClass {
             }
             return self.getRange(arguments.getInt(0), arguments.getInt(1));
         }
-            /*
-            if (arguments.size() == 3) {
-
-            }
-             */
+        if (arguments.size() == 3) {
+            return self.getSteppedRange(optionalInt(arguments, 0), optionalInt(arguments, 1), arguments.getInt(2).getAsInt());
+        }
         throw new IndexOutOfBoundsException("invalid arguments for get: " + arguments);
     }
 
@@ -232,23 +230,29 @@ public class JListClass {
         if (arguments.size() == 1) {
             return self.getIndexed(arguments.require(1).getInt(0));
         }
-        // LATER: make ranges assignable, too?
         if (arguments.size() == 2) {
             if (arguments.get(0) == JNull.NULL && arguments.get(1) == JNull.NULL) {
-                return self.getRange(Janitor.integer(0), Janitor.integer(self.size()));
+                return self.getAssignableRange(Janitor.integer(0), Janitor.integer(self.size()));
             } else if (arguments.get(0) == JNull.NULL) {
-                return self.getRange(Janitor.integer(0), arguments.getInt(1));
+                return self.getAssignableRange(Janitor.integer(0), arguments.getInt(1));
             } else if (arguments.get(1) == JNull.NULL) {
-                return self.getRange(arguments.getInt(0), Janitor.integer(self.size()));
+                return self.getAssignableRange(arguments.getInt(0), Janitor.integer(self.size()));
             }
-            return self.getRange(arguments.getInt(0), arguments.getInt(1));
+            return self.getAssignableRange(arguments.getInt(0), arguments.getInt(1));
         }
-            /*
-            if (arguments.size() == 3) {
-
-            }
-             */
+        if (arguments.size() == 3) {
+            // stepped slices are read-only for now, e.g. "li[::-1]" -- not assignable yet.
+            return self.getSteppedRange(optionalInt(arguments, 0), optionalInt(arguments, 1), arguments.getInt(2).getAsInt());
+        }
         throw new IndexOutOfBoundsException("invalid arguments for get: " + arguments);
+    }
+
+    /**
+     * Resolve an optional start/end slice bound: JNull.NULL (an omitted bound, e.g. "li[::2]") maps
+     * to Java null, anything else is unwrapped to its int value.
+     */
+    private static Integer optionalInt(final JCallArgs arguments, final int position) throws JanitorRuntimeException {
+        return arguments.get(position) == JNull.NULL ? null : arguments.getInt(position).getAsInt();
     }
 
 

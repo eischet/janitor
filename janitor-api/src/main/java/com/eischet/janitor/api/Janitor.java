@@ -664,7 +664,7 @@ public final class Janitor {
     }
 
     /**
-     * Retrieves the best applicable enviornment from either the userProvider or the highest priority automatic provider.
+     * Retrieves the best applicable environment from either the userProvider or the highest priority automatic provider.
      *
      * @return an environment
      * @throws IllegalStateException when neither a user env nor an automatically provided env are available
@@ -674,7 +674,7 @@ public final class Janitor {
             return userProvider.getCurrentEnvironment();
         }
         if (automaticProvider != null) {
-            automaticProvider.getCurrentEnvironment();
+            return automaticProvider.getCurrentEnvironment();
         }
         throw new IllegalStateException("No JanitorEnvironmentProvider was found. Either use JanitorEnvironmentLocator.setUserProvider to define a global one, or provide a ServiceLoader-based implementation.");
     }

@@ -3,7 +3,6 @@ package com.eischet.janitor.internals;
 import com.eischet.janitor.JanitorTest;
 import com.eischet.janitor.api.RunnableScript;
 import com.eischet.janitor.runtime.OutputCatchingTestRuntime;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -42,7 +41,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class ClosureVariableAssignmentTestCase extends JanitorTest {
 
     @Test
-    @Disabled // TODO: fix Assignment.execute() to use process.lookupScopedVar(id), like AnyFixOperator/PostfixIncrement already do.
+    // FIXED: Assignment.execute() now uses process.lookupScopedVar(id), like AnyFixOperator/PostfixIncrement already did.
     public void testSingleClosureCannotAccumulateStateViaPlainAssignment() throws Exception {
         // Only ONE closure is ever created here, so the "shared ScriptFunction instance" bug
         // (ClosureScopesTestCase) cannot be the cause of any wrong behavior below -- this isolates
@@ -59,14 +58,11 @@ public class ClosureVariableAssignmentTestCase extends JanitorTest {
                 print(counter());
                 """);
         script.run();
-        // Actual (buggy) output as of this writing: "1\n1\n1\n" -- every call re-reads the
-        // untouched captured n (via the correct read path), computes 1, and then throws that
-        // result away into a fresh local shadow variable instead of writing it back.
         assertEquals("1\n2\n3\n", runtime.getAllOutput());
     }
 
     @Test
-    @Disabled // TODO: same bug as above; PlusAssignment shares Assignment.execute() with "=".
+    // FIXED: same fix as above; PlusAssignment shares Assignment.execute() with "=".
     public void testSingleClosureCannotAccumulateStateViaCompoundAssignment() throws Exception {
         final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
         final RunnableScript script = runtime.compile("singleCounterCompoundAssign", """
@@ -80,7 +76,6 @@ public class ClosureVariableAssignmentTestCase extends JanitorTest {
                 print(counter());
                 """);
         script.run();
-        // Actual (buggy) output as of this writing: "1\n1\n1\n"
         assertEquals("1\n2\n3\n", runtime.getAllOutput());
     }
 
@@ -128,13 +123,12 @@ public class ClosureVariableAssignmentTestCase extends JanitorTest {
     }
 
     @Test
-    @Disabled // TODO: requires BOTH the ScriptFunction aliasing fix (ClosureScopesTestCase) AND the Assignment.java fix to pass correctly.
+    // FIXED: required BOTH the ScriptFunction aliasing fix (ClosureScopesTestCase) AND the Assignment.java fix to pass correctly.
     public void testTwoIndependentCountersCorruptEachOthersState() throws Exception {
-        // The worst-case combination of both bugs: two "independent" stateful closures end up
-        // sharing state, because (a) they are aliased to the same underlying object (the
-        // ScriptFunction bug), and (b) even the one shared captured scope they end up using can
-        // never accumulate a mutation (the Assignment.java bug) -- so every single call, from
-        // either counter, reads the untouched n=0 and computes 1.
+        // The worst-case combination of both bugs: two "independent" stateful closures used to end
+        // up sharing state, because (a) they were aliased to the same underlying object (the
+        // ScriptFunction bug), and (b) even the one shared captured scope they ended up using could
+        // never accumulate a mutation (the Assignment.java bug).
         final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
         final RunnableScript script = runtime.compile("twoCounters", """
                 function makeCounter() {
@@ -149,7 +143,6 @@ public class ClosureVariableAssignmentTestCase extends JanitorTest {
                 print(c1());
                 """);
         script.run();
-        // Actual (buggy) output as of this writing: "1\n1\n1\n1\n"
         assertEquals("1\n2\n1\n3\n", runtime.getAllOutput());
     }
 

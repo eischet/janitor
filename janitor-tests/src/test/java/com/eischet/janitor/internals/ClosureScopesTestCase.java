@@ -3,7 +3,6 @@ package com.eischet.janitor.internals;
 import com.eischet.janitor.JanitorTest;
 import com.eischet.janitor.api.RunnableScript;
 import com.eischet.janitor.runtime.OutputCatchingTestRuntime;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -42,7 +41,8 @@ public class ClosureScopesTestCase extends JanitorTest {
     }
 
     @Test
-    @Disabled // TODO: re-enable this; multiple invocations of function that return functions do not work correctly... clobbered scopes!?
+    // FIXED: ScriptFunction.evaluate() now returns a fresh Closure per evaluation instead of
+    // mutating a shared field on the AST node.
     public void testFreshScopePerInvocation() throws Exception {
         final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
         final RunnableScript script = runtime.compile("capturing", """
@@ -80,7 +80,7 @@ public class ClosureScopesTestCase extends JanitorTest {
      */
 
     @Test
-    @Disabled // TODO: same root cause as testFreshScopePerInvocation (shared ScriptFunction instance).
+    // FIXED: same root cause as testFreshScopePerInvocation.
     public void testThreeSequentialClosuresAllAlias() throws Exception {
         final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
         final RunnableScript script = runtime.compile("threeStage", """
@@ -101,7 +101,7 @@ public class ClosureScopesTestCase extends JanitorTest {
     }
 
     @Test
-    @Disabled // TODO: same root cause as testFreshScopePerInvocation (shared ScriptFunction instance).
+    // FIXED: same root cause as testFreshScopePerInvocation.
     public void testHandlerRegistryPatternAliases() throws Exception {
         // A realistic production pattern: registering per-key callback closures in a map/registry,
         // to be invoked later, possibly out of registration order.
@@ -125,7 +125,7 @@ public class ClosureScopesTestCase extends JanitorTest {
     }
 
     @Test
-    @Disabled // TODO: same root cause as testFreshScopePerInvocation, but for a named nested "function", not just an arrow lambda.
+    // FIXED: same root cause as testFreshScopePerInvocation, but for a named nested "function", not just an arrow lambda.
     public void testNamedNestedFunctionAliasesToo() throws Exception {
         // "function foo(...) { ... }" compiles to an assignment of a ScriptFunction expression
         // (JanitorAntlrCompiler.visitFunctionDeclaration), so a *named* function nested inside

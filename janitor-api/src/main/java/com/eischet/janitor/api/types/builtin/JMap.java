@@ -394,6 +394,7 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
                 case BEGIN_OBJECT -> {
                     final JMap object = Janitor.map();
                     object.readJson(stream);
+                    put(key, object);
                 }
                 case STRING -> put(key, Janitor.string(stream.nextString()));
                 case NUMBER -> put(key, Janitor.numeric(stream.nextDouble()));

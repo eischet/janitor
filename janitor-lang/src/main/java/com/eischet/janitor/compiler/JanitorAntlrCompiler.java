@@ -688,6 +688,44 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
     }
 
     @Override
+    public Ast visitIndexExpressionSteppedRange(final JanitorParser.IndexExpressionSteppedRangeContext ctx) {
+        // Grammar: expression LBRACK expression? COLON expression? COLON expression RBRACK
+        // The main expression (the thing being indexed) and the up-to-three bracket-internal
+        // expressions (head, tail, step) all show up as an undifferentiated, in-source-order list
+        // here (ctx.expression()), because head/tail are optional -- so we can't just address them
+        // by a fixed index like the non-stepped range visitors do. Instead: the first expression is
+        // always the main one, and every subsequent expression is classified as head/tail/step by
+        // comparing its token position against the two COLON tokens' positions.
+        final List<JanitorParser.ExpressionContext> expressions = ctx.expression();
+        final JanitorParser.ExpressionContext main = expressions.get(0);
+        final int colon1 = ctx.COLON(0).getSourceInterval().a;
+        final int colon2 = ctx.COLON(1).getSourceInterval().a;
+        JanitorParser.ExpressionContext head = null;
+        JanitorParser.ExpressionContext tail = null;
+        JanitorParser.ExpressionContext step = null;
+        for (int i = 1; i < expressions.size(); i++) {
+            final JanitorParser.ExpressionContext e = expressions.get(i);
+            final int pos = e.getSourceInterval().a;
+            if (pos < colon1) {
+                head = e;
+            } else if (pos < colon2) {
+                tail = e;
+            } else {
+                step = e;
+            }
+        }
+        return new FunctionCallStatement(
+                location(ctx.start, ctx.stop),
+                INDEXED_GET_METHOD,
+                (Expression) visit(main),
+                new ArgumentList(location(ctx.start, ctx.stop))
+                        .addExpression(head == null ? NullLiteral.NULL : (Expression) visit(head))
+                        .addExpression(tail == null ? NullLiteral.NULL : (Expression) visit(tail))
+                        .addExpression((Expression) visit(step))
+        );
+    }
+
+    @Override
     public Ast visitIndexExpressionFullRange(final JanitorParser.IndexExpressionFullRangeContext ctx) {
         return new FunctionCallStatement(
                 location(ctx.start, ctx.stop),

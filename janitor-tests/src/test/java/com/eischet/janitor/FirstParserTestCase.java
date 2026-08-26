@@ -1078,7 +1078,10 @@ public class FirstParserTestCase extends JanitorTest {
         Assertions.assertEquals("[2, 3]\n", getOutput("print( ([1,2,3])[1:] )", g -> {
         }));
 
-        Assertions.assertEquals("[3, 2, 1]\n", getOutput("print( ([1,2,3])[3:0] )", g -> {
+        // A descending range (end index at or before start index) reads as empty, matching real
+        // Python -- ([1,2,3])[3:0] used to read as the reversed [3, 2, 1] here, but Python actually
+        // reads it as []. Use a step of -1 (e.g. "li[::-1]") to get a reversed copy instead.
+        Assertions.assertEquals("[]\n", getOutput("print( ([1,2,3])[3:0] )", g -> {
         }));
 
         Assertions.assertEquals("foo\n", getOutput("print('bazfoobar'[3:-3]);", g -> {
@@ -1099,7 +1102,9 @@ public class FirstParserTestCase extends JanitorTest {
 
         Assertions.assertEquals("[1, 2, 3]\n", getOutput("liste = [0,1,2,3,4]; print(liste[1:-1]);", g -> {
         }));
-        Assertions.assertEquals("[3, 2, 1]\n", getOutput("liste = [0,1,2,3,4]; print(liste[-1:1]);", g -> {
+        // Same here: liste[-1:1] resolves to a descending range (start index 4, end index 1), which
+        // reads as empty now, matching real Python.
+        Assertions.assertEquals("[]\n", getOutput("liste = [0,1,2,3,4]; print(liste[-1:1]);", g -> {
         }));
     }
 

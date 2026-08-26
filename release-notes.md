@@ -1,6 +1,10 @@
 # 0.9.64-SNAPSHOT
 
 - Bugfix: LogicOr did not short-circuit from the left side, but instead evaluated both sides. Fixed.
+- Bugfix: try/catch/finally missed some cases, e.g. when the try block throws a control flow "exception".
+- Bugfix: closures were not properly implemented.
+- Bugfix: Janitor.current() ignored automatic providers.
+- Bugfix: GenericDispatchTable.addBigDecimalProperty added a setter that always threw an exception.
 
 
 # 0.9.63, 2026-08-25 (internal release only)

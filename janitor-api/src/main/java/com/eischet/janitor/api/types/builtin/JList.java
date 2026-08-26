@@ -120,13 +120,21 @@ public class JList extends JanitorComposed<JList> implements JIterable, Iterable
      * @return the element
      */
     public JanitorObject get(JInt index) {
-        return list.get(toIndex(index.getAsInt(), list.size()));
+        final int len = list.size();
+        final int resolved = toIndex(index.getAsInt(), len);
+        if (resolved < 0 || resolved >= len) {
+            throw new IndexOutOfBoundsException("list index " + index.getAsInt() + " out of range for list of size " + len);
+        }
+        return list.get(resolved);
     }
 
     /**
      * Get the element at the given (physical or "pythonical") index.
      * This is not meant for client code, but for internal use in the interpreter.
      * Useful Quirk: this index can be assigned to, e.g. "foo[3] = 'bar'".
+     * <p>
+     * Unlike range/slice assignment (see {@link #getAssignableRange}), single-index assignment never
+     * grows the list, exactly like real Python: the index must already exist, or this throws.
      *
      * @param index the index
      * @return the element
@@ -136,29 +144,151 @@ public class JList extends JanitorComposed<JList> implements JIterable, Iterable
                 "[" + index.janitorToString() + "]",
                 get(index),
                 value -> {
-                    list.set(toIndex(index.getAsInt(), list.size()), value);
+                    final int len = list.size();
+                    final int resolved = toIndex(index.getAsInt(), len);
+                    if (resolved < 0 || resolved >= len) {
+                        throw new IndexOutOfBoundsException("list assignment index " + index.getAsInt() + " out of range for list of size " + len);
+                    }
+                    list.set(resolved, value);
                     notifyUpdateReceivers();
                 }
                 );
     }
 
     /**
-     * Get a range of elements.
+     * Get a range of elements, Python-style: out-of-range bounds are silently clamped into
+     * {@code [0, size()]}, and a descending range (the resolved end at or before the resolved
+     * start) reads as empty -- e.g. {@code [1,2,3][1:100] == [1,2,3][1:]} and {@code [1,2,3][2:1] == []}.
+     * This is deliberately forgiving, unlike {@link #setRange} -- see JListPythonIndexingTestCase/
+     * JListTestCase for the rationale behind why slice *assignment* is stricter than reading.
      *
      * @param start the start index
      * @param end   the end index
-     * @return the range
+     * @return the range, as a fresh, independent list (never a view of this list)
      */
     public JanitorObject getRange(JInt start, JInt end) {
-        // LATER: stepping
-        // LATER: wrap in TemporaryAssignable for things like list[10:] = ["rest", "of", "list"];
-        final int startIndex = toIndex(start.getAsInt(), list.size());
-        final int endIndex = toIndex(end.getAsInt(), list.size());
-        final List<JanitorObject> subList = list.subList(Math.min(startIndex, endIndex), Math.max(startIndex, endIndex));
-        if (endIndex < startIndex) {
-            Collections.reverse(subList);
+        final int len = list.size();
+        final int startIndex = clamp(toIndex(start.getAsInt(), len), 0, len);
+        final int endIndex = clamp(toIndex(end.getAsInt(), len), 0, len);
+        if (endIndex <= startIndex) {
+            return new JList(dispatcher, new ArrayList<>());
         }
-        return new JList(dispatcher, subList);
+        // Must copy here: List.subList() returns a live view backed by the source list, not a
+        // snapshot. Without the copy, mutating the returned "slice" (add/remove/set) would mutate
+        // the source list too.
+        return new JList(dispatcher, new ArrayList<>(list.subList(startIndex, endIndex)));
+    }
+
+    /**
+     * Get an assignable range of elements: reading it behaves exactly like {@link #getRange}, but it
+     * can also be assigned to (e.g. {@code list[1:3] = [10, 20, 30]}), which replaces the selected
+     * elements with the assigned collection, growing or shrinking this list as needed -- see
+     * {@link #setRange} for the exact (stricter than read) rules for the bounds.
+     *
+     * @param start the start index
+     * @param end   the end index
+     * @return an assignable view of the range
+     */
+    public JanitorObject getAssignableRange(final JInt start, final JInt end) {
+        return TemporaryAssignable.of(
+                "[" + start.janitorToString() + ":" + end.janitorToString() + "]",
+                getRange(start, end),
+                replacement -> setRange(start, end, replacement)
+        );
+    }
+
+    /**
+     * Get a range of elements with a step, Python-style (e.g. {@code list[::-1]} for a reversed
+     * copy, or {@code list[1:8:2]}). Bounds are clamped exactly like {@link #getRange}; a positive
+     * step iterates forward defaulting to the whole list ({@code 0} to {@code size()}) when a bound
+     * is omitted, a negative step iterates backward defaulting to the whole list in reverse
+     * ({@code size()-1} down to, but not including, {@code -1}) when a bound is omitted -- this is
+     * exactly what makes {@code list[::-1]} mean "the whole list, reversed".
+     *
+     * @param start the start index, or null if omitted ("list[:...]")
+     * @param end   the end index, or null if omitted ("list[...:]")
+     * @param step  the step, must not be 0
+     * @return the resulting range, as a fresh, independent list
+     */
+    public JanitorObject getSteppedRange(final Integer start, final Integer end, final int step) {
+        if (step == 0) {
+            throw new IllegalArgumentException("slice step cannot be zero");
+        }
+        final int len = list.size();
+        final int startIndex;
+        final int endIndex;
+        if (step > 0) {
+            startIndex = start == null ? 0 : clamp(toIndex(start, len), 0, len);
+            endIndex = end == null ? len : clamp(toIndex(end, len), 0, len);
+        } else {
+            startIndex = start == null ? len - 1 : clamp(toIndex(start, len), -1, len - 1);
+            endIndex = end == null ? -1 : clamp(toIndex(end, len), -1, len - 1);
+        }
+        final List<JanitorObject> result = new ArrayList<>();
+        if (step > 0) {
+            for (int i = startIndex; i < endIndex; i += step) {
+                result.add(list.get(i));
+            }
+        } else {
+            for (int i = startIndex; i > endIndex; i += step) {
+                result.add(list.get(i));
+            }
+        }
+        return new JList(dispatcher, result);
+    }
+
+    private static int clamp(final int value, final int min, final int max) {
+        return Math.max(min, Math.min(value, max));
+    }
+
+    /**
+     * Replace the elements in the range {@code [start, end)} with the elements of
+     * {@code replacementValue} (any iterable, typically a list), growing or shrinking this list as
+     * needed to accommodate a replacement of a different size than the selected range -- e.g.
+     * {@code list[1:3] = [10, 20, 30, 40]} replaces 2 elements with 4, growing the list by 2.
+     * <p>
+     * Unlike {@link #getRange}, the bounds here are validated strictly, not clamped: after resolving
+     * negative indices, both {@code start} and {@code end} must fall into {@code [0, size()]} (that
+     * upper bound is a valid, meaningful position: right after the last element, i.e. a pure
+     * append), or this throws -- deliberately deviating from real Python (which clamps here too),
+     * so that a typo like {@code list[1:1000] = [...]} fails loudly instead of silently succeeding
+     * in a probably-unintended way.
+     * <p>
+     * If the resolved start is greater than the resolved end (e.g. {@code list[3:1] = [...]}), this
+     * follows real Python: the selection is empty, and the replacement is inserted at {@code start}
+     * without removing anything.
+     *
+     * @param start           the start index
+     * @param end             the end index
+     * @param replacementValue the replacement elements (must be iterable)
+     */
+    public void setRange(final JInt start, final JInt end, final JanitorObject replacementValue) {
+        final int len = list.size();
+        final int startIndex = toIndex(start.getAsInt(), len);
+        final int endIndex = toIndex(end.getAsInt(), len);
+        if (startIndex < 0 || startIndex > len) {
+            throw new IndexOutOfBoundsException("slice assignment start index " + start.getAsInt() + " out of range for list of size " + len);
+        }
+        if (endIndex < 0 || endIndex > len) {
+            throw new IndexOutOfBoundsException("slice assignment end index " + end.getAsInt() + " out of range for list of size " + len);
+        }
+        final List<JanitorObject> replacement = toReplacementList(replacementValue);
+        final int removeEnd = Math.max(startIndex, endIndex);
+        list.subList(startIndex, removeEnd).clear();
+        list.addAll(startIndex, replacement);
+        notifyUpdateReceivers();
+    }
+
+    private static List<JanitorObject> toReplacementList(final JanitorObject replacementValue) {
+        final JanitorObject unpacked = replacementValue.janitorUnpack();
+        if (unpacked instanceof Iterable<?> iterable) {
+            final List<JanitorObject> result = new ArrayList<>();
+            for (final Object element : iterable) {
+                result.add((JanitorObject) element);
+            }
+            return result;
+        }
+        throw new IllegalArgumentException("cannot assign " + replacementValue + " to a list slice: not iterable");
     }
 
     /**
@@ -170,20 +300,6 @@ public class JList extends JanitorComposed<JList> implements JIterable, Iterable
     public void add(JInt index, JanitorObject value) {
         list.add(index.janitorGetHostValue().intValue(), value);
         notifyUpdateReceivers();
-    }
-
-    /**
-     * Set an element in the list.
-     * If the list is too small to accommodate the element, it will be grown by adding NULL objects as required.
-     * @param index the index
-     * @param value the value
-     */
-    public void set(JInt index, JanitorObject value) {
-        final int jindex = index.janitorGetHostValue().intValue();
-        while (list.size() <= jindex) {
-            list.add(Janitor.NULL);
-        }
-        list.set(jindex, value);
     }
 
     /**

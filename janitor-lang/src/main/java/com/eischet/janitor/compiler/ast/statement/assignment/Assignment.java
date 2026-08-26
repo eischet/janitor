@@ -4,6 +4,7 @@ import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorNameException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.Location;
+import com.eischet.janitor.api.scopes.ResultAndScope;
 import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.types.JAssignable;
 import com.eischet.janitor.api.types.JanitorObject;
@@ -46,33 +47,35 @@ public abstract class Assignment extends Statement implements JsonExportableObje
             final String id = ((Identifier) left).getText();
             process.trace(() -> "assigning to identifier " + id);
 
-            // LATER: turn into :   runningScript.lookupScopedVar(id);
-
-            Scope scope = process.getCurrentScope();
-
-            final JanitorObject current = scope.lookupLocally(process, id);
-            process.trace(() -> "current value of " + id + " is " + current);
-
-            while (scope != null && scope.lookupLocally(process, id) == null) {
-                scope = scope.getParent();
-            }
+            // Resolve which scope the variable actually lives in. This must also consult the
+            // process's closure-scope stack, not just the parent chain -- otherwise assigning to a
+            // variable captured from an enclosing function (a real closure) would never find it,
+            // fall through to the "not found anywhere" case below, and silently create a brand new
+            // local shadow variable instead of updating the captured one. AnyFixOperator /
+            // PostfixIncrement (i++, ++i, --i, ...) already use the same process.lookupScopedVar(id)
+            // for this exact reason (this used to be a plain scope.getParent() walk here, which is
+            // exactly why it missed the closure-scope stack; see ClosureVariableAssignmentTestCase
+            // for what broke because of it -- e.g. a counter closure like
+            // "() -> { n = n + 1; return n; }" could never accumulate state across calls, since every
+            // call kept creating and discarding its own fresh local shadow of "n").
+            final ResultAndScope scoped = process.lookupScopedVar(id);
             // LATER: hier muss auch beachtet werden, dass es einen module scope gibt!
             // das funktioniert hier wahrscheinlich nicht, wenn eine Function aus einem Modul versucht,
             // an eine eigene (im Modul definierte) Variable etwas zuzuweisen. Das ist aber ohnehin keine
             // gute Idee, weil die Module in mehreren Skripten parallel im Einsatz sein könnten.
-            JanitorObject valueToAssign = produce(left, right, process).janitorUnpack();
-            if (scope == null) {
-                process.trace(() -> "  will assign " + id + " = " + valueToAssign + " in current scope of scritp = " + process.getCurrentScope());
+            final JanitorObject valueToAssign = produce(left, right, process).janitorUnpack();
+            if (scoped == null) {
+                process.trace(() -> "  will assign " + id + " = " + valueToAssign + " in current scope of script = " + process.getCurrentScope());
                 process.getCurrentScope().bind(process, id, valueToAssign);
                 return;
             } else {
-                final Scope finalScope = scope;
-                process.trace(() -> "  will assign " + id + " = " + valueToAssign + " in its original scope " + finalScope);
-                if (scope.getParent() == null) {
+                final Scope targetScope = scoped.getScope();
+                process.trace(() -> "  will assign " + id + " = " + valueToAssign + " in its original scope " + targetScope);
+                if (targetScope.getParent() == null) {
                     process.trace(() -> "warning: trying to assign something to the top level scope!");
                 }
-                scope.bind(process, id, valueToAssign);
-                return; // FEHLTE! dadurch wurden calls doppelt gemoppelt!!!
+                targetScope.bind(process, id, valueToAssign);
+                return;
             }
         }
 
