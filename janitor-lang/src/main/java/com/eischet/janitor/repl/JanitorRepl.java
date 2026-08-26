@@ -5,7 +5,7 @@ import com.eischet.janitor.api.errors.glue.JanitorControlFlowException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.api.scopes.Scope;
-import com.eischet.janitor.api.scopes.ScriptModule;
+import com.eischet.janitor.api.scopes.ScriptSource;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.JNull;
 import com.eischet.janitor.compiler.CompilerError;
@@ -46,7 +46,7 @@ public class JanitorRepl {
             "Did you stick a penny in there?"
             """;
 
-    private final ScriptModule module;
+    private final ScriptSource module;
     private final Scope globalScope;
     private final JanitorRuntime runtime;
     private final ReplIO io;
@@ -61,7 +61,7 @@ public class JanitorRepl {
     public JanitorRepl(final JanitorRuntime runtime, final ReplIO io) {
         this.runtime = runtime;
         this.io = io;
-        module = new ScriptModule("repl", "");
+        module = new ScriptSource("repl", "");
         globalScope = Scope.createGlobalScope(runtime.getEnvironment(), module);
     }
 
@@ -167,7 +167,7 @@ public class JanitorRepl {
         // TODO: on 'missing STMT_TERM', try to parse the same text again
 
 
-        final ScriptModule module = new ScriptModule("repl", text);
+        final ScriptSource module = new ScriptSource("repl", text);
         final JanitorAntlrCompiler compiler = new JanitorAntlrCompiler(runtime.getEnvironment(), module, false, text);
         io.verbose("start compile");
         final Ast compiledText = compiler.visit(fragment.getScriptContext());
@@ -277,7 +277,7 @@ public class JanitorRepl {
         this.logo = logo;
     }
 
-    public ScriptModule getModule() {
+    public ScriptSource getModule() {
         return module;
     }
 

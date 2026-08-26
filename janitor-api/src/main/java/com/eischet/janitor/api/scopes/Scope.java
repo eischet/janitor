@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
 
 /**
  * A scope is the basic building block of how the interpreter operates.
@@ -92,7 +91,7 @@ public class Scope implements JanitorObject {
      * @param module the module
      * @return the global scope
      */
-    public static Scope createGlobalScope(final JanitorEnvironment env, final ScriptModule module) {
+    public static Scope createGlobalScope(final JanitorEnvironment env, final ScriptSource module) {
         return new Scope(env, Location.startOf(module), env.getBuiltinScope(), null, true);
     }
 

@@ -6,6 +6,7 @@ import com.eischet.janitor.api.errors.glue.JanitorControlFlowException;
 import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.errors.runtime.JanitorInternalException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
+import com.eischet.janitor.api.modules.ModuleScopeAware;
 import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.types.JanitorObject;
@@ -45,7 +46,7 @@ import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
  * parameters, and body -- held by this node.
  * </p>
  */
-public class ScriptFunction extends AstNode implements Expression, JsonExportableObject {
+public class ScriptFunction extends AstNode implements Expression, JsonExportableObject, ModuleScopeAware {
 
     private static final JanitorLogger log = JanitorLogger.getLogger(ScriptFunction.class);
 
@@ -69,12 +70,7 @@ public class ScriptFunction extends AstNode implements Expression, JsonExportabl
         this.block = block;
     }
 
-    /**
-     * Set the module scope of the function.
-     * TODO: why is this currently not used, and what would happen if it were?
-     *
-     * @param moduleScope set the module scope
-     */
+    @Override
     public void setModuleScope(final Scope moduleScope) {
         // System.out.println("function " + name + " received module scope " + moduleScope);
         this.moduleScope = moduleScope;

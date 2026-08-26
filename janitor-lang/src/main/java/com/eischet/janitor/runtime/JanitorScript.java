@@ -7,7 +7,7 @@ import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.ResultAndScope;
 import com.eischet.janitor.api.scopes.Scope;
-import com.eischet.janitor.api.scopes.ScriptModule;
+import com.eischet.janitor.api.scopes.ScriptSource;
 import com.eischet.janitor.api.types.builtin.JNull;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.compiler.CompilerError;
@@ -32,7 +32,7 @@ public class JanitorScript implements RunnableScript, JsonExportableObject {
     private static final JanitorLogger log = JanitorLogger.getLogger(JanitorScript.class);
 
     private final @NotNull JanitorRuntime runtime; // TODO: remove this. A compiled script should not be tied to a particular runtime. Only when *runnign* it, the runtime should be used.
-    private final @NotNull ScriptModule module;
+    private final @NotNull ScriptSource module;
     private final @Nullable Script scriptObject;
     private final @NotNull List<String> issues;
     private @Nullable Exception compilerException;
@@ -50,7 +50,7 @@ public class JanitorScript implements RunnableScript, JsonExportableObject {
                          final boolean checking,
                          final boolean verbose) throws JanitorCompilerException {
         this.runtime = runtime;
-        this.module = new ScriptModule(moduleName, source);
+        this.module = new ScriptSource(moduleName, source);
 
         final JanitorANTLRErrorListener recorder = new JanitorANTLRErrorListener(source);
 

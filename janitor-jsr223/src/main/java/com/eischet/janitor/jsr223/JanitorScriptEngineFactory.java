@@ -3,7 +3,7 @@ package com.eischet.janitor.jsr223;
 import com.eischet.janitor.api.*;
 import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.scopes.Scope;
-import com.eischet.janitor.api.scopes.ScriptModule;
+import com.eischet.janitor.api.scopes.ScriptSource;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.JNull;
 import com.eischet.janitor.env.JanitorDefaultEnvironment;
@@ -41,7 +41,7 @@ public class JanitorScriptEngineFactory implements ScriptEngineFactory {
         if (Janitor.getUserProvider() == null) {
             Janitor.setUserProvider(() -> environment);
         }
-        this.globalScope = Scope.createGlobalScope(environment, ScriptModule.builtin());
+        this.globalScope = Scope.createGlobalScope(environment, ScriptSource.builtin());
         this.bindings = new JanitorBindings(globalScope, environment);
     }
 
@@ -51,7 +51,7 @@ public class JanitorScriptEngineFactory implements ScriptEngineFactory {
     }
 
     public Bindings createBindings() {
-        return new JanitorBindings(Scope.createGlobalScope(environment, ScriptModule.builtin()), environment);
+        return new JanitorBindings(Scope.createGlobalScope(environment, ScriptSource.builtin()), environment);
     }
 
     @Override

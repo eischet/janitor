@@ -3,6 +3,7 @@ package com.eischet.janitor.env;
 import com.eischet.janitor.api.FilterPredicate;
 import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.JanitorScriptProcess;
+import com.eischet.janitor.api.errors.JanitorException;
 import com.eischet.janitor.api.metadata.HasMetaData;
 import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.modules.DiscoverableModules;
@@ -17,7 +18,7 @@ import com.eischet.janitor.api.modules.JanitorModule;
 import com.eischet.janitor.api.modules.JanitorModuleRegistration;
 import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.api.scopes.Scope;
-import com.eischet.janitor.api.scopes.ScriptModule;
+import com.eischet.janitor.api.scopes.ScriptSource;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.JList;
 import com.eischet.janitor.api.types.builtin.JMap;
@@ -58,7 +59,7 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
     private final List<ModuleResolver> resolvers = new ArrayList<>();
     protected @Nullable Scope.ImplicitObjectProvider implicitTemplateObjectProvider = null;
 
-    private final Scope builtinScope = Scope.createBuiltinScope(this, Location.virtual(ScriptModule.builtin()));
+    private final Scope builtinScope = Scope.createBuiltinScope(this, Location.virtual(ScriptSource.builtin()));
 
     {
         builtinScope.bindF("print", (rs, args) -> rs.getRuntime().print(rs, args));
@@ -275,7 +276,7 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
     public @NotNull JanitorModule getModuleByQualifier(final JanitorScriptProcess process, final String name) throws JanitorRuntimeException {
         for (final JanitorModuleRegistration moduleRegistration : moduleRegistrations) {
             if (Objects.equals(name, moduleRegistration.getQualifiedName())) {
-                return moduleRegistration.getModuleSupplier().get();
+                return moduleRegistration.getModuleSupplier().getModule(process);
             }
         }
         throw new JanitorNameException(process, "Module not found: " + name);

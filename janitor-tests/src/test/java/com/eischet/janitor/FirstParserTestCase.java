@@ -14,7 +14,7 @@ import com.eischet.janitor.api.modules.JanitorNativeModule;
 import com.eischet.janitor.api.modules.ModuleResolver;
 import com.eischet.janitor.api.scopes.ResultAndScope;
 import com.eischet.janitor.api.scopes.Scope;
-import com.eischet.janitor.api.scopes.ScriptModule;
+import com.eischet.janitor.api.scopes.ScriptSource;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.*;
 import com.eischet.janitor.compiler.JanitorAntlrCompiler;
@@ -60,7 +60,7 @@ public class FirstParserTestCase extends JanitorTest {
     public void justParse() throws JanitorCompilerException, JanitorRuntimeException {
         final String source = "print('hello, world');";
         final JanitorParser.ScriptContext script = JanitorScript.parseScript(source);
-        final ScriptModule module = ScriptModule.unnamed(source);
+        final ScriptSource module = ScriptSource.unnamed(source);
         final Script scriptObject = JanitorCompiler.build(TestEnv.env, module, script, source);
         final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
 
@@ -75,7 +75,7 @@ public class FirstParserTestCase extends JanitorTest {
     public void printIfElse() throws JanitorCompilerException, JanitorRuntimeException {
         final String source = "if (x > 10) { print('high'); } else { print('low'); }";
         final JanitorParser.ScriptContext script = JanitorScript.parseScript(source);
-        final ScriptModule module = ScriptModule.unnamed(source);
+        final ScriptSource module = ScriptSource.unnamed(source);
         final Script scriptObject = JanitorCompiler.build(TestEnv.env, module, script, source);
         final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
 
@@ -1446,7 +1446,7 @@ public class FirstParserTestCase extends JanitorTest {
         // wenn man im do{} auf x Zugreift, dann hat das x=x+1 Erfolg, sonst nicht!?
         // Ich glaube, dank des verbesserten Codes für Closures ist das Problem gelöst...?
         final JanitorParser.ScriptContext script = JanitorScript.parseScript(scriptSource);
-        final ScriptModule module = ScriptModule.unnamed(scriptSource);
+        final ScriptSource module = ScriptSource.unnamed(scriptSource);
         final Script scriptObject = JanitorCompiler.build(TestEnv.env, module, script, scriptSource);
         final SLFLoggingRuntime runtime = new SLFLoggingRuntime(TestEnv.env, JanitorLogger.getLogger(getClass()));
 

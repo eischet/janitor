@@ -7,7 +7,7 @@ import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.Scope;
-import com.eischet.janitor.api.scopes.ScriptModule;
+import com.eischet.janitor.api.scopes.ScriptSource;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.compiler.CompilerError;
 import com.eischet.janitor.compiler.JanitorCompiler;
@@ -62,7 +62,7 @@ public abstract class JanitorTest {
     protected String getOutput(final @Language("Janitor") String scriptSource, final Consumer<Scope> prepareGlobals, boolean verbose) throws JanitorCompilerException, JanitorRuntimeException {
         log.debug("parsing: {}\n", scriptSource);
         final JanitorParser.ScriptContext script = JanitorScript.parseScript(scriptSource);
-        final ScriptModule module = ScriptModule.unnamed(scriptSource);
+        final ScriptSource module = ScriptSource.unnamed(scriptSource);
         final Script scriptObject = JanitorCompiler.build(TestEnv.env, module, script, scriptSource, verbose);
         final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
 
@@ -86,7 +86,7 @@ public abstract class JanitorTest {
                                      final @Nullable Consumer<Scope> prepareGlobals) throws JanitorCompilerException, JanitorRuntimeException {
         log.info("evaluating: {}\n", expressionSource);
         final JanitorParser.ScriptContext script = JanitorScript.parseScript(expressionSource);
-        final ScriptModule module = ScriptModule.unnamed(expressionSource);
+        final ScriptSource module = ScriptSource.unnamed(expressionSource);
         try {
             final Script scriptObject = JanitorCompiler.build(TestEnv.env, module, script, expressionSource);
             final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh(environmentConfigurer);
@@ -107,7 +107,7 @@ public abstract class JanitorTest {
         throws JanitorCompilerException, JanitorRuntimeException {
         log.info("evaluating: {}\n", expressionSource);
         final JanitorParser.ScriptContext script = JanitorScript.parseScript(expressionSource);
-        final ScriptModule module = ScriptModule.unnamed(expressionSource);
+        final ScriptSource module = ScriptSource.unnamed(expressionSource);
         try {
             final Script scriptObject = JanitorCompiler.build(TestEnv.env, module, script, expressionSource);
             final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();

@@ -1,7 +1,7 @@
 package com.eischet.janitor.compiler;
 
 import com.eischet.janitor.api.JanitorEnvironment;
-import com.eischet.janitor.api.scopes.ScriptModule;
+import com.eischet.janitor.api.scopes.ScriptSource;
 import com.eischet.janitor.compiler.ast.statement.Script;
 import com.eischet.janitor.lang.JanitorParser;
 import org.antlr.v4.runtime.RuleContext;
@@ -20,7 +20,7 @@ public interface JanitorCompiler {
      * @param source the source code
      * @return the script
      */
-    static Script build(JanitorEnvironment env, ScriptModule module, JanitorParser.ScriptContext root, String source) {
+    static Script build(JanitorEnvironment env, ScriptSource module, JanitorParser.ScriptContext root, String source) {
         return build(env, module, root, source, false);
     }
 
@@ -34,7 +34,7 @@ public interface JanitorCompiler {
      * @param verbose          turn on verbose / debugging compiler output
      * @return the script
      */
-    static Script build(JanitorEnvironment env, ScriptModule module, JanitorParser.ScriptContext root, String source, boolean verbose) throws CompilerError {
+    static Script build(JanitorEnvironment env, ScriptSource module, JanitorParser.ScriptContext root, String source, boolean verbose) throws CompilerError {
         final JanitorAntlrCompiler compiler = new JanitorAntlrCompiler(env, module, verbose, source);
         final RuleContext parseTree = root.getRuleContext();
         return (Script) compiler.visit(parseTree);

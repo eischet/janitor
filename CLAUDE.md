@@ -58,7 +58,7 @@ Key classes:
 - `JanitorEnvironment` — sandbox, module registry, host-exposed globals
 - `RunnableScript` — compiled artifact; call `script.run(g -> g.bind("name", value))` to execute
 - `JanitorObject` — root of the type system; all Janitor values implement this
-- `Scope` / `ScriptModule` — variable scoping and module isolation
+- `Scope` / `ScriptSource` — variable scoping and module isolation
 
 The grammar lives at `janitor-lang/src/main/antlr4/com/eischet/janitor/lang/Janitor.g4`. Modifying the grammar requires re-running ANTLR (Maven does this automatically on build).
 

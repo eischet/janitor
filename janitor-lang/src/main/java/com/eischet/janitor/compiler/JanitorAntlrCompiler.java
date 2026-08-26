@@ -2,7 +2,7 @@ package com.eischet.janitor.compiler;
 
 import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.scopes.Location;
-import com.eischet.janitor.api.scopes.ScriptModule;
+import com.eischet.janitor.api.scopes.ScriptSource;
 import com.eischet.janitor.api.types.BuiltinTypes;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.JBool;
@@ -56,14 +56,14 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
     public static final String INDEXED_GET_METHOD = "__get__";
     private static final BooleanLiteral LITERAL_TRUE = new BooleanLiteral(Location.builtin(), JBool.TRUE);
     private static final BooleanLiteral LITERAL_FALSE = new BooleanLiteral(Location.builtin(), JBool.FALSE);
-    private final ScriptModule module;
+    private final ScriptSource module;
     private final boolean verbose;
     private final String source;
     private final JanitorEnvironment env;
     private final BuiltinTypes builtinTypes;
 
 
-    public JanitorAntlrCompiler(final JanitorEnvironment env, final ScriptModule module, final boolean verbose, final String source) {
+    public JanitorAntlrCompiler(final JanitorEnvironment env, final ScriptSource module, final boolean verbose, final String source) {
         this.env = env;
         this.module = module;
         this.verbose = verbose;

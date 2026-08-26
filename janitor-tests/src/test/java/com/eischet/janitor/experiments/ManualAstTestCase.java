@@ -6,7 +6,7 @@ import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.api.scopes.Scope;
-import com.eischet.janitor.api.scopes.ScriptModule;
+import com.eischet.janitor.api.scopes.ScriptSource;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.compiler.ast.expression.ArgumentList;
 import com.eischet.janitor.compiler.ast.expression.VariableLookupExpression;
@@ -34,7 +34,7 @@ public class ManualAstTestCase extends JanitorTest {
             }
         };
 
-        final ScriptModule dummy = new ScriptModule("dummy", "// no source");
+        final ScriptSource dummy = new ScriptSource("dummy", "// no source");
 
         final Scope processScope = Scope.createBuiltinScope(environment, Location.at(dummy, 1, 1, 1, 1)); // new Scope(Location.at(dummy, 1, 1), null, null);
 

@@ -9,10 +9,10 @@ import java.util.List;
 
 /**
  * A script module.
- * This is not (directly) what gets imported by the "import" statement, it's a representation of a script file.
+ * This is a representation of a script file.
  */
-public class ScriptModule {
-    private static final ScriptModule BUILTIN = new ScriptModule("builtin", "");
+public class ScriptSource {
+    private static final ScriptSource BUILTIN = new ScriptSource("builtin", "");
 
     private final @NotNull String name;
     private final @NotNull String source;
@@ -24,7 +24,7 @@ public class ScriptModule {
      * @param name   the name of the module
      * @param source the source code of the module
      */
-    public ScriptModule(final @NotNull String name, final @NotNull String source) {
+    public ScriptSource(final @NotNull String name, final @NotNull String source) {
         this.name = name;
         this.source = source;
         this.sourceLines = new Memoized<>(() -> List.of(source.split("\r?\n\r?")));
@@ -36,8 +36,8 @@ public class ScriptModule {
      * @param source the source code of the module
      * @return the new ScriptModule
      */
-    public static @NotNull ScriptModule unnamed(final @NotNull String source) {
-        return new ScriptModule("unnamed", source);
+    public static @NotNull ScriptSource unnamed(final @NotNull String source) {
+        return new ScriptSource("unnamed", source);
     }
 
     /**
@@ -46,7 +46,7 @@ public class ScriptModule {
      * @param module the module
      * @return true if the module is the builtin module
      */
-    public static boolean isBuiltin(final @Nullable ScriptModule module) {
+    public static boolean isBuiltin(final @Nullable ScriptSource module) {
         return module == BUILTIN;
     }
 
@@ -56,7 +56,7 @@ public class ScriptModule {
      * @return the builtin module
      * TODO: I want to move the Builtin module away, into the Environment, where the host has more control over it.
      */
-    public static @NotNull ScriptModule builtin() {
+    public static @NotNull ScriptSource builtin() {
         return BUILTIN;
     }
 

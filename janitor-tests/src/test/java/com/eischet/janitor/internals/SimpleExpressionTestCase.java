@@ -6,7 +6,7 @@ import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.errors.runtime.JanitorTypeException;
 import com.eischet.janitor.api.scopes.Scope;
-import com.eischet.janitor.api.scopes.ScriptModule;
+import com.eischet.janitor.api.scopes.ScriptSource;
 import com.eischet.janitor.api.types.builtin.JBool;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.compiler.JanitorCompiler;
@@ -29,7 +29,7 @@ public class SimpleExpressionTestCase extends JanitorTest {
     private JanitorObject eval(final @Language("Janitor") String expressionSource, final Consumer<Scope> prepareGlobals) throws JanitorCompilerException, JanitorRuntimeException {
         // log.info("parsing: " + expressionSource + "\n");
         final JanitorParser.ScriptContext script = JanitorScript.parseScript(expressionSource);
-        final ScriptModule module = ScriptModule.unnamed(expressionSource);
+        final ScriptSource module = ScriptSource.unnamed(expressionSource);
         final Script scriptObject = JanitorCompiler.build(TestEnv.env, module, script, null);
         final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
 

@@ -1,6 +1,6 @@
 package com.eischet.janitor.runtime;
 
-import com.eischet.janitor.api.scopes.ScriptModule;
+import com.eischet.janitor.api.scopes.ScriptSource;
 import com.eischet.janitor.lang.JanitorLexer;
 import org.antlr.v4.runtime.*;
 import org.jetbrains.annotations.Nullable;
@@ -52,7 +52,7 @@ public class JanitorANTLRErrorListener extends BaseErrorListener implements ANTL
             return;
         }
 
-        final String errorLine = ScriptModule.getLine(lines, line);
+        final String errorLine = ScriptSource.getLine(lines, line);
         if (errorLine != null && !errorLine.isBlank()) {
             issues.add("line %s:%s --> %s \n    %s".formatted(line, charPositionInLine, improvedMessage, errorLine));
         } else {

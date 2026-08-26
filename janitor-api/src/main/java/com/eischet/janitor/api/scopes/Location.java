@@ -12,9 +12,9 @@ import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
  */
 public class Location implements JsonExportableObject {
 
-    public static final Location BUILTIN_LOCATION = Location.virtual(ScriptModule.builtin());
+    public static final Location BUILTIN_LOCATION = Location.virtual(ScriptSource.builtin());
 
-    private final ScriptModule module;
+    private final ScriptSource module;
     private final int line;
     private final int column;
     private final int endLine;
@@ -30,7 +30,7 @@ public class Location implements JsonExportableObject {
      * @param endLine   the end line
      * @param endColumn the end column
      */
-    private Location(final ScriptModule module, final int line, final int column, final int endLine, final int endColumn) {
+    private Location(final ScriptSource module, final int line, final int column, final int endLine, final int endColumn) {
         this.module = module;
         this.line = line;
         this.column = column;
@@ -49,7 +49,7 @@ public class Location implements JsonExportableObject {
      * @param endColumn the end column
      * @param nesting   the nesting
      */
-    private Location(final ScriptModule module, final int line, final int column, final int endLine, final int endColumn, final String nesting) {
+    private Location(final ScriptSource module, final int line, final int column, final int endLine, final int endColumn, final String nesting) {
         this.module = module;
         this.line = line;
         this.column = column;
@@ -64,7 +64,7 @@ public class Location implements JsonExportableObject {
      * @param module the module
      * @return the location at the start of the module
      */
-    public static Location startOf(final ScriptModule module) {
+    public static Location startOf(final ScriptSource module) {
         return new Location(module, 0, 0, 0, 0);
     }
 
@@ -78,7 +78,7 @@ public class Location implements JsonExportableObject {
      * @param endColumn ending column
      * @return the location
      */
-    public static Location at(final ScriptModule module, final int line, final int column, final int endLine, final int endColumn) {
+    public static Location at(final ScriptSource module, final int line, final int column, final int endLine, final int endColumn) {
         return new Location(module, line, column, endLine, endColumn);
     }
 
@@ -88,7 +88,7 @@ public class Location implements JsonExportableObject {
      * @param module a module
      * @return a location that points to the module only
      */
-    public static Location virtual(final ScriptModule module) {
+    public static Location virtual(final ScriptSource module) {
         return Location.at(module, 0, 0, 0, 0);
     }
 
@@ -101,7 +101,7 @@ public class Location implements JsonExportableObject {
      *
      * @return the module
      */
-    public ScriptModule getModule() {
+    public ScriptSource getModule() {
         return module;
     }
 

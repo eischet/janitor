@@ -3,7 +3,7 @@ package com.eischet.janitor.api.errors.runtime;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.JanitorException;
 import com.eischet.janitor.api.scopes.Location;
-import com.eischet.janitor.api.scopes.ScriptModule;
+import com.eischet.janitor.api.scopes.ScriptSource;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.composed.JanitorAware;
@@ -97,7 +97,7 @@ public abstract class JanitorRuntimeException extends JanitorException implement
         if (!stack.isEmpty()) {
             for (final Location location : stack) {
                 if (location != null) {
-                    if (ScriptModule.isBuiltin(location.getModule())) {
+                    if (ScriptSource.isBuiltin(location.getModule())) {
                         // skip over the builtin module, or else it would appear at the top of every script
                         continue;
                     }
