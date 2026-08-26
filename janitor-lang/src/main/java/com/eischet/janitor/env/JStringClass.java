@@ -74,56 +74,67 @@ public class JStringClass {
     }
 
 
+    /**
+     * Index/slice a string, Python-style. Mirrors JList's indexing rules (see
+     * JListPythonIndexingTestCase/JListTestCase/JListSteppedSliceTestCase) minus assignment, since
+     * strings are immutable: single-character access ({@code s[i]}) is strict -- the index must
+     * reference an existing character, or this throws, exactly like Python's IndexError. Slicing
+     * ({@code s[a:b]}, with or without a step) is forgiving -- out-of-range bounds are silently
+     * clamped into {@code [0, length()]}, and a descending range with the default step of 1 reads as
+     * an empty string, not reversed (use a negative step, e.g. {@code s[::-1]}, to reverse a string).
+     */
     public static @NotNull JString indexedGet(final @NotNull JString self, final @NotNull JanitorScriptProcess process, final @NotNull JCallArgs arguments) throws JanitorRuntimeException {
         final String string = self.janitorGetHostValue();
+        final int len = string.length();
         if (arguments.size() == 1) {
-            int len = string.length();
-            int start = arguments.get(0) != JNull.NULL ? JList.toIndex(arguments.getInt(0).getAsInt(), len) : 0;
-            return process.getBuiltins().string(string.substring(start, start + 1));
+            final int rawIndex = arguments.getInt(0).getAsInt();
+            final int resolved = JList.toIndex(rawIndex, len);
+            if (resolved < 0 || resolved >= len) {
+                throw new JanitorArgumentException(process, "string index " + rawIndex + " out of range for string of length " + len);
+            }
+            return process.getBuiltins().string(string.substring(resolved, resolved + 1));
         }
         if (arguments.size() == 2) {
-            int len = string.length();
-            final JanitorObject first = arguments.get(0);
-            final JanitorObject second = arguments.get(1);
-            // System.err.println("SUBSTRING " + first + " : " + second);
-            if (first == JNull.NULL && second == JNull.NULL) {
-                // System.err.println("case 1");
-                return process.getBuiltins().string(string);
-            } else if (first == JNull.NULL) {
-                // System.err.println("case 2");
-                int end = arguments.getInt(1).getAsInt();
-                if (end < 0) {
-                    // System.err.println("case 2 inverted end: " + end + " => " + (len + end));
-                    end = len + end;
-                }
-                if (end > len) {
-                    end = len;
-                }
-                final String str = string.substring(0, end);
-                return process.getBuiltins().string(str);
-            } else if (second == JNull.NULL) {
-                // System.err.println("case 3");
-                int start = JList.toIndex(arguments.getInt(0).getAsInt(), len);
-                int end = string.length();
-                return process.getBuiltins().string(string.substring(start, end));
-            } else {
-                // System.err.println("case 4");
-                int start = JList.toIndex(arguments.getInt(0).getAsInt(), len);
-                int end = JList.toIndex(arguments.getInt(1).getAsInt(), len);
-                final String str = string.substring(Math.min(start, end), Math.max(start, end));
-                if (end < start) {
-                    return process.getBuiltins().string(new StringBuilder(str).reverse().toString());
-                }
-                return process.getBuiltins().string(str);
+            final int start = arguments.get(0) == JNull.NULL ? 0 : clamp(JList.toIndex(arguments.getInt(0).getAsInt(), len), 0, len);
+            final int end = arguments.get(1) == JNull.NULL ? len : clamp(JList.toIndex(arguments.getInt(1).getAsInt(), len), 0, len);
+            if (end <= start) {
+                return Janitor.emptyString();
             }
+            return process.getBuiltins().string(string.substring(start, end));
         }
-        /*
-        LATER: auch hier ein stepping unterstützen
         if (arguments.size() == 3) {
-
+            final Integer startArg = arguments.get(0) == JNull.NULL ? null : arguments.getInt(0).getAsInt();
+            final Integer endArg = arguments.get(1) == JNull.NULL ? null : arguments.getInt(1).getAsInt();
+            final int step = arguments.getInt(2).getAsInt();
+            if (step == 0) {
+                throw new JanitorArgumentException(process, "slice step cannot be zero");
+            }
+            final int startIndex;
+            final int endIndex;
+            if (step > 0) {
+                startIndex = startArg == null ? 0 : clamp(JList.toIndex(startArg, len), 0, len);
+                endIndex = endArg == null ? len : clamp(JList.toIndex(endArg, len), 0, len);
+            } else {
+                startIndex = startArg == null ? len - 1 : clamp(JList.toIndex(startArg, len), -1, len - 1);
+                endIndex = endArg == null ? -1 : clamp(JList.toIndex(endArg, len), -1, len - 1);
+            }
+            final StringBuilder result = new StringBuilder();
+            if (step > 0) {
+                for (int i = startIndex; i < endIndex; i += step) {
+                    result.append(string.charAt(i));
+                }
+            } else {
+                for (int i = startIndex; i > endIndex; i += step) {
+                    result.append(string.charAt(i));
+                }
+            }
+            return process.getBuiltins().string(result.toString());
         }
-         */
         throw new JanitorArgumentException(process, "invalid arguments: " + arguments);
+    }
+
+    private static int clamp(final int value, final int min, final int max) {
+        return Math.max(min, Math.min(value, max));
     }
 
     public static @NotNull JFloat toFloat(final @NotNull JString self, final @NotNull JanitorScriptProcess process, final @NotNull JCallArgs arguments) throws JanitorRuntimeException {

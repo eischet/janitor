@@ -1,6 +1,7 @@
 package com.eischet.janitor;
 
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
+import com.eischet.janitor.api.errors.runtime.JanitorInstructionLimitExceededException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import org.junit.jupiter.api.Test;
 
@@ -23,5 +24,10 @@ public class ExecLimitTestCase extends JanitorTest{
         assertThrows(JanitorRuntimeException.class, () -> evaluateWithConfigurableProcess(LOOPING, process -> process.setMaxInstructionCount(50)));
 
     }
+
+    @Test void testWhileTrue() throws JanitorRuntimeException, JanitorCompilerException {
+        assertThrows(JanitorInstructionLimitExceededException.class, () -> evaluateWithConfigurableProcess("while (true) { }", proc -> proc.setMaxInstructionCount(1000)));
+    }
+
 
 }

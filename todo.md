@@ -12,20 +12,11 @@ Legend: 🔴 high / 🟡 medium / ⚪ low · 🔒 security-relevant
 
 ## 1. Language core (compiler & runtime)
 
-### 🟡 String slice indices are not consistently clamped to `[0, len]`
-[JStringClass.java:77-127](janitor-lang/src/main/java/com/eischet/janitor/env/JStringClass.java)
-
-Negative indices are converted Python-style (`len + index`), but not
-consistently clamped afterward in every branch (only one branch clamps the
-upper bound explicitly). Strongly negative indices such as `"foo"[:-100]` or
-`"foo"[-100:]` produce negative offsets passed straight into `substring`
-→ raw `StringIndexOutOfBoundsException` (it does get wrapped as
-`JanitorNativeException`, but this is inconsistent with the otherwise
-Python-like slicing behavior). The equivalent issue for lists
-(`JList.getRange`/`toIndex`) is fixed — reads now clamp to `[0, len]` and a
-descending range reads as empty, matching Python (see
-[JListTestCase.java](janitor-tests/src/test/java/com/eischet/janitor/types/JListTestCase.java)).
-The same clamping approach would apply here.
+(No open items at the moment — the closure-scope bugs, `||` short-circuit,
+`try`/`finally` control-flow skip, and list/string slice-indexing gaps that
+used to live here have all been fixed; see git history and the test suites
+under `janitor-tests/src/test/java/com/eischet/janitor/internals/` and
+`janitor-tests/src/test/java/com/eischet/janitor/types/` for details.)
 
 ---
 
