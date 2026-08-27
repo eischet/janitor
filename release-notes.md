@@ -5,7 +5,7 @@
 - Bugfix: closures were not properly implemented.
 - Bugfix: Janitor.current() ignored automatic providers.
 - Bugfix: Generi0cDispatchTable.addBigDecimalProperty added a setter that always threw an exception.
-
+- Janitor now provides a number of ScriptModule classes which simplify the creation of custom modules.
 
 # 0.9.63, 2026-08-25 (internal release only)
 
