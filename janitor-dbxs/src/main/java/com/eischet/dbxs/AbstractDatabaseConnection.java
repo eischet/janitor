@@ -34,7 +34,7 @@ public abstract class AbstractDatabaseConnection implements DatabaseConnection {
     @Override
     public @Nullable Long queryForLongInstance(final @NotNull SelectStatement sql,
                                                final @NotNull StatementConfigurator sc) throws DatabaseError {
-        return queryForList(sql, sc, rs -> rs.getLong(1)).stream().filter(Objects::nonNull).findFirst().orElse(null);
+        return queryForList(sql, sc, rs -> rs.getLongInstance(1)).stream().filter(Objects::nonNull).findFirst().orElse(null);
     }
 
 
@@ -63,7 +63,7 @@ public abstract class AbstractDatabaseConnection implements DatabaseConnection {
     @Override
     public @Nullable Integer queryForInteger(final @NotNull SelectStatement sql,
                                              final @NotNull StatementConfigurator sc) throws DatabaseError {
-        return queryForList(sql, sc, rs -> rs.getInt(1)).stream().filter(Objects::nonNull).findFirst().orElse(null);
+        return queryForList(sql, sc, rs -> rs.getInteger(1)).stream().filter(Objects::nonNull).findFirst().orElse(null);
     }
 
     @Override

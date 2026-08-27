@@ -112,6 +112,13 @@ public class SimpleDataManager implements DataManager {
             } catch (DatabaseError e) {
                 conn.rollback();
                 throw e;
+            } catch (RuntimeException e) {
+                // e.g. an NPE or other bug in the caller's transaction callback: must roll back and
+                // notify exceptionConsumer just like a DatabaseError does, rather than silently
+                // relying on whatever a given JDBC driver happens to do with an open transaction when
+                // close() is called on it below.
+                conn.rollback();
+                throw e;
             }
         } catch (SQLException e) {
             log.error("{}: SQL Exception connecting to database for transaction {}", name, transId, e);
@@ -120,6 +127,12 @@ public class SimpleDataManager implements DataManager {
             }
             throw new DatabaseError(e);
         } catch (DatabaseError e) {
+            if (exceptionConsumer != null) {
+                exceptionConsumer.accept(this, e);
+            }
+            throw e;
+        } catch (RuntimeException e) {
+            log.error("{}: unexpected exception in transaction {}", name, transId, e);
             if (exceptionConsumer != null) {
                 exceptionConsumer.accept(this, e);
             }
@@ -231,18 +244,28 @@ public class SimpleDataManager implements DataManager {
                 borrowed = true;
             } else {
                 log.debug("{} fetching new connection", name);
-                ConnectionWrapper newConn = null;
-                while (newConn == null) {
-                    newConn = new ConnectionWrapper(dataSource.getConnection());
-                    connHolder.set(newConn);
+                final ConnectionWrapper newConn = new ConnectionWrapper(dataSource.getConnection());
+                connHolder.set(newConn);
+                try {
                     final long delta = newConn.getCheckoutTime() - checkoutStart;
                     if (delta > 1000) {
                         log.info("{} - database connection checkout time: {} ms", name, delta);
                     }
                     newConn.getConn().setAutoCommit(false);
-
                     runInitStatements(newConn);
-
+                } catch (final SQLException | RuntimeException e) {
+                    // Setting up the freshly checked-out connection failed partway through (e.g. a
+                    // dead pooled connection breaking on setAutoCommit()): this constructor then never
+                    // finishes, so callTransaction()'s try-with-resources never gets a resource to
+                    // close() -- without cleaning up here, both the physical connection and the
+                    // connHolder ThreadLocal entry set above would leak.
+                    connHolder.remove();
+                    try {
+                        newConn.getConn().close();
+                    } catch (SQLException closeError) {
+                        e.addSuppressed(closeError);
+                    }
+                    throw e;
                 }
                 this.conn = newConn;
                 borrowed = false;
@@ -384,7 +407,7 @@ public class SimpleDataManager implements DataManager {
                 sps = new SimplePreparedStatement(getDialect(), sql, stmt);
                 sc.configure(sps);
                 return stmt.executeUpdate();
-            } catch (final Throwable e) { // should catch RuntimeException, too, e.g. NPEs in client code
+            } catch (final Exception e) { // catches RuntimeException, too, e.g. NPEs in client code -- but not Error, which should propagate
                 if (sps == null) {
                     throw new DatabaseError(e);
                 } else {
@@ -414,7 +437,7 @@ public class SimpleDataManager implements DataManager {
                 } else {
                     return null;
                 }
-            } catch (final Throwable e) { // should catch RuntimeException, too, e.g. NPEs in client code
+            } catch (final Exception e) { // catches RuntimeException, too, e.g. NPEs in client code -- but not Error, which should propagate
                 if (sps == null) {
                     throw new DatabaseError(e);
                 } else {

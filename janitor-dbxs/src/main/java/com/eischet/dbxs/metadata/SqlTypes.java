@@ -1,6 +1,6 @@
 package com.eischet.dbxs.metadata;
 
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.NotNull;
 
 import java.sql.Types;
 import java.util.Arrays;
@@ -60,8 +60,8 @@ public enum SqlTypes {
         return jdbcValue;
     }
 
-    public static @Nullable SqlTypes fromJdbc(final int jdbcValue) {
-        return Arrays.stream(values()).filter(v -> v.jdbcValue == jdbcValue).findFirst().orElse(null);
+    public static @NotNull SqlTypes fromJdbc(final int jdbcValue) {
+        return Arrays.stream(values()).filter(v -> v.jdbcValue == jdbcValue).findFirst().orElse(UNKNOWN);
     }
 
 }

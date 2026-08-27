@@ -8,6 +8,7 @@
 - Bugfix: GenericDispatchTable.addBigDecimalProperty added a setter that always threw an exception.
 - Bugfix: os.exec stability improved
 - Bugfix: files module; don't leave zip files dangling open when user fails to call close()
+- Deps: install4j 13.1, docusign-esign-java 6.8.0, maven-resolver 2.0.22
 
 
 # 0.9.63, 2026-08-25 (internal release only)

@@ -329,7 +329,7 @@ public class SimplePreparedStatement {
         // LATER: nur für sqlite!
         final int i = ++col;
         args.add(new Arg(col, data, "blob"));
-        if (data == null || data.length == 0) {
+        if (data == null) {
             ps.setNull(i, Types.BLOB);
         } else {
             ps.setBytes(i, data);
@@ -342,7 +342,7 @@ public class SimplePreparedStatement {
     public SimplePreparedStatement addBlob(final byte[] data) throws SQLException {
         final int i = ++col;
         args.add(new Arg(col, data, "blob"));
-        if (data == null || data.length == 0) {
+        if (data == null) {
             ps.setNull(i, Types.BLOB);
         } else {
             ps.setBinaryStream(i, new ByteArrayInputStream(data));

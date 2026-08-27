@@ -26,9 +26,9 @@ public enum SqlTypeInterpreter {
     SMALLINT("SMALLINT", Types.SMALLINT, SqlTypeInterpreter::readIntegerAndIntern),
     INTEGER("INTEGER", Types.INTEGER, SqlTypeInterpreter::readIntegerAndIntern),
     BIGINT("BIGINT", Types.BIGINT, (SimpleExtractor) ResultSet::getBigDecimal),
-    FLOAT("FLOAT", Types.FLOAT, ResultSet::getFloat),
-    REAL("REAL", Types.REAL, ResultSet::getDouble),
-    DOUBLE("DOUBLE", Types.DOUBLE, ResultSet::getDouble),
+    FLOAT("FLOAT", Types.FLOAT, SqlTypeInterpreter::readFloatInstance),
+    REAL("REAL", Types.REAL, SqlTypeInterpreter::readDoubleInstance),
+    DOUBLE("DOUBLE", Types.DOUBLE, SqlTypeInterpreter::readDoubleInstance),
     // LATER Fix: NUMERIC("NUMERIC", Types.NUMERIC, ResultSet::getDouble),
     DECIMAL("DECIMAL", Types.DECIMAL, (SimpleExtractor) ResultSet::getBigDecimal),
     CHAR("CHAR", Types.CHAR, SqlTypeInterpreter::readStringAndIntern),
@@ -90,7 +90,21 @@ public enum SqlTypeInterpreter {
     }
 
     public static @Nullable Integer readIntegerAndIntern(final @NotNull ResultSet rs, final int index) throws SQLException {
-        return Interner.maybeIntern(rs.getInt(index));
+        // rs.getInt() returns 0 for a SQL NULL, per the JDBC contract -- wasNull() is the only way to
+        // tell that apart from an actual 0. Must be checked immediately after the get call, before
+        // any other column access on this ResultSet.
+        final int value = rs.getInt(index);
+        return rs.wasNull() ? null : Interner.maybeIntern(value);
+    }
+
+    public static @Nullable Float readFloatInstance(final @NotNull ResultSet rs, final int index) throws SQLException {
+        final float value = rs.getFloat(index);
+        return rs.wasNull() ? null : value;
+    }
+
+    public static @Nullable Double readDoubleInstance(final @NotNull ResultSet rs, final int index) throws SQLException {
+        final double value = rs.getDouble(index);
+        return rs.wasNull() ? null : value;
     }
 
     public static byte @Nullable [] readAsBinaryStream(final @NotNull ResultSet rs, final int index) throws SQLException {

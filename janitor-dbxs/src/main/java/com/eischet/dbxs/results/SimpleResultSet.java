@@ -10,6 +10,7 @@ import com.eischet.dbxs.metadata.SqlTypeInterpreter;
 import com.eischet.dbxs.metadata.SqlTypes;
 import com.eischet.janitor.logging.JanitorLogger;
 import com.eischet.janitor.toolbox.memory.Interner;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -41,6 +42,13 @@ public class SimpleResultSet {
     private int rowNumber = -1;
     private int colNumber = 1;
 
+    /**
+     * Wraps a raw JDBC ResultSet. This is called by DatabaseConnection implementations (e.g.
+     * SimpleDataManager) as part of running a query -- client code should not construct this
+     * directly; get one via {@link DatabaseConnection#queryForEach} / {@code queryForObject} /
+     * {@code queryForList} etc. instead, which is the only way a real query actually produces one.
+     */
+    @ApiStatus.Internal
     public SimpleResultSet(@NotNull final DatabaseDialect dialect,
                            @NotNull final ResultSet rs,
                            @NotNull final DatabaseConnection connection) throws SQLException {
@@ -74,7 +82,7 @@ public class SimpleResultSet {
     }
 
     public @NotNull SqlTypes typeOf(int column) {
-        if (column > types.size()) {
+        if (column < 1 || column > types.size()) {
             return SqlTypes.UNKNOWN;
         } else {
             return types.get(column-1);
