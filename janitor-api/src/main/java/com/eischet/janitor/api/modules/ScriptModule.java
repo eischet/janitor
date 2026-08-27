@@ -49,7 +49,12 @@ public class ScriptModule extends JanitorModuleRegistration {
 
         @Override
         public @Nullable JanitorObject janitorGetAttribute(final JanitorScriptProcess runningScript, final String name, final boolean required) throws JanitorNameException {
-            final JanitorObject obj = moduleScope.lookup(runningScript, name, null);
+            // lookupLocally(), not lookup(): a module's attributes are exactly what it defines at its
+            // own top level, nothing more. lookup() would also walk this scope's parent chain, which
+            // for a module scope (created via Scope.createGlobalScope()) ends at the environment's
+            // builtin scope -- so every global builtin (print, assert, ...) would incorrectly resolve
+            // as if it were a member of the module too.
+            final JanitorObject obj = moduleScope.lookupLocally(runningScript, name);
             if (obj instanceof ModuleScopeAware scriptFunction) {
                 scriptFunction.setModuleScope(moduleScope);
             }
