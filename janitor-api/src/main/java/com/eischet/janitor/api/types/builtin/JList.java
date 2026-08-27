@@ -114,18 +114,31 @@ public class JList extends JanitorComposed<JList> implements JIterable, Iterable
     }
 
     /**
+     * Resolve a Python-like index (may be negative) to a "physical" index that must already exist in
+     * the list, or throw -- the shared bounds-check behind {@link #get(JInt)}, {@link #getIndexed},
+     * and {@link #put}: reading or replacing a single slot never grows the list and never clamps, it
+     * must reference an existing element, exactly like real Python.
+     *
+     * @param index the (possibly negative) index
+     * @return the resolved, in-range physical index
+     */
+    private int resolveExistingIndex(final JInt index) {
+        final int len = list.size();
+        final int resolved = toIndex(index.getAsInt(), len);
+        if (resolved < 0 || resolved >= len) {
+            throw new IndexOutOfBoundsException("list index " + index.getAsInt() + " out of range for list of size " + len);
+        }
+        return resolved;
+    }
+
+    /**
      * Get the element at the given (physical or "pythonical") index.
      *
      * @param index the index
      * @return the element
      */
     public JanitorObject get(JInt index) {
-        final int len = list.size();
-        final int resolved = toIndex(index.getAsInt(), len);
-        if (resolved < 0 || resolved >= len) {
-            throw new IndexOutOfBoundsException("list index " + index.getAsInt() + " out of range for list of size " + len);
-        }
-        return list.get(resolved);
+        return list.get(resolveExistingIndex(index));
     }
 
     /**
@@ -144,12 +157,7 @@ public class JList extends JanitorComposed<JList> implements JIterable, Iterable
                 "[" + index.janitorToString() + "]",
                 get(index),
                 value -> {
-                    final int len = list.size();
-                    final int resolved = toIndex(index.getAsInt(), len);
-                    if (resolved < 0 || resolved >= len) {
-                        throw new IndexOutOfBoundsException("list assignment index " + index.getAsInt() + " out of range for list of size " + len);
-                    }
-                    list.set(resolved, value);
+                    list.set(resolveExistingIndex(index), value);
                     notifyUpdateReceivers();
                 }
                 );
@@ -292,13 +300,20 @@ public class JList extends JanitorComposed<JList> implements JIterable, Iterable
     }
 
     /**
-     * Add an element to the list.
+     * Insert an element into the list at the given (physical or "pythonical", possibly negative)
+     * index, shifting the following elements up by one -- like Python's {@code list.insert(i, x)}.
+     * Unlike {@link #getIndexed}/{@link #put} (which replace an existing slot and must reference one
+     * that already exists), this never removes anything and is forgiving about out-of-range indices,
+     * exactly like Python's {@code insert()}: they're silently clamped into {@code [0, size()]}
+     * rather than raising (e.g. inserting at an index far beyond the end just appends).
      *
-     * @param index the index
+     * @param index the index to insert at
      * @param value the value
      */
     public void add(JInt index, JanitorObject value) {
-        list.add(index.janitorGetHostValue().intValue(), value);
+        final int len = list.size();
+        final int resolved = clamp(toIndex(index.getAsInt(), len), 0, len);
+        list.add(resolved, value);
         notifyUpdateReceivers();
     }
 
@@ -323,13 +338,16 @@ public class JList extends JanitorComposed<JList> implements JIterable, Iterable
     }
 
     /**
-     * Replace an element in the list.
+     * Replace the element at the given (physical or "pythonical", possibly negative) index. Must
+     * reference an existing element, exactly like {@link #getIndexed} (which backs {@code list[i] = x}
+     * script syntax) -- this is the explicit-method-call equivalent of that, and now shares its
+     * bounds-check, so the two can no longer behave differently for the same index.
      *
      * @param index the index
      * @param value the value
      */
     public void put(JInt index, JanitorObject value) {
-        list.set(index.janitorGetHostValue().intValue(), value);
+        list.set(resolveExistingIndex(index), value);
         notifyUpdateReceivers();
     }
 

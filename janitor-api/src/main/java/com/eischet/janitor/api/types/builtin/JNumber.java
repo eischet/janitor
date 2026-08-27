@@ -35,6 +35,13 @@ public interface JNumber extends JConstant, JsonExportablePrimitive, Comparable<
 
     @Override
     default int compareTo(@NotNull JNumber o) {
+        // Comparing via double loses precision for long values beyond 2^53, so two distinct
+        // JInt values could wrongly compare as equal. Compare as longs when both sides are
+        // integral; mixed int/float comparisons still go through double, which is unavoidable
+        // since a double can't exactly represent every long anyway.
+        if (janitorGetHostValue() instanceof Long left && o.janitorGetHostValue() instanceof Long right) {
+            return Long.compare(left, right);
+        }
         return Double.compare(toDouble(), o.toDouble());
     }
 }

@@ -162,8 +162,12 @@ public class JListClass {
     }
 
     public static JNull __put(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+        // The size check already happened via arguments.require(2) above -- there used to be a
+        // second, errant arguments.require(1) call here (demanding *exactly* 1 argument) before
+        // reading the index, which made this method always throw whenever actually called with the
+        // 2 arguments it needs, i.e. list.put(i, x) never worked at all.
         arguments.require(2);
-        self.put(arguments.require(1).getInt(0), arguments.get(1));
+        self.put(arguments.getInt(0), arguments.get(1));
         return JNull.NULL;
     }
 

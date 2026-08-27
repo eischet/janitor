@@ -852,6 +852,12 @@ public final class Janitor {
 
 
         private static int compareNumbers(final JNumber leftNumber, final JNumber rightNumber) {
+            // Same precision concern as JNumber.compareTo: two distinct large longs can round to
+            // the same double and wrongly compare as equal here, which would make areEquals()
+            // return TRUE for genuinely different values.
+            if (leftNumber.janitorGetHostValue() instanceof Long left && rightNumber.janitorGetHostValue() instanceof Long right) {
+                return Long.compare(left, right);
+            }
             return Double.compare(leftNumber.toDouble(), rightNumber.toDouble());
         }
 

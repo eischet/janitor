@@ -22,31 +22,52 @@ under `janitor-tests/src/test/java/com/eischet/janitor/internals/` and
 
 ## 2. Type system (`janitor-api`)
 
-### 🟡 `JCallArgs.getRequiredIntValue` only checks the upper overflow bound
-[JCallArgs.java:171-180](janitor-api/src/main/java/com/eischet/janitor/api/types/functions/JCallArgs.java)
+### ✅ RESOLVED — `JCallArgs.getRequiredIntValue` only checked the upper overflow bound
+[JCallArgs.java](janitor-api/src/main/java/com/eischet/janitor/api/types/functions/JCallArgs.java)
 
-Only `num.toLong() > Integer.MAX_VALUE` is checked, not `Integer.MIN_VALUE`.
-A strongly negative `JInt` (e.g. `-5_000_000_000`) is silently truncated by
-the cast to `int` instead of throwing a `JanitorArgumentException`.
+Only `num.toLong() > Integer.MAX_VALUE` was checked, not `Integer.MIN_VALUE`,
+so a strongly negative `JInt` (e.g. `-5_000_000_000`) was silently truncated
+by the cast to `int` instead of throwing a `JanitorArgumentException`. Fixed
+by checking both bounds. See
+[JCallArgsTestCase.java](janitor-tests/src/test/java/com/eischet/janitor/internals/JCallArgsTestCase.java).
 
-### 🟡 `JList`: inconsistent handling of negative indices between read/single-index-write and `add`/`put`
-[JList.java](janitor-api/src/main/java/com/eischet/janitor/api/types/builtin/JList.java) – `get`/`getIndexed` vs. `add`/`put`
+### ✅ RESOLVED — `JList`: inconsistent handling of negative indices between read/single-index-write and `add`/`put`
+[JList.java](janitor-api/src/main/java/com/eischet/janitor/api/types/builtin/JList.java)
 
-`get`/`getIndexed` route through `toIndex()` and support negative indices
-(`list[-1]`). `add(JInt, ...)` and `put(JInt, ...)`, on the other hand, use
-`index.janitorGetHostValue().intValue()` directly without `toIndex()` —
-these are only reachable via explicit method calls (`list.add(i, x)`,
-`list.put(i, x)`), not via `list[i] = x` syntax (which now goes through
-`getIndexed()`, already fixed), so this is lower-impact than it looked
-originally, but still an inconsistency worth cleaning up.
+`get`/`getIndexed` routed through `toIndex()` and supported negative indices
+(`list[-1]`), while `add(JInt, ...)` and `put(JInt, ...)` used
+`index.janitorGetHostValue().intValue()` directly without `toIndex()` — so
+`list.put(-1, x)` raised immediately instead of replacing the last element,
+unlike the equivalent `list[-1] = x`.
 
-### ⚪ `JNumber.compareTo` / `Semantics.areEquals` compare large numbers via `double`
-`JNumber.java:37-39`
+Fixed by extracting a shared `resolveExistingIndex(JInt)` helper (strict,
+Python-style, throws on any out-of-range index — positive or negative) used
+by `get`/`getIndexed`/`put`; `add` (insertion, like Python's
+`list.insert(i, x)`) keeps its own forgiving `toIndex()` + clamp into
+`[0, size()]` instead of throwing, matching Python's `insert()` semantics.
 
-Comparison via `Double.compare(toDouble(), ...)`. For `long` values beyond
-2^53 this can lose precision, so two distinct large integers can compare as
-equal. Possibly an accepted tradeoff of the double-based numeric model, but
-affects both `compareTo` and equality.
+While testing this, also found and fixed an independent, more serious bug in
+`JListClass.__put`: an errant `arguments.require(1)` call right after the
+correct `arguments.require(2)` had already validated the argument count —
+meaning `list.put(i, x)` threw unconditionally and was completely unusable
+from script code, regardless of the index-sign issue above. See
+[JListAddPutTestCase.java](janitor-tests/src/test/java/com/eischet/janitor/types/JListAddPutTestCase.java).
+
+### ✅ RESOLVED — `JNumber.compareTo` / `Semantics.areEquals` compared large numbers via `double`
+[JNumber.java](janitor-api/src/main/java/com/eischet/janitor/api/types/builtin/JNumber.java), [Janitor.java](janitor-api/src/main/java/com/eischet/janitor/api/Janitor.java) (`Semantics.compareNumbers`)
+
+Both compared via `Double.compare(toDouble(), ...)` unconditionally. For
+`long` values beyond 2^53 this loses precision, so two distinct large `JInt`
+values could compare as equal (`9007199254740992 == 9007199254740993` used
+to be `true`) or sort in the wrong order.
+
+Fixed by adding a `Long`-vs-`Long` fast path to both call sites: when both
+operands' host value is a `Long` (i.e. both are `JInt`), compare/equate them
+exactly via `Long.compare`/`==`. Mixed int/float comparisons (`JInt` vs.
+`JFloat`) still go through `double`, which is unavoidable there since a
+`double` can't exactly represent every `long` anyway — this only fixes the
+pure-integer case, which is the one with a precise alternative. See
+[JNumberPrecisionTestCase.java](janitor-tests/src/test/java/com/eischet/janitor/internals/JNumberPrecisionTestCase.java).
 
 ---
 
