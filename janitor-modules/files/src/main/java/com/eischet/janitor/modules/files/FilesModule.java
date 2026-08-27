@@ -27,6 +27,18 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 
+/**
+ * File system access for scripts: read/write/list/delete/zip, arbitrary absolute paths.
+ * <p>
+ * This module is deliberately unrestricted -- {@code normalize()} only resolves via
+ * {@code getCanonicalPath()}, with no containment check against a base directory. That's intentional:
+ * like {@code os}, it is a privileged module that is only ever available to a script if the host
+ * application explicitly registers it (never auto-registered). Other embedded/polyglot runtimes
+ * (GraalVM Polyglot, Luau) follow the same pattern at a similar granularity -- gate whole capabilities
+ * behind explicit opt-in (GraalVM's {@code allowIO}/{@code allowCreateProcess}/...) or omit unsafe
+ * functionality from the sandbox entirely, rather than restricting what a granted capability can
+ * reach. The host is responsible for not registering this module for untrusted scripts.
+ */
 public class FilesModule extends JanitorComposed<FilesModule> implements JanitorModule {
 
     private static final DispatchTable<FilesModule> dispatcher = new DispatchTable<>(FilesModule::new);

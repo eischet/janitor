@@ -56,8 +56,19 @@ public class JanitorHttpClient extends JanitorComposed<JanitorHttpClient> implem
     /**
      * If you enable this, module users will be able to ignore "security issues".
      * In a perfect world, this should never be enabled.
+     * <p>
+     * Enabling it lets scripts disable TLS hostname verification via
+     * {@code jdk.internal.httpclient.disableHostnameVerification}, a JVM-wide system property that
+     * applies to every {@link HttpClient} in the process and is never reset -- not just the instance
+     * the script is building. In a multi-tenant embedding, a single script could otherwise permanently
+     * disable hostname verification for all HTTPS connections in the process, including the host
+     * application itself and other, concurrently running scripts. Gating the method behind this flag
+     * (false by default) keeps that path unreachable unless the embedding application deliberately
+     * enables it.
+     * <p>
+     * There's an issue from 2018 for this in the JDK: <a href="https://bugs.openjdk.org/browse/JDK-8213309">JDK-8213309</a>
      */
-    public static final boolean ALLOW_IGNORE_SECURITY_ISSUES = false;
+    public static boolean ALLOW_IGNORE_SECURITY_ISSUES = false;
 
     protected static final JanitorLogger log = JanitorLogger.getLogger(JanitorHttpClient.class);
 

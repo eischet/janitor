@@ -14,9 +14,21 @@ import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import com.eischet.janitor.api.types.functions.JCallArgs;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Operating-system access for scripts: run arbitrary commands, read arbitrary environment variables.
+ * <p>
+ * This module is deliberately unrestricted, same as {@code files} (see
+ * {@code com.eischet.janitor.modules.files.FilesModule} for the full rationale: other embedded/polyglot
+ * runtimes gate whole capabilities behind explicit opt-in rather than restricting what a granted
+ * capability can reach). It is privileged and only ever available to a script if the host application
+ * explicitly registers it (never auto-registered); the host is responsible for not registering it for
+ * untrusted scripts.
+ */
 public class OperatingSystemModule extends JanitorComposed<OperatingSystemModule> implements JanitorModule {
 
     private static final DispatchTable<OperatingSystemModule> dispatcher = new DispatchTable<>(OperatingSystemModule::new);
@@ -49,9 +61,8 @@ public class OperatingSystemModule extends JanitorComposed<OperatingSystemModule
         final JanitorObject cmd = arguments.require(1).get(0);
         try {
             if (cmd instanceof JString string) {
-                Process osProc = Runtime.getRuntime().exec(string.janitorGetHostValue());
-                int result = osProc.waitFor();
-                return process.getBuiltins().integer(result);
+                final Process osProc = Runtime.getRuntime().exec(string.janitorGetHostValue());
+                return waitFor(process, osProc);
             } else if (cmd instanceof JList list) {
                 final List<String> callArgs = new ArrayList<>();
                 for (final JanitorObject element : list) {
@@ -62,15 +73,40 @@ public class OperatingSystemModule extends JanitorComposed<OperatingSystemModule
                     }
                 }
                 final String[] args = callArgs.toArray(new String[0]);
-                Process osProc = Runtime.getRuntime().exec(args);
-                int result = osProc.waitFor();
-                return process.getBuiltins().integer(result);
+                final Process osProc = Runtime.getRuntime().exec(args);
+                return waitFor(process, osProc);
             } else {
                 throw new JanitorArgumentException(process, "invalid arguments: expected string or list, got " + cmd);
             }
         } catch (Exception e) {
             throw new JanitorNativeException(process, "error executing command " + cmd, e);
         }
+    }
+
+    /**
+     * Wait for a child process to finish, while draining its stdout/stderr in the background so
+     * waitFor() can't deadlock: a child that writes more than the OS pipe buffer (~64 KB) to either
+     * stream blocks on the write until someone reads it, and nothing here ever reads it otherwise --
+     * we only care about the exit code, not the output.
+     */
+    private static JInt waitFor(final JanitorScriptProcess process, final Process osProc) throws InterruptedException {
+        drainInBackground(osProc.getInputStream());
+        drainInBackground(osProc.getErrorStream());
+        final int result = osProc.waitFor();
+        return process.getBuiltins().integer(result);
+    }
+
+    private static void drainInBackground(final InputStream stream) {
+        final Thread drain = new Thread(() -> {
+            try (stream) {
+                stream.readAllBytes();
+            } catch (IOException ignored) {
+                // The process may have already exited, or the stream got closed concurrently --
+                // either way there's nothing left to drain and nothing to act on here.
+            }
+        });
+        drain.setDaemon(true);
+        drain.start();
     }
 
 }
