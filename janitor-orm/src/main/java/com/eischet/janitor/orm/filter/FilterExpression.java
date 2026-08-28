@@ -20,7 +20,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Filter expressions, compatible with the Kendo "Filter" component, which I happen to use in my projects.
+ * Filter expressions: a JSON-serializable tree of AND/OR groups and field/operator/value leaves,
+ * used to build dynamic WHERE clauses.
  */
 public class FilterExpression extends JanitorComposed<FilterExpression> {
 

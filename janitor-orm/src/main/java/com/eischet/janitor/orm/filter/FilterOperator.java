@@ -5,7 +5,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.Objects;
 
-@SuppressWarnings("SpellCheckingInspection")
 public enum FilterOperator {
     EQ("eq"),
     NEQ("neq"),
@@ -34,7 +33,7 @@ public enum FilterOperator {
         return OPERATORS.stream()
                 .filter(it -> Objects.equals(it.code, code))
                 .findFirst()
-                .orElse(FilterOperator.EQ);
+                .orElseThrow(() -> new MalformedExpression("unknown filter operator code '" + code + "'"));
     }
 
     public String getCode() {

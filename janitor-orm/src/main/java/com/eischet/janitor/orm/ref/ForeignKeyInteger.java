@@ -103,9 +103,11 @@ public final class ForeignKeyInteger<T extends OrmEntity> implements ForeignKey<
 
     @Override
     public int hashCode() {
-        int result = Long.hashCode(getId());
-        result = 31 * result + Objects.hashCode(dao);
-        result = 31 * result + Objects.hashCode(resolved);
-        return result;
+        // Must match equals()/ForeignKey.matchesWithUnknownType(), which only ever compares
+        // getReferencedEntityClass() and getId() for two ForeignKeyInteger instances -- dao and
+        // resolved play no part there. Including resolved here used to break the equals/hashCode
+        // contract: two instances with the same id, one already resolved and one not, were equal()
+        // but had different hash codes.
+        return Objects.hash(getReferencedEntityClass(), getId());
     }
 }

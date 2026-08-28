@@ -9,6 +9,7 @@
 - Bugfix: os.exec stability improved
 - Bugfix: files module; don't leave zip files dangling open when user fails to call close()
 - Bugfix: various small bugfixes in dbxs, and some unit tests added
+- janitor-orm: added an overview doc (by Claude) and some small bugfixes (also by Claude)
 - Deps: Install4j 13.1, docusign-esign-java 6.8.0, maven-resolver 2.0.22
 
 
