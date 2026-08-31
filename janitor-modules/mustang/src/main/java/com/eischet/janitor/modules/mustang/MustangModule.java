@@ -24,6 +24,17 @@ public class MustangModule extends JanitorComposed<MustangModule> implements Jan
         DISPATCH.addConstructor("Product", MustangProduct::new);
         DISPATCH.addConstructor("TradeParty", MustangTradeParty::new);
         DISPATCH.addConstructor("Exporter", MustangExporter::new);
+        DISPATCH.addConstructor("Contact", MustangContact::new);
+        DISPATCH.addConstructor("LegalOrganisation", MustangLegalOrganisation::new);
+        DISPATCH.addConstructor("SchemedID", MustangSchemedID::new);
+        DISPATCH.addConstructor("DirectDebit", MustangDirectDebit::new);
+        DISPATCH.addConstructor("CashDiscount", MustangCashDiscount::new);
+        DISPATCH.addConstructor("PaymentTerms", MustangPaymentTerms::new);
+        DISPATCH.addConstructor("IncludedNote", MustangIncludedNote::new);
+        DISPATCH.addConstructor("ReferencedDocument", MustangReferencedDocument::new);
+        DISPATCH.addConstructor("FileAttachment", MustangFileAttachment::new);
+        DISPATCH.addConstructor("Charge", MustangCharge::new);
+        DISPATCH.addConstructor("Allowance", MustangAllowance::new);
     }
 
     public MustangModule() {

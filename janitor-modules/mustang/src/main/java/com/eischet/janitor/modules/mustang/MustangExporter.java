@@ -21,7 +21,6 @@ public class MustangExporter extends JanitorWrapper<IZUGFeRDExporter> {
     static {
         DISPATCH.addBuilderMethod("setProducer", (self, process, args) ->
             self.janitorGetHostValue().setProducer(args.require(1).getRequiredStringValue(0)));
-        DISPATCH.addStringProperty("producer", self -> null, (self, value) -> self.janitorGetHostValue().setProducer(value));
         DISPATCH.addBuilderMethod("setCreator", (self, process, args) ->
             self.janitorGetHostValue().setCreator(args.require(1).getRequiredStringValue(0)));
         DISPATCH.addBuilderMethod("setZUGFeRDVersion", (self, process, args) ->
@@ -60,6 +59,36 @@ public class MustangExporter extends JanitorWrapper<IZUGFeRDExporter> {
                 self.janitorGetHostValue().export(args.getRequiredStringValue(0));
             } catch (IOException e) {
                 throw new JanitorNativeException(process, "export failed", e);
+            }
+        });
+
+        DISPATCH.addBuilderMethod("setProfile", (self, process, args) -> {
+            final String profileName = args.getRequiredStringValue(0);
+            if (self.janitorGetHostValue() instanceof ZUGFeRDExporterFromA1 a1) {
+                a1.setProfile(profileName);
+            } else if (self.janitorGetHostValue() instanceof ZUGFeRDExporterFromA3 a3) {
+                a3.setProfile(profileName);
+            } else {
+                log.warn("setProfile called on unsupported exporter type {}", self.janitorGetHostValue().getClass());
+            }
+        });
+        DISPATCH.addBuilderMethod("disableAutoClose", (self, process, args) ->
+            self.janitorGetHostValue().disableAutoClose(args.getRequiredBooleanValue(0)));
+        DISPATCH.addBuilderMethod("disableFacturX", (self, process, args) -> self.janitorGetHostValue().disableFacturX());
+        DISPATCH.addBuilderMethod("setFacturX", (self, process, args) -> {
+            if (self.janitorGetHostValue() instanceof ZUGFeRDExporterFromA3 a3) {
+                a3.setFacturX();
+            } else {
+                log.warn("setFacturX called on non-ZUGFeRDExporterFromA3 exporter");
+            }
+        });
+        DISPATCH.addBuilderMethod("attachFile", (self, process, args) ->
+            self.janitorGetHostValue().attachFile(args.getRequired(0, MustangFileAttachment.class).janitorGetHostValue()));
+        DISPATCH.addVoidMethod("close", (self, process, args) -> {
+            try {
+                self.janitorGetHostValue().close();
+            } catch (IOException e) {
+                throw new JanitorNativeException(process, "error closing exporter", e);
             }
         });
 
