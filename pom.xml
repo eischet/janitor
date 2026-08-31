@@ -173,6 +173,14 @@
                         </goals>
                     </execution>
                 </executions>
+                <dependencies>
+                    <!-- the maven-gpg-plugin specifies a version range of [1.81,1.82), which breaks the build whenever I'm in a VPN, for example... pinning it down to avoid -->
+                    <dependency>
+                        <groupId>org.bouncycastle</groupId>
+                        <artifactId>bcprov-jdk18on</artifactId>
+                        <version>1.81.1</version>
+                    </dependency>
+                </dependencies>
             </plugin>
 
             <plugin>
