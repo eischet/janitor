@@ -676,7 +676,7 @@ public final class Janitor {
         if (automaticProvider != null) {
             return automaticProvider.getCurrentEnvironment();
         }
-        throw new IllegalStateException("No JanitorEnvironmentProvider was found. Either use JanitorEnvironmentLocator.setUserProvider to define a global one, or provide a ServiceLoader-based implementation.");
+        throw new IllegalStateException("No JanitorEnvironmentProvider was found. Either use Janitor.setUserProvider to define a global one, or provide a ServiceLoader-based implementation.");
     }
 
     /**

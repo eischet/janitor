@@ -1,18 +1,27 @@
 package com.eischet.janitor.standalone.repl;
 
-import com.eischet.janitor.api.JanitorEnvironment;
-import com.eischet.janitor.api.JanitorRuntime;
-import com.eischet.janitor.api.JanitorScriptProcess;
+import com.eischet.janitor.api.*;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.JNull;
 import com.eischet.janitor.api.types.functions.JCallArgs;
+import com.eischet.janitor.docusign.DocusignModule;
 import com.eischet.janitor.env.JanitorDefaultEnvironment;
+import com.eischet.janitor.generator.GeneratorModule;
+import com.eischet.janitor.modules.brrr.BrrrModule;
+import com.eischet.janitor.modules.common.JanitorModulesCommon;
+import com.eischet.janitor.modules.commonmark.CommonMarkModule;
+import com.eischet.janitor.modules.files.FilesModule;
+import com.eischet.janitor.modules.httpclient.HttpClientModule;
+import com.eischet.janitor.modules.janitor.JanitorInternalsModule;
+import com.eischet.janitor.modules.mustang.MustangModule;
+import com.eischet.janitor.modules.os.OperatingSystemModule;
 import com.eischet.janitor.repl.ConsoleReplIO;
 import com.eischet.janitor.repl.JanitorRepl;
 import com.eischet.janitor.repl.ReplIO;
 import com.eischet.janitor.runtime.BaseRuntime;
 import com.eischet.janitor.runtime.JanitorFormattingLocale;
+import com.eischet.janitor.runtime.modules.CollectionsModule;
 import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
@@ -56,6 +65,16 @@ public class JanitorStandaloneRepl {
                 System.err.println(message);
             }
         };
+
+        Janitor.setUserProvider(() -> env);
+
+        JanitorModulesCommon.registerCommonModules(env, true);
+
+        // these are not include in "common" because they bring additional dependencies:
+        env.addModule(CommonMarkModule.REGISTRATION);
+        env.addModule(MustangModule.REGISTRATION);
+        env.addModule(DocusignModule.REGISTRATION);
+
 
         JanitorRuntime runtime = new BaseRuntime(env) {
             @Override

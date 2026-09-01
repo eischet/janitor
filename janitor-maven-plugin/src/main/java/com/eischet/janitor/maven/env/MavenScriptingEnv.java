@@ -2,14 +2,9 @@ package com.eischet.janitor.maven.env;
 
 import com.eischet.janitor.api.JanitorRuntime;
 import com.eischet.janitor.env.JanitorDefaultEnvironment;
-import com.eischet.janitor.generator.GeneratorModule;
-import com.eischet.janitor.modules.brrr.BrrrModule;
+import com.eischet.janitor.modules.common.JanitorModulesCommon;
 import com.eischet.janitor.modules.commonmark.CommonMarkModule;
-import com.eischet.janitor.modules.files.FilesModule;
-import com.eischet.janitor.modules.httpclient.HttpClientModule;
-import com.eischet.janitor.modules.os.OperatingSystemModule;
 import com.eischet.janitor.runtime.JanitorFormattingLocale;
-import com.eischet.janitor.runtime.modules.CollectionsModule;
 import org.apache.maven.plugin.logging.SystemStreamLog;
 
 import java.util.Locale;
@@ -23,13 +18,9 @@ public class MavenScriptingEnv extends JanitorDefaultEnvironment {
         super(new JanitorFormattingLocale(Locale.US));
         this.log = new SystemStreamLog();
 
-        addModule(FilesModule.REGISTRATION);
-        addModule(CollectionsModule.REGISTRATION);
-        addModule(OperatingSystemModule.REGISTRATION);
-        addModule(GeneratorModule.REGISTRATION);
-        addModule(HttpClientModule.REGISTRATION);
-        addModule(BrrrModule.REGISTRATION);
-        addModule(CommonMarkModule.REGISTRATION);
+        JanitorModulesCommon.registerCommonModules(this, true);
+        this.addModule(CommonMarkModule.REGISTRATION);
+
     }
 
     @Override

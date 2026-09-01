@@ -14,9 +14,16 @@
     <name>${project.groupId}:${project.artifactId}</name>
     <description>Convenience module that includes commonly used modules in a single JAR.</description>
 
-
-
     <dependencies>
+        <dependency>
+            <groupId>com.eischet.janitor</groupId>
+            <artifactId>janitor-generator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.eischet.janitor.modules</groupId>
+            <artifactId>janitor</artifactId>
+            <version>${revision}</version>
+        </dependency>
         <dependency>
             <groupId>com.eischet.janitor.modules</groupId>
             <artifactId>os</artifactId>
@@ -37,36 +44,10 @@
             <artifactId>brrr</artifactId>
             <version>${revision}</version>
         </dependency>
-        <!-- omitted: mustang, because it includes transitive dependencies that are rather large -->
+        <!-- omitted because of additional dependencies:
+               mustang, commonmark, docusign
+             Include those manually where needed.
+        -->
     </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>3.6.2</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                        <configuration>
-                            <artifactSet>
-                                <includes>
-                                    <include>com.eischet.janitor.modules:*</include>
-                                </includes>
-                            </artifactSet>
-                            <createDependencyReducedPom>true</createDependencyReducedPom>
-                            <createSourcesJar>true</createSourcesJar>
-                            <minimizeJar>false</minimizeJar>
-                            <promoteTransitiveDependencies>true</promoteTransitiveDependencies>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
 
 </project>

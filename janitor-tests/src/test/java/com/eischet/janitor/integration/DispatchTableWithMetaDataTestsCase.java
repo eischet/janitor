@@ -65,7 +65,7 @@ public class DispatchTableWithMetaDataTestsCase extends JanitorTest {
     }
 
     public static class SomeChildObject extends SomeObject {
-        public static final DispatchTable<SomeChildObject> DISPATCH = new DispatchTable<>(SomeObject.DISPATCH, it -> it);
+        public static final DispatchTable<SomeChildObject> DISPATCH = new DispatchTable<>(SomeObject.DISPATCH, it -> it, true);
 
         static {
             DISPATCH.addStringProperty("nickname", SomeChildObject::getNickname, SomeChildObject::setNickname);

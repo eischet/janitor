@@ -50,6 +50,25 @@
 
     <build>
         <plugins>
+
+            <!-- Bakes the ${revision} property from the root pom.xml into a Revision.java constant
+                 at build time, so it can be read at runtime without depending on janitor-maven-plugin
+                 (which is itself built by this reactor, so it can't be used to build this project). -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>templating-maven-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>filter-revision</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>filter-sources</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
             <plugin>
                 <groupId>org.antlr</groupId>
                 <artifactId>antlr4-maven-plugin</artifactId>

@@ -41,7 +41,8 @@ import java.time.LocalDateTime;
  */
 public class FilesModule extends JanitorComposed<FilesModule> implements JanitorModule {
 
-    private static final DispatchTable<FilesModule> dispatcher = new DispatchTable<>(FilesModule::new);
+    private static final DispatchTable<FilesModule> dispatcher = new DispatchTable<>(FilesModule::new, false);
+
     public static final JanitorModuleRegistration REGISTRATION = new JanitorModuleRegistration("files", FilesModule::new);
 
     static {

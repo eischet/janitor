@@ -12,37 +12,15 @@ import com.eischet.janitor.api.metadata.MetaDataMap;
 import com.eischet.janitor.api.metadata.MetaDataRetriever;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.TemporaryAssignable;
-import com.eischet.janitor.api.types.builtin.JDate;
-import com.eischet.janitor.api.types.builtin.JDateTime;
-import com.eischet.janitor.api.types.builtin.JList;
-import com.eischet.janitor.api.types.builtin.JMap;
-import com.eischet.janitor.api.types.builtin.JNull;
-import com.eischet.janitor.api.types.builtin.JNumber;
-import com.eischet.janitor.api.types.builtin.JString;
+import com.eischet.janitor.api.types.builtin.*;
 import com.eischet.janitor.api.types.functions.JBoundMethod;
 import com.eischet.janitor.api.types.functions.JConstructor;
 import com.eischet.janitor.api.types.functions.JUnboundMethod;
 import com.eischet.janitor.api.types.functions.JVoidMethod;
-import com.eischet.janitor.api.types.interop.DefaultConstructor;
-import com.eischet.janitor.api.types.interop.NullableGetter;
-import com.eischet.janitor.api.types.interop.NullableSetter;
-import com.eischet.janitor.api.types.interop.PrimitiveBooleanGetter;
-import com.eischet.janitor.api.types.interop.PrimitiveBooleanSetter;
-import com.eischet.janitor.api.types.interop.PrimitiveDoubleGetter;
-import com.eischet.janitor.api.types.interop.PrimitiveDoubleSetter;
-import com.eischet.janitor.api.types.interop.PrimitiveIntGetter;
-import com.eischet.janitor.api.types.interop.PrimitiveIntSetter;
-import com.eischet.janitor.api.types.interop.PrimitiveLongGetter;
-import com.eischet.janitor.api.types.interop.PrimitiveLongSetter;
+import com.eischet.janitor.api.types.interop.*;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 import com.eischet.janitor.logging.JanitorLogger;
-import com.eischet.janitor.toolbox.json.api.JsonException;
-import com.eischet.janitor.toolbox.json.api.JsonInputStream;
-import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
-import com.eischet.janitor.toolbox.json.api.JsonReader;
-import com.eischet.janitor.toolbox.json.api.JsonTokenType;
-import com.eischet.janitor.toolbox.json.api.JsonType;
-import com.eischet.janitor.toolbox.json.api.JsonWriter;
+import com.eischet.janitor.toolbox.json.api.*;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -51,11 +29,7 @@ import org.jetbrains.annotations.Unmodifiable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -78,18 +52,18 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
     protected final JsonSupportDelegate<Integer> JSON_INT = new JsonSupportDelegate<>(JsonInputStream::nextInt, JsonOutputStream::value, intValue -> intValue == 0);
     protected final JsonSupportDelegate<Long> JSON_LONG = new JsonSupportDelegate<>(JsonInputStream::nextLong, JsonOutputStream::value, longValue -> longValue == 0L);
     protected final JsonSupportDelegate<BigDecimal> JSON_BIGD = new JsonSupportDelegate<>(
-        stream -> {
-            if (stream.peek() == JsonTokenType.NULL) {
-                stream.nextNull();
-                return BigDecimal.ZERO;
-            } else if (stream.peek() == JsonTokenType.NUMBER) {
-                return new BigDecimal(stream.nextDouble());
-            } else {
-                throw new JsonException("Expected a number, but got " + stream.peek() + " instead.");
-            }
-        },
-        (stream, value) -> stream.value(value.doubleValue()),
-        BigDecimal.ZERO::equals
+            stream -> {
+                if (stream.peek() == JsonTokenType.NULL) {
+                    stream.nextNull();
+                    return BigDecimal.ZERO;
+                } else if (stream.peek() == JsonTokenType.NUMBER) {
+                    return new BigDecimal(stream.nextDouble());
+                } else {
+                    throw new JsonException("Expected a number, but got " + stream.peek() + " instead.");
+                }
+            },
+            (stream, value) -> stream.value(value.doubleValue()),
+            BigDecimal.ZERO::equals
     );
     protected final JsonSupportDelegate<Double> JSON_DOUBLE = new JsonSupportDelegate<>(JsonInputStream::nextDouble, JsonOutputStream::value, doubleValue -> doubleValue == 0.0d);
 
@@ -113,18 +87,15 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
     private @Nullable Supplier<T> javaDefaultConstructor;
 
 
-    public GenericDispatchTable(final @Nullable Supplier<T> javaDefaultConstructor) {
+    public GenericDispatchTable(final @Nullable Supplier<T> javaDefaultConstructor, boolean includeApplyMethod) {
         parent = null;
         parentLookupHandler = null;
         parentAttributeReader = null;
         parentAttributeWriter = null;
         this.javaDefaultConstructor = javaDefaultConstructor;
-
-        addMethod("apply", (self, process, args) -> {
-            final JMap data = args.getRequired(0, JMap.class);
-            data.applyTo(process, self);
-            return self;
-        });
+        if (includeApplyMethod) {
+            addApplyMethod();
+        }
     }
 
 
@@ -146,7 +117,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
      */
 
 
-    public <P extends JanitorObject> GenericDispatchTable(final @NotNull Dispatcher<P> parent, final Function<T, P> caster) {
+    public <P extends JanitorObject> GenericDispatchTable(final @NotNull Dispatcher<P> parent, final Function<T, P> caster, boolean includeApplyMethod) {
         this.parent = parent;
         parentLookupHandler = (instance, process, name) -> parent.dispatch(caster.apply(instance), process, name);
         // not tested yet: can we use this to delegate
@@ -165,6 +136,17 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
             // otherwise?
             System.out.println("parent is an instance of " + parent.getClass() + ", but only GenericDispatchTable is supported at the moment. This needs to be fixed within GenericDispatchTable.java in the Janitor project, module janitor-api.");
         };
+        if (includeApplyMethod) {
+            addApplyMethod();
+        }
+    }
+
+    private void addApplyMethod() {
+        addMethod("apply", (self, process, args) -> {
+            final JMap data = args.getRequired(0, JMap.class);
+            data.applyTo(process, self);
+            return self;
+        });
     }
 
     public @NotNull @Unmodifiable List<Attribute<T>> getDirectAttributes() {
@@ -358,7 +340,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
                 return GenericDispatchTable.this.getMetaData(name, key);
             }
         }), null, null, null)
-            .setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.METHOD);
+                .setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.METHOD);
     }
 
     /**
@@ -378,7 +360,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
                 return GenericDispatchTable.this.getMetaData(name, key);
             }
         }), null, null, null)
-            .setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.METHOD);
+                .setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.METHOD);
     }
 
     /**
@@ -399,7 +381,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
                 return GenericDispatchTable.this.getMetaData(name, key);
             }
         }), null, null, null)
-            .setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.METHOD);
+                .setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.METHOD);
     }
 
     /**
@@ -411,10 +393,10 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
      */
     public MetaDataBuilder<T> addIntegerProperty(final @NotNull String name, final PrimitiveIntGetter<T> getter) {
         return internalAddProperty(name,
-            instance -> Janitor.getBuiltins().integer(getter.get(instance)),
-            adapt(name, JSON_INT, getter::get, NullableSetter.readOnly(name)),
-            JsonType.NUMBER,
-            null
+                instance -> Janitor.getBuiltins().integer(getter.get(instance)),
+                adapt(name, JSON_INT, getter::get, NullableSetter.readOnly(name)),
+                JsonType.NUMBER,
+                null
         ).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.INTEGER)
                 .setMetaData(HOST_NULLABLE, false);
     }
@@ -428,13 +410,13 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
      */
     public MetaDataBuilder<T> addNullableIntegerProperty(final String name, final NullableGetter<T, Integer> getter) {
         return internalAddProperty(name,
-            instance -> Janitor.nullableInteger(getter.get(instance)),
-            adapt(name, JSON_INT, getter, NullableSetter.readOnly(name)),
-            JsonType.NUMBER,
-            null)
-            .setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.INTEGER)
-            .setMetaData(Janitor.MetaData.HOST_NULLABLE, true)
-            ;
+                instance -> Janitor.nullableInteger(getter.get(instance)),
+                adapt(name, JSON_INT, getter, NullableSetter.readOnly(name)),
+                JsonType.NUMBER,
+                null)
+                .setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.INTEGER)
+                .setMetaData(Janitor.MetaData.HOST_NULLABLE, true)
+                ;
     }
 
 
@@ -450,15 +432,15 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
                                                  final @NotNull PrimitiveIntGetter<T> getter,
                                                  final @NotNull PrimitiveIntSetter<T> setter) {
         return internalAddProperty(
-            name,
-            instance -> TemporaryAssignable.of(
                 name,
-                Janitor.integer(getter.get(instance)),
-                value -> setter.set(instance, Janitor.requireInt(value).janitorGetHostValue().intValue())
-            ),
-            adapt(name, JSON_INT, getter::get, NullableSetter.guard(setter)),
-            JsonType.NUMBER,
-            null
+                instance -> TemporaryAssignable.of(
+                        name,
+                        Janitor.integer(getter.get(instance)),
+                        value -> setter.set(instance, Janitor.requireInt(value).janitorGetHostValue().intValue())
+                ),
+                adapt(name, JSON_INT, getter::get, NullableSetter.guard(setter)),
+                JsonType.NUMBER,
+                null
         ).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.INTEGER).setMetaData(HOST_NULLABLE, false);
     }
 
@@ -474,18 +456,18 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
                                                          final NullableGetter<T, Integer> getter,
                                                          final NullableSetter<T, Integer> setter) {
         return internalAddProperty(
-            name,
-            instance -> TemporaryAssignable.of(
                 name,
-                Janitor.nullableInteger(getter.get(instance)),
-                value -> setter.set(instance, Conversions.toNullableJavaInteger(value))
-            ),
-            adapt(name, JSON_INT, getter, setter),
-            JsonType.NUMBER,
-            null)
-            .setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.INTEGER)
-            .setMetaData(Janitor.MetaData.HOST_NULLABLE, true)
-            ;
+                instance -> TemporaryAssignable.of(
+                        name,
+                        Janitor.nullableInteger(getter.get(instance)),
+                        value -> setter.set(instance, Conversions.toNullableJavaInteger(value))
+                ),
+                adapt(name, JSON_INT, getter, setter),
+                JsonType.NUMBER,
+                null)
+                .setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.INTEGER)
+                .setMetaData(Janitor.MetaData.HOST_NULLABLE, true)
+                ;
     }
 
 
@@ -498,10 +480,10 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
      */
     public MetaDataBuilder<T> addLongProperty(final String name, final PrimitiveLongGetter<T> getter) {
         return internalAddProperty(name,
-            instance -> Janitor.getBuiltins().integer(getter.get(instance)),
-            adapt(name, JSON_LONG, getter::get, NullableSetter.readOnly(name)),
-            JsonType.NUMBER, null)
-            .setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.INTEGER);
+                instance -> Janitor.getBuiltins().integer(getter.get(instance)),
+                adapt(name, JSON_LONG, getter::get, NullableSetter.readOnly(name)),
+                JsonType.NUMBER, null)
+                .setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.INTEGER);
     }
 
     /**
@@ -513,11 +495,11 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
      */
     public MetaDataBuilder<T> addNullableLongProperty(final String name, final @NotNull NullableGetter<T, Long> getter) {
         return internalAddProperty(name, instance -> Janitor.nullableInteger(getter.get(instance)),
-            adapt(name, JSON_LONG, getter, NullableSetter.readOnly(name)),
-            JsonType.NUMBER, null)
-            .setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.INTEGER)
-            .setMetaData(Janitor.MetaData.HOST_NULLABLE, true)
-            ;
+                adapt(name, JSON_LONG, getter, NullableSetter.readOnly(name)),
+                JsonType.NUMBER, null)
+                .setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.INTEGER)
+                .setMetaData(Janitor.MetaData.HOST_NULLABLE, true)
+                ;
     }
 
 
@@ -533,13 +515,13 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
                                               final @NotNull PrimitiveLongGetter<T> getter,
                                               final @NotNull PrimitiveLongSetter<T> setter) {
         return internalAddProperty(name, instance -> TemporaryAssignable.of(
-                name,
-                Janitor.getBuiltins().integer(getter.get(instance)),
-                value -> setter.set(instance, Janitor.requireInt(value).janitorGetHostValue())
-            ),
-            adapt(name, JSON_LONG, getter::get, NullableSetter.guard(setter)),
-            JsonType.NUMBER,
-            null
+                        name,
+                        Janitor.getBuiltins().integer(getter.get(instance)),
+                        value -> setter.set(instance, Janitor.requireInt(value).janitorGetHostValue())
+                ),
+                adapt(name, JSON_LONG, getter::get, NullableSetter.guard(setter)),
+                JsonType.NUMBER,
+                null
         ).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.INTEGER);
     }
 
@@ -550,19 +532,19 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
                                                     final @NotNull NullableGetter<T, BigDecimal> getter,
                                                     final @NotNull NullableSetter<T, BigDecimal> setter) {
         return internalAddProperty(name, instance -> TemporaryAssignable.of(
-                name,
-                Janitor.nullableInteger(getter.get(instance)),
-                value -> {
-                    if (value == Janitor.NULL) {
-                        setter.set(instance, null);
-                    } else if (value instanceof JNumber number) {
-                        setter.set(instance, new BigDecimal(number.toDouble()));
-                    } else {
-                        throw new JanitorGlueException(JanitorArgumentException::fromGlue, "Expected a numeric value but got " + value.janitorClassName() + ".");
-                    }
-                }),
-            adapt(name, JSON_BIGD, getter, setter),
-            JsonType.NUMBER, null
+                        name,
+                        Janitor.nullableInteger(getter.get(instance)),
+                        value -> {
+                            if (value == Janitor.NULL) {
+                                setter.set(instance, null);
+                            } else if (value instanceof JNumber number) {
+                                setter.set(instance, new BigDecimal(number.toDouble()));
+                            } else {
+                                throw new JanitorGlueException(JanitorArgumentException::fromGlue, "Expected a numeric value but got " + value.janitorClassName() + ".");
+                            }
+                        }),
+                adapt(name, JSON_BIGD, getter, setter),
+                JsonType.NUMBER, null
         ).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.INTEGER);
     }
 
@@ -579,13 +561,13 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
                                                       final @NotNull NullableGetter<T, Long> getter,
                                                       final @NotNull NullableSetter<T, Long> setter) {
         return internalAddProperty(name, instance -> TemporaryAssignable.of(name, Janitor.getBuiltins().nullableInteger(getter.get(instance)),
-                value -> setter.set(instance, Conversions.toNullableJavaLong(value))),
-            adapt(name, JSON_LONG, getter, setter),
-            JsonType.NUMBER, null
+                        value -> setter.set(instance, Conversions.toNullableJavaLong(value))),
+                adapt(name, JSON_LONG, getter, setter),
+                JsonType.NUMBER, null
         )
-            .setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.INTEGER)
-            .setMetaData(Janitor.MetaData.HOST_NULLABLE, true)
-            ;
+                .setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.INTEGER)
+                .setMetaData(Janitor.MetaData.HOST_NULLABLE, true)
+                ;
     }
 
 
@@ -599,10 +581,10 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
     public MetaDataBuilder<T> addDoubleProperty(final @NotNull String name,
                                                 final PrimitiveDoubleGetter<T> getter) {
         return internalAddProperty(
-            name,
-            instance -> Janitor.getBuiltins().nullableFloatingPoint(getter.get(instance)),
-            adapt(name, JSON_NULLABLE_DOUBLE, getter::get, NullableSetter.readOnly(name)
-            ), JsonType.NUMBER, null
+                name,
+                instance -> Janitor.getBuiltins().nullableFloatingPoint(getter.get(instance)),
+                adapt(name, JSON_NULLABLE_DOUBLE, getter::get, NullableSetter.readOnly(name)
+                ), JsonType.NUMBER, null
         ).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.FLOAT);
     }
 
@@ -619,13 +601,13 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
                                                         final NullableGetter<T, Double> getter,
                                                         final NullableSetter<T, Double> setter) {
         return internalAddProperty(name, (instance) -> TemporaryAssignable.of(
-                name,
-                Janitor.nullableFloatingPoint(getter.get(instance)),
-                value -> setter.set(instance, Conversions.requireFloat(value).janitorGetHostValue())), adapt(name, JSON_DOUBLE, getter, setter),
-            JsonType.NUMBER,
-            null
+                        name,
+                        Janitor.nullableFloatingPoint(getter.get(instance)),
+                        value -> setter.set(instance, Conversions.requireFloat(value).janitorGetHostValue())), adapt(name, JSON_DOUBLE, getter, setter),
+                JsonType.NUMBER,
+                null
         )
-            .setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.FLOAT);
+                .setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.FLOAT);
     }
 
 
@@ -641,11 +623,11 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
                                                 final PrimitiveDoubleGetter<T> getter,
                                                 final PrimitiveDoubleSetter<T> setter) {
         return internalAddProperty(name,
-            (instance) -> TemporaryAssignable.of(name, Janitor.getBuiltins().floatingPoint(getter.get(instance)), value -> setter.set(instance, Conversions.requireFloat(value).janitorGetHostValue())),
-            adapt(name, JSON_DOUBLE, getter::get, NullableSetter.guard(setter)),
-            JsonType.NUMBER, null
+                (instance) -> TemporaryAssignable.of(name, Janitor.getBuiltins().floatingPoint(getter.get(instance)), value -> setter.set(instance, Conversions.requireFloat(value).janitorGetHostValue())),
+                adapt(name, JSON_DOUBLE, getter::get, NullableSetter.guard(setter)),
+                JsonType.NUMBER, null
         )
-            .setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.FLOAT);
+                .setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.FLOAT);
     }
 
     /**
@@ -657,36 +639,36 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
      */
     public MetaDataBuilder<T> addListProperty(final @NotNull String name, final NullableGetter<T, @Nullable JList> getter) {
         return internalAddProperty(name, instance -> getter.get(instance), new JsonAdapter<>() {
-                @Override
-                public void write(final JsonOutputStream stream, final T instance) throws Exception {
-                    final JList list = getter.get(instance);
-                    if (list != null) {
-                        list.writeJson(stream);
-                    } else {
-                        stream.beginArray().endArray();
+                    @Override
+                    public void write(final JsonOutputStream stream, final T instance) throws Exception {
+                        final JList list = getter.get(instance);
+                        if (list != null) {
+                            list.writeJson(stream);
+                        } else {
+                            stream.beginArray().endArray();
+                        }
                     }
-                }
 
-                @Override
-                public void read(final JsonInputStream stream, final T instance) throws Exception {
-                    final JList list = getter.get(instance);
-                    // Reading the list from JSON will only have an effect if the (possibly temporary) list returned by the getter has an onUpdate listener.
-                    // We assume that, if such a listener exists, the list will properly be written back to the instance. If not, fail.
-                    if (list == null || list.countOnUpdateReceivers() == 0) {
-                        throw new JsonException("Unexpected JSON read operation for readonly list property " + name + " on instance " + instance);
-                    } else {
-                        list.readJson(stream);
+                    @Override
+                    public void read(final JsonInputStream stream, final T instance) throws Exception {
+                        final JList list = getter.get(instance);
+                        // Reading the list from JSON will only have an effect if the (possibly temporary) list returned by the getter has an onUpdate listener.
+                        // We assume that, if such a listener exists, the list will properly be written back to the instance. If not, fail.
+                        if (list == null || list.countOnUpdateReceivers() == 0) {
+                            throw new JsonException("Unexpected JSON read operation for readonly list property " + name + " on instance " + instance);
+                        } else {
+                            list.readJson(stream);
+                        }
                     }
-                }
 
-                @Override
-                public boolean isDefault(final T instance) throws Exception {
-                    final JList list = getter.get(instance);
-                    return list == null || list.isEmpty();
-                }
-            },
-            JsonType.ARRAY,
-            null
+                    @Override
+                    public boolean isDefault(final T instance) throws Exception {
+                        final JList list = getter.get(instance);
+                        return list == null || list.isEmpty();
+                    }
+                },
+                JsonType.ARRAY,
+                null
         ).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.LIST);
     }
 
@@ -707,15 +689,15 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
                                                   final TwoWayConverter<E> converter,
                                                   final @Nullable JsonSupportDelegate<E> jsonSupportDelegate) {
         return internalAddProperty(name, instance -> TemporaryAssignable.of(name, Conversions.toJanitorList(getter.get(instance), converter), value -> {
-                if (!(value instanceof JList argList)) {
-                    throw new IllegalArgumentException("Expected a list");
-                }
-                final List<E> list = Conversions.toList(argList, converter);
-                setter.set(instance, list);
-            }),
-            jsonSupportDelegate == null ? null : adaptList(jsonSupportDelegate, getter, setter),
-            JsonType.ARRAY,
-            null // TODO: we could take the dispatcher as a parameter
+                    if (!(value instanceof JList argList)) {
+                        throw new IllegalArgumentException("Expected a list");
+                    }
+                    final List<E> list = Conversions.toList(argList, converter);
+                    setter.set(instance, list);
+                }),
+                jsonSupportDelegate == null ? null : adaptList(jsonSupportDelegate, getter, setter),
+                JsonType.ARRAY,
+                null // TODO: we could take the dispatcher as a parameter
         ).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.LIST);
     }
 
@@ -765,12 +747,12 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
      */
     public MetaDataBuilder<T> addBooleanProperty(final @NotNull String name, final PrimitiveBooleanGetter<T> getter) {
         return internalAddProperty(
-            name,
-            instance -> Janitor.toBool(getter.get(instance)),
-            adapt(name, JSON_BOOL, getter::get, NullableSetter.readOnly(name)),
-            JsonType.BOOLEAN,
-            null)
-            .setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.BOOLEAN);
+                name,
+                instance -> Janitor.toBool(getter.get(instance)),
+                adapt(name, JSON_BOOL, getter::get, NullableSetter.readOnly(name)),
+                JsonType.BOOLEAN,
+                null)
+                .setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.BOOLEAN);
     }
 
     /**
@@ -783,14 +765,14 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
      */
     public MetaDataBuilder<T> addNullableBooleanProperty(final @NotNull String name, NullableGetter<T, Boolean> getter) {
         return internalAddProperty(
-            name,
-            instance -> Janitor.nullableBooleanOf(getter.get(instance)),
-            adapt(name, JSON_BOOL_NULLABLE, getter, NullableSetter.readOnly(name)),
-            JsonType.BOOLEAN, null
+                name,
+                instance -> Janitor.nullableBooleanOf(getter.get(instance)),
+                adapt(name, JSON_BOOL_NULLABLE, getter, NullableSetter.readOnly(name)),
+                JsonType.BOOLEAN, null
         )
-            .setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.BOOLEAN)
-            .setMetaData(Janitor.MetaData.HOST_NULLABLE, true)
-            ;
+                .setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.BOOLEAN)
+                .setMetaData(Janitor.MetaData.HOST_NULLABLE, true)
+                ;
     }
 
     /**
@@ -805,14 +787,14 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
                                                  final @NotNull PrimitiveBooleanGetter<T> getter,
                                                  final @NotNull PrimitiveBooleanSetter<T> setter) {
         return internalAddProperty(name,
-            instance -> TemporaryAssignable.of(name, Janitor.toBool(getter.get(instance)),
-                value -> setter.set(instance, Janitor.requireBool(value).janitorIsTrue())),
-            adapt(name, JSON_BOOL, getter::get, NullableSetter.guard(setter)),
-            JsonType.BOOLEAN, null
+                instance -> TemporaryAssignable.of(name, Janitor.toBool(getter.get(instance)),
+                        value -> setter.set(instance, Janitor.requireBool(value).janitorIsTrue())),
+                adapt(name, JSON_BOOL, getter::get, NullableSetter.guard(setter)),
+                JsonType.BOOLEAN, null
         )
-            .setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.BOOLEAN)
-            .setMetaData(Janitor.MetaData.HOST_NULLABLE, true)
-            ;
+                .setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.BOOLEAN)
+                .setMetaData(Janitor.MetaData.HOST_NULLABLE, true)
+                ;
     }
 
     /**
@@ -829,12 +811,12 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
                                                          final @NotNull NullableGetter<T, Boolean> getter,
                                                          final @NotNull NullableSetter<T, Boolean> setter) {
         return internalAddProperty(name, instance -> TemporaryAssignable.of(name, Janitor.nullableBooleanOf(getter.get(instance)), value -> {
-                setter.set(instance, toNullableBoolean(value));
-            }), adapt(name, JSON_BOOL_NULLABLE, getter, setter),
-            JsonType.BOOLEAN, null
+                    setter.set(instance, toNullableBoolean(value));
+                }), adapt(name, JSON_BOOL_NULLABLE, getter, setter),
+                JsonType.BOOLEAN, null
         )
-            .setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.BOOLEAN)
-            .setMetaData(Janitor.MetaData.HOST_NULLABLE, true);
+                .setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.BOOLEAN)
+                .setMetaData(Janitor.MetaData.HOST_NULLABLE, true);
     }
 
     /**
@@ -862,10 +844,10 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
     public MetaDataBuilder<T> addStringProperty(final @NotNull String name,
                                                 final @NotNull NullableGetter<T, String> getter) {
         return internalAddProperty(name,
-            instance -> Janitor.getBuiltins().nullableString(getter.get(instance)),
-            adapt(name, JSON_STRING, getter, NullableSetter.readOnly(name)),
+                instance -> Janitor.getBuiltins().nullableString(getter.get(instance)),
+                adapt(name, JSON_STRING, getter, NullableSetter.readOnly(name)),
 
-            JsonType.STRING, null
+                JsonType.STRING, null
         ).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.STRING);
     }
 
@@ -881,10 +863,10 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
                                                 final @NotNull NullableGetter<T, String> getter,
                                                 final @NotNull NullableSetter<T, String> setter) {
         return internalAddProperty(name,
-            instance -> TemporaryAssignable.of(name, Janitor.getBuiltins().nullableString(getter.get(instance)),
-                value -> setter.set(instance, stringOrNull(value))),
-            adapt(name, JSON_STRING, getter, setter),
-            JsonType.STRING, null
+                instance -> TemporaryAssignable.of(name, Janitor.getBuiltins().nullableString(getter.get(instance)),
+                        value -> setter.set(instance, stringOrNull(value))),
+                adapt(name, JSON_STRING, getter, setter),
+                JsonType.STRING, null
         ).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.STRING).setMetaData(HOST_NULLABLE, true);
     }
 
@@ -897,27 +879,27 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
      */
     public MetaDataBuilder<T> addDateProperty(final @NotNull String name, final NullableGetter<@NotNull T, @Nullable LocalDate> getter) {
         return internalAddProperty(name, instance -> Janitor.getBuiltins().nullableDate(getter.get(instance)), new JsonAdapter<T>() {
-                @Override
-                public void write(final JsonOutputStream stream, final T instance) throws Exception {
-                    @Nullable final LocalDate value = getter.get(instance);
-                    if (value == null) {
-                        stream.nullValue();
-                    } else {
-                        stream.value(JDate.DATE_FORMAT.format(value));
+                    @Override
+                    public void write(final JsonOutputStream stream, final T instance) throws Exception {
+                        @Nullable final LocalDate value = getter.get(instance);
+                        if (value == null) {
+                            stream.nullValue();
+                        } else {
+                            stream.value(JDate.DATE_FORMAT.format(value));
+                        }
                     }
-                }
 
-                @Override
-                public void read(final JsonInputStream stream, final T instance) throws JsonException {
-                    throw new JsonException("Unexpected JSON read operation for readonly date property " + name + " on instance " + instance);
-                }
+                    @Override
+                    public void read(final JsonInputStream stream, final T instance) throws JsonException {
+                        throw new JsonException("Unexpected JSON read operation for readonly date property " + name + " on instance " + instance);
+                    }
 
-                @Override
-                public boolean isDefault(final T instance) throws Exception {
-                    return getter.get(instance) == null;
-                }
-            },
-            JsonType.STRING, null
+                    @Override
+                    public boolean isDefault(final T instance) throws Exception {
+                        return getter.get(instance) == null;
+                    }
+                },
+                JsonType.STRING, null
         ).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.DATE).setMetaData(HOST_NULLABLE, true);
     }
 
@@ -1050,7 +1032,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
                 return getter.get(instance) == null;
             }
         }, JsonType.STRING, null)
-            .setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.DATETIME).setMetaData(HOST_NULLABLE, true); // TODO: support datetime
+                .setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.DATETIME).setMetaData(HOST_NULLABLE, true); // TODO: support datetime
     }
 
     /**
@@ -1063,7 +1045,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
      */
     public MetaDataBuilder<T> addDateTimeProperty(final String name, final @NotNull NullableGetter<T, LocalDateTime> getter, final @NotNull NullableSetter<T, LocalDateTime> setter) {
         return internalAddProperty(name, instance -> TemporaryAssignable.of(name, Janitor.getBuiltins().nullableDateTime(getter.get(instance)),
-            value -> setter.set(instance, dateTimeOrNull(value))), new JsonAdapter<>() {
+                value -> setter.set(instance, dateTimeOrNull(value))), new JsonAdapter<>() {
             @Override
             public void write(final JsonOutputStream stream, final T instance) throws Exception {
                 final LocalDateTime value = getter.get(instance);
@@ -1108,8 +1090,8 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
     /**
      * Adds a read-only object property.
      *
-     * @param name   property name
-     * @param getter property getter
+     * @param name       property name
+     * @param getter     property getter
      * @param dispatcher dispatcher for the object type
      * @return a meta-data builder
      */
@@ -1206,8 +1188,8 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
         // because we'll turn a class cast exception into a script runtime error:
         // noinspection unchecked
         return internalAddProperty(name,
-            instance -> TemporaryAssignable.of(name, Janitor.nullableObject(getter.get(instance)), value -> setter.set(instance, expander.expandValue(instance, value))),
-            adapt(name, shim(constructor), getter, setter), JsonType.OBJECT, null).setMetaData(HOST_NULLABLE, true);
+                instance -> TemporaryAssignable.of(name, Janitor.nullableObject(getter.get(instance)), value -> setter.set(instance, expander.expandValue(instance, value))),
+                adapt(name, shim(constructor), getter, setter), JsonType.OBJECT, null).setMetaData(HOST_NULLABLE, true);
     }
 
     public <X extends JanitorObject> MetaDataBuilder<T> addObjectPropertyWithSingletonDefault(final @NotNull String name,
@@ -1218,8 +1200,8 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
         // because we'll turn a class cast exception into a script runtime error:
         // noinspection unchecked
         return internalAddProperty(name,
-            instance -> TemporaryAssignable.of(name, Janitor.nullableObject(getter.get(instance)), value -> setter.set(instance, expander.expandValue(instance, value))),
-            adapt(name, shim(() -> singletonDefault), getter, setter), JsonType.OBJECT, null).setMetaData(HOST_NULLABLE, true);
+                instance -> TemporaryAssignable.of(name, Janitor.nullableObject(getter.get(instance)), value -> setter.set(instance, expander.expandValue(instance, value))),
+                adapt(name, shim(() -> singletonDefault), getter, setter), JsonType.OBJECT, null).setMetaData(HOST_NULLABLE, true);
     }
 
 
@@ -1348,7 +1330,6 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
     }
 
 
-
     private void writeMyAttributes(final JsonOutputStream stream, final T instance) throws Exception {
         for (final Attribute<T> attribute : attributes) {
             @Nullable final JsonAdapter<T> attributeAdapter = attribute.jsonAdapter;
@@ -1395,7 +1376,8 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
                     case NUMBER -> list.add(Janitor.numeric(stream.nextDouble()));
                     case BOOLEAN -> list.add(stream.nextBoolean() ? Janitor.TRUE : Janitor.FALSE);
                     case NULL -> list.add(Janitor.NULL);
-                    case END_ARRAY, END_OBJECT, NAME, END_DOCUMENT -> throw new JsonException("Unexpected token while reading list: " + token);
+                    case END_ARRAY, END_OBJECT, NAME, END_DOCUMENT ->
+                            throw new JsonException("Unexpected token while reading list: " + token);
                 }
             }
             stream.endArray();
@@ -1473,9 +1455,9 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
     }
 
     public record Attribute<T extends JanitorObject>(
-        @NotNull String name,
-        @NotNull AttributeLookupHandler<T> handler,
-        @Nullable JsonAdapter<T> jsonAdapter) {
+            @NotNull String name,
+            @NotNull AttributeLookupHandler<T> handler,
+            @Nullable JsonAdapter<T> jsonAdapter) {
     }
 
     private class InternalMetaDataBuilder<U> implements MetaDataBuilder<U> {

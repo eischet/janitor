@@ -31,6 +31,32 @@
             <groupId>com.eischet.janitor</groupId>
             <artifactId>janitor-lang</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.eischet.janitor</groupId>
+            <artifactId>janitor-modules-common</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.eischet.janitor.modules</groupId>
+            <artifactId>mustang</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.eischet.janitor.modules</groupId>
+            <artifactId>docusign</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.eischet.janitor.modules</groupId>
+            <artifactId>commonmark</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.eischet.janitor</groupId>
+            <artifactId>janitor-generator</artifactId>
+        </dependency>
+
         <!-- to satisfy logging needs -->
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -43,6 +69,7 @@
     </dependencies>
 
     <build>
+        <finalName>janitor</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -58,23 +85,27 @@
                     </archive>
                 </configuration>
             </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>3.6.2</version>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.8.0</version>
+                <configuration>
+                    <descriptors>
+                        <descriptor>assembly.xml</descriptor>
+                    </descriptors>
+                 </configuration>
                 <executions>
                     <execution>
-                        <phase>package</phase>
+                        <id>make-assembly</id> <!-- this is used for inheritance merges -->
+                        <phase>package</phase> <!-- bind to the packaging phase -->
                         <goals>
-                            <goal>shade</goal>
+                            <goal>single</goal>
                         </goals>
-                        <configuration>
-                            <finalName>janitor</finalName>
-                        </configuration>
                     </execution>
-
                 </executions>
             </plugin>
+
 
 
             <plugin>

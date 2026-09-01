@@ -15,7 +15,7 @@ public class DocusignModule extends JanitorComposed<DocusignModule> implements J
 
     public static final JanitorModuleRegistration REGISTRATION = new JanitorModuleRegistration("docusign", DocusignModule::new);
 
-    private static final DispatchTable<DocusignModule> DISPATCHER = new DispatchTable<>();
+    private static final DispatchTable<DocusignModule> DISPATCHER = new DispatchTable<>(DocusignModule::new, false);
 
     static {
         DISPATCHER.addMethod("Signer", (self, process, args) -> enableApply(process, new DocusignSigner(), args));

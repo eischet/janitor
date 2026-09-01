@@ -26,6 +26,7 @@ public class OutputCatchingTestRuntime extends BaseRuntime {
         if (environmentConfigurer != null) {
             environmentConfigurer.accept(env);
         }
+        // TODO: I'd like to do this, but that would be a circular dependency because the modules (unwisely) depend on lang, where they should ideally depend on the api only: JanitorModulesCommon.registerCommonModules(env, true);
         env.addModule(CollectionsModule.REGISTRATION);
         return new OutputCatchingTestRuntime(env);
     }

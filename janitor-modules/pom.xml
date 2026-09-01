@@ -16,6 +16,7 @@
     <description>A collection of modules for the Janitor language</description>
 
     <modules>
+        <module>janitor</module>
         <module>httpclient</module>
         <module>brrr</module>
         <module>files</module>

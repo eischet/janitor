@@ -18,7 +18,8 @@ import java.util.List;
 public class BrrrModule extends JanitorComposed<BrrrModule> implements JanitorModule {
 
     public static final JanitorModuleRegistration REGISTRATION = new JanitorModuleRegistration("brrr", BrrrModule::new);
-    public static final DispatchTable<BrrrModule> DISPATCH = new DispatchTable<>(BrrrModule::new);
+
+    public static final DispatchTable<BrrrModule> DISPATCH = new DispatchTable<>(BrrrModule::new, false);
 
     static {
         DISPATCH.addMethod("send", (self, process, args) -> {

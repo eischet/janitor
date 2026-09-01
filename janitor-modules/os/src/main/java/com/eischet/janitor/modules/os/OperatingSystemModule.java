@@ -31,7 +31,7 @@ import java.util.List;
  */
 public class OperatingSystemModule extends JanitorComposed<OperatingSystemModule> implements JanitorModule {
 
-    private static final DispatchTable<OperatingSystemModule> dispatcher = new DispatchTable<>(OperatingSystemModule::new);
+    private static final DispatchTable<OperatingSystemModule> dispatcher = new DispatchTable<>(OperatingSystemModule::new, false);
     public static final JanitorModuleRegistration REGISTRATION = new JanitorModuleRegistration("os", OperatingSystemModule::new);
 
     static {

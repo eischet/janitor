@@ -38,22 +38,20 @@ public class DefaultBuiltinTypes implements BuiltinTypes {
     protected final DispatchTable<JanitorObject> baseDispatcher = new DispatchTable<>(null);
 
     protected final WrapperDispatchTable<Map<JanitorObject, JanitorObject>> mapDispatcher = new WrapperDispatchTable<>(Janitor::map);
-    protected final DispatchTable<JString> stringDispatcher = new DispatchTable<>(baseDispatcher, it -> it);
+    protected final DispatchTable<JString> stringDispatcher = new DispatchTable<>(baseDispatcher, it -> it, false);
 
     // TODO: figure out why I cannot write Dispatcher<JMap> here. I keep forgetting the subleties of the Java generics system...
     // I'm sure it's something with blah super foo extends lalala that everybody but me knows about. ;-)
 
-
-
-    protected final DispatchTable<JList> listDispatcher = new DispatchTable<>(baseDispatcher, it -> it);
-    protected final WrapperDispatchTable<Set<JanitorObject>> setDispatcher = new WrapperDispatchTable<>(baseDispatcher, it -> it);
-    protected final WrapperDispatchTable<Long> intDispatcher = new WrapperDispatchTable<>(baseDispatcher, it -> it);
-    protected final WrapperDispatchTable<byte[]> binaryDispatcher = new WrapperDispatchTable<>(baseDispatcher, it -> it);
-    protected final WrapperDispatchTable<Double> floatDispatcher = new WrapperDispatchTable<>(baseDispatcher, it -> it);
-    protected final WrapperDispatchTable<Pattern> regexDispatcher = new WrapperDispatchTable<>(baseDispatcher, it -> it);
-    protected final DispatchTable<JDuration> durationDispatch = new DispatchTable<>(baseDispatcher, it -> it);
-    protected final DispatchTable<JDateTime> dateTimeDispatch = new DispatchTable<>(baseDispatcher, it -> it);
-    protected final DispatchTable<JDate> dateDispatch = new DispatchTable<>(baseDispatcher, it -> it);
+    protected final DispatchTable<JList> listDispatcher = new DispatchTable<>(baseDispatcher, it -> it, false);
+    protected final WrapperDispatchTable<Set<JanitorObject>> setDispatcher = new WrapperDispatchTable<>(baseDispatcher, it -> it, false);
+    protected final WrapperDispatchTable<Long> intDispatcher = new WrapperDispatchTable<>(baseDispatcher, it -> it, false);
+    protected final WrapperDispatchTable<byte[]> binaryDispatcher = new WrapperDispatchTable<>(baseDispatcher, it -> it, false);
+    protected final WrapperDispatchTable<Double> floatDispatcher = new WrapperDispatchTable<>(baseDispatcher, it -> it, false);
+    protected final WrapperDispatchTable<Pattern> regexDispatcher = new WrapperDispatchTable<>(baseDispatcher, it -> it, false);
+    protected final DispatchTable<JDuration> durationDispatch = new DispatchTable<>(baseDispatcher, it -> it, false);
+    protected final DispatchTable<JDateTime> dateTimeDispatch = new DispatchTable<>(baseDispatcher, it -> it, false);
+    protected final DispatchTable<JDate> dateDispatch = new DispatchTable<>(baseDispatcher, it -> it, false);
 
 
     private final JString emptyString;

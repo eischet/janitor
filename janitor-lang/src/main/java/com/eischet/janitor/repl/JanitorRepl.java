@@ -17,6 +17,7 @@ import com.eischet.janitor.compiler.ast.statement.controlflow.ReturnStatement;
 import com.eischet.janitor.lang.JanitorLexer;
 import com.eischet.janitor.lang.JanitorParser;
 import com.eischet.janitor.runtime.RunningScriptProcess;
+import com.eischet.janitor.version.Revision;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
@@ -354,6 +355,7 @@ public class JanitorRepl {
     public void run() throws IOException {
         if (logo != null) {
             io.println(logo);
+            io.println("Version " + Revision.REVISION + "\n");
         }
         prompt = defaultPrompt;
         while (!quit) {
@@ -363,7 +365,7 @@ public class JanitorRepl {
     }
 
     /**
-     * Feed some text into the  REPL.
+     * Feed some text into the REPL.
      * <p>
      * In asynchronous settings, use this method to drive the loop.
      * In synchronous settings, you can use the run() method instead, which does that for you.

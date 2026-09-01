@@ -15,7 +15,7 @@ public class MustangModule extends JanitorComposed<MustangModule> implements Jan
 
     public static final JanitorModuleRegistration REGISTRATION = new JanitorModuleRegistration("mustang", MustangModule::new);
 
-    public static final DispatchTable<MustangModule> DISPATCH = new DispatchTable<>(MustangModule::new);
+    public static final DispatchTable<MustangModule> DISPATCH = new DispatchTable<>(MustangModule::new, false);
 
     static {
         DISPATCH.addConstructor("BankDetails", MustangBankDetails::new);

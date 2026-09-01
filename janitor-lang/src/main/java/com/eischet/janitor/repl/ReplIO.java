@@ -66,7 +66,7 @@ public interface ReplIO {
      */
     default boolean shouldPrintStackTrace(Exception e) {
         if (e instanceof JanitorRuntimeException) {
-            return !(e instanceof JanitorNativeException);
+            return e instanceof JanitorNativeException; // only these
         } else {
             return true;
         }

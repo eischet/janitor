@@ -8,7 +8,8 @@ import org.commonmark.parser.Parser;
 
 public class CommonMarkModule extends JanitorComposed<CommonMarkModule> implements JanitorModule {
 
-    private static final DispatchTable<CommonMarkModule> dispatch = new DispatchTable<>(CommonMarkModule::new);
+    private static final DispatchTable<CommonMarkModule> dispatch = new DispatchTable<>(CommonMarkModule::new, false);
+
     public static final JanitorModuleRegistration REGISTRATION = new JanitorModuleRegistration("commonmark", CommonMarkModule::new);
 
     static {
