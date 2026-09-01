@@ -145,7 +145,7 @@ public class JanitorRepl {
     }
 
     public PartialParseResult parse(final String text) throws JanitorControlFlowException, JanitorRuntimeException, CompilerError {
-        if (hasUnclosedMultilineString(text) || hasUnclosedBrackets(text)) {
+        if (endsInsideMultilineConstruct(text) || hasUnclosedBrackets(text)) {
             io.verbose("looks incomplete");
             return PartialParseResult.INCOMPLETE;
         }
@@ -199,28 +199,151 @@ public class JanitorRepl {
 
 
 
-    private boolean hasUnclosedMultilineString(String text) {
-        int count = 0, idx = 0;
-        while ((idx = text.indexOf("\"\"\"", idx)) != -1) {
-            count++;
-            idx += 3;
+    /**
+     * The states {@link #scan(String)} can be in while walking the text one character at a time.
+     * Brackets are only counted in {@link #NORMAL}; everything else exists only to know when we
+     * are allowed to leave it again (a closing quote/delimiter, or a newline where the grammar
+     * does not permit one).
+     */
+    private enum ScanMode {
+        NORMAL, LINE_COMMENT, BLOCK_COMMENT, SINGLE_QUOTED, DOUBLE_QUOTED, TRIPLE_SINGLE_QUOTED, TRIPLE_DOUBLE_QUOTED
+    }
+
+    /**
+     * @param parenBalance     net count of unmatched '(' (positive) over the whole text
+     * @param braceBalance     net count of unmatched '{' (positive) over the whole text
+     * @param bracketBalance   net count of unmatched '[' (positive) over the whole text
+     * @param endsMidConstruct true if the text ends while still inside a triple-quoted string or
+     *                         a block comment, i.e. a construct that legitimately spans lines and
+     *                         is simply not finished yet
+     */
+    private record ScanResult(int parenBalance, int braceBalance, int bracketBalance, boolean endsMidConstruct) {
+    }
+
+    /**
+     * Walks the text once, tracking whether we are inside a string literal or comment, so that
+     * brackets and triple-quote delimiters occurring inside those are not mistaken for real ones
+     * (e.g. {@code print("(")} or {@code // (} must not affect the bracket balance).
+     * <p>
+     * This intentionally does not use the real {@link JanitorLexer}: on genuinely incomplete or
+     * malformed input (which is the normal case here, since the REPL calls this on every
+     * partially-typed line) the generated lexer's error recovery consumes/skips characters in
+     * ways that are hard to reason about, whereas this hand-rolled scan only needs to answer one
+     * narrow question -- "are we still inside something that is allowed to continue on the next
+     * line" -- and always terminates cleanly, one char at a time, regardless of how broken the
+     * input is.
+     */
+    private ScanResult scan(final String text) {
+        ScanMode mode = ScanMode.NORMAL;
+        int parens = 0, braces = 0, brackets = 0;
+        final int length = text.length();
+        int i = 0;
+        while (i < length) {
+            final char c = text.charAt(i);
+            switch (mode) {
+                case NORMAL -> {
+                    if (regionMatches(text, i, "//")) {
+                        mode = ScanMode.LINE_COMMENT;
+                        i += 2;
+                        continue;
+                    }
+                    if (regionMatches(text, i, "/*")) {
+                        mode = ScanMode.BLOCK_COMMENT;
+                        i += 2;
+                        continue;
+                    }
+                    if (regionMatches(text, i, "'''")) {
+                        mode = ScanMode.TRIPLE_SINGLE_QUOTED;
+                        i += 3;
+                        continue;
+                    }
+                    if (regionMatches(text, i, "\"\"\"")) {
+                        mode = ScanMode.TRIPLE_DOUBLE_QUOTED;
+                        i += 3;
+                        continue;
+                    }
+                    switch (c) {
+                        case '\'' -> mode = ScanMode.SINGLE_QUOTED;
+                        case '"' -> mode = ScanMode.DOUBLE_QUOTED;
+                        case '(' -> parens++;
+                        case ')' -> parens--;
+                        case '{' -> braces++;
+                        case '}' -> braces--;
+                        case '[' -> brackets++;
+                        case ']' -> brackets--;
+                        default -> { }
+                    }
+                    i++;
+                }
+                case LINE_COMMENT -> {
+                    // a line comment runs to the end of the (physical) line, then we're back to normal
+                    if (c == '\n' || c == '\r') {
+                        mode = ScanMode.NORMAL;
+                    }
+                    i++;
+                }
+                case BLOCK_COMMENT -> {
+                    if (regionMatches(text, i, "*/")) {
+                        mode = ScanMode.NORMAL;
+                        i += 2;
+                        continue;
+                    }
+                    i++;
+                }
+                case SINGLE_QUOTED, DOUBLE_QUOTED -> {
+                    final char quote = mode == ScanMode.SINGLE_QUOTED ? '\'' : '"';
+                    if (c == '\n' || c == '\r') {
+                        // the grammar does not allow these to span lines, so this is already a
+                        // syntax error that the real parser will report; stop treating it as an
+                        // open string and re-process this char in NORMAL mode instead of hanging
+                        // the REPL in "..." over it forever
+                        mode = ScanMode.NORMAL;
+                        continue;
+                    }
+                    if (c == '\\' && i + 1 < length) {
+                        i += 2; // skip the escaped character, whatever it is
+                        continue;
+                    }
+                    if (c == quote) {
+                        mode = ScanMode.NORMAL;
+                    }
+                    i++;
+                }
+                case TRIPLE_SINGLE_QUOTED, TRIPLE_DOUBLE_QUOTED -> {
+                    final String closing = mode == ScanMode.TRIPLE_SINGLE_QUOTED ? "'''" : "\"\"\"";
+                    if (c == '\\' && i + 1 < length) {
+                        i += 2;
+                        continue;
+                    }
+                    if (regionMatches(text, i, closing)) {
+                        mode = ScanMode.NORMAL;
+                        i += 3;
+                        continue;
+                    }
+                    i++;
+                }
+            }
         }
-        return count % 2 != 0;
+        final boolean endsMidConstruct = mode == ScanMode.TRIPLE_SINGLE_QUOTED || mode == ScanMode.TRIPLE_DOUBLE_QUOTED || mode == ScanMode.BLOCK_COMMENT;
+        return new ScanResult(parens, braces, brackets, endsMidConstruct);
+    }
+
+    private static boolean regionMatches(final String text, final int index, final String needle) {
+        return text.regionMatches(index, needle, 0, needle.length());
+    }
+
+    /**
+     * True if the text ends while still inside a triple-quoted string or a block comment --
+     * constructs that legitimately span multiple lines, so the REPL should keep prompting for
+     * more input instead of trying to parse (or reporting an error on) a truncated fragment.
+     */
+    private boolean endsInsideMultilineConstruct(String text) {
+        return scan(text).endsMidConstruct();
     }
 
     private boolean hasUnclosedBrackets(String text) {
-        int parens = 0, braces = 0, brackets = 0;
-        for (char c : text.toCharArray()) {
-            switch (c) {
-                case '(': parens++; break;
-                case ')': parens--; break;
-                case '{': braces++; break;
-                case '}': braces--; break;
-                case '[': brackets++; break;
-                case ']': brackets--; break;
-            }
-        }
-        return parens > 0 || braces > 0 || brackets > 0;
+        final ScanResult result = scan(text);
+        return result.parenBalance() > 0 || result.braceBalance() > 0 || result.bracketBalance() > 0;
     }
 
     /**
@@ -266,6 +389,21 @@ public class JanitorRepl {
             buffer.setLength(0);
             prompt = defaultPrompt;
         }
+    }
+
+    /**
+     * Discards any partially-entered input and returns to the default prompt, without touching
+     * the global scope or the underlying runtime.
+     * <p>
+     * Useful for a host that finds the REPL stuck in a "..." continuation state -- e.g. because
+     * the user typed something the incomplete-input heuristics in {@link #parse(String)}
+     * misjudged, or simply changed their mind partway through a multi-line statement -- and wants
+     * to recover from it without throwing away already-defined variables the way discarding and
+     * recreating the whole {@link JanitorRepl} instance would.
+     */
+    public void resetBuffer() {
+        buffer.setLength(0);
+        prompt = defaultPrompt;
     }
 
 

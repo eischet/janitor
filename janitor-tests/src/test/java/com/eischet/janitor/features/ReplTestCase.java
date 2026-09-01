@@ -76,5 +76,73 @@ public class ReplTestCase extends JanitorTest {
 
     }
 
+    // Regression tests for the "()/{}/[] inside a string or comment permanently sticks the REPL
+    // in '...' continuation mode" bug: the incomplete-input heuristics used to count brackets
+    // and triple-quote delimiters over the raw characters, without knowing whether they were
+    // inside a string literal or a comment.
+
+    @Test
+    public void bracketInsideAStringDoesNotTriggerContinuation() throws JanitorControlFlowException, JanitorRuntimeException {
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
+        final JanitorRepl repl = new JanitorRepl(rt, new FakeLoggingIO());
+        assertEquals(PartialParseResult.OK, repl.parse("print(\"(\");"));
+        assertEquals(PartialParseResult.OK, repl.parse("x = \"{[(\";"));
+    }
+
+    @Test
+    public void bracketInsideALineCommentDoesNotTriggerContinuation() throws JanitorControlFlowException, JanitorRuntimeException {
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
+        final JanitorRepl repl = new JanitorRepl(rt, new FakeLoggingIO());
+        assertEquals(PartialParseResult.OK, repl.parse("x = 1; // ("));
+    }
+
+    @Test
+    public void bracketInsideABlockCommentDoesNotTriggerContinuation() throws JanitorControlFlowException, JanitorRuntimeException {
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
+        final JanitorRepl repl = new JanitorRepl(rt, new FakeLoggingIO());
+        assertEquals(PartialParseResult.OK, repl.parse("x = 1; /* ( { [ */"));
+    }
+
+    @Test
+    public void tripleQuoteInsideAStringOrCommentDoesNotTriggerContinuation() throws JanitorControlFlowException, JanitorRuntimeException {
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
+        final JanitorRepl repl = new JanitorRepl(rt, new FakeLoggingIO());
+        assertEquals(PartialParseResult.OK, repl.parse("x = '\"\"\"'; // \"\"\""));
+    }
+
+    @Test
+    public void aGenuinelyUnclosedBracketStillTriggersContinuation() throws JanitorControlFlowException, JanitorRuntimeException {
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
+        final JanitorRepl repl = new JanitorRepl(rt, new FakeLoggingIO());
+        assertEquals(PartialParseResult.INCOMPLETE, repl.parse("print("));
+        assertEquals(PartialParseResult.OK, repl.parse("print(\n17);"));
+    }
+
+    @Test
+    public void aGenuinelyUnclosedTripleQuotedStringStillTriggersContinuationUntilClosed() throws JanitorControlFlowException, JanitorRuntimeException {
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
+        final JanitorRepl repl = new JanitorRepl(rt, new FakeLoggingIO());
+        assertEquals(PartialParseResult.INCOMPLETE, repl.parse("x = \"\"\"line one"));
+        assertEquals(PartialParseResult.OK, repl.parse("x = \"\"\"line one\nline two\"\"\";"));
+    }
+
+    @Test
+    public void resetBufferRecoversFromAStuckContinuationWithoutLosingGlobals() throws JanitorControlFlowException, JanitorRuntimeException {
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
+        final JanitorRepl repl = new JanitorRepl(rt, new FakeLoggingIO());
+
+        repl.acceptText("x = 42;");
+        assertEquals(repl.getDefaultPrompt(), repl.getPrompt());
+
+        repl.acceptText("print(");
+        assertEquals(repl.getContinuePrompt(), repl.getPrompt(), "an unclosed '(' should put the REPL into continuation mode");
+
+        repl.resetBuffer();
+        assertEquals(repl.getDefaultPrompt(), repl.getPrompt());
+
+        rt.resetOutput();
+        repl.parse("print(x);");
+        assertEquals("42\n", rt.getAllOutput(), "the global defined before getting stuck must still be there after resetBuffer()");
+    }
 
 }
