@@ -1,6 +1,5 @@
 package com.eischet.janitor.repl;
 
-import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 
 import java.io.BufferedReader;
@@ -38,9 +37,15 @@ public class ConsoleReplIO implements ReplIO {
         // (module/line/source line down to the error), so the Java stack trace under it is just
         // interpreter-internal noise -- except for JanitorNativeException, where the cause is a
         // real Java exception from host code and the stack trace is the only way to debug it.
-        if (!(e instanceof JanitorRuntimeException) || e instanceof JanitorNativeException) {
-            e.printStackTrace(System.err);
+
+        // Janitor Runtime Exceptions are supposed to show a full script traceback within the message.
+        // Therefore, we should NOT print the Java stack trace for them.
+        if (e instanceof JanitorRuntimeException) {
+            return;
         }
+
+        // Other exceptions should print the Java stack trace.
+        e.printStackTrace(System.err);
     }
 
 }

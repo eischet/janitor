@@ -3,6 +3,7 @@ package com.eischet.janitor.standalone.repl;
 import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.JanitorRuntime;
 import com.eischet.janitor.api.JanitorScriptProcess;
+import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.JNull;
 import com.eischet.janitor.api.types.functions.JCallArgs;
@@ -90,6 +91,9 @@ public class JanitorStandaloneRepl {
             @Override
             public void exception(final Exception e) {
                 System.out.println("Error: " + e.getMessage());
+                if (e instanceof JanitorRuntimeException) {
+                    return;
+                }
                 e.printStackTrace(System.err);
             }
 
