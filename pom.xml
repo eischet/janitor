@@ -31,7 +31,7 @@
         <maven.compiler.release>21</maven.compiler.release>
 
         <!-- assorted external dependencies -->
-        <deps.bouncycastle>1.84</deps.bouncycastle>
+        <deps.bouncycastle>1.85</deps.bouncycastle>
         <deps.docusign>6.8.0</deps.docusign>
 
     </properties>
@@ -178,7 +178,7 @@
                     <dependency>
                         <groupId>org.bouncycastle</groupId>
                         <artifactId>bcprov-jdk18on</artifactId>
-                        <version>1.84</version>
+                        <version>1.85</version>
                     </dependency>
                 </dependencies>
             </plugin>
