@@ -91,10 +91,9 @@ public class JanitorStandaloneRepl {
             @Override
             public void exception(final Exception e) {
                 System.out.println("Error: " + e.getMessage());
-                if (e instanceof JanitorRuntimeException) {
-                    return;
+                if (shouldPrintStackTrace(e)) {
+                    e.printStackTrace(System.err);
                 }
-                e.printStackTrace(System.err);
             }
 
             @Override
