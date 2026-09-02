@@ -1,19 +1,22 @@
 package com.eischet.janitor.api.types.builtin;
 
 import com.eischet.janitor.api.Janitor;
+import com.eischet.janitor.api.types.JIterable;
+import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.TemporaryAssignable;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
-import com.eischet.janitor.api.types.JIterable;
-import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.toolbox.json.api.*;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -30,42 +33,6 @@ public class JList extends JanitorComposed<JList> implements JIterable, Iterable
     private JList(final Dispatcher<JList> dispatcher, final List<JanitorObject> list) {
         super(dispatcher);
         this.list = list;
-    }
-
-    public JList withElementDispatchTable(final DispatchTable<?> elementDispatchTable) {
-        setElementDispatchTable(elementDispatchTable);
-        return this;
-    }
-
-    public void setElementDispatchTable(final DispatchTable<?> elementDispatchTable) {
-        this.elementDispatchTable = elementDispatchTable;
-    }
-
-    public DispatchTable<?> getElementDispatchTable() {
-        return elementDispatchTable;
-    }
-
-
-
-
-    public @NotNull JList onUpdate(final @NotNull Consumer<JList> onUpdate) {
-        if (updateReceivers == null) {
-            updateReceivers = new LinkedList<>();
-        }
-        updateReceivers.add(onUpdate);
-        return this;
-    }
-
-    public int countOnUpdateReceivers() {
-        return updateReceivers == null ? 0 : updateReceivers.size();
-    }
-
-    private void notifyUpdateReceivers() {
-        if (updateReceivers != null && !updateReceivers.isEmpty()) {
-            for (final Consumer<JList> updateReceiver : updateReceivers) {
-                updateReceiver.accept(this);
-            }
-        }
     }
 
     /**
@@ -86,12 +53,62 @@ public class JList extends JanitorComposed<JList> implements JIterable, Iterable
 
     /**
      * Create a new instance and <b>take ownership of the list passed to us.</b>
+     *
      * @param listDispatcher method dispatcher
-     * @param objects initial list
+     * @param objects        initial list
      * @return this
      */
     public static JList newInstance(final DispatchTable<JList> listDispatcher, final List<JanitorObject> objects) {
         return new JList(listDispatcher, objects);
+    }
+
+    private static int clamp(final int value, final int min, final int max) {
+        return Math.max(min, Math.min(value, max));
+    }
+
+    private static List<JanitorObject> toReplacementList(final JanitorObject replacementValue) {
+        final JanitorObject unpacked = replacementValue.janitorUnpack();
+        if (unpacked instanceof Iterable<?> iterable) {
+            final List<JanitorObject> result = new ArrayList<>();
+            for (final Object element : iterable) {
+                result.add((JanitorObject) element);
+            }
+            return result;
+        }
+        throw new IllegalArgumentException("cannot assign " + replacementValue + " to a list slice: not iterable");
+    }
+
+    public JList withElementDispatchTable(final DispatchTable<?> elementDispatchTable) {
+        setElementDispatchTable(elementDispatchTable);
+        return this;
+    }
+
+    public DispatchTable<?> getElementDispatchTable() {
+        return elementDispatchTable;
+    }
+
+    public void setElementDispatchTable(final DispatchTable<?> elementDispatchTable) {
+        this.elementDispatchTable = elementDispatchTable;
+    }
+
+    public @NotNull JList onUpdate(final @NotNull Consumer<JList> onUpdate) {
+        if (updateReceivers == null) {
+            updateReceivers = new LinkedList<>();
+        }
+        updateReceivers.add(onUpdate);
+        return this;
+    }
+
+    public int countOnUpdateReceivers() {
+        return updateReceivers == null ? 0 : updateReceivers.size();
+    }
+
+    private void notifyUpdateReceivers() {
+        if (updateReceivers != null && !updateReceivers.isEmpty()) {
+            for (final Consumer<JList> updateReceiver : updateReceivers) {
+                updateReceiver.accept(this);
+            }
+        }
     }
 
     /**
@@ -160,7 +177,7 @@ public class JList extends JanitorComposed<JList> implements JIterable, Iterable
                     list.set(resolveExistingIndex(index), value);
                     notifyUpdateReceivers();
                 }
-                );
+        );
     }
 
     /**
@@ -245,10 +262,6 @@ public class JList extends JanitorComposed<JList> implements JIterable, Iterable
         return new JList(dispatcher, result);
     }
 
-    private static int clamp(final int value, final int min, final int max) {
-        return Math.max(min, Math.min(value, max));
-    }
-
     /**
      * Replace the elements in the range {@code [start, end)} with the elements of
      * {@code replacementValue} (any iterable, typically a list), growing or shrinking this list as
@@ -266,8 +279,8 @@ public class JList extends JanitorComposed<JList> implements JIterable, Iterable
      * follows real Python: the selection is empty, and the replacement is inserted at {@code start}
      * without removing anything.
      *
-     * @param start           the start index
-     * @param end             the end index
+     * @param start            the start index
+     * @param end              the end index
      * @param replacementValue the replacement elements (must be iterable)
      */
     public void setRange(final JInt start, final JInt end, final JanitorObject replacementValue) {
@@ -285,18 +298,6 @@ public class JList extends JanitorComposed<JList> implements JIterable, Iterable
         list.subList(startIndex, removeEnd).clear();
         list.addAll(startIndex, replacement);
         notifyUpdateReceivers();
-    }
-
-    private static List<JanitorObject> toReplacementList(final JanitorObject replacementValue) {
-        final JanitorObject unpacked = replacementValue.janitorUnpack();
-        if (unpacked instanceof Iterable<?> iterable) {
-            final List<JanitorObject> result = new ArrayList<>();
-            for (final Object element : iterable) {
-                result.add((JanitorObject) element);
-            }
-            return result;
-        }
-        throw new IllegalArgumentException("cannot assign " + replacementValue + " to a list slice: not iterable");
     }
 
     /**
@@ -408,6 +409,21 @@ public class JList extends JanitorComposed<JList> implements JIterable, Iterable
             notifyUpdateReceivers();
             return removed;
         }
+    }
+
+    /**
+     * Set an element in the list.
+     * If the list is too small to accommodate the element, it will be grown by adding NULL objects as required.
+     *
+     * @param index the index
+     * @param value the value
+     */
+    public void set(JInt index, JanitorObject value) {
+        final int jindex = index.janitorGetHostValue().intValue();
+        while (list.size() <= jindex) {
+            list.add(Janitor.NULL);
+        }
+        list.set(jindex, value);
     }
 
     @NotNull
