@@ -1,4 +1,4 @@
-# 0.9.64, 2026-09-03
+# 0.9.64, 2026-09-03 (internal release only)
 
 - Janitor now provides a number of ScriptModule classes which simplify the creation of custom modules from script code.
 - standard module 'janitor' added, with janitor.revision giving the current revision, e.g. janitor.revision == "0.9.64-SNAPSHOT",
