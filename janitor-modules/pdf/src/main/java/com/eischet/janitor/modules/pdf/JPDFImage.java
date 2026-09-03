@@ -13,8 +13,6 @@ import org.openpdf.text.BadElementException;
 import org.openpdf.text.Image;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 
 /**
  * Wraps org.openpdf.text.Image. Image has no public Java constructor -- instances are only obtained via
@@ -70,15 +68,12 @@ public class JPDFImage extends JanitorWrapper<Image> {
                 throw new JanitorNativeException(process, "error loading image from binary data", e);
             }
         }
-        final String location = args.getRequiredStringValue(0);
+        // A String argument is always treated as a local file name, never as a URL/URI.
+        final String fileName = args.getRequiredStringValue(0);
         try {
-            try {
-                return new JPDFImage(Image.getInstance(new URL(location)));
-            } catch (MalformedURLException notAUrl) {
-                return new JPDFImage(Image.getInstance(location));
-            }
+            return new JPDFImage(Image.getInstance(fileName));
         } catch (BadElementException | IOException e) {
-            throw new JanitorNativeException(process, "error loading image '" + location + "'", e);
+            throw new JanitorNativeException(process, "error loading image '" + fileName + "'", e);
         }
     }
 
