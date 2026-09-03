@@ -2,14 +2,8 @@ package com.eischet.janitor.modules.mustang;
 
 import com.eischet.janitor.api.modules.JanitorModule;
 import com.eischet.janitor.api.modules.JanitorModuleRegistration;
-import com.eischet.janitor.api.types.builtin.JDate;
-import com.eischet.janitor.api.types.builtin.JDateTime;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
-import org.jetbrains.annotations.Nullable;
-
-import java.time.LocalDate;
-import java.util.Date;
 
 public class MustangModule extends JanitorComposed<MustangModule> implements JanitorModule {
 
