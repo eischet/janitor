@@ -3,6 +3,8 @@
 - Janitor now provides a number of ScriptModule classes which simplify the creation of custom modules from script code.
 - standard module 'janitor' added, with janitor.revision giving the current revision, e.g. janitor.revision == "0.9.64-SNAPSHOT",
   and janitor.host giving the hosting app name, if the app sets it.
+- janitor.args allows accessing command line arguments, when applicable. The standard REPL sets them to the main args,
+  other cases depend on the hosting app.
 - Bugfix: LogicOr did not short-circuit from the left side, but instead evaluated both sides. Fixed.
 - Bugfix: try/catch/finally missed some cases, e.g. when the try block throws a control flow "exception".
 - Bugfix: closures were not properly implemented.

@@ -33,6 +33,7 @@ public class JanitorStandaloneRepl {
 
     public static void main(String[] args) {
         JanitorInternalsModule.host = JanitorInternalsModule.HOST_STANDALONE;
+        JanitorInternalsModule.args = args;
         final List<String> argList = Arrays.asList(args);
         final boolean verbose = argList.contains("-v");
         final boolean plain = argList.contains("-p");
