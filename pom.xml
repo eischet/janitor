@@ -263,6 +263,11 @@
                 <artifactId>docusign</artifactId>
                 <version>${revision}</version>
             </dependency>
+            <dependency>
+                <groupId>com.eischet.janitor.modules</groupId>
+                <artifactId>pdf</artifactId>
+                <version>${revision}</version>
+            </dependency>
 
             <!-- external dependencies -->
             <dependency>

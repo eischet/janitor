@@ -10,7 +10,7 @@
     </parent>
 
     <packaging>jar</packaging>
-    <artifactId>janitor</artifactId>
+    <artifactId>pdf</artifactId>
     <name>${project.groupId}:${project.artifactId}</name>
     <description>pdf module: LibrePDF wrapper</description>
 

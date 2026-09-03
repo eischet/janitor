@@ -60,6 +60,10 @@
             <artifactId>mustang</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.eischet.janitor.modules</groupId>
+            <artifactId>pdf</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.eischet.janitor</groupId>
             <artifactId>janitor-dbxs</artifactId>
         </dependency>
