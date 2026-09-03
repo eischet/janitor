@@ -1,6 +1,8 @@
 # 0.9.64-SNAPSHOT
 
-- Janitor now provides a number of ScriptModule classes which simplify the creation of custom modules.
+- Janitor now provides a number of ScriptModule classes which simplify the creation of custom modules from script code.
+- standard module 'janitor' added, with janitor.revision giving the current revision, e.g. janitor.revision == "0.9.64-SNAPSHOT",
+  and janitor.host giving the hosting app name, if the app sets it.
 - Bugfix: LogicOr did not short-circuit from the left side, but instead evaluated both sides. Fixed.
 - Bugfix: try/catch/finally missed some cases, e.g. when the try block throws a control flow "exception".
 - Bugfix: closures were not properly implemented.
@@ -9,6 +11,7 @@
 - Bugfix: os.exec stability improved
 - Bugfix: files module; don't leave zip files dangling open when user fails to call close()
 - Bugfix: various small bugfixes in dbxs, and some unit tests added
+- Bugfix/clarification: SimpleResultSet::getInt returns int, getIntegerInstance returns Integer.
 - Dispatch tables can now be told to include/omit the "apply" method, so we can suppress it where not needed, e.g. when 
   implementing modules.
 - janitor-orm: added an overview doc (by Claude) and some small bugfixes (also by Claude)
