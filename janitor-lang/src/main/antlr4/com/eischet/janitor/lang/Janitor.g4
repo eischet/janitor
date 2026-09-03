@@ -321,6 +321,10 @@ ARROW:              '->';
 WS:                 [ \t\u000C]+ -> channel(HIDDEN);
 COMMENT:            '/*' .*? '*/'    -> channel(HIDDEN);
 LINE_COMMENT:       '//' ~[\r\n]*    -> channel(HIDDEN);
+// Unix-style "hash-bang" support: if the very first line of a script starts with '#' (e.g. "#!/usr/bin/env janitor"),
+// ignore that whole line, so scripts can be made directly executable on Unix-like systems. Restricted to line 1,
+// column 0 via the predicate, so '#' has no meaning anywhere else -- it's otherwise unused by the grammar.
+SHEBANG:            {getLine() == 1 && getCharPositionInLine() == 0}? '#' ~[\r\n]* -> channel(HIDDEN);
 NEWLINE:            [\r\n]+ -> channel(HIDDEN);
 
 // https://groups.google.com/g/antlr-discussion/c/SzQJpVeSyHo about skipping white space

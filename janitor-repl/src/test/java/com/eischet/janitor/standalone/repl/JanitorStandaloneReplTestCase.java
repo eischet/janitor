@@ -64,6 +64,25 @@ class JanitorStandaloneReplTestCase {
      * call site in seedRepl(), are both single-line uses of already-established framework mechanisms).
      */
     @Test
+    void aLeadingShebangLineInAScriptFileIsIgnored(@TempDir Path tempDir) throws Exception {
+        final Path script = tempDir.resolve("hashbang.janitor");
+        Files.writeString(script, """
+                #!/usr/bin/env janitor
+                print("it ran");
+                """, StandardCharsets.UTF_8);
+
+        final PrintStream originalOut = System.out;
+        final ByteArrayOutputStream captured = new ByteArrayOutputStream();
+        try {
+            System.setOut(new PrintStream(captured, true, StandardCharsets.UTF_8));
+            JanitorStandaloneRepl.main(new String[]{script.toString()});
+        } finally {
+            System.setOut(originalOut);
+        }
+        assertTrue(captured.toString(StandardCharsets.UTF_8).contains("it ran"));
+    }
+
+    @Test
     void interactiveModeReturnsTheScriptsTopLevelScopeOnSuccess(@TempDir Path tempDir) throws Exception {
         final Path script = tempDir.resolve("defines.janitor");
         Files.writeString(script, "x = 42;\ny = \"hello\";\n", StandardCharsets.UTF_8);
