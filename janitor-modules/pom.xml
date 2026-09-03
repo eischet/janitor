@@ -24,6 +24,7 @@
         <module>mustang</module>
         <module>commonmark</module>
         <module>docusign</module>
+        <module>pdf</module>
     </modules>
 
     <!-- these common dependencies are inherited by all nested modules -->
