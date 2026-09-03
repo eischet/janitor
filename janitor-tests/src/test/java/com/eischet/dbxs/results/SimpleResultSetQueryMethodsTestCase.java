@@ -76,7 +76,7 @@ public class SimpleResultSetQueryMethodsTestCase extends JanitorTest {
                 "select s, i, l, fd, ts, c, bin from t where id = 1"), ps -> {}, rs -> {
             assertEquals("hello", rs.getString(1));
             assertEquals(17, rs.getInt(2));
-            assertEquals(17, rs.getInteger(2));
+            assertEquals(17, rs.getIntegerInstance(2));
             assertEquals(4200000000L, rs.getLong(3));
             assertEquals(4200000000L, rs.getLongInstance(3));
             assertEquals(1.5, rs.getDouble(4));
@@ -101,8 +101,9 @@ public class SimpleResultSetQueryMethodsTestCase extends JanitorTest {
             // comes back as 0/0.0 for those two, by design (see DatabaseConnection.queryForInt()'s
             // Javadoc for the same "NULL becomes 0" contract on the primitive-returning query methods).
             // getLongInstance()/getDoubleInstance() are their nullable-aware siblings.
-            assertNull(rs.getInt(2));
-            assertNull(rs.getInteger(2));
+            assertNull(rs.getIntegerInstance(2));
+            assertNull(rs.getIntegerInstance(2));
+            assertEquals(0, rs.getInt(2));
             assertEquals(0L, rs.getLong(3));
             assertNull(rs.getLongInstance(3));
             assertEquals(0.0, rs.getDouble(4));

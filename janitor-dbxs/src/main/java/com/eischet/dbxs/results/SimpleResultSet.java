@@ -123,11 +123,11 @@ public class SimpleResultSet {
         return getString(colNumber++);
     }
 
-    public @Nullable Integer getInt(final int columnIndex) throws SQLException {
-        return SqlTypeInterpreter.readIntegerAndIntern(rs, columnIndex);
+    public int getInt(final int columnIndex) throws SQLException {
+        return rs.getInt(columnIndex);
     }
 
-    public @Nullable Integer getInt() throws SQLException {
+    public int getInt() throws SQLException {
         return getInt(colNumber++);
     }
 
@@ -220,7 +220,7 @@ public class SimpleResultSet {
         return rowNumber == 0;
     }
 
-    public @Nullable Integer getInteger(final int col) throws SQLException {
+    public @Nullable Integer getIntegerInstance(final int col) throws SQLException {
         final int mappedValue = rs.getInt(col);
         if (rs.wasNull()) {
             return null;
@@ -229,8 +229,8 @@ public class SimpleResultSet {
         }
     }
 
-    public @Nullable Integer getInteger() throws SQLException {
-        return getInteger(colNumber++);
+    public @Nullable Integer getIntegerInstance() throws SQLException {
+        return getIntegerInstance(colNumber++);
     }
 
     public @Nullable Double getDoubleInstance(final int col) throws SQLException {
