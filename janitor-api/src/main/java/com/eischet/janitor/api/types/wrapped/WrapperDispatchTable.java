@@ -3,7 +3,6 @@ package com.eischet.janitor.api.types.wrapped;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.api.types.dispatch.GenericDispatchTable;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Function;

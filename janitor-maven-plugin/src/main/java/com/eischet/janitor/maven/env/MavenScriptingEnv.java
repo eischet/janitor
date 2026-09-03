@@ -4,6 +4,7 @@ import com.eischet.janitor.api.JanitorRuntime;
 import com.eischet.janitor.env.JanitorDefaultEnvironment;
 import com.eischet.janitor.modules.common.JanitorModulesCommon;
 import com.eischet.janitor.modules.commonmark.CommonMarkModule;
+import com.eischet.janitor.modules.janitor.JanitorInternalsModule;
 import com.eischet.janitor.runtime.JanitorFormattingLocale;
 import org.apache.maven.plugin.logging.SystemStreamLog;
 
@@ -17,6 +18,8 @@ public class MavenScriptingEnv extends JanitorDefaultEnvironment {
     public MavenScriptingEnv() {
         super(new JanitorFormattingLocale(Locale.US));
         this.log = new SystemStreamLog();
+
+        JanitorInternalsModule.host = JanitorInternalsModule.HOST_MAVEN;
 
         JanitorModulesCommon.registerCommonModules(this, true);
         this.addModule(CommonMarkModule.REGISTRATION);

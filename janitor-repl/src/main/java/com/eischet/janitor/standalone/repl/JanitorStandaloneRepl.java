@@ -1,27 +1,20 @@
 package com.eischet.janitor.standalone.repl;
 
 import com.eischet.janitor.api.*;
-import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.JNull;
 import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.docusign.DocusignModule;
 import com.eischet.janitor.env.JanitorDefaultEnvironment;
-import com.eischet.janitor.generator.GeneratorModule;
-import com.eischet.janitor.modules.brrr.BrrrModule;
 import com.eischet.janitor.modules.common.JanitorModulesCommon;
 import com.eischet.janitor.modules.commonmark.CommonMarkModule;
-import com.eischet.janitor.modules.files.FilesModule;
-import com.eischet.janitor.modules.httpclient.HttpClientModule;
 import com.eischet.janitor.modules.janitor.JanitorInternalsModule;
 import com.eischet.janitor.modules.mustang.MustangModule;
-import com.eischet.janitor.modules.os.OperatingSystemModule;
 import com.eischet.janitor.repl.ConsoleReplIO;
 import com.eischet.janitor.repl.JanitorRepl;
 import com.eischet.janitor.repl.ReplIO;
 import com.eischet.janitor.runtime.BaseRuntime;
 import com.eischet.janitor.runtime.JanitorFormattingLocale;
-import com.eischet.janitor.runtime.modules.CollectionsModule;
 import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
@@ -38,6 +31,7 @@ public class JanitorStandaloneRepl {
 
 
     public static void main(String[] args) {
+        JanitorInternalsModule.host = JanitorInternalsModule.HOST_STANDALONE;
         final List<String> argList = Arrays.asList(args);
         final boolean verbose = argList.contains("-v");
         final boolean plain = argList.contains("-p");
@@ -55,6 +49,7 @@ public class JanitorStandaloneRepl {
     }
 
     protected static void runJlineConsole(final boolean verbose) throws IOException {
+
         final Terminal terminal = TerminalBuilder.builder().system(true).build();
         final LineReader reader = LineReaderBuilder.builder().terminal(terminal).build();
         final PrintWriter writer = terminal.writer();

@@ -7,12 +7,30 @@ import com.eischet.janitor.version.Revision;
 
 public class JanitorInternalsModule extends JanitorComposed<JanitorInternalsModule> implements com.eischet.janitor.api.modules.JanitorModule {
 
-    private static final DispatchTable<JanitorInternalsModule> dispatcher = new DispatchTable<>(JanitorInternalsModule::new, false);
+    public static final DispatchTable<JanitorInternalsModule> dispatcher = new DispatchTable<>(JanitorInternalsModule::new, false);
 
     public static final JanitorModuleRegistration REGISTRATION = new JanitorModuleRegistration("janitor", JanitorInternalsModule::new);
 
+    /**
+     * The "host" is the hosting application.
+     * You can set this to a name identifying your own application.
+     *
+     */
+    public static String host = "unknown";
+
+    /**
+     * Host name for the standalone interpreter (module "janitor-repl").
+     */
+    public static final String HOST_STANDALONE = "standalone";
+
+    /**
+     * Host name for the maven plugin (module "janitor-maven-plugin").
+     */
+    public static final String HOST_MAVEN = "maven";
+
     static {
         dispatcher.addStringProperty("revision", self -> Revision.REVISION);
+        dispatcher.addStringProperty("host", self -> host);
     }
 
     public JanitorInternalsModule() {
