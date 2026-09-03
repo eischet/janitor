@@ -10,6 +10,7 @@ import com.eischet.janitor.modules.common.JanitorModulesCommon;
 import com.eischet.janitor.modules.commonmark.CommonMarkModule;
 import com.eischet.janitor.modules.janitor.JanitorInternalsModule;
 import com.eischet.janitor.modules.mustang.MustangModule;
+import com.eischet.janitor.modules.pdf.PdfModule;
 import com.eischet.janitor.repl.ConsoleReplIO;
 import com.eischet.janitor.repl.JanitorRepl;
 import com.eischet.janitor.repl.ReplIO;
@@ -65,10 +66,11 @@ public class JanitorStandaloneRepl {
 
         JanitorModulesCommon.registerCommonModules(env, true);
 
-        // these are not include in "common" because they bring additional dependencies:
+        // these are not included in "common" because they bring additional dependencies:
         env.addModule(CommonMarkModule.REGISTRATION);
         env.addModule(MustangModule.REGISTRATION);
         env.addModule(DocusignModule.REGISTRATION);
+        env.addModule(PdfModule.REGISTRATION);
 
 
         JanitorRuntime runtime = new BaseRuntime(env) {

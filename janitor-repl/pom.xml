@@ -53,6 +53,11 @@
             <version>${revision}</version>
         </dependency>
         <dependency>
+            <groupId>com.eischet.janitor.modules</groupId>
+            <artifactId>pdf</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
             <groupId>com.eischet.janitor</groupId>
             <artifactId>janitor-generator</artifactId>
         </dependency>
