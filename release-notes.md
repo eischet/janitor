@@ -19,6 +19,7 @@
 - janitor-orm: added an overview doc (by Claude) and some small bugfixes (also by Claude)
 - mustang module: is more complete now
 - pdf module added
+- Grammar: allow script code to start with a '#shebang', which is ignored
 - Deps: Install4j 13.1, docusign-esign-java 6.8.0, maven-resolver 2.0.22, jansi/jline 4.4.0
 - Deps, build time: Bouncy Castle pinned down to 1.85 to help with offline builds
 - stop shading jars (common modules, standalone repl) because it seems to cause more problems than in solves
