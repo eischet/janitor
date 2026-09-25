@@ -12,6 +12,7 @@ import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import com.eischet.janitor.toolbox.json.api.*;
+import com.eischet.janitor.toolbox.memory.Keeper;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -272,26 +273,24 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
      */
     @Contract(mutates = "param2")
     public void applyTo(final JanitorScriptProcess process, final JanitorObject target) throws JanitorNameException {
-        final Set<JanitorObject> notAssignable = new HashSet<>();
+        final Set<String> notAssignable = new HashSet<>();
         wrapped.forEach((key, value) -> {
             @Nullable final JanitorObject prop = Scope.getOptionalMethod(target, process, key.janitorToString());
             if (prop instanceof JAssignable assignableProperty) {
                 try {
                     if (!assignableProperty.assign(value)) {
-                        notAssignable.add(key);
+                        notAssignable.add("property %s.%s [%s] did not accept type %s".formatted(simpleClassNameOf(target), key, simpleClassNameOf(prop), simpleClassNameOf(value)));
                     }
                 } catch (JanitorGlueException assignmentError) {
-                    // TODO: check if this is really OK
-                    process.warn("error assigning to object %s property %s for key %s, value %s -> %s".formatted(target, prop, key, value, assignmentError));
-                    notAssignable.add(key);
+                    notAssignable.add("error assigning to %s.%s [%s]: %s '%s'".formatted(simpleClassNameOf(target), key, simpleClassNameOf(prop), simpleClassNameOf(assignmentError), assignmentError.getMessage()));
                 }
             } else {
-                process.warn("cannot assign to object %s property %s for key %s, value %s".formatted(target, prop, key, value));
-                notAssignable.add(key);
+                notAssignable.add("property value %s.%s [%s] cannot be assigned to".formatted(simpleClassNameOf(target), key, simpleClassNameOf(prop)));
             }
         });
         if (!notAssignable.isEmpty()) {
-            throw new JanitorNameException(process, "assigned invalid object properties: " + notAssignable + " to instance of class " + simpleClassNameOf(target));
+            throw new JanitorNameException(process, "assigned invalid object properties: " + notAssignable + " to instance of class " + simpleClassNameOf(target)
+              );
         }
     }
 

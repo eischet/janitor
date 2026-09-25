@@ -2,10 +2,11 @@ package com.eischet.janitor.features;
 
 import com.eischet.janitor.JanitorTest;
 import com.eischet.janitor.api.Janitor;
+import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
+import com.eischet.janitor.api.errors.runtime.JanitorError;
+import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.JanitorObject;
-import com.eischet.janitor.api.types.builtin.JDate;
-import com.eischet.janitor.api.types.builtin.JDateTime;
-import com.eischet.janitor.api.types.builtin.JList;
+import com.eischet.janitor.api.types.builtin.*;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
@@ -16,6 +17,7 @@ import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -29,63 +31,22 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 public class AutoJsonTestCase extends JanitorTest {
 
     private static final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
-
-
-    private static class SimpleObject extends JanitorComposed<SimpleObject> {
-        private static final DispatchTable<SimpleObject> DISPATCH = new DispatchTable<>(null);
-
-        static {
-            DISPATCH.addStringProperty("foo", SimpleObject::getFoo, SimpleObject::setFoo);
-            DISPATCH.addStringProperty("bar", SimpleObject::getBar, SimpleObject::setBar);
-        }
-
-        public SimpleObject() {
-            super(DISPATCH);
-        }
-
-        private String foo;
-        private String bar;
-
-        public String getFoo() {
-            return foo;
-        }
-
-        public void setFoo(final String foo) {
-            this.foo = foo;
-        }
-
-        public String getBar() {
-            return bar;
-        }
-
-        public void setBar(final String bar) {
-            this.bar = bar;
-        }
-
-        public String toJson() throws JsonException {
-            return DISPATCH.writeToJson(this);
-        }
-
-        public static SimpleObject fromJson(final JsonInputStream stream) throws JsonException {
-            return DISPATCH.readFromJson(SimpleObject::new, stream);
-        }
-    }
-
     @Language("JSON")
     private static final String SIMPLE_ONE = """
-                {"foo":"baz","bar":"frobnicate"}""";
-
+            {"foo":"baz","bar":"frobnicate"}""";
     @Language("JSON")
     private static final String SIMPLE_TWO = """
-                {"foo":"baz"}""";
-
+            {"foo":"baz"}""";
     @Language("JSON")
     private static final String SIMPLE_THREE = """
-                {"foo":"baz"}""";
+            {"foo":"baz"}""";
+    @Language("JSON")
+    private static final String LIST_JSON = "{\"list\":[\"foo\",\"bar\",\"baz\"]}";
 
     /**
      * We can now create JSON automatically from objects that have dispatch tables.
      * TODO: add more complex tests, requiring code in GenericDispatchTable.java that's not yet there, e.g. List attributes aren't implemented yet.
+     *
      * @throws JsonException on errors
      */
     @Test
@@ -124,6 +85,7 @@ public class AutoJsonTestCase extends JanitorTest {
     /**
      * We can read JSON, too.
      * TODO: add more complex tests, requiring code in GenericDispatchTable.java that's not yet there
+     *
      * @throws JsonException on errors
      */
     @Test
@@ -142,29 +104,6 @@ public class AutoJsonTestCase extends JanitorTest {
 
     }
 
-    private static class ThingWithListProp extends JanitorComposed<ThingWithListProp> {
-        private static final DispatchTable<ThingWithListProp> DISPATCH = new DispatchTable<>(null);
-        static {
-            DISPATCH.addListOfStringsProperty("list", ThingWithListProp::getList, ThingWithListProp::setList);
-        }
-        private List<String> list;
-
-        public ThingWithListProp() {
-            super(DISPATCH);
-        }
-
-        public List<String> getList() {
-            return list;
-        }
-
-        public void setList(final List<String> list) {
-            this.list = list;
-        }
-    }
-
-    @Language("JSON")
-    private static final String LIST_JSON = "{\"list\":[\"foo\",\"bar\",\"baz\"]}";
-
     @Test
     public void testListProp() throws JsonException {
 
@@ -178,50 +117,10 @@ public class AutoJsonTestCase extends JanitorTest {
         assertEquals(thing.getList(), otherThing.getList());
 
 
-
     }
-
-
-    private static class Mixed extends JanitorComposed<Mixed> {
-        private static final DispatchTable<Mixed> DISPATCH = new DispatchTable<>(null);
-
-        static {
-            DISPATCH.addObjectProperty("a", Mixed::getA, Mixed::setA, ThingWithListProp::new);
-            DISPATCH.addObjectProperty("b", Mixed::getB, Mixed::setB, SimpleObject::new);
-        }
-
-
-        private ThingWithListProp a;
-        private SimpleObject b;
-
-        public Mixed() {
-            super(DISPATCH);
-        }
-
-        public Mixed(final Dispatcher<Mixed> dispatcher) {
-            super(dispatcher);
-        }
-
-        public ThingWithListProp getA() {
-            return a;
-        }
-
-        public void setA(final ThingWithListProp a) {
-            this.a = a;
-        }
-
-        public SimpleObject getB() {
-            return b;
-        }
-
-        public void setB(final SimpleObject b) {
-            this.b = b;
-        }
-    }
-
 
     @Test
-    public void testMixedClass() throws JsonException {
+    public void testMixedClass() throws JsonException, JanitorRuntimeException, JanitorCompilerException {
         @Language("JSON") final String MY_UGLY_LIST = "{\"a\":{\"list\":[\"a\",\"b\",\"c\",\"d\"]},\"b\":{\"foo\":\"baz\"}}";
 
         final Mixed mixer = new Mixed();
@@ -239,28 +138,83 @@ public class AutoJsonTestCase extends JanitorTest {
         assertEquals("baz", read.getB().getFoo());
         assertEquals(List.of("a", "b", "c", "d"), read.getA().getList());
 
+        // Test for the bytes property, which seemed to have some issues when using apply, which turned out to be a bug in the implementation though.
+        evaluate("""
+        mixed.apply({}); // applying the empty map should be a NOP
+        mixed.apply({bytes: 'foobar'}); // applying a string to bytes should auto-convert it to bytes as per the dispatch table setup
+        """, g -> g.bind("mixed", read));
+
     }
 
+    @Test
+    void simpleList() throws JsonException {
+        @Language("JSON") final String JSON = "[1, 2, 3, 4, 5]";
+        final JList list = Janitor.list();
+        list.readJson(Janitor.current().getLenientJsonConsumer(JSON));
+        assertEquals(5, list.size());
+    }
 
-    private static class Inheritor extends Mixed {
-        private static final DispatchTable<Inheritor> DISPATCH = new DispatchTable<>(null);
-        static {
-            DISPATCH.addStringProperty("gumbo", Inheritor::getGumbo, Inheritor::setGumbo);
-        }
+    @Test
+    void dateOutput() throws JsonException {
+        @NotNull final JDate fifty = Janitor.date(LocalDate.of(2026, 1, 10));
+        final String jsonForm = Janitor.current().writeJson(fifty);
+        assertEquals("\"2026-01-10\"", jsonForm);
 
-        public Inheritor() {
-            super(Dispatcher.inherit(Mixed.DISPATCH, DISPATCH));
-        }
+        final JList list = Janitor.list();
+        list.add(fifty);
+        @Language("JSON") final String jsonListForm = Janitor.current().writeJson(list);
+        assertEquals("[\"2026-01-10\"]", jsonListForm);
 
-        private String gumbo;
+        @NotNull final JanitorObject parsed = Janitor.nullableDateFromJsonString("2026-01-10");
+        assertEquals(fifty, parsed);
 
-        public String getGumbo() {
-            return gumbo;
-        }
 
-        public void setGumbo(final String gumbo) {
-            this.gumbo = gumbo;
-        }
+        final JList readingList = Janitor.list();
+        readingList.readJson(Janitor.current().getLenientJsonConsumer(jsonListForm));
+        assertEquals(1, readingList.size());
+        // cannot work: JSON does not have a Data type, so we must expect a string... assertEquals(fifty, readingList.get(0));
+        assertEquals("2026-01-10", readingList.get(0).toString());
+    }
+
+    @Test
+    void dateTimeOutput() throws JsonException {
+        @NotNull final JDateTime fifty = Janitor.dateTime(LocalDateTime.of(2026, 1, 10, 12, 30, 45));
+        final String jsonForm = Janitor.current().writeJson(fifty);
+        assertEquals("\"2026-01-10T12:30:45\"", jsonForm);
+
+        @NotNull final JanitorObject parsed = Janitor.nullableDateTimeFromJsonString("2026-01-10T12:30:45");
+        assertEquals(fifty, parsed);
+
+
+        final JList list = Janitor.list();
+        list.add(fifty);
+        @Language("JSON") final String jsonListForm = Janitor.current().writeJson(list);
+        assertEquals("[\"2026-01-10T12:30:45\"]", jsonListForm);
+
+        final JList readingList = Janitor.list();
+        readingList.readJson(Janitor.current().getLenientJsonConsumer(jsonListForm));
+        assertEquals(1, readingList.size());
+        // cannot work: JSON does not have a Data type, so we must expect a string... assertEquals(fifty, readingList.get(0));
+        assertEquals("2026-01-10T12:30:45", readingList.get(0).toString());
+    }
+
+    /**
+     * Make sure that Dates and DateTimes can be written to and read from JSON, by dispatch tables.
+     *
+     * @throws JsonException on errors
+     */
+    @Test
+    void dateTimeOutputWithinAComposedObject() throws JsonException {
+        final Person stefan = new Person();
+        stefan.setBirthday(LocalDate.of(2026, 1, 10));
+        stefan.setNextAppointment(LocalDateTime.of(2026, 5, 11, 12, 30, 45));
+        @Language("JSON") final String jsonForm = Janitor.current().writeJson(stefan);
+        assertEquals("{\"birthday\":\"2026-01-10\",\"nextAppointment\":\"2026-05-11T12:30:45\"}", jsonForm);
+
+        final Person clone = new Person();
+        clone.readJson(Janitor.current().getLenientJsonConsumer(jsonForm));
+        assertEquals(stefan.birthday, clone.birthday);
+        assertEquals(stefan.nextAppointment, clone.nextAppointment);
     }
 
     /* TODO: same test as above, but make it work for "subclasses"
@@ -286,69 +240,175 @@ public class AutoJsonTestCase extends JanitorTest {
     }
      */
 
+    private static class SimpleObject extends JanitorComposed<SimpleObject> {
+        private static final DispatchTable<SimpleObject> DISPATCH = new DispatchTable<>(null);
 
-    @Test void simpleList() throws JsonException {
-        @Language("JSON") final String JSON = "[1, 2, 3, 4, 5]";
-        final JList list = Janitor.list();
-        list.readJson(Janitor.current().getLenientJsonConsumer(JSON));
-        assertEquals(5, list.size());
+        static {
+            DISPATCH.addStringProperty("foo", SimpleObject::getFoo, SimpleObject::setFoo);
+            DISPATCH.addStringProperty("bar", SimpleObject::getBar, SimpleObject::setBar);
+        }
+
+        private String foo;
+        private String bar;
+
+        public SimpleObject() {
+            super(DISPATCH);
+        }
+
+        public static SimpleObject fromJson(final JsonInputStream stream) throws JsonException {
+            return DISPATCH.readFromJson(SimpleObject::new, stream);
+        }
+
+        public String getFoo() {
+            return foo;
+        }
+
+        public void setFoo(final String foo) {
+            this.foo = foo;
+        }
+
+        public String getBar() {
+            return bar;
+        }
+
+        public void setBar(final String bar) {
+            this.bar = bar;
+        }
+
+        public String toJson() throws JsonException {
+            return DISPATCH.writeToJson(this);
+        }
     }
 
-    @Test void dateOutput() throws JsonException {
-        @NotNull final JDate fifty = Janitor.date(LocalDate.of(2026, 1, 10));
-        final String jsonForm = Janitor.current().writeJson(fifty);
-        assertEquals("\"2026-01-10\"", jsonForm);
+    private static class ThingWithListProp extends JanitorComposed<ThingWithListProp> {
+        private static final DispatchTable<ThingWithListProp> DISPATCH = new DispatchTable<>(null);
 
-        final JList list = Janitor.list();
-        list.add(fifty);
-        @Language("JSON") final String jsonListForm = Janitor.current().writeJson(list);
-        assertEquals("[\"2026-01-10\"]", jsonListForm);
+        static {
+            DISPATCH.addListOfStringsProperty("list", ThingWithListProp::getList, ThingWithListProp::setList);
+        }
 
-        @NotNull final JanitorObject parsed = Janitor.nullableDateFromJsonString("2026-01-10");
-        assertEquals(fifty, parsed);
+        private List<String> list;
 
+        public ThingWithListProp() {
+            super(DISPATCH);
+        }
 
-        final JList readingList = Janitor.list();
-        readingList.readJson(Janitor.current().getLenientJsonConsumer(jsonListForm));
-        assertEquals(1, readingList.size());
-        // cannot work: JSON does not have a Data type, so we must expect a string... assertEquals(fifty, readingList.get(0));
-        assertEquals("2026-01-10", readingList.get(0).toString());
+        public List<String> getList() {
+            return list;
+        }
+
+        public void setList(final List<String> list) {
+            this.list = list;
+        }
     }
 
-    @Test void dateTimeOutput() throws JsonException {
-        @NotNull final JDateTime fifty = Janitor.dateTime(LocalDateTime.of(2026, 1, 10, 12, 30, 45));
-        final String jsonForm = Janitor.current().writeJson(fifty);
-        assertEquals("\"2026-01-10T12:30:45\"", jsonForm);
+    private static class Mixed extends JanitorComposed<Mixed> {
+        private static final DispatchTable<Mixed> DISPATCH = new DispatchTable<>(null);
 
-        @NotNull final JanitorObject parsed = Janitor.nullableDateTimeFromJsonString("2026-01-10T12:30:45");
-        assertEquals(fifty, parsed);
+        static {
+            DISPATCH.addObjectProperty("a", Mixed::getA, Mixed::setA, ThingWithListProp::new);
+            DISPATCH.addObjectProperty("b", Mixed::getB, Mixed::setB, SimpleObject::new);
+
+            DISPATCH.addObjectProperty("bytes",
+                    self -> {
+                        return Janitor.nullableBinary(self.bytes);
+                    },
+                    (self, value) -> {
+                        if (value instanceof JBinary binary) {
+                            self.bytes = binary.janitorGetHostValue();
+                            return;
+                        }
+                        if (value instanceof JString string) {
+                            self.bytes = string.janitorGetHostValue().getBytes(StandardCharsets.UTF_8);
+                            return;
+                        }
+                        throw new JanitorError("invalid assignment: you cannot assign " + value);
+                    },
+                    () -> Janitor.nullableBinary(null)
+            );
+
+            DISPATCH.addMethod("apply", (self, process, args) -> {
+                final JMap data = args.getRequired(0, JMap.class);
+                data.applyTo(process, self);
+                return self;
+            });
+
+        }
 
 
-        final JList list = Janitor.list();
-        list.add(fifty);
-        @Language("JSON") final String jsonListForm = Janitor.current().writeJson(list);
-        assertEquals("[\"2026-01-10T12:30:45\"]", jsonListForm);
+        private ThingWithListProp a;
+        private SimpleObject b;
+        private byte[] bytes;
 
-        final JList readingList = Janitor.list();
-        readingList.readJson(Janitor.current().getLenientJsonConsumer(jsonListForm));
-        assertEquals(1, readingList.size());
-        // cannot work: JSON does not have a Data type, so we must expect a string... assertEquals(fifty, readingList.get(0));
-        assertEquals("2026-01-10T12:30:45", readingList.get(0).toString());
+        public Mixed() {
+            super(DISPATCH);
+        }
+
+        public Mixed(final Dispatcher<Mixed> dispatcher) {
+            super(dispatcher);
+        }
+
+        public ThingWithListProp getA() {
+            return a;
+        }
+
+        public void setA(final ThingWithListProp a) {
+            this.a = a;
+        }
+
+        public SimpleObject getB() {
+            return b;
+        }
+
+        public void setB(final SimpleObject b) {
+            this.b = b;
+        }
+
+        public byte[] getBytes() {
+            return bytes;
+        }
+
+        public void setBytes(final byte[] bytes) {
+            this.bytes = bytes;
+        }
+    }
+
+    private static class Inheritor extends Mixed {
+        private static final DispatchTable<Inheritor> DISPATCH = new DispatchTable<>(null);
+
+        static {
+            DISPATCH.addStringProperty("gumbo", Inheritor::getGumbo, Inheritor::setGumbo);
+        }
+
+        private String gumbo;
+
+        public Inheritor() {
+            super(Dispatcher.inherit(Mixed.DISPATCH, DISPATCH));
+        }
+
+        public String getGumbo() {
+            return gumbo;
+        }
+
+        public void setGumbo(final String gumbo) {
+            this.gumbo = gumbo;
+        }
     }
 
     private static class Person extends JanitorComposed<Person> {
         private static final DispatchTable<Person> DISPATCH = new DispatchTable<>();
+
         static {
             DISPATCH.addDateProperty("birthday", Person::getBirthday, Person::setBirthday);
             DISPATCH.addDateTimeProperty("nextAppointment", Person::getNextAppointment, Person::setNextAppointment);
         }
 
+        private LocalDate birthday;
+        private LocalDateTime nextAppointment;
+
         public Person() {
             super(DISPATCH);
         }
-
-        private LocalDate birthday;
-        private LocalDateTime nextAppointment;
 
         public LocalDate getBirthday() {
             return birthday;
@@ -366,24 +426,6 @@ public class AutoJsonTestCase extends JanitorTest {
             this.nextAppointment = nextAppointment;
         }
     }
-
-    /**
-     * Make sure that Dates and DateTimes can be written to and read from JSON, by dispatch tables.
-     * @throws JsonException on errors
-     */
-    @Test void dateTimeOutputWithinAComposedObject() throws JsonException {
-        final Person stefan = new Person();
-        stefan.setBirthday(LocalDate.of(2026, 1, 10));
-        stefan.setNextAppointment(LocalDateTime.of(2026, 5, 11, 12, 30, 45));
-        @Language("JSON") final String jsonForm = Janitor.current().writeJson(stefan);
-        assertEquals("{\"birthday\":\"2026-01-10\",\"nextAppointment\":\"2026-05-11T12:30:45\"}", jsonForm);
-
-        final Person clone = new Person();
-        clone.readJson(Janitor.current().getLenientJsonConsumer(jsonForm));
-        assertEquals(stefan.birthday, clone.birthday);
-        assertEquals(stefan.nextAppointment, clone.nextAppointment);
-    }
-
 
 
 }

@@ -1,3 +1,9 @@
+# 0.9.65, Work in progress
+
+- applying maps to objects now produces better error messages
+- deps: jansi, jline 4.4.3; java-jwt 4.6.1; maven-resolver 2.0.23; maven-plugin-plugin 3.15.2; maven-plugin-annotations 3.16.0
+
+
 # 0.9.64, 2026-09-03 (internal release only)
 
 - Janitor now provides a number of ScriptModule classes which simplify the creation of custom modules from script code.
