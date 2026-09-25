@@ -21,7 +21,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.version>3.9.16</maven.version> <!-- latest IDEA bundled version. I'd upgrade and/or use the mvn wrapper, but IntelliJ ignores it (looks like yet another bug) -->
-        <deps.maven-resolver>2.0.22</deps.maven-resolver>
+        <deps.maven-resolver>2.0.23</deps.maven-resolver>
 
         <!-- TODO: with current dependency versions, the (old?) unit test does not work anymore.
              it was all just boilerplate generated when I started, anyway, so I'll live without
@@ -103,7 +103,7 @@
         <dependency>
             <groupId>org.apache.maven.plugin-tools</groupId>
             <artifactId>maven-plugin-annotations</artifactId>
-            <version>3.15.2</version>
+            <version>3.16.0</version>
             <scope>provided</scope>
         </dependency>
 

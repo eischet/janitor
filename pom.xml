@@ -26,12 +26,12 @@
 
         <!-- dependency versions -->
         <deps.autoservice>1.1.1</deps.autoservice>
-        <deps.jansi-and-jline>4.4.0</deps.jansi-and-jline>
+        <deps.jansi-and-jline>4.4.3</deps.jansi-and-jline>
 
         <maven.compiler.release>21</maven.compiler.release>
 
         <!-- assorted external dependencies -->
-        <deps.bouncycastle>1.85</deps.bouncycastle>
+        <deps.bouncycastle>1.86</deps.bouncycastle>
         <deps.docusign>6.8.0</deps.docusign>
 
     </properties>
@@ -91,15 +91,15 @@
                 </plugin>
                 <plugin>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.15.0</version>
+                    <version>3.16.0</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-plugin-plugin</artifactId>
-                    <version>3.15.2</version>
+                    <version>3.16.0</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.5.6</version>
+                    <version>3.6.0</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-jar-plugin</artifactId>
@@ -178,14 +178,14 @@
                     <dependency>
                         <groupId>org.bouncycastle</groupId>
                         <artifactId>bcprov-jdk18on</artifactId>
-                        <version>1.85</version>
+                        <version>1.86</version>
                     </dependency>
                 </dependencies>
             </plugin>
 
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.5.6</version>
+                <version>3.6.0</version>
             </plugin>
 
         </plugins>
