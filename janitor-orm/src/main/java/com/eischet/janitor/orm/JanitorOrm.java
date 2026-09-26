@@ -1,7 +1,6 @@
 package com.eischet.janitor.orm;
 
 import com.eischet.janitor.api.metadata.MetaDataKey;
-import com.eischet.janitor.orm.meta.WranglerSource;
 import com.eischet.janitor.orm.sql.ColumnTypeHint;
 import org.jetbrains.annotations.NotNull;
 
@@ -71,8 +70,6 @@ public final class JanitorOrm {
             }
         }
 
-
-        public static MetaDataKey<WranglerSource> WRANGLER = new MetaDataKey<>("wrangler", WranglerSource.class);
 
     }
 

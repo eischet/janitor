@@ -24,7 +24,7 @@ public class EntityDispatchTableTestCase extends JanitorTest {
                 new EntityDispatchTable<>(Thing.class, up -> new Thing(), NULL, up -> null);
 
         static {
-            DISPATCH.table("thing", "thing_id", "thing_key", "thing_n", "seq_thing_id");
+            DISPATCH.dbTable("thing", "thing_id", "thing_key", "thing_n", "seq_thing_id");
             DISPATCH.addLongColumn("id", "thing_id", Thing::getId, Thing::setId);
             DISPATCH.addStringColumn("label", "label", Thing::getLabel, Thing::setLabel, 50);
         }
@@ -98,5 +98,25 @@ public class EntityDispatchTableTestCase extends JanitorTest {
         final DispatchTable<Thing> without = new DispatchTable<Thing>(false).extend(false);
         assertFalse(without.has("apply"));
         assertTrue(new DispatchTable<Thing>(false).extend(true).has("apply"));
+    }
+
+    @Test
+    void entityIndexServesTableAndNullReference() {
+        final EntityIndex index = new EntityIndex().addEntity(Thing.DISPATCH);
+        assertSame(Thing.DISPATCH, index.getEntity("Thing"));
+        assertSame(Thing.DISPATCH, index.getOrmDispatchTable("Thing"));
+        assertSame(Thing.DISPATCH, index.getEntityDispatchTable("Thing"));
+        assertSame(Thing.DISPATCH, index.getEntityDispatchTable(Thing.class));
+        assertSame(Thing.NULL, index.getNullReference(Thing.class));
+        assertNull(index.getDaoFor(Thing.class), "no dao registered yet");
+        assertNull(index.getEntityDispatchTable("Nope"));
+    }
+
+    @Test
+    void entityIndexIgnoresPlainDispatchTablesForOrmLookups() {
+        final EntityIndex index = new EntityIndex().addEntity(Thing.class, new DispatchTable<Thing>(false));
+        assertNotNull(index.getEntity("Thing"));
+        assertNull(index.getEntityDispatchTable(Thing.class));
+        assertNull(index.getNullReference(Thing.class));
     }
 }

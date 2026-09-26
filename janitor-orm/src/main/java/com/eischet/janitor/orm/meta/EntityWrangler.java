@@ -43,8 +43,7 @@ public interface EntityWrangler<T extends OrmEntity, U extends Uplink> extends W
                         expander)
                 .setMetaData(JanitorOrm.MetaData.COLUMN_NAME, columnName)
                 .setMetaData(JanitorOrm.MetaData.COLUMN_TYPE, ColumnTypeHint.INT)
-                .setMetaData(Janitor.MetaData.REF, getSimpleClassName())
-                .setMetaData(JanitorOrm.MetaData.WRANGLER, () -> this);
+                .setMetaData(Janitor.MetaData.REF, getSimpleClassName());
     }
 
     /**

@@ -68,10 +68,10 @@ public class EntityDispatchTable<T extends OrmEntity, U extends Uplink> extends 
     }
 
     /**
-     * Sets the table-level ORM meta-data that the DAOs need.
+     * Sets the meta-data about the database table that the DAOs need (table name, id/key/name columns, id sequence).
      * The class name has already been set by the constructor.
      */
-    public EntityDispatchTable<T, U> table(final @NotNull String tableName,
+    public EntityDispatchTable<T, U> dbTable(final @NotNull String tableName,
                                            final @NotNull String idField,
                                            final String keyField,
                                            final String nameField,

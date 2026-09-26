@@ -70,10 +70,8 @@ Every property that should be persisted needs one of these as its
    function to retrieve the entity's `Dao` from an app-defined `Uplink`.
    `EntityWrangler.addReference(...)` is how you declare a foreign-key
    property (a `ForeignKey<T>` typed field, backed by an `INT` column,
-   tagged with `Janitor.MetaData.REF` = the referenced class's simple name
-   and `JanitorOrm.MetaData.WRANGLER` = a lazy `WranglerSource` pointing back
-   at `this`, so mutually-referencing entities can register in either
-   order). `SimpleWrangler.duplicate()` gives you a generic "clone by
+   tagged with `Janitor.MetaData.REF` = the referenced class's simple name,
+   which is resolved through the `EntityIndex`). `SimpleWrangler.duplicate()` gives you a generic "clone by
    copying every assignable scripting attribute" for free.
 3. **Uplink** ([dao/Uplink.java](src/main/java/com/eischet/janitor/orm/dao/Uplink.java)) —
    empty tagging interface for "whatever object holds all your DAOs" in the
@@ -261,7 +259,6 @@ entity/
 meta/
   Wrangler.java / EntityWrangler.java / SimpleWrangler.java     per-entity-class metadata bundle + factory
   JoinWrangler.java / SimpleJoinWrangler.java                     same, for join-table classes
-  WranglerSource.java                                              lazy indirection for addReference()
   EntityIndex.java                                                   className -> DispatchTable/Dao/JoinDao registry
 
 dao/
