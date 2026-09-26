@@ -1,9 +1,5 @@
 package com.eischet.janitor.orm.meta;
 
-import com.eischet.janitor.api.errors.runtime.JanitorError;
-import com.eischet.janitor.api.types.JAssignable;
-import com.eischet.janitor.api.types.JanitorObject;
-import com.eischet.janitor.api.types.TemporaryAssignable;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import com.eischet.janitor.logging.JanitorLogger;
 import com.eischet.janitor.orm.dao.Dao;
@@ -14,8 +10,10 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Function;
 
-import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
-
+/**
+ * @deprecated use {@link EntityDispatchTable}, which is its own wrangler
+ */
+@Deprecated
 public class SimpleWrangler<T extends OrmEntity, U extends Uplink> implements EntityWrangler<T, U> {
 
     protected static final JanitorLogger log = JanitorLogger.getLogger(SimpleWrangler.class);
@@ -103,23 +101,7 @@ public class SimpleWrangler<T extends OrmEntity, U extends Uplink> implements En
             return (T) duplicating.duplicate();
         }
         final T copy = createNewInstance(uplink);
-        dispatchTable.streamAttributeNames().forEach(attr -> {
-            try {
-                final JanitorObject target = dispatchTable.get(attr).lookupAttribute(copy);
-                if (target instanceof JAssignable assignableTarget) {
-                    final JanitorObject source = dispatchTable.get(attr).lookupAttribute(original);
-                    if (source instanceof TemporaryAssignable assignableSource) {
-                        assignableTarget.assign(assignableSource.getValue()); // unpack the value
-                    } else if (source != null) {
-                        assignableTarget.assign(source);
-                    } else {
-                        log.warn("when copying {}, the property {} could not be copied!", simpleClassNameOf(original), attr);
-                    }
-                }
-            } catch (Exception e) {
-                throw new JanitorError("error copying attribute " + attr + " from " + original + " to a new copy", e);
-            }
-        });
+        EntityDispatchTable.copyAttributes(dispatchTable, original, copy);
         return copy;
     }
 

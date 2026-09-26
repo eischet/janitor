@@ -68,6 +68,9 @@ public class DispatchTable<T extends JanitorObject> extends GenericDispatchTable
      * Use this in a JanitorComposed constructor when you need to have instance-specific properties, for example.
      * You can then have a static "DISPATCH" and an instance-specific "dispatch" which extends the static one.
      * </p>
+     * <p>
+     * Subclasses should override this to return their own type.
+     * </p>
      *
      * @param includeApplyMethod whether to include the apply method
      * @return a new dispatch table that extends this one
