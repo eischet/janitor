@@ -2,6 +2,7 @@
 
 - applying maps to objects now produces better error messages
 - deps: jansi, jline 4.4.3; java-jwt 4.6.1; maven-resolver 2.0.23; maven-plugin-plugin 3.15.2; maven-plugin-annotations 3.16.0
+- orm: rearrange/simplify the 'wranglers' to be more specific dispatch tables
 
 
 # 0.9.64, 2026-09-03 (internal release only)
