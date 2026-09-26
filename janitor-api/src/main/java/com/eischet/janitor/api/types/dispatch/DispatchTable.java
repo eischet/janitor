@@ -73,7 +73,7 @@ public class DispatchTable<T extends JanitorObject> extends GenericDispatchTable
      * @return a new dispatch table that extends this one
      */
     public DispatchTable<T> extend(final boolean includeApplyMethod) {
-        return new DispatchTable<>(this, it -> it, true);
+        return new DispatchTable<>(this, it -> it, includeApplyMethod);
     }
 
     public DispatchTable<T> extend() {
