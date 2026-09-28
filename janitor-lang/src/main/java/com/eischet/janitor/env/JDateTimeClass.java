@@ -2,12 +2,13 @@ package com.eischet.janitor.env;
 
 import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorScriptProcess;
-import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.builtin.JDate;
 import com.eischet.janitor.api.types.builtin.JDateTime;
 import com.eischet.janitor.api.types.builtin.JInt;
 import com.eischet.janitor.api.types.builtin.JString;
+import com.eischet.janitor.api.types.dispatch.DispatchTable;
+import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.json.impl.DateTimeUtils;
 
 import java.time.ZoneId;
@@ -74,4 +75,15 @@ public class JDateTimeClass {
         return Janitor.string(kw < 10 ? "0" + kw : String.valueOf(kw));
     }
 
+    public static void applyDefaults(DispatchTable<JDateTime> dateTimeDispatch) {
+        dateTimeDispatch.addLongProperty("epoch", JDateTimeClass::__epochAsAttribute);
+        dateTimeDispatch.addMethod("toEpoch", JDateTimeClass::__epoch);
+        dateTimeDispatch.addMethod("date", JDateTimeClass::__date);
+        dateTimeDispatch.addMethod("time", JDateTimeClass::__time);
+        dateTimeDispatch.addMethod("string", JDateTimeClass::__string);
+        dateTimeDispatch.addMethod("format", JDateTimeClass::__string);
+        dateTimeDispatch.addMethod("formatAtTimezone", JDateTimeClass::__formatAtTimezone);
+        dateTimeDispatch.addMethod("kw", JDateTimeClass::__kw);
+        dateTimeDispatch.addMethod("year", JDateTimeClass::__year);
+    }
 }

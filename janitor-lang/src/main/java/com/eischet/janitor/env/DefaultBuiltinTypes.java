@@ -63,93 +63,14 @@ public class DefaultBuiltinTypes implements BuiltinTypes {
         emptyString = JString.newInstance(stringDispatcher, "", it -> it); // cannot pass this::intern here in a constructor, and "" is already interned anyway
         zero = JInt.newInstance(intDispatcher, 0);
 
-
-        stringDispatcher.setMetaData(Janitor.MetaData.HELP, JStringClass.STRING_CLASS);
-        // OLD: addStringMethod("length", JStringClass::__length);
-        stringDispatcher.addMethod("length", JStringClass::length)
-                .setMetaData(Janitor.MetaData.HELP, JStringClass.STRING_LENGTH); // "foo".length() == 3
-        stringDispatcher.addMethod("trim", JStringClass::trim)
-                .setMetaData(Janitor.MetaData.HELP, JStringClass.STRING_TRIM); // "  foo  ".trim() == "foo"
-        stringDispatcher.addMethod("contains", JStringClass::contains); // "foobar".contains("bar") == true, "barbaz".contains("foo") == false
-        stringDispatcher.addMethod("containsIgnoreCase", JStringClass::containsIgnoreCase); // "foobar".containsIgnoreCase("BAR") == true
-        stringDispatcher.addMethod("splitLines", JStringClass::splitLines); // "foo\nbar\nbaz".splitLines() == ["foo", "bar", "baz"]
-        stringDispatcher.addMethod("indexOf", JStringClass::indexOf); // "foobar".indexOf("bar") == 3, "foobar".indexOf("x") == -1
-        stringDispatcher.addMethod("lastIndexOf", JStringClass::lastIndexOf); // "foobar".indexOf("bar") == 3, "foobar".indexOf("x") == -1
-        stringDispatcher.addMethod("empty", JStringClass::empty); // "".empty() == true, "foo".empty() == false
-        stringDispatcher.addMethod("startsWith", JStringClass::startsWith); // "foobar".startsWith("foo") == true, "foobar".startsWith("bar") == false
-        stringDispatcher.addMethod("endsWith", JStringClass::endsWith); // "foobar".endsWith("bar") == true, "foobar".endsWith("foo") == false
-        stringDispatcher.addMethod("removeLeadingZeros", JStringClass::removeLeadingZeros); // "000123".removeLeadingZeros() == "123"
-        stringDispatcher.addMethod("substring", JStringClass::substring); // "foobar".substring(3) == "bar", "foobar".substring(3, 5) == "ba"
-        stringDispatcher.addMethod("replaceAll", JStringClass::replaceAll); // "foobar".replaceAll("o", "x") == "fxxbar"
-        stringDispatcher.addMethod("replace", JStringClass::replace); // "foobar".replace("o", "x") == "fxobar"
-        stringDispatcher.addMethod("replaceFirst", JStringClass::replaceFirst); // "foobar".replaceFirst("o", "x") == "fxobar"
-        stringDispatcher.addMethod("toUpperCase", JStringClass::toUpperCase); // "foo".toUpperCase() == "FOO"
-        stringDispatcher.addMethod("toLowerCase", JStringClass::toLowerCase); // "FOO".toLowerCase() == "foo"
-        stringDispatcher.addMethod("count", JStringClass::count); // "foobar".count("o") == 2
-        stringDispatcher.addMethod("format", JStringClass::format); // "Hello, %s!".format("world") == "Hello, world!"
-        stringDispatcher.addMethod("expand", JStringClass::expand); // "Hello, ${name}!".expand({name: "world"}) == "Hello, world!"
-        stringDispatcher.addMethod("toBinaryUtf8", JStringClass::toBinaryUtf8); // convert to binary, in UTF-8
-        stringDispatcher.addMethod("encode", JStringClass::encode); // convert to binary, in the given character set
-        stringDispatcher.addMethod("int", JStringClass::toInt); // "123".int() == 123
-        stringDispatcher.addMethod("toInt", JStringClass::toInt); // "123".toInt() == 123
-        stringDispatcher.addMethod("toFloat", JStringClass::toFloat); // "123.45".toFloat() == 123.45
-        stringDispatcher.addMethod("get", JStringClass::indexedGet); // "foobar".get(3) == "b", "foobar".get(3, 5) == "ba"
-        stringDispatcher.addMethod("isNumeric", JStringClass::isNumeric); // "17".isNumeric() == true, "mario".isNumeric() == false
-        stringDispatcher.addMethod("startsWithNumbers", JStringClass::startsWithNumbers); // "123foo".startsWithNumbers() == true, "foo123".startsWithNumbers() == false
-        stringDispatcher.addMethod("parseDate", JStringClass::parseDate); // "2021-12-31".parseDate('yyyy-MM-dd') == @2021-12-31
-        stringDispatcher.addMethod("parseDateTime", JStringClass::parseDateTime); // "2021-12-31T23:59:59".parseDateTime('yyyy-MM-dd\'T\'HH:mm:ss') == @2021-12-31-23:59:59
-        stringDispatcher.addMethod("split", JStringClass::split); // "foo,bar,baz".split(",") == ["foo", "bar", "baz"]
-        stringDispatcher.addMethod("cutFilename", JStringClass::cutFilename);
-        stringDispatcher.addMethod("urlEncode", JStringClass::urlEncode);
-        stringDispatcher.addMethod("urlDecode", JStringClass::urlDecode);
-        stringDispatcher.addMethod("decodeBase64", JStringClass::decodeBase64);
-        stringDispatcher.addMethod("toCamelCase", JStringClass::toCamelCase);
-        stringDispatcher.addMethod("toConstantCase", JStringClass::toConstantCase);
-        stringDispatcher.addMethod(JanitorAntlrCompiler.INDEXED_GET_METHOD, JStringClass::indexedGet); // das lassen wir auch so: keine Zuweisung per Index an String-Teile, die sind ja immutable
-
-        mapDispatcher.addMethod("toJson", JMapClass::__toJson);
-        mapDispatcher.addMethod("parseJson", JMapClass::__parseJson);
-        mapDispatcher.addMethod("get", JMapClass::__get);
-        mapDispatcher.addMethod(JanitorAntlrCompiler.INDEXED_GET_METHOD, JMapClass::__getIndexed);
-        mapDispatcher.addMethod("put", JMapClass::__put);
-        mapDispatcher.addMethod("size", JMapClass::__size);
-        mapDispatcher.addMethod("isEmpty", JMapClass::__isEmpty);
-        mapDispatcher.addMethod("keys", JMapClass::__keys);
-        mapDispatcher.addMethod("values", JMapClass::__values);
-        mapDispatcher.addMethod("containsKey", JMapClass::__containsKey);
-        mapDispatcher.addMethod("containsValue", JMapClass::__containsValue);
-        mapDispatcher.addMethod("clear", JMapClass::__clear);
-        mapDispatcher.addMethod("copy", JMapClass::__copy);
-
-        listDispatcher.addMethod("toJson", JListClass::__toJson);
-        listDispatcher.addMethod("parseJson", JListClass::__parseJson);
-        listDispatcher.addMethod("count", JListClass::__count);
-        listDispatcher.addMethod("filter", JListClass::__filter);
-        listDispatcher.addMethod("map", JListClass::__map);
-        listDispatcher.addMethod("join", JListClass::__join);
-        listDispatcher.addMethod("toSet", JListClass::__toSet);
-        listDispatcher.addMethod("toList", JListClass::__toList); // copies the list
-        listDispatcher.addMethod("size", JListClass::__size);
-        listDispatcher.addMethod("isEmpty", JListClass::__isEmpty);
-        listDispatcher.addMethod("contains", JListClass::__contains);
-        listDispatcher.addMethod("randomSublist", JListClass::__randomSublist);
-        listDispatcher.addMethod("addAll", JListClass::__addAll);
-        listDispatcher.addMethod("put", JListClass::__put);
-        listDispatcher.addMethod("add", JListClass::__add);
-        listDispatcher.addMethod("get", JListClass::__get);
-        listDispatcher.addMethod(JanitorAntlrCompiler.INDEXED_GET_METHOD, JListClass::__getSliced);
-        listDispatcher.addMethod("sort", JListClass::__sort);
-        listDispatcher.addMethod("remove", JListClass::__remove);
-        listDispatcher.addMethod("removeAll", JListClass::__removeAll);
-        listDispatcher.addMethod("clear", JListClass::__clear);
-
-        setDispatcher.addMethod("add", JSetClass::__add);
-        setDispatcher.addMethod("remove", JSetClass::__remove);
-        setDispatcher.addMethod("contains", JSetClass::__contains);
-        setDispatcher.addMethod("toList", JSetClass::__toList);
-        setDispatcher.addMethod("toSet", JSetClass::__toSet); // copies the set
-        setDispatcher.addMethod("size", JSetClass::__size);
-        setDispatcher.addMethod("isEmpty", JSetClass::__isEmpty);
+        JStringClass.applyDefaults(stringDispatcher);
+        JMapClass.applyDefaults(mapDispatcher);
+        JListClass.applyDefaults(listDispatcher);
+        JSetClass.applyDefaults(setDispatcher);
+        JRegexClass.applyDefaults(regexDispatcher);
+        JDateTimeClass.applyDefaults(dateTimeDispatch);
+        JDateClass.applyDefaults(dateDispatch);
+        JBinaryClass.applyDefaults(binaryDispatcher);
 
         intDispatcher.addLongProperty("int", JanitorWrapper::janitorGetHostValue);
         // intDispatcher.addDateTimeProperty("epoch", wrapper -> DateTimeUtilities.localFromEpochSeconds(wrapper.janitorGetHostValue()));
@@ -157,43 +78,12 @@ public class DefaultBuiltinTypes implements BuiltinTypes {
 
         floatDispatcher.addLongProperty("int", doubleJanitorWrapper -> doubleJanitorWrapper.janitorGetHostValue().longValue());
 
-        binaryDispatcher.addMethod("encodeBase64", JBinaryClass::__encodeBase64);
-        binaryDispatcher.addMethod("decode", JBinaryClass::__toString);
-        binaryDispatcher.addMethod("toString", JBinaryClass::__toString);
-        binaryDispatcher.addMethod("size", JBinaryClass::__size);
-        binaryDispatcher.addStringProperty("string", wrapper -> wrapper.janitorIsTrue() ? new String(wrapper.janitorGetHostValue()) : "");
-        binaryDispatcher.addIntegerProperty("length", wrapper -> wrapper.janitorGetHostValue().length);
-
-        binaryDispatcher.addMethod("sha256", JBinaryClass::__sha256);
-
         durationDispatch.addLongProperty("seconds", JDuration::toSeconds);
         durationDispatch.addLongProperty("minutes", self -> self.toSeconds() / 60);
         durationDispatch.addLongProperty("hours", self -> self.toSeconds() / 3600);
         durationDispatch.addLongProperty("days", self -> self.toSeconds() / 86400);
         durationDispatch.addLongProperty("weeks", self -> self.toSeconds() / 604800);
 
-        regexDispatcher.addMethod("extract", JRegexClass::extract);
-        regexDispatcher.addMethod("extractAll", JRegexClass::extractAll);
-        regexDispatcher.addMethod("replaceAll", JRegexClass::replaceAll);
-        regexDispatcher.addMethod("replaceFirst", JRegexClass::replaceFirst);
-        regexDispatcher.addMethod("split", JRegexClass::split);
-        regexDispatcher.addMethod("matcher", JRegexClass::matcher);
-
-        dateTimeDispatch.addLongProperty("epoch", JDateTimeClass::__epochAsAttribute);
-        dateTimeDispatch.addMethod("toEpoch", JDateTimeClass::__epoch);
-        dateTimeDispatch.addMethod("date", JDateTimeClass::__date);
-        dateTimeDispatch.addMethod("time", JDateTimeClass::__time);
-        dateTimeDispatch.addMethod("string", JDateTimeClass::__string);
-        dateTimeDispatch.addMethod("format", JDateTimeClass::__string);
-        dateTimeDispatch.addMethod("formatAtTimezone", JDateTimeClass::__formatAtTimezone);
-        dateTimeDispatch.addMethod("kw", JDateTimeClass::__kw);
-        dateTimeDispatch.addMethod("year", JDateTimeClass::__year);
-
-        dateDispatch.addLongProperty("year", JDate::getYear);
-        dateDispatch.addLongProperty("month", JDate::getMonth);
-        dateDispatch.addLongProperty("day", JDate::getDayOfMonth);
-        dateDispatch.addMethod("format", JDateClass::__format);
-        dateDispatch.addMethod("string", JDateClass::__format);
     }
 
 
@@ -520,7 +410,6 @@ public class DefaultBuiltinTypes implements BuiltinTypes {
             throw new JsonException("invalid date: '%s'".formatted(jsonString), e);
         }
     }
-
 
     /**
      * Create a new JDate.

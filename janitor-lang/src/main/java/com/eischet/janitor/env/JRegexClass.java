@@ -2,13 +2,14 @@ package com.eischet.janitor.env;
 
 import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorScriptProcess;
-import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.JList;
 import com.eischet.janitor.api.types.builtin.JNull;
 import com.eischet.janitor.api.types.builtin.JString;
+import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
+import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -72,5 +73,14 @@ public class JRegexClass {
         return list;
     }
 
+
+    public static void applyDefaults(WrapperDispatchTable<Pattern> regexDispatcher) {
+        regexDispatcher.addMethod("extract", JRegexClass::extract);
+        regexDispatcher.addMethod("extractAll", JRegexClass::extractAll);
+        regexDispatcher.addMethod("replaceAll", JRegexClass::replaceAll);
+        regexDispatcher.addMethod("replaceFirst", JRegexClass::replaceFirst);
+        regexDispatcher.addMethod("split", JRegexClass::split);
+        regexDispatcher.addMethod("matcher", JRegexClass::matcher);
+    }
 
 }

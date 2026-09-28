@@ -2,13 +2,14 @@ package com.eischet.janitor.env;
 
 import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorScriptProcess;
-import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
-import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
+import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
-import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 import com.eischet.janitor.api.types.builtin.JInt;
 import com.eischet.janitor.api.types.builtin.JString;
+import com.eischet.janitor.api.types.functions.JCallArgs;
+import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
+import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 
 import java.math.BigInteger;
 import java.nio.charset.Charset;
@@ -21,8 +22,8 @@ public class JBinaryClass {
     /**
      * Encode binary data to base64.
      *
-     * @param self the JBinary instance
-     * @param process the running script
+     * @param self      the JBinary instance
+     * @param process   the running script
      * @param arguments arguments,w hich should be empty
      * @return the contents of the JBinary, as a string in base64 format
      */
@@ -38,8 +39,8 @@ public class JBinaryClass {
      * Convert the JBinary to a string, like Java's new String(byte[]).
      * Optional first argument: charset name, e.g. UTF-8. If omitted, UTF-8 is assumed.
      *
-     * @param self the JBinary
-     * @param process the running script
+     * @param self      the JBinary
+     * @param process   the running script
      * @param arguments call arguments
      * @return the string (JString)
      * @throws JanitorRuntimeException on errors
@@ -55,8 +56,9 @@ public class JBinaryClass {
 
     /**
      * Return the size, in bytes, of the JBinary.
-     * @param self the JBinary
-     * @param process the running script
+     *
+     * @param self      the JBinary
+     * @param process   the running script
      * @param arguments call arguments
      * @return the size in bytes
      * @throws JanitorRuntimeException on errors
@@ -69,8 +71,8 @@ public class JBinaryClass {
     /**
      * Calculate a checksum of the JBinary.
      *
-     * @param type the algorithm to use, with choices documented <a href="https://docs.oracle.com/en/java/javase/17/docs/specs/security/standard-names.html#messagedigest-algorithms">here</a>.
-     * @param self the JBinary
+     * @param type    the algorithm to use, with choices documented <a href="https://docs.oracle.com/en/java/javase/17/docs/specs/security/standard-names.html#messagedigest-algorithms">here</a>.
+     * @param self    the JBinary
      * @param process the running script
      * @return the checksum, as a JString. Empty binary arrays return the empty string.
      * @throws JanitorRuntimeException on errors, e.g. when a non-existent algorithm is requested
@@ -92,7 +94,8 @@ public class JBinaryClass {
 
     /**
      * Calculate the SHA-256 checksum of the JBinary.
-     * @param self the JBinary
+     *
+     * @param self    the JBinary
      * @param process the running script
      * @return the checksum, as a JString. Empty binary arrays return the empty string.
      * @throws JanitorRuntimeException on errors
@@ -100,6 +103,16 @@ public class JBinaryClass {
     public static JString __sha256(final JanitorWrapper<byte[]> self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);
         return __hash("SHA-256", self, process);
+    }
+
+    public static void applyDefaults(WrapperDispatchTable<byte[]> binaryDispatcher) {
+        binaryDispatcher.addMethod("encodeBase64", JBinaryClass::__encodeBase64);
+        binaryDispatcher.addMethod("decode", JBinaryClass::__toString);
+        binaryDispatcher.addMethod("toString", JBinaryClass::__toString);
+        binaryDispatcher.addMethod("size", JBinaryClass::__size);
+        binaryDispatcher.addStringProperty("string", wrapper -> wrapper.janitorIsTrue() ? new String(wrapper.janitorGetHostValue()) : "");
+        binaryDispatcher.addIntegerProperty("length", wrapper -> wrapper.janitorGetHostValue().length);
+        binaryDispatcher.addMethod("sha256", JBinaryClass::__sha256);
     }
 
 }

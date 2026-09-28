@@ -2,11 +2,13 @@ package com.eischet.janitor.env;
 
 import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorScriptProcess;
+import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.builtin.*;
+import com.eischet.janitor.compiler.JanitorAntlrCompiler;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.api.types.functions.JCallable;
 import com.eischet.janitor.api.types.*;
@@ -280,5 +282,29 @@ public class JListClass {
         return JNull.NULL;
     }
 
+
+    public static void applyDefaults(DispatchTable<JList> listDispatcher) {
+        listDispatcher.addMethod("toJson", JListClass::__toJson);
+        listDispatcher.addMethod("parseJson", JListClass::__parseJson);
+        listDispatcher.addMethod("count", JListClass::__count);
+        listDispatcher.addMethod("filter", JListClass::__filter);
+        listDispatcher.addMethod("map", JListClass::__map);
+        listDispatcher.addMethod("join", JListClass::__join);
+        listDispatcher.addMethod("toSet", JListClass::__toSet);
+        listDispatcher.addMethod("toList", JListClass::__toList); // copies the list
+        listDispatcher.addMethod("size", JListClass::__size);
+        listDispatcher.addMethod("isEmpty", JListClass::__isEmpty);
+        listDispatcher.addMethod("contains", JListClass::__contains);
+        listDispatcher.addMethod("randomSublist", JListClass::__randomSublist);
+        listDispatcher.addMethod("addAll", JListClass::__addAll);
+        listDispatcher.addMethod("put", JListClass::__put);
+        listDispatcher.addMethod("add", JListClass::__add);
+        listDispatcher.addMethod("get", JListClass::__get);
+        listDispatcher.addMethod(JanitorAntlrCompiler.INDEXED_GET_METHOD, JListClass::__getSliced);
+        listDispatcher.addMethod("sort", JListClass::__sort);
+        listDispatcher.addMethod("remove", JListClass::__remove);
+        listDispatcher.addMethod("removeAll", JListClass::__removeAll);
+        listDispatcher.addMethod("clear", JListClass::__clear);
+    }
 
 }

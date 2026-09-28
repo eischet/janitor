@@ -10,6 +10,7 @@ import com.eischet.janitor.api.types.builtin.JList;
 import com.eischet.janitor.api.types.builtin.JSet;
 import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
+import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 
 import java.util.Set;
 
@@ -55,6 +56,16 @@ public class JSetClass {
         final JSet self = ((JSet) _self);
         arguments.require(0);
         return Janitor.toBool(self.janitorGetHostValue().isEmpty());
+    }
+
+    public static void applyDefaults(WrapperDispatchTable<Set<JanitorObject>> setDispatcher) {
+        setDispatcher.addMethod("add", JSetClass::__add);
+        setDispatcher.addMethod("remove", JSetClass::__remove);
+        setDispatcher.addMethod("contains", JSetClass::__contains);
+        setDispatcher.addMethod("toList", JSetClass::__toList);
+        setDispatcher.addMethod("toSet", JSetClass::__toSet); // copies the set
+        setDispatcher.addMethod("size", JSetClass::__size);
+        setDispatcher.addMethod("isEmpty", JSetClass::__isEmpty);
     }
 
 }

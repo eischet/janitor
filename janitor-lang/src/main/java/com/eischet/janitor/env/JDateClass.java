@@ -5,6 +5,7 @@ import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.builtin.JDate;
 import com.eischet.janitor.api.types.builtin.JString;
+import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import com.eischet.janitor.api.types.functions.JCallArgs;
 
 import java.time.format.DateTimeFormatter;
@@ -18,6 +19,14 @@ public class JDateClass {
         } else {
             return Janitor.string(DateTimeFormatter.ofPattern(fmt).format(date.janitorGetHostValue()));
         }
+    }
+
+    public static void applyDefaults(DispatchTable<JDate> dateDispatch) {
+        dateDispatch.addLongProperty("year", JDate::getYear);
+        dateDispatch.addLongProperty("month", JDate::getMonth);
+        dateDispatch.addLongProperty("day", JDate::getDayOfMonth);
+        dateDispatch.addMethod("format", JDateClass::__format);
+        dateDispatch.addMethod("string", JDateClass::__format);
     }
 
 }

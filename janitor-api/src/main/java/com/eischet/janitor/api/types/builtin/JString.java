@@ -89,6 +89,15 @@ public class JString extends JanitorComposed<JString> implements JConstant, Json
         return wrapped.isEmpty();
     }
 
+    /**
+     * Check if the string is blank.
+     * @return true if the string is blank
+     * @see String#isBlank()
+     */
+    public boolean isBlank() {
+        return wrapped.isBlank();
+    }
+
     @Override
     public @NotNull String janitorClassName() {
         return CLASS_NAME;

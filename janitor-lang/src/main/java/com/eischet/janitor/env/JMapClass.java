@@ -2,14 +2,16 @@ package com.eischet.janitor.env;
 
 import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorScriptProcess;
-import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
-import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
-import com.eischet.janitor.api.types.*;
+import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.JMap;
 import com.eischet.janitor.api.types.builtin.JNull;
 import com.eischet.janitor.api.types.builtin.JString;
+import com.eischet.janitor.api.types.functions.JCallArgs;
+import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
+import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
+import com.eischet.janitor.compiler.JanitorAntlrCompiler;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonInputStream;
 import com.eischet.janitor.toolbox.json.api.JsonTokenType;
@@ -22,9 +24,9 @@ public class JMapClass {
     /**
      * Script method: Convert the map to JSON, which is useful for calling JSON-based APIs from scripts.
      *
-     * @param self          the map
-     * @param process the script process
-     * @param arguments     the arguments
+     * @param self      the map
+     * @param process   the script process
+     * @param arguments the arguments
      * @return the JSON string
      * @throws JanitorRuntimeException on errors
      */
@@ -40,9 +42,9 @@ public class JMapClass {
     /**
      * Script method: Parse a JSON string into an existing map.
      *
-     * @param self          the map
-     * @param process the script process
-     * @param arguments     the arguments
+     * @param self      the map
+     * @param process   the script process
+     * @param arguments the arguments
      * @return the map itself
      * @throws JanitorRuntimeException on JSON/runtime errors, e.g. the JSON is not a map but a list
      */
@@ -95,9 +97,9 @@ public class JMapClass {
     /**
      * Creates a shallow copy of the map.
      *
-     * @param self map
+     * @param self    map
      * @param process process
-     * @param args args, must be empty
+     * @param args    args, must be empty
      * @return a shallow copy of the map
      * @throws JanitorRuntimeException on runtime errors
      */
@@ -149,4 +151,19 @@ public class JMapClass {
         return JNull.NULL;
     }
 
+    public static void applyDefaults(WrapperDispatchTable<Map<JanitorObject, JanitorObject>> mapDispatcher) {
+        mapDispatcher.addMethod("toJson", JMapClass::__toJson);
+        mapDispatcher.addMethod("parseJson", JMapClass::__parseJson);
+        mapDispatcher.addMethod("get", JMapClass::__get);
+        mapDispatcher.addMethod(JanitorAntlrCompiler.INDEXED_GET_METHOD, JMapClass::__getIndexed);
+        mapDispatcher.addMethod("put", JMapClass::__put);
+        mapDispatcher.addMethod("size", JMapClass::__size);
+        mapDispatcher.addMethod("isEmpty", JMapClass::__isEmpty);
+        mapDispatcher.addMethod("keys", JMapClass::__keys);
+        mapDispatcher.addMethod("values", JMapClass::__values);
+        mapDispatcher.addMethod("containsKey", JMapClass::__containsKey);
+        mapDispatcher.addMethod("containsValue", JMapClass::__containsValue);
+        mapDispatcher.addMethod("clear", JMapClass::__clear);
+        mapDispatcher.addMethod("copy", JMapClass::__copy);
+    }
 }
