@@ -64,7 +64,7 @@ public class OperatingSystemModule extends JanitorComposed<OperatingSystemModule
                 final Process osProc = Runtime.getRuntime().exec(string.janitorGetHostValue());
                 return waitFor(process, osProc);
             } else if (cmd instanceof JList list) {
-                final List<String> callArgs = new ArrayList<>();
+                final List<String> callArgs = new ArrayList<>(list.size());
                 for (final JanitorObject element : list) {
                     if (element instanceof JString str) {
                         callArgs.add(str.janitorGetHostValue());
