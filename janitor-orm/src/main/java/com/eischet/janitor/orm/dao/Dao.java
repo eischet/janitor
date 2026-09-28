@@ -5,6 +5,7 @@ import com.eischet.dbxs.DatabaseConnection;
 import com.eischet.dbxs.StatementConfigurator;
 import com.eischet.dbxs.exceptions.DatabaseError;
 import com.eischet.janitor.api.types.JanitorObject;
+import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import com.eischet.janitor.orm.filter.FilterExpression;
 import com.eischet.janitor.orm.entity.OrmEntity;
 import com.eischet.janitor.orm.ref.ForeignKeySearchResult;
@@ -100,5 +101,7 @@ public interface Dao<T extends OrmEntity> extends JanitorObject {
     }
 
     ListenerRegistration addChangeListener(EntityChangeListener<T> listener);
+
+    DispatchTable<T> getEntityDispatchTable();
 }
 

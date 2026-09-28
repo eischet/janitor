@@ -29,6 +29,7 @@ import com.eischet.janitor.orm.filter.FilterExpression;
 import com.eischet.janitor.orm.entity.OrmEntity;
 import com.eischet.janitor.orm.filter.FilterOperator;
 import com.eischet.janitor.orm.filter.MalformedExpression;
+import com.eischet.janitor.orm.meta.EntityDispatchTable;
 import com.eischet.janitor.orm.sql.ColumnTypeHint;
 import com.eischet.janitor.orm.sql.StatementCreator;
 import com.eischet.janitor.toolbox.json.api.JsonException;
@@ -50,11 +51,11 @@ import java.util.stream.Collectors;
 
 import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
-public abstract class GenericDao<T extends OrmEntity> extends JanitorComposed<GenericDao<?>> implements Dao<T>, JCallable {
+public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection<U>> extends JanitorComposed<GenericDao<?, ?>> implements Dao<T>, JCallable {
 
     // TOOD: cache the database version after first retrieving it
 
-    public static final DispatchTable<GenericDao<?>> DISPATCH = new DispatchTable<>();
+    public static final DispatchTable<GenericDao<?, ?>> DISPATCH = new DispatchTable<>();
     private static final Predicate<String> INVALID_FIELD = Pattern.compile("[a-zA-Z0-9_@-]+").asMatchPredicate().negate();
 
     static {
@@ -98,7 +99,7 @@ public abstract class GenericDao<T extends OrmEntity> extends JanitorComposed<Ge
         DISPATCH.addMethod("findByKey", GenericDao::scriptFindByKey);
         DISPATCH.addMethod("queryForEach", GenericDao::scriptQueryForEach);
 
-        DISPATCH.addStringProperty("jsonSchema", self -> Janitor.current().writeJson(self.entityDispatch::writeSchemaToJson));
+        DISPATCH.addStringProperty("jsonSchema", self -> Janitor.current().writeJson(self.entityDispatchTable::writeSchemaToJson));
     }
 
     protected final JanitorLogger log = JanitorLogger.getLogger(getClass());
@@ -108,7 +109,7 @@ public abstract class GenericDao<T extends OrmEntity> extends JanitorComposed<Ge
     protected final @NotNull
     @Unmodifiable List<String> columns;
     protected final String keyColumn;
-    protected final DispatchTable<T> entityDispatch;
+    protected final EntityDispatchTable<T, U> entityDispatchTable;
     protected final Supplier<T> newValue;
     protected final Map<String, String> columnForField = new HashMap<>();
     protected final Map<String, String> fieldForColumn = new HashMap<>();
@@ -119,28 +120,28 @@ public abstract class GenericDao<T extends OrmEntity> extends JanitorComposed<Ge
     protected @Nullable DaoLogging logging;
 
     public GenericDao(
-            final @NotNull DispatchTable<? extends GenericDao<T>> childDispatch,
+            final @NotNull DispatchTable<? extends GenericDao<T, U>> childDispatch,
             final @NotNull OrmDaoCollection<?> collection,
             final @NotNull Class<T> entityClass,
-            final @NotNull DispatchTable<T> entityDispatch,
+            final @NotNull EntityDispatchTable<T, U> entityDispatchTable,
             final @NotNull Supplier<T> newValue) {
         super(Dispatcher.inherit(DISPATCH, childDispatch));
         this.collection = collection;
         this.entityClass = entityClass;
-        this.entityDispatch = entityDispatch;
+        this.entityDispatchTable = entityDispatchTable;
         this.newValue = newValue;
-        this.className = Objects.requireNonNull(entityDispatch.getMetaData(Janitor.MetaData.CLASS), "missing required CLASS");
-        this.tableName = Objects.requireNonNull(entityDispatch.getMetaData(JanitorOrm.MetaData.TABLE_NAME), "missing required TABLE_NAME");
-        this.idColumn = Objects.requireNonNull(entityDispatch.getMetaData(JanitorOrm.MetaData.ID_FIELD), "missing required ID_FIELD");
-        this.keyColumn = entityDispatch.getMetaData(JanitorOrm.MetaData.KEY_FIELD); // made optional because it's not in every table (upstream)
+        this.className = Objects.requireNonNull(entityDispatchTable.getMetaData(Janitor.MetaData.CLASS), "missing required CLASS");
+        this.tableName = Objects.requireNonNull(entityDispatchTable.getMetaData(JanitorOrm.MetaData.TABLE_NAME), "missing required TABLE_NAME");
+        this.idColumn = Objects.requireNonNull(entityDispatchTable.getMetaData(JanitorOrm.MetaData.ID_FIELD), "missing required ID_FIELD");
+        this.keyColumn = entityDispatchTable.getMetaData(JanitorOrm.MetaData.KEY_FIELD); // made optional because it's not in every table (upstream)
 
         if (log.isDebugEnabled()) {
             log.debug("initializing dao for entity {} in table {}", className, tableName);
         }
         final List<String> databaseBackedFields = new ArrayList<>();
-        final List<String> allFields = entityDispatch.streamAttributeNames().toList();
+        final List<String> allFields = entityDispatchTable.streamAttributeNames().toList();
         for (final String field : allFields) {
-            @Nullable final String columnName = entityDispatch.getMetaData(field, JanitorOrm.MetaData.COLUMN_NAME);
+            @Nullable final String columnName = entityDispatchTable.getMetaData(field, JanitorOrm.MetaData.COLUMN_NAME);
             if (columnName != null && !columnName.isBlank()) {
                 columnForField.put(field, columnName);
                 fieldForColumn.put(columnName, field);
@@ -149,7 +150,7 @@ public abstract class GenericDao<T extends OrmEntity> extends JanitorComposed<Ge
         }
         this.columns = List.copyOf(databaseBackedFields);
 
-        collection.registerDao(className, this, entityDispatch);
+        collection.registerDao(this);
     }
 
     /**
@@ -343,7 +344,7 @@ public abstract class GenericDao<T extends OrmEntity> extends JanitorComposed<Ge
                 if (column == null) {
                     throw new MalformedExpression("missing column for field '" + namedField + "'");
                 }
-                final @Nullable ColumnTypeHint columnTypeHint = entityDispatch.getMetaData(namedField, JanitorOrm.MetaData.COLUMN_TYPE);
+                final @Nullable ColumnTypeHint columnTypeHint = entityDispatchTable.getMetaData(namedField, JanitorOrm.MetaData.COLUMN_TYPE);
                 if (columnTypeHint == null) {
                     throw new MalformedExpression("missing type for column '" + column + "' of field '" + namedField + "'");
                 }
@@ -514,11 +515,11 @@ public abstract class GenericDao<T extends OrmEntity> extends JanitorComposed<Ge
         for (final String column : columns) {
             ++columnIndex;
             String field = Objects.requireNonNull(fieldForColumn.get(column));
-            final @NotNull ColumnTypeHint columnTypeHint = Objects.requireNonNull(entityDispatch.getMetaData(field, JanitorOrm.MetaData.COLUMN_TYPE));
-            final @Nullable String lookupType = entityDispatch.getMetaData(field, Janitor.MetaData.REF);
-            final @Nullable Boolean hostNullable = entityDispatch.getMetaData(field, Janitor.MetaData.HOST_NULLABLE);
+            final @NotNull ColumnTypeHint columnTypeHint = Objects.requireNonNull(entityDispatchTable.getMetaData(field, JanitorOrm.MetaData.COLUMN_TYPE));
+            final @Nullable String lookupType = entityDispatchTable.getMetaData(field, Janitor.MetaData.REF);
+            final @Nullable Boolean hostNullable = entityDispatchTable.getMetaData(field, Janitor.MetaData.HOST_NULLABLE);
             try {
-                final JanitorObject propertyValue = Objects.requireNonNull(entityDispatch.get(field).lookupAttribute(value));
+                final JanitorObject propertyValue = Objects.requireNonNull(entityDispatchTable.get(field).lookupAttribute(value));
                 if (propertyValue instanceof JAssignable assignableProperty) {
                     CommonDao.readProperty(collection, column, conn, assignableProperty, rs, columnTypeHint, lookupType, hostNullable);
                 } else {
@@ -541,7 +542,7 @@ public abstract class GenericDao<T extends OrmEntity> extends JanitorComposed<Ge
         final StatementCreator creator = new StatementCreator(getDataManager().getDialect());
         final List<String> insertingColumns = columns.stream().toList();
         final UpdateStatement insertStatement = UpdateStatement.of(creator.createInsertStatement(tableName, insertingColumns));
-        final String sequence = Objects.requireNonNull(entityDispatch.getMetaData(JanitorOrm.MetaData.ID_SEQUENCE));
+        final String sequence = Objects.requireNonNull(entityDispatchTable.getMetaData(JanitorOrm.MetaData.ID_SEQUENCE));
         final SelectStatement nextIdQuery = Objects.requireNonNull(conn.getDialect().getNextValueQuery(sequence));
         final long generatedId = conn.queryForLong(nextIdQuery);
         record.setId(generatedId);
@@ -584,8 +585,8 @@ public abstract class GenericDao<T extends OrmEntity> extends JanitorComposed<Ge
         for (final String column : updatingColumns) {
             String field = Objects.requireNonNull(fieldForColumn.get(column));
             try {
-                final JanitorObject propertyValue = Objects.requireNonNull(entityDispatch.get(field).lookupAttribute(record), "no value for field '" + field + "' in record " + record + " / column '" + column + "'");
-                final @NotNull ColumnTypeHint columnTypeHint = Objects.requireNonNull(entityDispatch.getMetaData(field, JanitorOrm.MetaData.COLUMN_TYPE), "no column type hint for field '" + field + "' in record " + record + " / column '" + column + "'");
+                final JanitorObject propertyValue = Objects.requireNonNull(entityDispatchTable.get(field).lookupAttribute(record), "no value for field '" + field + "' in record " + record + " / column '" + column + "'");
+                final @NotNull ColumnTypeHint columnTypeHint = Objects.requireNonNull(entityDispatchTable.getMetaData(field, JanitorOrm.MetaData.COLUMN_TYPE), "no column type hint for field '" + field + "' in record " + record + " / column '" + column + "'");
                 CommonDao.writeProperty(conn, className, column, field, propertyValue.janitorUnpack(), ps, columnTypeHint);
             } catch (Exception e) {
                 throw new SQLException("error writing column '" + column + "' / field '" + field + "' into the database", e);
@@ -667,7 +668,7 @@ public abstract class GenericDao<T extends OrmEntity> extends JanitorComposed<Ge
     private T insertForScript(final @NotNull JanitorScriptProcess process, final @NotNull JanitorObject janitorObject) throws JanitorRuntimeException {
         for (final JanitorObject object : janitorObject.janitorUnpackAll()) {
             if (object instanceof JMap janitorMap) {
-                final T instance = entityDispatch.getConstructor().call(process, JCallArgs.empty("constructor", process));
+                final T instance = entityDispatchTable.getConstructor().call(process, JCallArgs.empty("constructor", process));
                 janitorMap.applyTo(process, instance);
                 try {
                     getDataManager().executeTransaction(conn -> insert(conn, instance));
@@ -692,7 +693,7 @@ public abstract class GenericDao<T extends OrmEntity> extends JanitorComposed<Ge
     private T updateForScript(final @NotNull JanitorScriptProcess process, final @NotNull JanitorObject janitorObject) throws JanitorRuntimeException {
         for (final JanitorObject object : janitorObject.janitorUnpackAll()) {
             if (object instanceof JMap janitorMap) {
-                final T instance = entityDispatch.getConstructor().call(process, JCallArgs.empty("constructor", process));
+                final T instance = entityDispatchTable.getConstructor().call(process, JCallArgs.empty("constructor", process));
                 janitorMap.applyTo(process, instance);
                 try {
                     getDataManager().executeTransaction(conn -> update(conn, instance));
@@ -773,14 +774,14 @@ public abstract class GenericDao<T extends OrmEntity> extends JanitorComposed<Ge
      */
     @Override
     public boolean equals(final Object o) {
-        if (!(o instanceof final GenericDao<?> that)) return false;
+        if (!(o instanceof final GenericDao<?, ?> that)) return false;
         return Objects.equals(tableName, that.tableName);
     }
 
     /**
      * Hash code generation.
-     * Note that this is based on the table name by default, which should be reasonable for many use cases.
-     * @return
+     * Note that this is based on the table name by default, which should be reasonable for most use cases.
+     * @return the hash code
      */
     @Override
     public int hashCode() {
@@ -792,4 +793,8 @@ public abstract class GenericDao<T extends OrmEntity> extends JanitorComposed<Ge
         return entityChangeListeners.add(listener);
     }
 
+    @Override
+    public DispatchTable<T> getEntityDispatchTable() {
+        return entityDispatchTable;
+    }
 }

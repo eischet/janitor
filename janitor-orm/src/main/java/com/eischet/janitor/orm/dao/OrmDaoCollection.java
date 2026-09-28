@@ -62,13 +62,13 @@ public abstract class OrmDaoCollection<S extends OrmDaoCollection<S>> extends Ja
 
     // registration: called by the DAO constructors
 
-    void registerDao(final @NotNull String className, final @NotNull Dao<? extends OrmEntity> dao, final @NotNull DispatchTable<?> entityDispatch) {
-        entities.put(className, entityDispatch);
-        daos.put(className, dao);
+    protected void registerDao(final @NotNull Dao<? extends OrmEntity> dao) {
+        entities.put(dao.getEntityClassName(), dao.getEntityDispatchTable());
+        daos.put(dao.getEntityClassName(), dao);
     }
 
-    void registerJoinDao(final @NotNull String className, final @NotNull JoinDao<? extends OrmJoined> dao, final @NotNull DispatchTable<?> entityDispatch) {
-        joinDaos.put(className, dao);
+    protected void registerJoinDao(final @NotNull JoinDao<? extends OrmJoined> dao) {
+        joinDaos.put(dao.getEntityClassName(), dao);
     }
 
     // lookup by class name, as needed for foreign keys and scripts

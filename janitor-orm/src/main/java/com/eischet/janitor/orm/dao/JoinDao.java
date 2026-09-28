@@ -57,7 +57,7 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
         DISPATCH.addMethod("update", JoinDao::updateForScript);
         DISPATCH.addMethod("merge", JoinDao::mergeForScript);
         DISPATCH.addVoidMethod("delete", JoinDao::deleteForScript);
-        DISPATCH.addStringProperty("jsonSchema", self -> Janitor.current().writeJson(self.entityDispatch::writeSchemaToJson));
+        DISPATCH.addStringProperty("jsonSchema", self -> Janitor.current().writeJson(self.entityDispatchTable::writeSchemaToJson));
     }
 
     protected final ListenerSet<EntityChangeListener<T>> entityChangeListeners= new ListenerSetStandard<>();
@@ -65,7 +65,7 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
     protected final @NotNull String tableName;
     protected final @NotNull
     @Unmodifiable List<String> columns;
-    protected final DispatchTable<T> entityDispatch;
+    protected final DispatchTable<T> entityDispatchTable;
     protected final Supplier<T> newValue;
     protected final Map<String, String> columnForField = new HashMap<>();
     protected final Map<String, String> fieldForColumn = new HashMap<>();
@@ -86,6 +86,10 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
         return collection.getDataManager();
     }
 
+    public @NotNull String getEntityClassName() {
+        return entityClass.getSimpleName();
+    }
+
     /**
      * Helper method for automatic implementation of an "add" method on JoinedList objects.
      * @param parentEntity a parent entity
@@ -99,25 +103,25 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
             final Class<T> entityClass,
             final DispatchTable<? extends JoinDao<T>> childDispatch,
             final OrmDaoCollection<?> collection,
-            final DispatchTable<T> entityDispatch,
+            final DispatchTable<T> entityDispatchTable,
             final Supplier<T> newValue) {
 
         super(Dispatcher.inherit(DISPATCH, childDispatch));
         this.entityClass = entityClass;
         this.collection = collection;
-        this.entityDispatch = entityDispatch;
+        this.entityDispatchTable = entityDispatchTable;
         this.newValue = newValue;
-        this.className = Objects.requireNonNull(entityDispatch.getMetaData(Janitor.MetaData.CLASS), "missing required CLASS");
-        this.tableName = Objects.requireNonNull(entityDispatch.getMetaData(JanitorOrm.MetaData.TABLE_NAME), "missing required TABLE_NAME");
-        this.primaryKeyColumns = List.copyOf(Objects.requireNonNull(entityDispatch.getMetaData(JanitorOrm.MetaData.JOIN_TABLE_PK), "missing required JOIN_TABLE_PK columns"));
+        this.className = Objects.requireNonNull(entityDispatchTable.getMetaData(Janitor.MetaData.CLASS), "missing required CLASS");
+        this.tableName = Objects.requireNonNull(entityDispatchTable.getMetaData(JanitorOrm.MetaData.TABLE_NAME), "missing required TABLE_NAME");
+        this.primaryKeyColumns = List.copyOf(Objects.requireNonNull(entityDispatchTable.getMetaData(JanitorOrm.MetaData.JOIN_TABLE_PK), "missing required JOIN_TABLE_PK columns"));
 
         if (log.isDebugEnabled()) {
             log.debug("initializing dao for joined {} in table {}", className, tableName);
         }
         final List<String> databaseBackedFields = new ArrayList<>();
-        final List<String> allFields = entityDispatch.streamAttributeNames().toList();
+        final List<String> allFields = entityDispatchTable.streamAttributeNames().toList();
         for (final String field : allFields) {
-            @Nullable final String columnName = entityDispatch.getMetaData(field, JanitorOrm.MetaData.COLUMN_NAME);
+            @Nullable final String columnName = entityDispatchTable.getMetaData(field, JanitorOrm.MetaData.COLUMN_NAME);
             if (columnName != null && !columnName.isBlank()) {
                 columnForField.put(field, columnName);
                 fieldForColumn.put(columnName, field);
@@ -125,7 +129,7 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
             }
         }
         this.columns = List.copyOf(databaseBackedFields);
-        collection.registerJoinDao(entityClass.getSimpleName(), this, entityDispatch);
+        collection.registerJoinDao(this);
 
     }
 
@@ -135,11 +139,11 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
         for (final String column : columns) {
             ++columnIndex;
             String field = Objects.requireNonNull(fieldForColumn.get(column));
-            final @NotNull ColumnTypeHint columnTypeHint = Objects.requireNonNull(entityDispatch.getMetaData(field, JanitorOrm.MetaData.COLUMN_TYPE));
-            final @Nullable String lookupType = entityDispatch.getMetaData(field, Janitor.MetaData.REF);
-            final @Nullable Boolean hostNullable = entityDispatch.getMetaData(field, Janitor.MetaData.HOST_NULLABLE);
+            final @NotNull ColumnTypeHint columnTypeHint = Objects.requireNonNull(entityDispatchTable.getMetaData(field, JanitorOrm.MetaData.COLUMN_TYPE));
+            final @Nullable String lookupType = entityDispatchTable.getMetaData(field, Janitor.MetaData.REF);
+            final @Nullable Boolean hostNullable = entityDispatchTable.getMetaData(field, Janitor.MetaData.HOST_NULLABLE);
             try {
-                final JanitorObject propertyValue = Objects.requireNonNull(entityDispatch.get(field).lookupAttribute(value));
+                final JanitorObject propertyValue = Objects.requireNonNull(entityDispatchTable.get(field).lookupAttribute(value));
                 if (propertyValue instanceof JAssignable assignableProperty) {
                     CommonDao.readProperty(collection, column, conn, assignableProperty, rs, columnTypeHint, lookupType, hostNullable);
                 } else {
@@ -434,8 +438,8 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
         for (final String column : updatingColumns) {
             String field = Objects.requireNonNull(fieldForColumn.get(column));
             try {
-                final JanitorObject propertyValue = Objects.requireNonNull(entityDispatch.get(field).lookupAttribute(record), "no value for field '" + field + "' in record " + record + " / column '" + column + "'");
-                final @NotNull ColumnTypeHint columnTypeHint = Objects.requireNonNull(entityDispatch.getMetaData(field, JanitorOrm.MetaData.COLUMN_TYPE), "no column type hint for field '" + field + "' in record " + record + " / column '" + column + "'");
+                final JanitorObject propertyValue = Objects.requireNonNull(entityDispatchTable.get(field).lookupAttribute(record), "no value for field '" + field + "' in record " + record + " / column '" + column + "'");
+                final @NotNull ColumnTypeHint columnTypeHint = Objects.requireNonNull(entityDispatchTable.getMetaData(field, JanitorOrm.MetaData.COLUMN_TYPE), "no column type hint for field '" + field + "' in record " + record + " / column '" + column + "'");
                 CommonDao.writeProperty(conn, className, column, field, propertyValue.janitorUnpack(), ps, columnTypeHint);
             } catch (Exception e) {
                 throw new SQLException("error writing column '" + column + "' / field '" + field + "' into the database", e);
@@ -491,4 +495,7 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
         return entityChangeListeners.add(listener);
     }
 
+    public DispatchTable<T> getEntityDispatchTable() {
+        return entityDispatchTable;
+    }
 }

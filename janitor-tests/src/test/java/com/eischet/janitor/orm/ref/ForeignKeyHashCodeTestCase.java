@@ -3,6 +3,7 @@ package com.eischet.janitor.orm.ref;
 import com.eischet.dbxs.DatabaseConnection;
 import com.eischet.dbxs.StatementConfigurator;
 import com.eischet.janitor.JanitorTest;
+import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import com.eischet.janitor.orm.dao.Dao;
 import com.eischet.janitor.orm.dao.DaoLogging;
 import com.eischet.janitor.orm.dao.EntityChangeListener;
@@ -171,6 +172,11 @@ public class ForeignKeyHashCodeTestCase extends JanitorTest {
         @Override
         public ListenerRegistration addChangeListener(final EntityChangeListener<TestEntity> listener) {
             throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public DispatchTable<TestEntity> getEntityDispatchTable() {
+            return null;
         }
     }
 

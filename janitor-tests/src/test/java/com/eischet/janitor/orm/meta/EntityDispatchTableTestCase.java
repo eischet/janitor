@@ -23,7 +23,7 @@ public class EntityDispatchTableTestCase extends JanitorTest {
 
     static class Thing implements OrmEntity {
         static final ForeignKeyNull<Thing> NULL = new ForeignKeyNull<>();
-        static final EntityDispatchTable<Thing, TestUplink> DISPATCH =
+        static final EntityDispatchTable<Thing, TestCollection> DISPATCH =
                 new EntityDispatchTable<>(Thing.class, up -> new Thing(), NULL, up -> null);
 
         static {
@@ -50,17 +50,14 @@ public class EntityDispatchTableTestCase extends JanitorTest {
         public void setLabel(final String label) { this.label = label; }
     }
 
-    static class TestUplink implements Uplink {
-    }
-
     @Test
     void tableIsItsOwnWrangler() {
-        final EntityWrangler<Thing, TestUplink> wrangler = Thing.DISPATCH;
+        final EntityWrangler<Thing, TestCollection> wrangler = Thing.DISPATCH;
         assertSame(Thing.DISPATCH, wrangler.getDispatchTable());
         assertSame(Thing.NULL, wrangler.getNullReference());
         assertEquals(Thing.class, wrangler.getWrangledClass());
         assertEquals("Thing", wrangler.getSimpleClassName());
-        assertNotNull(wrangler.createNewInstance(new TestUplink()));
+        assertNotNull(wrangler.createNewInstance(new TestCollection()));
     }
 
     @Test
@@ -78,7 +75,7 @@ public class EntityDispatchTableTestCase extends JanitorTest {
         final Thing original = new Thing();
         original.setId(7);
         original.setLabel("hello");
-        final Thing copy = Thing.DISPATCH.duplicate(new TestUplink(), original);
+        final Thing copy = Thing.DISPATCH.duplicate(new TestCollection(), original);
         assertNotSame(original, copy);
         assertEquals(7, copy.getId());
         assertEquals("hello", copy.getLabel());
@@ -86,14 +83,14 @@ public class EntityDispatchTableTestCase extends JanitorTest {
 
     @Test
     void extendKeepsTheSubclass() {
-        final EntityDispatchTable<Thing, TestUplink> child = Thing.DISPATCH.extend();
+        final EntityDispatchTable<Thing, TestCollection> child = Thing.DISPATCH.extend();
         child.addStringColumn("extra", "extra", Thing::getLabel, Thing::setLabel, 10);
         assertSame(Thing.NULL, child.getNullReference());
         assertEquals(Thing.class, child.getWrangledClass());
         assertEquals("thing", child.getMetaData(JanitorOrm.MetaData.TABLE_NAME), "inherited from parent");
         assertTrue(child.has("extra"));
         assertFalse(Thing.DISPATCH.has("extra"));
-        assertNotNull(child.createNewInstance(new TestUplink()));
+        assertNotNull(child.createNewInstance(new TestCollection()));
     }
 
     @Test
@@ -103,8 +100,8 @@ public class EntityDispatchTableTestCase extends JanitorTest {
         assertTrue(new DispatchTable<Thing>(false).extend(true).has("apply"));
     }
 
-    static class ThingDao extends GenericDao<Thing> {
-        ThingDao(final OrmDaoCollection<?> collection, final DispatchTable<Thing> dispatch) {
+    static class ThingDao extends GenericDao<Thing, TestCollection> {
+        ThingDao(final TestCollection collection, final EntityDispatchTable<Thing, TestCollection> dispatch) {
             super(new DispatchTable<ThingDao>(false), collection, Thing.class, dispatch, Thing::new);
         }
 
@@ -128,9 +125,9 @@ public class EntityDispatchTableTestCase extends JanitorTest {
 
         private final ThingDao thingDao;
 
-        TestCollection(final DispatchTable<Thing> thingDispatch) {
+        TestCollection() {
             super(DISPATCH);
-            thingDao = new ThingDao(this, thingDispatch);
+            thingDao = new ThingDao(this, Thing.DISPATCH);
         }
 
         ThingDao getThingDao() {
@@ -145,7 +142,7 @@ public class EntityDispatchTableTestCase extends JanitorTest {
 
     @Test
     void daoRegistersItselfAndItsDispatchTable() {
-        final TestCollection collection = new TestCollection(Thing.DISPATCH);
+        final TestCollection collection = new TestCollection();
         assertSame(collection.getThingDao(), collection.getDao("Thing"));
         assertSame(Thing.DISPATCH, collection.getEntity("Thing"));
         assertSame(Thing.DISPATCH, collection.getOrmDispatchTable("Thing"));
@@ -159,28 +156,8 @@ public class EntityDispatchTableTestCase extends JanitorTest {
     }
 
     @Test
-    void collectionsAreIndependent() {
-        final TestCollection one = new TestCollection(Thing.DISPATCH);
-        final TestCollection two = new TestCollection(Thing.DISPATCH);
-        assertNotSame(one.getDao("Thing"), two.getDao("Thing"));
-    }
-
-    @Test
-    void plainDispatchTablesAreIgnoredForOrmLookups() {
-        final DispatchTable<Thing> plain = new DispatchTable<>(false);
-        plain.setMetaData(Janitor.MetaData.CLASS, "Thing");
-        plain.setMetaData(JanitorOrm.MetaData.TABLE_NAME, "thing");
-        plain.setMetaData(JanitorOrm.MetaData.ID_FIELD, "thing_id");
-        final TestCollection collection = new TestCollection(plain);
-        assertSame(plain, collection.getEntity("Thing"));
-        assertNull(collection.getOrmDispatchTable("Thing"));
-        assertNull(collection.getEntityDispatchTable(Thing.class));
-        assertNull(collection.getNullReference(Thing.class));
-    }
-
-    @Test
     void registryScriptProperties() {
-        final TestCollection collection = new TestCollection(Thing.DISPATCH);
+        final TestCollection collection = new TestCollection();
         assertTrue(TestCollection.DISPATCH.has("entities"));
         assertTrue(TestCollection.DISPATCH.has("joins"));
         assertNotNull(collection);

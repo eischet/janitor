@@ -1,19 +1,27 @@
 package com.eischet.janitor.orm.meta;
 
 import com.eischet.janitor.api.Janitor;
+import com.eischet.janitor.api.types.builtin.JNumber;
+import com.eischet.janitor.api.types.builtin.JString;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import com.eischet.janitor.api.types.dispatch.ValueExpander;
 import com.eischet.janitor.api.types.interop.NotNullGetter;
 import com.eischet.janitor.api.types.interop.NotNullSetter;
+import com.eischet.janitor.logging.JanitorLogger;
 import com.eischet.janitor.orm.JanitorOrm;
 import com.eischet.janitor.orm.dao.Dao;
 import com.eischet.janitor.orm.dao.Uplink;
 import com.eischet.janitor.orm.entity.OrmEntity;
 import com.eischet.janitor.orm.entity.OrmObject;
 import com.eischet.janitor.orm.ref.ForeignKey;
+import com.eischet.janitor.orm.ref.ForeignKeyIdentity;
+import com.eischet.janitor.orm.ref.ForeignKeyInteger;
 import com.eischet.janitor.orm.ref.ForeignKeyNull;
+import com.eischet.janitor.orm.ref.ForeignKeyString;
 import com.eischet.janitor.orm.sql.ColumnTypeHint;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.function.Function;
 
 /**
  * Helper interface that makes interacting with {@link OrmEntity} easier.
@@ -25,22 +33,58 @@ import org.jetbrains.annotations.NotNull;
  */
 public interface EntityWrangler<T extends OrmEntity, U extends Uplink> extends Wrangler<T, U> {
 
+    JanitorLogger log = JanitorLogger.getLogger(EntityWrangler.class);
+
     @NotNull ForeignKeyNull<T> getNullReference();
 
     @NotNull Dao<T> retrieveDao(final @NotNull U uplink);
+
+    /**
+     * Builds a {@link ValueExpander} that converts scripting values into a {@link ForeignKey} pointing at this
+     * wrangler's entity type, resolving the DAO from the uplink obtained via {@code uplinkOf}.
+     *
+     * @param uplinkOf retrieves this wrangler's uplink type from the instance the property is being set on
+     * @param <S>      the type of the instance owning the foreign-key property
+     * @return a value expander suitable for {@link #addReference}
+     */
+    default <S extends OrmObject> @NotNull ValueExpander<S, ForeignKey<T>> getValueExpander(final @NotNull Function<S, U> uplinkOf) {
+        return (instance, value) -> {
+            if (value instanceof ForeignKey<?> fk) {
+                if (fk.getReferencedEntityClass() != getWrangledClass()) {
+                    log.warn("expandValue: {} is a foreign key to {}, but we are looking for {}", value, fk.getReferencedEntityClass(), getWrangledClass());
+                }
+                //noinspection unchecked
+                return (ForeignKey<T>) fk;
+            }
+            if (getWrangledClass().isInstance(value) && value instanceof ForeignKeyIdentity<?>) {
+                //noinspection unchecked
+                return (ForeignKeyIdentity<T>) value; // this works because all entities implement ForeignKeyIdentity
+            }
+            if (value == Janitor.NULL) {
+                return getNullReference();
+            }
+            if (value instanceof JNumber idPointer) {
+                return new ForeignKeyInteger<>(idPointer.toLong(), retrieveDao(uplinkOf.apply(instance)));
+            }
+            if (value instanceof JString keyPointer) {
+                return new ForeignKeyString<>(keyPointer.janitorGetHostValue(), retrieveDao(uplinkOf.apply(instance)));
+            }
+            throw new IllegalArgumentException("Cannot convert " + value + " to a foreign key");
+        };
+    }
 
     default <V extends OrmObject> void addReference(final DispatchTable<V> dispatch,
                                                     final String propertyName,
                                                     final String columnName,
                                                     final NotNullGetter<V, ForeignKey<T>> getter,
                                                     final NotNullSetter<V, ForeignKey<T>> setter,
-                                                    final ValueExpander<V, ForeignKey<T>> expander) {
+                                                    final Function<V, U> uplinkOf) {
         dispatch.addObjectPropertyWithSingletonDefault(
                         propertyName,
                         getter::get,
                         (v, value) -> setter.set(v, value == null ? getNullReference() : value),
                         getNullReference(),
-                        expander)
+                        getValueExpander(uplinkOf))
                 .setMetaData(JanitorOrm.MetaData.COLUMN_NAME, columnName)
                 .setMetaData(JanitorOrm.MetaData.COLUMN_TYPE, ColumnTypeHint.INT)
                 .setMetaData(Janitor.MetaData.REF, getSimpleClassName());

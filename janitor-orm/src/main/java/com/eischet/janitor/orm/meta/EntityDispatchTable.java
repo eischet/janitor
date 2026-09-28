@@ -5,7 +5,6 @@ import com.eischet.janitor.api.types.JAssignable;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.TemporaryAssignable;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
-import com.eischet.janitor.api.types.dispatch.ValueExpander;
 import com.eischet.janitor.api.types.interop.NotNullGetter;
 import com.eischet.janitor.api.types.interop.NotNullSetter;
 import com.eischet.janitor.logging.JanitorLogger;
@@ -100,11 +99,11 @@ public class EntityDispatchTable<T extends OrmEntity, U extends Uplink> extends 
      */
     public <X extends OrmEntity> void addReference(final @NotNull String propertyName,
                                                                  final @NotNull String columnName,
-                                                                 final @NotNull EntityWrangler<X, ?> target,
+                                                                 final @NotNull EntityWrangler<X, U> target,
                                                                  final @NotNull NotNullGetter<T, ForeignKey<X>> getter,
                                                                  final @NotNull NotNullSetter<T, ForeignKey<X>> setter,
-                                                                 final @NotNull ValueExpander<T, ForeignKey<X>> expander) {
-        target.addReference(this, propertyName, columnName, getter, setter, expander);
+                                                                 final @NotNull Function<T, U> uplinkOf) {
+        target.addReference(this, propertyName, columnName, getter, setter, uplinkOf);
     }
 
     @Override
