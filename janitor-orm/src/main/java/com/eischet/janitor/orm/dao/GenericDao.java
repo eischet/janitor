@@ -25,6 +25,8 @@ import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.types.functions.JCallable;
 import com.eischet.janitor.logging.JanitorLogger;
 import com.eischet.janitor.orm.JanitorOrm;
+import com.eischet.janitor.orm.cache.EntityCache;
+import com.eischet.janitor.orm.cache.SimpleEntityCache;
 import com.eischet.janitor.orm.filter.FilterExpression;
 import com.eischet.janitor.orm.entity.OrmEntity;
 import com.eischet.janitor.orm.filter.FilterOperator;
@@ -118,6 +120,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
     protected final @NotNull Class<T> entityClass;
     protected boolean verbose = false;
     protected @Nullable DaoLogging logging;
+    protected @NotNull EntityCache<T> cache = EntityCache.noop();
 
     public GenericDao(
             final @NotNull DispatchTable<? extends GenericDao<T, U>> childDispatch,
@@ -151,6 +154,28 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
         this.columns = List.copyOf(databaseBackedFields);
 
         collection.registerDao(this);
+    }
+
+    /**
+     * Opts this DAO into caching: {@link #findById}/{@link #findByKey} will consult {@code cache} before
+     * querying the database, and it's kept in sync automatically via {@link #addChangeListener}, which
+     * every insert/update/delete already fires — {@code cache.put(record)} on insert/update (so a write
+     * refreshes the cache with the value just written, no extra round trip needed on the next read), and
+     * {@code cache.invalidateById(record.getId())} on delete. Call this once, from a subclass's
+     * constructor, if that entity type should be cached; by default {@link #cache} is
+     * {@link EntityCache#noop()}, so DAOs that never call this behave exactly as before caching existed.
+     *
+     * @param cache the cache to attach; see {@link SimpleEntityCache} for a ready-to-use, dependency-free
+     *              implementation
+     */
+    protected final void enableCache(final @NotNull EntityCache<T> cache) {
+        this.cache = cache;
+        addChangeListener((type, entity) -> {
+            switch (type) {
+                case INSERT, UPDATE -> cache.put(entity);
+                case DELETE -> cache.invalidateById(entity.getId());
+            }
+        });
     }
 
     /**
@@ -204,6 +229,19 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
 
     @Override
     public @Nullable T findByKey(final @NotNull DatabaseConnection conn, final @Nullable String key) throws DatabaseError {
+        final T cached = cache.findByKey(key);
+        if (cached != null) {
+            return cached;
+        }
+        return findByKeyIgnoringCache(conn, key);
+    }
+
+    /**
+     * Like {@link #findByKey}, but always queries the database, bypassing any cache attached via
+     * {@link #enableCache}. The result is still stored into the cache (if any), same as a normal cache
+     * miss would.
+     */
+    public @Nullable T findByKeyIgnoringCache(final @NotNull DatabaseConnection conn, final @Nullable String key) throws DatabaseError {
         if (keyColumn == null) {
             throw new DatabaseError("no key column defined for table '" + tableName + "'");
         }
@@ -218,17 +256,34 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
         if (verbose) {
             log.info("{}::findByKey(key='{}'): running {}", className, key, select);
         }
-        return conn.queryForObject(select, stmt -> stmt.addString(key), rs -> readAllProperties(conn, rs));
+        final T loaded = conn.queryForObject(select, stmt -> stmt.addString(key), rs -> readAllProperties(conn, rs));
+        cache.put(loaded);
+        return loaded;
     }
 
     @Override
     public @Nullable T findById(final @NotNull DatabaseConnection conn, final long id) throws DatabaseError {
+        final T cached = cache.findById(id);
+        if (cached != null) {
+            return cached;
+        }
+        return findByIdIgnoringCache(conn, id);
+    }
+
+    /**
+     * Like {@link #findById}, but always queries the database, bypassing any cache attached via
+     * {@link #enableCache}. The result is still stored into the cache (if any), same as a normal cache
+     * miss would.
+     */
+    public @Nullable T findByIdIgnoringCache(final @NotNull DatabaseConnection conn, final long id) throws DatabaseError {
         final StatementCreator creator = new StatementCreator(getDataManager().getDialect());
         final SelectStatement select = SelectStatement.of(creator.createSelectStatement(tableName, columns, idColumn));
         if (verbose) {
             log.info("{}::findById(id={}): running {}", className, id, select);
         }
-        return conn.queryForObject(select, stmt -> stmt.addLong(id), rs -> readAllProperties(conn, rs));
+        final T loaded = conn.queryForObject(select, stmt -> stmt.addLong(id), rs -> readAllProperties(conn, rs));
+        cache.put(loaded);
+        return loaded;
     }
 
     @Override
