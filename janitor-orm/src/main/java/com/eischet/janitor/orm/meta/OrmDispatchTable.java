@@ -5,6 +5,7 @@ import com.eischet.janitor.api.metadata.MetaDataBuilder;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import com.eischet.janitor.api.types.interop.*;
 import com.eischet.janitor.orm.dao.Uplink;
+import com.eischet.janitor.orm.entity.LazyLoadedString;
 import com.eischet.janitor.orm.entity.OrmObject;
 import org.jetbrains.annotations.NotNull;
 
@@ -88,6 +89,14 @@ public class OrmDispatchTable<T extends OrmObject, U extends Uplink> extends Dis
 
     public MetaDataBuilder<T> addTextColumn(final String name, final String column, final NullableGetter<T, String> getter, final NullableSetter<T, String> setter) {
         return OrmObject.addTextProperty(this, name, column, getter, setter);
+    }
+
+    /**
+     * Like {@link #addTextColumn}, but for a field backed by a {@link com.eischet.janitor.orm.entity.LazyLoadedString}
+     * instead of a plain {@code String}; see {@link OrmObject#addLazyTextProperty}.
+     */
+    public MetaDataBuilder<T> addLazyTextColumn(final String name, final String column, final Function<T, LazyLoadedString> accessor) {
+        return OrmObject.addLazyTextProperty(this, name, column, accessor);
     }
 
     public MetaDataBuilder<T> addLongColumn(final String name, final String column, final PrimitiveLongGetter<T> getter, final PrimitiveLongSetter<T> setter) {

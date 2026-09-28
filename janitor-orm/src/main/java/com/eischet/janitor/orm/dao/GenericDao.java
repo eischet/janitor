@@ -110,6 +110,15 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
     protected final @NotNull String idColumn;
     protected final @NotNull
     @Unmodifiable List<String> columns;
+    /**
+     * Like {@link #columns}, but excluding any column registered via
+     * {@link com.eischet.janitor.orm.entity.OrmObject#addLazyTextProperty} (see
+     * {@link JanitorOrm.MetaData#LAZY_LOAD}). This is what {@link #findById}/{@link #findByKey}/
+     * {@link #findAll}/{@link #findByFilter}/{@link #findByAssociation} actually SELECT; INSERT/UPDATE
+     * keep using {@link #columns}, since writing a lazily-loaded field's current value is unaffected by
+     * whether it was eagerly fetched.
+     */
+    protected final @NotNull @Unmodifiable List<String> selectColumns;
     protected final String keyColumn;
     protected final EntityDispatchTable<T, U> entityDispatchTable;
     protected final Supplier<T> newValue;
@@ -142,6 +151,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
             log.debug("initializing dao for entity {} in table {}", className, tableName);
         }
         final List<String> databaseBackedFields = new ArrayList<>();
+        final List<String> selectableFields = new ArrayList<>();
         final List<String> allFields = entityDispatchTable.streamAttributeNames().toList();
         for (final String field : allFields) {
             @Nullable final String columnName = entityDispatchTable.getMetaData(field, JanitorOrm.MetaData.COLUMN_NAME);
@@ -149,9 +159,13 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
                 columnForField.put(field, columnName);
                 fieldForColumn.put(columnName, field);
                 databaseBackedFields.add(columnName);
+                if (!Boolean.TRUE.equals(entityDispatchTable.getMetaData(field, JanitorOrm.MetaData.LAZY_LOAD))) {
+                    selectableFields.add(columnName);
+                }
             }
         }
         this.columns = List.copyOf(databaseBackedFields);
+        this.selectColumns = List.copyOf(selectableFields);
 
         collection.registerDao(this);
     }
@@ -252,7 +266,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
             return null;
         }
         final StatementCreator creator = new StatementCreator(getDataManager().getDialect());
-        final SelectStatement select = SelectStatement.of(creator.createSelectStatement(tableName, columns, keyColumn));
+        final SelectStatement select = SelectStatement.of(creator.createSelectStatement(tableName, selectColumns, keyColumn));
         if (verbose) {
             log.info("{}::findByKey(key='{}'): running {}", className, key, select);
         }
@@ -277,7 +291,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
      */
     public @Nullable T findByIdIgnoringCache(final @NotNull DatabaseConnection conn, final long id) throws DatabaseError {
         final StatementCreator creator = new StatementCreator(getDataManager().getDialect());
-        final SelectStatement select = SelectStatement.of(creator.createSelectStatement(tableName, columns, idColumn));
+        final SelectStatement select = SelectStatement.of(creator.createSelectStatement(tableName, selectColumns, idColumn));
         if (verbose) {
             log.info("{}::findById(id={}): running {}", className, id, select);
         }
@@ -286,10 +300,30 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
         return loaded;
     }
 
+    /**
+     * Fetches a single lazily-loaded NCLOB column's current value for one row, running its own,
+     * independent query instead of going through {@link #findById}/{@link #readAllProperties}. This is
+     * what {@link com.eischet.janitor.orm.entity.LazyLoadedString} calls the first time such a field is
+     * actually read (see {@link JanitorOrm.MetaData#LAZY_LOAD}); it isn't meant to be called directly
+     * otherwise.
+     *
+     * @param id     the entity's ID
+     * @param column the column to fetch (must be one of {@link #columns}, i.e. actually mapped)
+     * @return the column's current value, or {@code null} if the row doesn't exist or the value is null
+     */
+    public @Nullable String fetchLazyColumn(final long id, final @NotNull String column) throws DatabaseError {
+        final StatementCreator creator = new StatementCreator(getDataManager().getDialect());
+        final SelectStatement select = SelectStatement.of(creator.createSelectStatement(tableName, List.of(column), idColumn));
+        if (verbose) {
+            log.info("{}::fetchLazyColumn(id={}, column='{}'): running {}", className, id, column, select);
+        }
+        return getDataManager().callTransaction(conn -> conn.queryForObject(select, stmt -> stmt.addLong(id), rs -> rs.readNationalClob()));
+    }
+
     @Override
     public @NotNull List<T> findAll(final @NotNull DatabaseConnection conn, final @Nullable Integer limit) throws DatabaseError {
         final StatementCreator creator = new StatementCreator(getDataManager().getDialect());
-        final SelectStatement select = SelectStatement.of(creator.createSelectAllStatement(tableName, columns));
+        final SelectStatement select = SelectStatement.of(creator.createSelectAllStatement(tableName, selectColumns));
         if (verbose) {
             log.info("{}::findAll(): running {}, limit={}", className, select, limit);
         }
@@ -513,7 +547,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
     @Override
     public @NotNull List<T> findByAssociation(final @NotNull DatabaseConnection conn, final String foreignKeyColumn, final long foreignKeyValue) throws DatabaseError {
         final StatementCreator creator = new StatementCreator(getDataManager().getDialect());
-        @Language("SQL") final String sql = creator.createSelectAllStatement(tableName, columns) + "\nWHERE\n  " + getDataManager().getDialect().quoteColumn(foreignKeyColumn) + " = ?";
+        @Language("SQL") final String sql = creator.createSelectAllStatement(tableName, selectColumns) + "\nWHERE\n  " + getDataManager().getDialect().quoteColumn(foreignKeyColumn) + " = ?";
         if (verbose) {
             log.info("findByAssociation, sql: {}, fk = {}", sql, foreignKeyValue);
         }
@@ -559,7 +593,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
         final @Nullable Integer limit = filterQuery.getMaxRows();
         final @NotNull String finalOrderBy = orderBy == null ? "order by 2" : orderBy;
         final StatementCreator creator = new StatementCreator(getDataManager().getDialect());
-        @Language("SQL") final String sql = creator.createSelectAllStatement(tableName, columns) + "\nWHERE\n  " + expressionToSql(filterQuery.filterExpression, preppers::add);
+        @Language("SQL") final String sql = creator.createSelectAllStatement(tableName, selectColumns) + "\nWHERE\n  " + expressionToSql(filterQuery.filterExpression, preppers::add);
         @NotNull final DatabaseVersion databaseVersion = DatabaseVersion.getDatabaseVersion(getDataManager());
         if (limit != null && limit > 0 && getDataManager().getDialect().canLimitAndOffset(databaseVersion)) {
             SelectStatement limited = filterQuery.rewriteQuery(getDataManager().getDialect().addLimitAndOffset(SelectStatement.of(sql + " " + finalOrderBy)));
@@ -591,7 +625,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
     protected T readAllProperties(final DatabaseConnection conn, final SimpleResultSet rs) throws DatabaseError {
         final T value = newValue.get();
         int columnIndex = 0;
-        for (final String column : columns) {
+        for (final String column : selectColumns) {
             ++columnIndex;
             String field = Objects.requireNonNull(fieldForColumn.get(column));
             final @NotNull ColumnTypeHint columnTypeHint = Objects.requireNonNull(entityDispatchTable.getMetaData(field, JanitorOrm.MetaData.COLUMN_TYPE));
@@ -605,7 +639,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
                     throw new DatabaseError("invalid field '" + field + "' / column '" + column + "' is not assignable");
                 }
             } catch (SQLException e) {
-                log.warn("SQL exception on class '{}', column #{} = '{}', field '{}', type hint '{}', column order: {}", className, columnIndex, column, field, columnTypeHint, columns, e);
+                log.warn("SQL exception on class '{}', column #{} = '{}', field '{}', type hint '{}', column order: {}", className, columnIndex, column, field, columnTypeHint, selectColumns, e);
                 final String message = String.format("SQL exception on class '%s', column '%s', field '%s', type hint '%s'", className, column, field, columnTypeHint);
                 throw new DatabaseError(message, e);
             } catch (Exception e) {

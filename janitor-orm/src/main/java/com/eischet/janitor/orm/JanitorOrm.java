@@ -22,6 +22,16 @@ public final class JanitorOrm {
 
         public static MetaDataKey<Integer> MAX_LENGTH = new MetaDataKey<>("max_length", Integer.class);
 
+        /**
+         * Marks a column as lazily loaded: {@code GenericDao} excludes it from the default SELECT column
+         * list (findById/findByKey/findAll/findByFilter/findByAssociation), so it's fetched from the
+         * database only when the corresponding {@link com.eischet.janitor.orm.entity.LazyLoadedString}
+         * field is actually read, not up front with the rest of the row. Set via
+         * {@link com.eischet.janitor.orm.entity.OrmObject#addLazyTextProperty}. INSERT/UPDATE are
+         * unaffected — they still write the column's current value like any other property.
+         */
+        public static MetaDataKey<Boolean> LAZY_LOAD = new MetaDataKey<>("lazy_load", Boolean.class);
+
         // public static MetaDataKey<String> OUTWARD_FOREIGN_KEYS = new MetaDataKey<>("outward_foreign_keys", String.class);
 
         /**

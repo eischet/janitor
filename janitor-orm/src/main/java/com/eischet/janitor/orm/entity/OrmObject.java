@@ -9,6 +9,7 @@ import com.eischet.janitor.orm.sql.ColumnTypeHint;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.function.Function;
 
 /**
  * Root interface for all ORM objects, including entities and joiners.
@@ -47,6 +48,36 @@ public interface OrmObject extends JanitorObject {
         return dispatchTable.addStringProperty(name, getter, setter)
                 .setMetaData(JanitorOrm.MetaData.COLUMN_NAME, column)
                 .setMetaData(JanitorOrm.MetaData.COLUMN_TYPE, ColumnTypeHint.NCLOB);
+    }
+
+    /**
+     * Like {@link #addTextProperty}, but for a field backed by a {@link LazyLoadedString} instead of a
+     * plain {@code String} — the value isn't fetched with the rest of the row; {@code GenericDao} leaves
+     * this column out of its default SELECT entirely (see {@link JanitorOrm.MetaData#LAZY_LOAD}), and it's
+     * loaded only when something actually reads it, via {@code LazyLoadedString.getValue()}.
+     * <p>
+     * The script-facing property registered here is still a plain string, exactly like
+     * {@link #addTextProperty} — {@code accessor} just tells this how to reach the entity's
+     * {@link LazyLoadedString} field to read from / write to. A typical entity looks like:
+     * <pre>{@code
+     * protected final LazyLoadedString configJson = new LazyLoadedString(
+     *         () -> getSource().getFooDao(), this::getId, "config_json");
+     *
+     * public String getConfigJson() { return configJson.getValue(); }
+     * public void setConfigJson(final String value) { configJson.setValue(value); }
+     * // ... addLazyTextProperty(DISPATCH, "configJson", "config_json", Foo::getConfigJson, Foo::setConfigJson)
+     * }</pre>
+     * — i.e. the entity's own getter/setter keep the ordinary {@code String} signature, unchanged for
+     * both Java-side and script-side callers; only the registration call and the field itself differ from
+     * {@link #addTextProperty}.
+     *
+     * @param accessor reaches into the entity to get its {@link LazyLoadedString} field
+     */
+    static <X extends JanitorObject> MetaDataBuilder<X> addLazyTextProperty(final DispatchTable<X> dispatchTable, final String name, final String column, final Function<X, LazyLoadedString> accessor) {
+        return dispatchTable.addStringProperty(name, x -> accessor.apply(x).getValue(), (x, v) -> accessor.apply(x).setValue(v))
+                .setMetaData(JanitorOrm.MetaData.COLUMN_NAME, column)
+                .setMetaData(JanitorOrm.MetaData.COLUMN_TYPE, ColumnTypeHint.NCLOB)
+                .setMetaData(JanitorOrm.MetaData.LAZY_LOAD, Boolean.TRUE);
     }
 
     static <X extends JanitorObject> MetaDataBuilder<X> addDateProperty(final DispatchTable<X> dispatchTable, final String name, final String column, final NullableGetter<X, LocalDate> getter, final NullableSetter<X, LocalDate> setter) {
