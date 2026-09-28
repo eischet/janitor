@@ -26,7 +26,6 @@ import com.eischet.janitor.logging.JanitorLogger;
 import com.eischet.janitor.orm.JanitorOrm;
 import com.eischet.janitor.orm.entity.OrmEntity;
 import com.eischet.janitor.orm.entity.OrmJoined;
-import com.eischet.janitor.orm.meta.EntityIndex;
 import com.eischet.janitor.orm.ref.ForeignKey;
 import com.eischet.janitor.orm.sql.ColumnTypeHint;
 import com.eischet.janitor.orm.sql.StatementCreator;
@@ -70,7 +69,7 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
     protected final Supplier<T> newValue;
     protected final Map<String, String> columnForField = new HashMap<>();
     protected final Map<String, String> fieldForColumn = new HashMap<>();
-    protected final EntityIndex entityIndex;
+    protected final OrmDaoCollection<?> collection;
     protected final String className;
     protected final @NotNull List<String> primaryKeyColumns;
     protected final Class<T> entityClass;
@@ -79,11 +78,13 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
 
     /**
      * Mainly for scripts, which cannot get this for themselves, we need a method to acquire a data manager when needed.
-     * How this happens behind the scenes will be implementation-specific.
+     * By default, this is the data manager of the collection that this DAO belongs to.
      *
      * @return a data manager object
      */
-    protected abstract DataManager getDataManager();
+    protected DataManager getDataManager() {
+        return collection.getDataManager();
+    }
 
     /**
      * Helper method for automatic implementation of an "add" method on JoinedList objects.
@@ -97,13 +98,13 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
     public JoinDao(
             final Class<T> entityClass,
             final DispatchTable<? extends JoinDao<T>> childDispatch,
-            final EntityIndex entityIndex,
+            final OrmDaoCollection<?> collection,
             final DispatchTable<T> entityDispatch,
             final Supplier<T> newValue) {
 
         super(Dispatcher.inherit(DISPATCH, childDispatch));
         this.entityClass = entityClass;
-        this.entityIndex = entityIndex;
+        this.collection = collection;
         this.entityDispatch = entityDispatch;
         this.newValue = newValue;
         this.className = Objects.requireNonNull(entityDispatch.getMetaData(Janitor.MetaData.CLASS), "missing required CLASS");
@@ -124,7 +125,7 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
             }
         }
         this.columns = List.copyOf(databaseBackedFields);
-        entityIndex.setJoinDao(entityClass.getSimpleName(), this);
+        collection.registerJoinDao(entityClass.getSimpleName(), this, entityDispatch);
 
     }
 
@@ -140,7 +141,7 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
             try {
                 final JanitorObject propertyValue = Objects.requireNonNull(entityDispatch.get(field).lookupAttribute(value));
                 if (propertyValue instanceof JAssignable assignableProperty) {
-                    CommonDao.readProperty(entityIndex, column, conn, assignableProperty, rs, columnTypeHint, lookupType, hostNullable);
+                    CommonDao.readProperty(collection, column, conn, assignableProperty, rs, columnTypeHint, lookupType, hostNullable);
                 } else {
                     throw new DatabaseError("invalid field '" + field + "' / column '" + column + "' is not assignable");
                 }

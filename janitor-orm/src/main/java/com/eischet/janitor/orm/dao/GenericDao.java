@@ -29,7 +29,6 @@ import com.eischet.janitor.orm.filter.FilterExpression;
 import com.eischet.janitor.orm.entity.OrmEntity;
 import com.eischet.janitor.orm.filter.FilterOperator;
 import com.eischet.janitor.orm.filter.MalformedExpression;
-import com.eischet.janitor.orm.meta.EntityIndex;
 import com.eischet.janitor.orm.sql.ColumnTypeHint;
 import com.eischet.janitor.orm.sql.StatementCreator;
 import com.eischet.janitor.toolbox.json.api.JsonException;
@@ -113,7 +112,7 @@ public abstract class GenericDao<T extends OrmEntity> extends JanitorComposed<Ge
     protected final Supplier<T> newValue;
     protected final Map<String, String> columnForField = new HashMap<>();
     protected final Map<String, String> fieldForColumn = new HashMap<>();
-    protected final EntityIndex entityIndex;
+    protected final OrmDaoCollection<?> collection;
     protected final String className;
     protected final @NotNull Class<T> entityClass;
     protected boolean verbose = false;
@@ -121,12 +120,12 @@ public abstract class GenericDao<T extends OrmEntity> extends JanitorComposed<Ge
 
     public GenericDao(
             final @NotNull DispatchTable<? extends GenericDao<T>> childDispatch,
-            final @NotNull EntityIndex entityIndex,
+            final @NotNull OrmDaoCollection<?> collection,
             final @NotNull Class<T> entityClass,
             final @NotNull DispatchTable<T> entityDispatch,
             final @NotNull Supplier<T> newValue) {
         super(Dispatcher.inherit(DISPATCH, childDispatch));
-        this.entityIndex = entityIndex;
+        this.collection = collection;
         this.entityClass = entityClass;
         this.entityDispatch = entityDispatch;
         this.newValue = newValue;
@@ -150,16 +149,18 @@ public abstract class GenericDao<T extends OrmEntity> extends JanitorComposed<Ge
         }
         this.columns = List.copyOf(databaseBackedFields);
 
-        entityIndex.setDao(className, this);
+        collection.registerDao(className, this, entityDispatch);
     }
 
     /**
      * Mainly for scripts, which cannot get this for themselves, we need a method to acquire a data manager when needed.
-     * How this happens behind the scenes will be implementation-specific.
+     * By default, this is the data manager of the collection that this DAO belongs to.
      *
      * @return a data manager object
      */
-    protected abstract DataManager getDataManager();
+    protected DataManager getDataManager() {
+        return collection.getDataManager();
+    }
 
     public boolean isChangeTracked() {
         return false;
@@ -519,7 +520,7 @@ public abstract class GenericDao<T extends OrmEntity> extends JanitorComposed<Ge
             try {
                 final JanitorObject propertyValue = Objects.requireNonNull(entityDispatch.get(field).lookupAttribute(value));
                 if (propertyValue instanceof JAssignable assignableProperty) {
-                    CommonDao.readProperty(entityIndex, column, conn, assignableProperty, rs, columnTypeHint, lookupType, hostNullable);
+                    CommonDao.readProperty(collection, column, conn, assignableProperty, rs, columnTypeHint, lookupType, hostNullable);
                 } else {
                     throw new DatabaseError("invalid field '" + field + "' / column '" + column + "' is not assignable");
                 }

@@ -10,7 +10,6 @@ import com.eischet.janitor.api.types.JAssignable;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.*;
 import com.eischet.janitor.logging.JanitorLogger;
-import com.eischet.janitor.orm.meta.EntityIndex;
 import com.eischet.janitor.api.types.StringMappedEnum;
 import com.eischet.janitor.orm.ref.*;
 import com.eischet.janitor.orm.sql.ColumnTypeHint;
@@ -24,7 +23,7 @@ public class CommonDao {
 
     protected static final JanitorLogger log = JanitorLogger.getLogger(CommonDao.class);
 
-    public static void readProperty(final EntityIndex entityIndex,
+    public static void readProperty(final OrmDaoCollection<?> collection,
                                     final String columnName,
                                     final DatabaseConnection conn,
                                     final JAssignable assignableProperty,
@@ -37,7 +36,7 @@ public class CommonDao {
             if (longValue == null) {
                 assignableProperty.assign(Janitor.NULL);
             } else {
-                assignableProperty.assign(ForeignKeyInteger.createWithForce(longValue, entityIndex.getDao(lookupType)));
+                assignableProperty.assign(ForeignKeyInteger.createWithForce(longValue, collection.getDao(lookupType)));
             }
         } else {
             try {

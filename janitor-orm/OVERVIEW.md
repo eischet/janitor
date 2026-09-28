@@ -71,22 +71,24 @@ Every property that should be persisted needs one of these as its
    `EntityWrangler.addReference(...)` is how you declare a foreign-key
    property (a `ForeignKey<T>` typed field, backed by an `INT` column,
    tagged with `Janitor.MetaData.REF` = the referenced class's simple name,
-   which is resolved through the `EntityIndex`). `SimpleWrangler.duplicate()` gives you a generic "clone by
+   which is resolved through the `OrmDaoCollection`). `SimpleWrangler.duplicate()` gives you a generic "clone by
    copying every assignable scripting attribute" for free.
-3. **Uplink** ([dao/Uplink.java](src/main/java/com/eischet/janitor/orm/dao/Uplink.java)) —
-   empty tagging interface for "whatever object holds all your DAOs" in the
-   host app. Exists purely so the `<U>` type parameter that shows up
-   everywhere has a name to point at.
-4. **EntityIndex** ([meta/EntityIndex.java](src/main/java/com/eischet/janitor/orm/meta/EntityIndex.java)) —
-   a registry, keyed by simple class name, of `DispatchTable`s, `Dao`s and
-   `JoinDao`s. Populated as each `GenericDao`/`JoinDao` is constructed. Used
-   at read time to resolve `Janitor.MetaData.REF` (the class name a foreign
-   key column points to) back to the right `Dao` for building a
-   `ForeignKeyInteger`.
+3. **Uplink / OrmDaoCollection** ([dao/Uplink.java](src/main/java/com/eischet/janitor/orm/dao/Uplink.java),
+   [dao/OrmDaoCollection.java](src/main/java/com/eischet/janitor/orm/dao/OrmDaoCollection.java)) —
+   `Uplink` is the tagging interface for "whatever object holds all your DAOs".
+   `OrmDaoCollection<S>` is the base class for that object: it is also the
+   registry, keyed by simple class name, of `DispatchTable`s, `Dao`s and
+   `JoinDao`s. Each `GenericDao`/`JoinDao` registers itself and its entity's
+   dispatch table when it is constructed. The registry is used at read time
+   to resolve `Janitor.MetaData.REF` (the class name a foreign key column
+   points to) back to the right `Dao` for building a `ForeignKeyInteger`.
+   Subclasses provide `getDataManager()` and keep **explicit getters** for
+   their DAOs (there is deliberately no generic `get(Class)`, which would hide
+   the DAOs from code completion).
 5. **Dao / GenericDao** ([dao/Dao.java](src/main/java/com/eischet/janitor/orm/dao/Dao.java),
    [dao/GenericDao.java](src/main/java/com/eischet/janitor/orm/dao/GenericDao.java), 794
    lines — the core engine) — one instance per entity type (app subclasses
-   `GenericDao<T>` and implements `getDataManager()`). On construction it
+   `GenericDao<T>`; the `DataManager` comes from the collection unless overridden). On construction it
    reads `TABLE_NAME`/`ID_FIELD`/`KEY_FIELD` off the entity's `DispatchTable`
    and walks every registered attribute to build `columnForField`/
    `fieldForColumn` maps and the ordered `columns` list — this is the "column
@@ -259,9 +261,9 @@ entity/
 meta/
   Wrangler.java / EntityWrangler.java / SimpleWrangler.java     per-entity-class metadata bundle + factory
   JoinWrangler.java / SimpleJoinWrangler.java                     same, for join-table classes
-  EntityIndex.java                                                   className -> DispatchTable/Dao/JoinDao registry
 
 dao/
+  OrmDaoCollection.java                   base class of the app's DAO container; className -> DispatchTable/Dao/JoinDao registry
   Dao.java / GenericDao.java              the entity CRUD engine (see above)
   JoinDao.java                              the join-table CRUD engine (see above)
   CommonDao.java                             ColumnTypeHint <-> JanitorObject <-> JDBC marshalling

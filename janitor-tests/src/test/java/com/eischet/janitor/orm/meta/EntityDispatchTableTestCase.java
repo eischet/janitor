@@ -4,11 +4,14 @@ import com.eischet.janitor.JanitorTest;
 import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import com.eischet.janitor.orm.JanitorOrm;
-import com.eischet.janitor.orm.dao.Dao;
+import com.eischet.dbxs.DataManager;
+import com.eischet.janitor.orm.dao.GenericDao;
+import com.eischet.janitor.orm.dao.OrmDaoCollection;
 import com.eischet.janitor.orm.dao.Uplink;
 import com.eischet.janitor.orm.entity.OrmEntity;
 import com.eischet.janitor.orm.ref.ForeignKeyNull;
 import com.eischet.janitor.orm.sql.ColumnTypeHint;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -100,23 +103,86 @@ public class EntityDispatchTableTestCase extends JanitorTest {
         assertTrue(new DispatchTable<Thing>(false).extend(true).has("apply"));
     }
 
-    @Test
-    void entityIndexServesTableAndNullReference() {
-        final EntityIndex index = new EntityIndex().addEntity(Thing.DISPATCH);
-        assertSame(Thing.DISPATCH, index.getEntity("Thing"));
-        assertSame(Thing.DISPATCH, index.getOrmDispatchTable("Thing"));
-        assertSame(Thing.DISPATCH, index.getEntityDispatchTable("Thing"));
-        assertSame(Thing.DISPATCH, index.getEntityDispatchTable(Thing.class));
-        assertSame(Thing.NULL, index.getNullReference(Thing.class));
-        assertNull(index.getDaoFor(Thing.class), "no dao registered yet");
-        assertNull(index.getEntityDispatchTable("Nope"));
+    static class ThingDao extends GenericDao<Thing> {
+        ThingDao(final OrmDaoCollection<?> collection, final DispatchTable<Thing> dispatch) {
+            super(new DispatchTable<ThingDao>(false), collection, Thing.class, dispatch, Thing::new);
+        }
+
+        @Override
+        public @NotNull Class<Thing> getEntityClass() {
+            return Thing.class;
+        }
+
+        @Override
+        public @NotNull String getEntityClassName() {
+            return "Thing";
+        }
+    }
+
+    static class TestCollection extends OrmDaoCollection<TestCollection> implements Uplink {
+        static final DispatchTable<TestCollection> DISPATCH = new DispatchTable<>();
+
+        static {
+            OrmDaoCollection.addRegistryProperties(DISPATCH);
+        }
+
+        private final ThingDao thingDao;
+
+        TestCollection(final DispatchTable<Thing> thingDispatch) {
+            super(DISPATCH);
+            thingDao = new ThingDao(this, thingDispatch);
+        }
+
+        ThingDao getThingDao() {
+            return thingDao;
+        }
+
+        @Override
+        public DataManager getDataManager() {
+            return null;
+        }
     }
 
     @Test
-    void entityIndexIgnoresPlainDispatchTablesForOrmLookups() {
-        final EntityIndex index = new EntityIndex().addEntity(Thing.class, new DispatchTable<Thing>(false));
-        assertNotNull(index.getEntity("Thing"));
-        assertNull(index.getEntityDispatchTable(Thing.class));
-        assertNull(index.getNullReference(Thing.class));
+    void daoRegistersItselfAndItsDispatchTable() {
+        final TestCollection collection = new TestCollection(Thing.DISPATCH);
+        assertSame(collection.getThingDao(), collection.getDao("Thing"));
+        assertSame(Thing.DISPATCH, collection.getEntity("Thing"));
+        assertSame(Thing.DISPATCH, collection.getOrmDispatchTable("Thing"));
+        assertSame(Thing.DISPATCH, collection.getEntityDispatchTable("Thing"));
+        assertSame(Thing.DISPATCH, collection.getEntityDispatchTable(Thing.class));
+        assertSame(Thing.NULL, collection.getNullReference(Thing.class));
+        assertEquals(java.util.Set.of("Thing"), collection.getEntityNames());
+        assertTrue(collection.getJoinNames().isEmpty());
+        assertNull(collection.getEntityDispatchTable("Nope"));
+        assertNull(collection.getDao("Nope"));
+    }
+
+    @Test
+    void collectionsAreIndependent() {
+        final TestCollection one = new TestCollection(Thing.DISPATCH);
+        final TestCollection two = new TestCollection(Thing.DISPATCH);
+        assertNotSame(one.getDao("Thing"), two.getDao("Thing"));
+    }
+
+    @Test
+    void plainDispatchTablesAreIgnoredForOrmLookups() {
+        final DispatchTable<Thing> plain = new DispatchTable<>(false);
+        plain.setMetaData(Janitor.MetaData.CLASS, "Thing");
+        plain.setMetaData(JanitorOrm.MetaData.TABLE_NAME, "thing");
+        plain.setMetaData(JanitorOrm.MetaData.ID_FIELD, "thing_id");
+        final TestCollection collection = new TestCollection(plain);
+        assertSame(plain, collection.getEntity("Thing"));
+        assertNull(collection.getOrmDispatchTable("Thing"));
+        assertNull(collection.getEntityDispatchTable(Thing.class));
+        assertNull(collection.getNullReference(Thing.class));
+    }
+
+    @Test
+    void registryScriptProperties() {
+        final TestCollection collection = new TestCollection(Thing.DISPATCH);
+        assertTrue(TestCollection.DISPATCH.has("entities"));
+        assertTrue(TestCollection.DISPATCH.has("joins"));
+        assertNotNull(collection);
     }
 }
