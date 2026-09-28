@@ -1,8 +1,10 @@
 # 0.9.65, Work in progress
 
 - applying maps to objects now produces better error messages
-- deps: jansi, jline 4.4.3; java-jwt 4.6.1; maven-resolver 2.0.23; maven-plugin-plugin 3.15.2; maven-plugin-annotations 3.16.0
 - orm: rearrange/simplify the 'wranglers' to be more specific dispatch tables
+- initialization of build-in types' dispatch tables has been moved into the implementation classes, e.g. JStringClass
+- deps: jansi, jline 4.4.5; java-jwt 4.6.1; maven-resolver 2.0.23; maven-plugin-plugin 3.15.2; maven-plugin-annotations 3.16.0;
+  maven-deploy-plugin 3.2.0; maven-install-plugin 3.2.0; jackson 2.22.3 (unit tests)
 
 
 # 0.9.64, 2026-09-03 (internal release only)
