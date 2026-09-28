@@ -59,6 +59,8 @@ public class CommonDao {
                     }
                     // we do not bother with boolean fields, translating 0 into false.
                     case BIT -> Janitor.toBool(rs.getLong() > 0);
+                    // only "y" (case-insensitively) counts as true; anything else, including null, is false.
+                    case BOOL_CHAR -> Janitor.toBool("y".equalsIgnoreCase(rs.getString()));
                     case NCLOB -> Janitor.nullableString(rs.readNationalClob());
                     case VARCHAR, NVARCHAR -> Janitor.nullableString(rs.getString());
                     case DATETIME -> Janitor.nullableDateTime(rs.getLocalDateTime());
@@ -153,6 +155,16 @@ public class CommonDao {
                 }
                 if (propertyValue == JNull.NULL) {
                     ps.addNullInteger();
+                    return;
+                }
+            }
+            case BOOL_CHAR -> {
+                if (propertyValue instanceof JBool jbool) {
+                    ps.addString(jbool.janitorGetHostValue() ? "y" : "n");
+                    return;
+                }
+                if (propertyValue == JNull.NULL) {
+                    ps.addNullString();
                     return;
                 }
             }

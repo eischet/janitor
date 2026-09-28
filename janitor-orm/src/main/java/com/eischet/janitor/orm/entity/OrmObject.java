@@ -67,6 +67,16 @@ public interface OrmObject extends JanitorObject {
                 .setMetaData(JanitorOrm.MetaData.COLUMN_TYPE, ColumnTypeHint.BIT);
     }
 
+    /**
+     * Like {@link #addBooleanProperty}, but for schemas that store the flag as a {@code "y"}/{@code "n"}
+     * character column instead of a native boolean/numeric one. See {@link ColumnTypeHint#BOOL_CHAR}.
+     */
+    static <X extends JanitorObject> MetaDataBuilder<X> addBoolCharProperty(final DispatchTable<X> dispatchTable, final String name, final String column, final PrimitiveBooleanGetter<X> getter, final PrimitiveBooleanSetter<X> setter) {
+        return dispatchTable.addBooleanProperty(name, getter, setter)
+                .setMetaData(JanitorOrm.MetaData.COLUMN_NAME, column)
+                .setMetaData(JanitorOrm.MetaData.COLUMN_TYPE, ColumnTypeHint.BOOL_CHAR);
+    }
+
     static <X extends JanitorObject> MetaDataBuilder<X> addNullableBooleanProperty(final DispatchTable<X> dispatchTable, final String name, final String column, final NullableGetter<X, Boolean> getter, final NullableSetter<X, Boolean> setter) {
         return dispatchTable.addNullableBooleanProperty(name, getter, setter)
                 .setMetaData(JanitorOrm.MetaData.COLUMN_NAME, column)

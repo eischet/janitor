@@ -263,6 +263,11 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
     public static final ExpressionPrepperBuilder PREP_DATETIME = filterExpression -> new NamedPrepper((conn, stmt) -> stmt.addNullableDateTime(filterExpression.getValueDateTime()), "datetime=" + filterExpression.getValueDateTime());
     public static final ExpressionPrepperBuilder PREP_DOUBLE = filterExpression -> new NamedPrepper((conn, stmt) -> stmt.addNullableDouble(filterExpression.getValueDouble()), "double=" + filterExpression.getValueDouble());
     public static final ExpressionPrepperBuilder PREP_BOOLEAN = filterExpression -> new NamedPrepper((conn, stmt) -> stmt.addInt(Boolean.TRUE == filterExpression.getValueBoolean() ? 1 : 0), "bool=" + filterExpression.getValueBoolean());
+    /**
+     * Like {@link #PREP_BOOLEAN}, but for columns using {@link ColumnTypeHint#BOOL_CHAR} storage, i.e. a
+     * {@code "y"}/{@code "n"} character column instead of an integer one.
+     */
+    public static final ExpressionPrepperBuilder PREP_BOOL_CHAR = filterExpression -> new NamedPrepper((conn, stmt) -> stmt.addString(Boolean.TRUE == filterExpression.getValueBoolean() ? "y" : "n"), "boolChar=" + filterExpression.getValueBoolean());
 
     public static final ExpressionPrepperBuilder PREP_STRING = filterExpression -> new NamedPrepper((conn, stmt) -> {
         if (filterExpression.getValueString() != null) {
@@ -302,6 +307,16 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
     }
 
     protected @NotNull Prepper getPrepper(final FilterExpression filterExpression) {
+        return getPrepper(filterExpression, null);
+    }
+
+    /**
+     * Like {@link #getPrepper(FilterExpression)}, but takes the target column's type into account where it
+     * matters, i.e. to distinguish {@link ColumnTypeHint#BIT} from {@link ColumnTypeHint#BOOL_CHAR} storage
+     * for a boolean-valued expression. Pass {@code null} when the column type isn't known (e.g. for a
+     * synthetic/non-entity column), which falls back to the same behavior as {@link #getPrepper(FilterExpression)}.
+     */
+    protected @NotNull Prepper getPrepper(final FilterExpression filterExpression, final @Nullable ColumnTypeHint columnTypeHint) {
         if (filterExpression.isDate()) {
             return PREP_DATE.getPrepper(filterExpression);
         } else if (filterExpression.isDateTime()) {
@@ -309,7 +324,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
         } else if (filterExpression.isDouble()) {
             return PREP_DOUBLE.getPrepper(filterExpression);
         } else if (filterExpression.isBoolean()) {
-            return PREP_BOOLEAN.getPrepper(filterExpression);
+            return columnTypeHint == ColumnTypeHint.BOOL_CHAR ? PREP_BOOL_CHAR.getPrepper(filterExpression) : PREP_BOOLEAN.getPrepper(filterExpression);
         } else if (filterExpression.isLong()) {
             return PREP_LONG.getPrepper(filterExpression);
         } else if (filterExpression.isDate()) {
@@ -352,7 +367,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
                     throw new MalformedExpression("missing operator in expression " + filterExpression);
                 }
                 final String quotedColumn = dialect.quoteColumn(column);
-                return applyExpressionToColumn(filterExpression, quotedColumn, prepperConsumer);
+                return applyExpressionToColumn(filterExpression, quotedColumn, columnTypeHint, prepperConsumer);
             }
         } else {
             throw new MalformedExpression("part is neither group nor expression");
@@ -360,8 +375,17 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
     }
 
     protected String applyExpressionToColumn(final FilterExpression filterExpression, final String quotedColumn, final Consumer<Prepper> prepperConsumer) throws MalformedExpression {
+        return applyExpressionToColumn(filterExpression, quotedColumn, null, prepperConsumer);
+    }
+
+    /**
+     * Like {@link #applyExpressionToColumn(FilterExpression, String, Consumer)}, but takes the target
+     * column's type into account (see {@link #getPrepper(FilterExpression, ColumnTypeHint)}). Pass
+     * {@code null} for a synthetic/non-entity column whose type isn't known.
+     */
+    protected String applyExpressionToColumn(final FilterExpression filterExpression, final String quotedColumn, final @Nullable ColumnTypeHint columnTypeHint, final Consumer<Prepper> prepperConsumer) throws MalformedExpression {
         @Nullable final FilterOperator op = filterExpression.getOperator();
-        final Prepper simpleEquality = getPrepper(filterExpression);
+        final Prepper simpleEquality = getPrepper(filterExpression, columnTypeHint);
         return switch (op) {
             case EQ -> {
                 prepperConsumer.accept(simpleEquality);
