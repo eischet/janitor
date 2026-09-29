@@ -157,7 +157,7 @@ public class LazyLoadedStringTestCase extends JanitorTest {
         private final LazyThingDao lazyThingDao;
 
         TestCollection() {
-            super(DISPATCH);
+            super(DISPATCH, null);
             lazyThingDao = new LazyThingDao(this, LazyThing.DISPATCH);
         }
 

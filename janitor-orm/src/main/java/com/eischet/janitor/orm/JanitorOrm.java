@@ -2,6 +2,7 @@ package com.eischet.janitor.orm;
 
 import com.eischet.janitor.api.metadata.MetaDataKey;
 import com.eischet.janitor.orm.sql.ColumnTypeHint;
+import com.eischet.janitor.versioning.VersionRange;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -63,6 +64,14 @@ public final class JanitorOrm {
          * Names those fields that are part of the primary key of the join table.
          */
         public static MetaDataKey<StringList> JOIN_TABLE_PK = new MetaDataKey<>("join_table_pk", StringList.class);
+
+        /**
+         * The version range of the object.
+         *
+         * This can be used to adjust to schema differences automatically, most useful when you do not have control over a schema, e.g.
+         * when accessing third party schemas.
+         */
+        public static MetaDataKey<VersionRange> VERSION_RANGE = new MetaDataKey<>("version_range", VersionRange.class);
 
         // Work around the situation that we cannot pass List<String>.class nor List.class to new MetaDataKey.... LOL
         public static class StringList extends ArrayList<String> {

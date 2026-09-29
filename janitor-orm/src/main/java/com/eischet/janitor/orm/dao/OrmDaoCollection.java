@@ -10,6 +10,7 @@ import com.eischet.janitor.orm.entity.OrmJoined;
 import com.eischet.janitor.orm.meta.EntityDispatchTable;
 import com.eischet.janitor.orm.meta.OrmDispatchTable;
 import com.eischet.janitor.orm.ref.ForeignKeyNull;
+import com.eischet.janitor.versioning.Version;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
@@ -36,9 +37,20 @@ public abstract class OrmDaoCollection<S extends OrmDaoCollection<S>> extends Ja
     private final Map<String, DispatchTable<?>> entities = new LinkedHashMap<>();
     private final Map<String, Dao<? extends OrmEntity>> daos = new LinkedHashMap<>();
     private final Map<String, JoinDao<? extends OrmJoined>> joinDaos = new LinkedHashMap<>();
+    private final @Nullable Version schemaVersion;
 
-    protected OrmDaoCollection(final @NotNull Dispatcher<S> dispatcher) {
+    public OrmDaoCollection(final @NotNull Dispatcher<S> dispatcher, final @Nullable Version version) {
         super(dispatcher);
+        this.schemaVersion = version;
+    }
+
+    /**
+     * Returns the schema version of this collection.
+     *
+     * @return the schema version, which can be {@code null} if no version was specified
+     */
+    public @Nullable Version getSchemaVersion() {
+        return schemaVersion;
     }
 
     /**

@@ -126,7 +126,7 @@ public class EntityDispatchTableTestCase extends JanitorTest {
         private final ThingDao thingDao;
 
         TestCollection() {
-            super(DISPATCH);
+            super(DISPATCH, null);
             thingDao = new ThingDao(this, Thing.DISPATCH);
         }
 
