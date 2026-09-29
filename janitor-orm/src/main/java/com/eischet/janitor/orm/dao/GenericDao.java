@@ -38,6 +38,8 @@ import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.listeners.ListenerRegistration;
 import com.eischet.janitor.toolbox.listeners.ListenerSet;
 import com.eischet.janitor.toolbox.listeners.ListenerSetStandard;
+import com.eischet.janitor.versioning.Version;
+import com.eischet.janitor.versioning.VersionRange;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -153,8 +155,18 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
         final List<String> databaseBackedFields = new ArrayList<>();
         final List<String> selectableFields = new ArrayList<>();
         final List<String> allFields = entityDispatchTable.streamAttributeNames().toList();
+
+        @Nullable Version schemaVersion = collection.getSchemaVersion();
+
         for (final String field : allFields) {
             @Nullable final String columnName = entityDispatchTable.getMetaData(field, JanitorOrm.MetaData.COLUMN_NAME);
+
+            // When specified: skip fields that do not match the schema version, to self-adjust to schema changes
+            @Nullable final VersionRange versionRange = entityDispatchTable.getMetaData(field, JanitorOrm.MetaData.VERSION_RANGE);
+            if (schemaVersion != null && versionRange != null && !versionRange.includes(schemaVersion)) {
+                continue;
+            }
+
             if (columnName != null && !columnName.isBlank()) {
                 columnForField.put(field, columnName);
                 fieldForColumn.put(columnName, field);
@@ -312,6 +324,9 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
      * @return the column's current value, or {@code null} if the row doesn't exist or the value is null
      */
     public @Nullable String fetchLazyColumn(final long id, final @NotNull String column) throws DatabaseError {
+        if (!columns.contains(column)) {
+            return null;
+        }
         final StatementCreator creator = new StatementCreator(getDataManager().getDialect());
         final SelectStatement select = SelectStatement.of(creator.createSelectStatement(tableName, List.of(column), idColumn));
         if (verbose) {

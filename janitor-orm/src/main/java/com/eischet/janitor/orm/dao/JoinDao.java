@@ -33,6 +33,8 @@ import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.listeners.ListenerRegistration;
 import com.eischet.janitor.toolbox.listeners.ListenerSet;
 import com.eischet.janitor.toolbox.listeners.ListenerSetStandard;
+import com.eischet.janitor.versioning.Version;
+import com.eischet.janitor.versioning.VersionRange;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
@@ -120,8 +122,18 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
         }
         final List<String> databaseBackedFields = new ArrayList<>();
         final List<String> allFields = entityDispatchTable.streamAttributeNames().toList();
+
+        @Nullable Version schemaVersion = collection.getSchemaVersion();
+
         for (final String field : allFields) {
             @Nullable final String columnName = entityDispatchTable.getMetaData(field, JanitorOrm.MetaData.COLUMN_NAME);
+
+            // When specified: skip fields that do not match the schema version, to self-adjust to schema changes
+            @Nullable final VersionRange versionRange = entityDispatchTable.getMetaData(field, JanitorOrm.MetaData.VERSION_RANGE);
+            if (schemaVersion != null && versionRange != null && !versionRange.includes(schemaVersion)) {
+                continue;
+            }
+
             if (columnName != null && !columnName.isBlank()) {
                 columnForField.put(field, columnName);
                 fieldForColumn.put(columnName, field);

@@ -13,6 +13,8 @@ import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.*;
 
+// TODO: I think this can be deleted, as it's not used anywhere.
+
 public class GenericJoinManager<
         J extends OrmJoiner<L, R>,
         L extends OrmEntity,

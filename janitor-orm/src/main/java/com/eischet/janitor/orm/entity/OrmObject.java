@@ -1,6 +1,6 @@
 package com.eischet.janitor.orm.entity;
 
-import com.eischet.janitor.api.metadata.MetaDataBuilder;
+import com.eischet.janitor.api.metadata.PropertyHandle;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import com.eischet.janitor.api.types.interop.*;
@@ -19,32 +19,32 @@ public interface OrmObject extends JanitorObject {
 
     // TODO: I'd have thought that IntelliJ should report warnings when nullable/non-nullable methods are mixed, but it doesn't'
 
-    static <X extends JanitorObject> MetaDataBuilder<X> addStringProperty(final DispatchTable<X> dispatchTable, final String name, final String column, final NullableGetter<X, String> getter, final NullableSetter<X, String> setter, final int maxLength) {
+    static <X extends JanitorObject> PropertyHandle<X, String> addStringProperty(final DispatchTable<X> dispatchTable, final String name, final String column, final NullableGetter<X, String> getter, final NullableSetter<X, String> setter, final int maxLength) {
         return dispatchTable.addStringProperty(name, getter, setter)
                 .setMetaData(JanitorOrm.MetaData.COLUMN_NAME, column)
                 .setMetaData(JanitorOrm.MetaData.COLUMN_TYPE, ColumnTypeHint.NVARCHAR)
                 .setMetaData(JanitorOrm.MetaData.MAX_LENGTH, maxLength);
     }
 
-    static <X extends JanitorObject> MetaDataBuilder<X> addLongProperty(final DispatchTable<X> dispatchTable, final String name, final String column, final PrimitiveLongGetter<X> getter, final PrimitiveLongSetter<X> setter) {
+    static <X extends JanitorObject> PropertyHandle<X, Long> addLongProperty(final DispatchTable<X> dispatchTable, final String name, final String column, final PrimitiveLongGetter<X> getter, final PrimitiveLongSetter<X> setter) {
         return dispatchTable.addLongProperty(name, getter, setter)
                 .setMetaData(JanitorOrm.MetaData.COLUMN_NAME, column)
                 .setMetaData(JanitorOrm.MetaData.COLUMN_TYPE, ColumnTypeHint.INT);
     }
 
-    static <X extends JanitorObject> MetaDataBuilder<X> addNullableLongProperty(final DispatchTable<X> dispatchTable, final String name, final String column, final NullableGetter<X, Long> getter, final NullableSetter<X, Long> setter) {
+    static <X extends JanitorObject> PropertyHandle<X, Long> addNullableLongProperty(final DispatchTable<X> dispatchTable, final String name, final String column, final NullableGetter<X, Long> getter, final NullableSetter<X, Long> setter) {
         return dispatchTable.addNullableLongProperty(name, getter, setter)
                 .setMetaData(JanitorOrm.MetaData.COLUMN_NAME, column)
                 .setMetaData(JanitorOrm.MetaData.COLUMN_TYPE, ColumnTypeHint.INT);
     }
 
-    static <X extends JanitorObject> MetaDataBuilder<X> addIntegerProperty(final DispatchTable<X> dispatchTable, final String name, final String column, final PrimitiveIntGetter<X> getter, final PrimitiveIntSetter<X> setter) {
+    static <X extends JanitorObject> PropertyHandle<X, Integer> addIntegerProperty(final DispatchTable<X> dispatchTable, final String name, final String column, final PrimitiveIntGetter<X> getter, final PrimitiveIntSetter<X> setter) {
         return dispatchTable.addIntegerProperty(name, getter, setter)
                 .setMetaData(JanitorOrm.MetaData.COLUMN_NAME, column)
                 .setMetaData(JanitorOrm.MetaData.COLUMN_TYPE, ColumnTypeHint.INT);
     }
 
-    static <X extends JanitorObject> MetaDataBuilder<X> addTextProperty(final DispatchTable<X> dispatchTable, final String name, final String column, final NullableGetter<X, String> getter, final NullableSetter<X, String> setter) {
+    static <X extends JanitorObject> PropertyHandle<X, String> addTextProperty(final DispatchTable<X> dispatchTable, final String name, final String column, final NullableGetter<X, String> getter, final NullableSetter<X, String> setter) {
         return dispatchTable.addStringProperty(name, getter, setter)
                 .setMetaData(JanitorOrm.MetaData.COLUMN_NAME, column)
                 .setMetaData(JanitorOrm.MetaData.COLUMN_TYPE, ColumnTypeHint.NCLOB);
@@ -73,26 +73,26 @@ public interface OrmObject extends JanitorObject {
      *
      * @param accessor reaches into the entity to get its {@link LazyLoadedString} field
      */
-    static <X extends JanitorObject> MetaDataBuilder<X> addLazyTextProperty(final DispatchTable<X> dispatchTable, final String name, final String column, final Function<X, LazyLoadedString> accessor) {
+    static <X extends JanitorObject> PropertyHandle<X, String> addLazyTextProperty(final DispatchTable<X> dispatchTable, final String name, final String column, final Function<X, LazyLoadedString> accessor) {
         return dispatchTable.addStringProperty(name, x -> accessor.apply(x).getValue(), (x, v) -> accessor.apply(x).setValue(v))
                 .setMetaData(JanitorOrm.MetaData.COLUMN_NAME, column)
                 .setMetaData(JanitorOrm.MetaData.COLUMN_TYPE, ColumnTypeHint.NCLOB)
                 .setMetaData(JanitorOrm.MetaData.LAZY_LOAD, Boolean.TRUE);
     }
 
-    static <X extends JanitorObject> MetaDataBuilder<X> addDateProperty(final DispatchTable<X> dispatchTable, final String name, final String column, final NullableGetter<X, LocalDate> getter, final NullableSetter<X, LocalDate> setter) {
+    static <X extends JanitorObject> PropertyHandle<X, LocalDate> addDateProperty(final DispatchTable<X> dispatchTable, final String name, final String column, final NullableGetter<X, LocalDate> getter, final NullableSetter<X, LocalDate> setter) {
         return dispatchTable.addDateProperty(name, getter, setter)
                 .setMetaData(JanitorOrm.MetaData.COLUMN_NAME, column)
                 .setMetaData(JanitorOrm.MetaData.COLUMN_TYPE, ColumnTypeHint.DATE);
     }
 
-    static <X extends JanitorObject> MetaDataBuilder<X> addDateTimeProperty(final DispatchTable<X> dispatchTable, final String name, final String column, final NullableGetter<X, LocalDateTime> getter, final NullableSetter<X, LocalDateTime> setter) {
+    static <X extends JanitorObject> PropertyHandle<X, LocalDateTime> addDateTimeProperty(final DispatchTable<X> dispatchTable, final String name, final String column, final NullableGetter<X, LocalDateTime> getter, final NullableSetter<X, LocalDateTime> setter) {
         return dispatchTable.addDateTimeProperty(name, getter, setter)
                 .setMetaData(JanitorOrm.MetaData.COLUMN_NAME, column)
                 .setMetaData(JanitorOrm.MetaData.COLUMN_TYPE, ColumnTypeHint.DATETIME);
     }
 
-    static <X extends JanitorObject> MetaDataBuilder<X> addBooleanProperty(final DispatchTable<X> dispatchTable, final String name, final String column, final PrimitiveBooleanGetter<X> getter, final PrimitiveBooleanSetter<X> setter) {
+    static <X extends JanitorObject> PropertyHandle<X, Boolean> addBooleanProperty(final DispatchTable<X> dispatchTable, final String name, final String column, final PrimitiveBooleanGetter<X> getter, final PrimitiveBooleanSetter<X> setter) {
         return dispatchTable.addBooleanProperty(name, getter, setter)
                 .setMetaData(JanitorOrm.MetaData.COLUMN_NAME, column)
                 .setMetaData(JanitorOrm.MetaData.COLUMN_TYPE, ColumnTypeHint.BIT);
@@ -102,13 +102,13 @@ public interface OrmObject extends JanitorObject {
      * Like {@link #addBooleanProperty}, but for schemas that store the flag as a {@code "y"}/{@code "n"}
      * character column instead of a native boolean/numeric one. See {@link ColumnTypeHint#BOOL_CHAR}.
      */
-    static <X extends JanitorObject> MetaDataBuilder<X> addBoolCharProperty(final DispatchTable<X> dispatchTable, final String name, final String column, final PrimitiveBooleanGetter<X> getter, final PrimitiveBooleanSetter<X> setter) {
+    static <X extends JanitorObject> PropertyHandle<X, Boolean> addBoolCharProperty(final DispatchTable<X> dispatchTable, final String name, final String column, final PrimitiveBooleanGetter<X> getter, final PrimitiveBooleanSetter<X> setter) {
         return dispatchTable.addBooleanProperty(name, getter, setter)
                 .setMetaData(JanitorOrm.MetaData.COLUMN_NAME, column)
                 .setMetaData(JanitorOrm.MetaData.COLUMN_TYPE, ColumnTypeHint.BOOL_CHAR);
     }
 
-    static <X extends JanitorObject> MetaDataBuilder<X> addNullableBooleanProperty(final DispatchTable<X> dispatchTable, final String name, final String column, final NullableGetter<X, Boolean> getter, final NullableSetter<X, Boolean> setter) {
+    static <X extends JanitorObject> PropertyHandle<X, Boolean> addNullableBooleanProperty(final DispatchTable<X> dispatchTable, final String name, final String column, final NullableGetter<X, Boolean> getter, final NullableSetter<X, Boolean> setter) {
         return dispatchTable.addNullableBooleanProperty(name, getter, setter)
                 .setMetaData(JanitorOrm.MetaData.COLUMN_NAME, column)
                 .setMetaData(JanitorOrm.MetaData.COLUMN_TYPE, ColumnTypeHint.BIT);

@@ -1,7 +1,7 @@
 package com.eischet.janitor.orm.meta;
 
 import com.eischet.janitor.api.Janitor;
-import com.eischet.janitor.api.metadata.MetaDataBuilder;
+import com.eischet.janitor.api.metadata.PropertyHandle;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import com.eischet.janitor.api.types.interop.*;
 import com.eischet.janitor.orm.dao.Uplink;
@@ -83,11 +83,11 @@ public class OrmDispatchTable<T extends OrmObject, U extends Uplink> extends Dis
 
     // column-backed properties, see OrmObject for the implementation
 
-    public MetaDataBuilder<T> addStringColumn(final String name, final String column, final NullableGetter<T, String> getter, final NullableSetter<T, String> setter, final int maxLength) {
+    public PropertyHandle<T, String> addStringColumn(final String name, final String column, final NullableGetter<T, String> getter, final NullableSetter<T, String> setter, final int maxLength) {
         return OrmObject.addStringProperty(this, name, column, getter, setter, maxLength);
     }
 
-    public MetaDataBuilder<T> addTextColumn(final String name, final String column, final NullableGetter<T, String> getter, final NullableSetter<T, String> setter) {
+    public PropertyHandle<T, String> addTextColumn(final String name, final String column, final NullableGetter<T, String> getter, final NullableSetter<T, String> setter) {
         return OrmObject.addTextProperty(this, name, column, getter, setter);
     }
 
@@ -95,35 +95,35 @@ public class OrmDispatchTable<T extends OrmObject, U extends Uplink> extends Dis
      * Like {@link #addTextColumn}, but for a field backed by a {@link com.eischet.janitor.orm.entity.LazyLoadedString}
      * instead of a plain {@code String}; see {@link OrmObject#addLazyTextProperty}.
      */
-    public MetaDataBuilder<T> addLazyTextColumn(final String name, final String column, final Function<T, LazyLoadedString> accessor) {
+    public PropertyHandle<T, String> addLazyTextColumn(final String name, final String column, final Function<T, LazyLoadedString> accessor) {
         return OrmObject.addLazyTextProperty(this, name, column, accessor);
     }
 
-    public MetaDataBuilder<T> addLongColumn(final String name, final String column, final PrimitiveLongGetter<T> getter, final PrimitiveLongSetter<T> setter) {
+    public PropertyHandle<T, Long> addLongColumn(final String name, final String column, final PrimitiveLongGetter<T> getter, final PrimitiveLongSetter<T> setter) {
         return OrmObject.addLongProperty(this, name, column, getter, setter);
     }
 
-    public MetaDataBuilder<T> addNullableLongColumn(final String name, final String column, final NullableGetter<T, Long> getter, final NullableSetter<T, Long> setter) {
+    public PropertyHandle<T, Long> addNullableLongColumn(final String name, final String column, final NullableGetter<T, Long> getter, final NullableSetter<T, Long> setter) {
         return OrmObject.addNullableLongProperty(this, name, column, getter, setter);
     }
 
-    public MetaDataBuilder<T> addIntegerColumn(final String name, final String column, final PrimitiveIntGetter<T> getter, final PrimitiveIntSetter<T> setter) {
+    public PropertyHandle<T, Integer> addIntegerColumn(final String name, final String column, final PrimitiveIntGetter<T> getter, final PrimitiveIntSetter<T> setter) {
         return OrmObject.addIntegerProperty(this, name, column, getter, setter);
     }
 
-    public MetaDataBuilder<T> addDateColumn(final String name, final String column, final NullableGetter<T, LocalDate> getter, final NullableSetter<T, LocalDate> setter) {
+    public PropertyHandle<T, LocalDate> addDateColumn(final String name, final String column, final NullableGetter<T, LocalDate> getter, final NullableSetter<T, LocalDate> setter) {
         return OrmObject.addDateProperty(this, name, column, getter, setter);
     }
 
-    public MetaDataBuilder<T> addDateTimeColumn(final String name, final String column, final NullableGetter<T, LocalDateTime> getter, final NullableSetter<T, LocalDateTime> setter) {
+    public PropertyHandle<T, LocalDateTime> addDateTimeColumn(final String name, final String column, final NullableGetter<T, LocalDateTime> getter, final NullableSetter<T, LocalDateTime> setter) {
         return OrmObject.addDateTimeProperty(this, name, column, getter, setter);
     }
 
-    public MetaDataBuilder<T> addBooleanColumn(final String name, final String column, final PrimitiveBooleanGetter<T> getter, final PrimitiveBooleanSetter<T> setter) {
+    public PropertyHandle<T, Boolean> addBooleanColumn(final String name, final String column, final PrimitiveBooleanGetter<T> getter, final PrimitiveBooleanSetter<T> setter) {
         return OrmObject.addBooleanProperty(this, name, column, getter, setter);
     }
 
-    public MetaDataBuilder<T> addNullableBooleanColumn(final String name, final String column, final NullableGetter<T, Boolean> getter, final NullableSetter<T, Boolean> setter) {
+    public PropertyHandle<T, Boolean> addNullableBooleanColumn(final String name, final String column, final NullableGetter<T, Boolean> getter, final NullableSetter<T, Boolean> setter) {
         return OrmObject.addNullableBooleanProperty(this, name, column, getter, setter);
     }
 
