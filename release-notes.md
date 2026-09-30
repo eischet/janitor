@@ -1,4 +1,4 @@
-# 0.9.65, Work in progress
+# 0.9.65, 2026-09-30 (internal release only)
 
 - applying maps to objects now produces better error messages
 - orm: rearrange/simplify the 'wranglers' to be more specific dispatch tables
