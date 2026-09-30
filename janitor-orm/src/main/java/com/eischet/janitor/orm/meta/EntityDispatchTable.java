@@ -17,6 +17,7 @@ import com.eischet.janitor.orm.ref.ForeignKey;
 import com.eischet.janitor.orm.ref.ForeignKeyNull;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
@@ -81,6 +82,11 @@ public class EntityDispatchTable<T extends OrmEntity, U extends Uplink> extends 
         setMetaData(JanitorOrm.MetaData.KEY_FIELD, keyField);
         setMetaData(JanitorOrm.MetaData.NAME_FIELD, nameField);
         setMetaData(JanitorOrm.MetaData.ID_SEQUENCE, sequenceName);
+        return this;
+    }
+
+    public EntityDispatchTable<T, U> configure(final Consumer<EntityDispatchTable<T, U>> consumer) {
+        consumer.accept(this);
         return this;
     }
 

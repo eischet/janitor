@@ -1,5 +1,7 @@
 package com.eischet.janitor.orm.entity;
 
+import com.eischet.dbxs.DatabaseConnection;
+import com.eischet.dbxs.exceptions.DatabaseError;
 import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
@@ -17,6 +19,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -63,11 +66,35 @@ public class JoinedList<T extends OrmJoined, U extends Uplink, V extends JoinDao
         if (!loaded) {
             final U uplink = uplinkSupplier.get();
             final V dao = daoRetriever.apply(uplink);
-            @NotNull @Unmodifiable final List<T> items = dao.callLazyTransaction(conn -> loader.load(conn, dao));
-            ensureList().addAll(items);
-            loaded = true;
+            dao.callLazyTransaction(conn -> load(conn, dao));
         }
         return this;
+    }
+
+    /**
+     * Loads this join collection through an already active connection. This is useful for callers
+     * that need several lazy values to participate in one surrounding transaction.
+     */
+    public JoinedList<T, U, V, W> load(final @NotNull DatabaseConnection connection) throws DatabaseError {
+        if (!loaded) {
+            final U uplink = uplinkSupplier.get();
+            load(connection, daoRetriever.apply(uplink));
+        }
+        return this;
+    }
+
+    private Void load(final @NotNull DatabaseConnection connection, final @NotNull V dao) throws DatabaseError {
+        @NotNull @Unmodifiable final List<T> items = loader.load(connection, dao);
+        ensureList().addAll(items);
+        loaded = true;
+        return null;
+    }
+
+    /** Replaces the complete in-memory join collection without triggering a database load. */
+    public void replaceAll(final @NotNull Collection<? extends T> entities) {
+        ensureList().clear();
+        ensureList().addAll(entities);
+        loaded = true;
     }
 
 
