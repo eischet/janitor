@@ -767,6 +767,10 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
         return addListProperty(name, getter, setter, IntegerConverter.INSTANCE, JSON_INT).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.INTEGER);
     }
 
+    public PropertyHandle<T, List<Long>> addListOfLongsProperty(final String name, final NullableGetter<T, List<Long>> getter, final NullableSetter<T, List<Long>> setter) {
+        return addListProperty(name, getter, setter, LongConverter.INSTANCE, JSON_LONG).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.INTEGER);
+    }
+
     public PropertyHandle<T, List<Double>> addListOfDoublesProperty(final String name, final NullableGetter<T, List<Double>> getter, final NullableSetter<T, List<Double>> setter) {
         return addListProperty(name, getter, setter, FloatConverter.INSTANCE, JSON_DOUBLE).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.FLOAT);
     }

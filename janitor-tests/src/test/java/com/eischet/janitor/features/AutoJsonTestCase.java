@@ -42,6 +42,8 @@ public class AutoJsonTestCase extends JanitorTest {
             {"foo":"baz"}""";
     @Language("JSON")
     private static final String LIST_JSON = "{\"list\":[\"foo\",\"bar\",\"baz\"]}";
+    @Language("JSON")
+    private static final String LONG_LIST_JSON = "{\"list\":[1,2,9007199254740993]}";
 
     /**
      * We can now create JSON automatically from objects that have dispatch tables.
@@ -117,6 +119,22 @@ public class AutoJsonTestCase extends JanitorTest {
         assertEquals(thing.getList(), otherThing.getList());
 
 
+    }
+
+    /**
+     * Long lists must round-trip as genuine JSON numbers, not strings, and preserve values beyond
+     * {@link Integer#MAX_VALUE} (and beyond the 2^53 double-precision integer boundary).
+     */
+    @Test
+    public void testLongListProp() throws JsonException {
+        final ThingWithLongListProp thing = new ThingWithLongListProp();
+        thing.setList(List.of(1L, 2L, 9007199254740993L));
+
+        final String json = ThingWithLongListProp.DISPATCH.writeToJson(thing);
+        assertEquals(LONG_LIST_JSON, json);
+
+        ThingWithLongListProp otherThing = ThingWithLongListProp.DISPATCH.readFromJson(ThingWithLongListProp::new, LONG_LIST_JSON);
+        assertEquals(thing.getList(), otherThing.getList());
     }
 
     @Test
@@ -298,6 +316,28 @@ public class AutoJsonTestCase extends JanitorTest {
         }
 
         public void setList(final List<String> list) {
+            this.list = list;
+        }
+    }
+
+    private static class ThingWithLongListProp extends JanitorComposed<ThingWithLongListProp> {
+        private static final DispatchTable<ThingWithLongListProp> DISPATCH = new DispatchTable<>(null);
+
+        static {
+            DISPATCH.addListOfLongsProperty("list", ThingWithLongListProp::getList, ThingWithLongListProp::setList);
+        }
+
+        private List<Long> list;
+
+        public ThingWithLongListProp() {
+            super(DISPATCH);
+        }
+
+        public List<Long> getList() {
+            return list;
+        }
+
+        public void setList(final List<Long> list) {
             this.list = list;
         }
     }
