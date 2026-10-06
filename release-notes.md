@@ -1,3 +1,9 @@
+# 0.9.66-SNAPSHOT
+
+- make JanitorEnvironment::adModule and addModuleResolver fluent, add some missing nullability annotations
+- make handling List<Long> properties more convenient
+- mustang: add method exportXmlEn16931() to invoice objects, which returns an XML string of the invoice in EN 16931 format
+
 # 0.9.65, 2026-09-30 (internal release only)
 
 - applying maps to objects now produces better error messages
