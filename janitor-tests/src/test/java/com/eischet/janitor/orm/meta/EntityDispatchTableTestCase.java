@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class EntityDispatchTableTestCase extends JanitorTest {
 
     static class Thing implements OrmEntity {
-        static final ForeignKeyNull<Thing> NULL = new ForeignKeyNull<>();
+        static final ForeignKeyNull<Thing> NULL = new ForeignKeyNull<>(Thing.class);
         static final EntityDispatchTable<Thing, TestCollection> DISPATCH =
                 new EntityDispatchTable<>(Thing.class, up -> new Thing(), NULL, up -> null);
 

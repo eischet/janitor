@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class OrmSchemaVersioningTestCase extends JanitorTest {
 
     static class TargetEntity implements OrmEntity {
-        static final ForeignKeyNull<TargetEntity> NULL = new ForeignKeyNull<>();
+        static final ForeignKeyNull<TargetEntity> NULL = new ForeignKeyNull<>(TargetEntity.class);
         static final EntityDispatchTable<TargetEntity, VersionedTestCollection> DISPATCH =
                 new EntityDispatchTable<>(TargetEntity.class, TargetEntity::new, NULL, up -> null);
 
@@ -57,7 +57,7 @@ public class OrmSchemaVersioningTestCase extends JanitorTest {
     }
 
     static class VersionedEntity implements OrmEntity {
-        static final ForeignKeyNull<VersionedEntity> NULL = new ForeignKeyNull<>();
+        static final ForeignKeyNull<VersionedEntity> NULL = new ForeignKeyNull<>(VersionedEntity.class);
         static final EntityDispatchTable<VersionedEntity, VersionedTestCollection> DISPATCH =
                 new EntityDispatchTable<>(VersionedEntity.class, VersionedEntity::new, NULL, up -> null);
 

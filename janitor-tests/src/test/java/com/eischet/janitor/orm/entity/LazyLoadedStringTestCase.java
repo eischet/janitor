@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class LazyLoadedStringTestCase extends JanitorTest {
 
     static class LazyThing implements OrmEntity {
-        static final ForeignKeyNull<LazyThing> NULL = new ForeignKeyNull<>();
+        static final ForeignKeyNull<LazyThing> NULL = new ForeignKeyNull<>(LazyThing.class);
         static final EntityDispatchTable<LazyThing, TestCollection> DISPATCH =
                 new EntityDispatchTable<>(LazyThing.class, LazyThing::new, NULL, up -> null);
 

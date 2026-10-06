@@ -21,6 +21,12 @@ import java.util.Optional;
  */
 public final class ForeignKeyNull<T extends OrmEntity> implements ForeignKey<T> {
 
+    private final Class<T> entityClass;
+
+    public ForeignKeyNull(final Class<T> entityClass) {
+        this.entityClass = entityClass;
+    }
+
     /**
      * Returns a pointer to this object.
      * This comes in handy when you need a factory method for NULL objects, e.g.: {@code MisoBranch.NULL::pointer} instead of {@code () -> new ForeignKeyNull<>()}.
@@ -46,12 +52,12 @@ public final class ForeignKeyNull<T extends OrmEntity> implements ForeignKey<T> 
 
     @Override
     public @Nullable Class<T> getReferencedEntityClass() {
-        return null;
+        return entityClass;
     }
 
     @Override
     public @NotNull String getReferencedEntityClassName() {
-        return "null";
+        return entityClass.getSimpleName();
     }
 
     @Override
@@ -93,4 +99,5 @@ public final class ForeignKeyNull<T extends OrmEntity> implements ForeignKey<T> 
     public int hashCode() {
         return super.hashCode();
     }
+
 }
