@@ -3,7 +3,6 @@ package com.eischet.janitor.env;
 import com.eischet.janitor.api.FilterPredicate;
 import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.JanitorScriptProcess;
-import com.eischet.janitor.api.errors.JanitorException;
 import com.eischet.janitor.api.metadata.HasMetaData;
 import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.modules.DiscoverableModules;
@@ -68,8 +67,8 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
 
         // Very experimental... and will not yet work like it does in Python, if ever.
         // For example, help(foo.bar) will print HELP from JInt when the bar property contains an integral number.
-        // That's because we're using "unpack()" all over the place to get to the inner-most value, which is
-        // what we want in most cases, but maybe not here. I'm not sure if it's worth it to make things more complicated
+        // That's because we're using "unpack()" all over the place to get to the innermost value, which is
+        // what we want in most cases, but maybe not here. I'm not sure if it's worth making things more complicated
         // just for this feature, though.
         builtinScope.bindF("help", (rs, args) -> {
             final JanitorObject subject = args.get(0);
@@ -203,13 +202,13 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
     }
 
     @Override
-    public JsonInputStream getLenientJsonConsumer(final String json) {
+    public @NotNull JsonInputStream getLenientJsonConsumer(final String json) {
         return GsonInputStream.lenient(json);
     }
 
 
     @Override
-    public FilterPredicate filterScript(final String name, final String code) {
+    public @NotNull FilterPredicate filterScript(final String name, final String code) {
         if (code == null || code.isEmpty() || code.trim().isEmpty()) {
             return NUMB;
         }
@@ -225,7 +224,7 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
 
     @Override
     public @NotNull FilterPredicate filterScript(@NotNull String name, @NotNull String code, Consumer<Scope> globalsProvider) {
-        if (code == null || code.isEmpty() || code.trim().isEmpty()) {
+        if (code.isEmpty() || code.trim().isEmpty()) {
             return NUMB;
         }
         try {
@@ -258,9 +257,11 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
         return JListClass.parseJson(getBuiltinTypes().list(), json);
     }
 
+    @NotNull
     @Override
-    public void addModule(final @NotNull JanitorModuleRegistration registration) {
+    public JanitorDefaultEnvironment addModule(final @NotNull JanitorModuleRegistration registration) {
         moduleRegistrations.add(registration);
+        return this;
     }
 
     public void autoDiscoverModules() {
@@ -287,11 +288,13 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
      * Adds a module resolver.
      * The resolvers will be called in reverse order of addition, so later resolvers can override earlier ones.
 
-     * @param resolver a module resolver for string based module names
+     * @param resolver a module resolver for string-based module names
      */
+    @NotNull
     @Override
-    public void addModuleResolver(final ModuleResolver resolver) {
-        resolvers.add(0, resolver);
+    public JanitorDefaultEnvironment addModuleResolver(final ModuleResolver resolver) {
+        resolvers.addFirst(resolver);
+        return this;
     }
 
     @Override

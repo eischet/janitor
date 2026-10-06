@@ -15,6 +15,7 @@ import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonInputStream;
 import com.eischet.janitor.toolbox.json.api.JsonOutputSupport;
 import org.intellij.lang.annotations.Language;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -46,7 +47,8 @@ public interface JanitorEnvironment extends JsonOutputSupport {
      * Add a module.
      * @param registration the module's registration, i.g. name plus object provider
      */
-    void addModule(final @NotNull JanitorModuleRegistration registration);
+    @Contract("_ -> this")
+    @NotNull JanitorEnvironment addModule(final @NotNull JanitorModuleRegistration registration);
 
     /**
      * Register a module resolver, making it available to script code.
@@ -55,7 +57,8 @@ public interface JanitorEnvironment extends JsonOutputSupport {
      *
      * @param resolver a module resolver
      */
-    void addModuleResolver(final ModuleResolver resolver);
+    @Contract("_ -> this")
+    @NotNull JanitorEnvironment addModuleResolver(final ModuleResolver resolver);
 
     /**
      * Convert a native object to a script object.
@@ -69,7 +72,7 @@ public interface JanitorEnvironment extends JsonOutputSupport {
      * @param json some JSON code
      * @return a JSON input stream
      */
-    JsonInputStream getLenientJsonConsumer(final @Language("JSON") String json);
+    @NotNull JsonInputStream getLenientJsonConsumer(final @Language("JSON") String json);
 
 
     /**
@@ -81,7 +84,7 @@ public interface JanitorEnvironment extends JsonOutputSupport {
      * TODO: remove this; it uses a badly thought out binding
      */
     @Deprecated
-    FilterPredicate filterScript(String name, @Language("Janitor") String code);
+    @NotNull FilterPredicate filterScript(String name, @Language("Janitor") String code);
 
     /**
      * Create a filter predicate from a script.
