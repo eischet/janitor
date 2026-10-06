@@ -6,19 +6,10 @@ import com.eischet.janitor.api.types.builtin.JDate;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import com.eischet.janitor.json.impl.DateTimeUtils;
-import org.mustangproject.Allowance;
-import org.mustangproject.CashDiscount;
-import org.mustangproject.Charge;
-import org.mustangproject.FileAttachment;
-import org.mustangproject.IncludedNote;
-import org.mustangproject.Invoice;
-import org.mustangproject.Item;
-import org.mustangproject.PaymentTerms;
-import org.mustangproject.ReferencedDocument;
-import org.mustangproject.ZUGFeRD.IZUGFeRDAllowanceCharge;
-import org.mustangproject.ZUGFeRD.IZUGFeRDExportableItem;
-import org.mustangproject.ZUGFeRD.IZUGFeRDPaymentTerms;
+import org.mustangproject.*;
+import org.mustangproject.ZUGFeRD.*;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,33 +18,33 @@ public class MustangInvoice extends JanitorWrapper<Invoice> {
 
     static {
         DISPATCH.addBuilderMethod("setNumber", (self, process, args) ->
-            self.janitorGetHostValue().setNumber(args.require(1).getRequiredStringValue(0)));
+                self.janitorGetHostValue().setNumber(args.require(1).getRequiredStringValue(0)));
         DISPATCH.addStringProperty("number", self -> self.janitorGetHostValue().getNumber(),
-            (self, value) -> self.janitorGetHostValue().setNumber(value));
+                (self, value) -> self.janitorGetHostValue().setNumber(value));
         DISPATCH.addBuilderMethod("setCurrency", (self, process, args) ->
-            self.janitorGetHostValue().setCurrency(args.require(1).getRequiredStringValue(0)));
+                self.janitorGetHostValue().setCurrency(args.require(1).getRequiredStringValue(0)));
         DISPATCH.addStringProperty("currency", self -> self.janitorGetHostValue().getCurrency(),
-            (self, value) -> self.janitorGetHostValue().setCurrency(value));
+                (self, value) -> self.janitorGetHostValue().setCurrency(value));
         DISPATCH.addBuilderMethod("setSender", (self, process, args) -> {
             self.janitorGetHostValue().setSender(args.require(1).getRequired(0, MustangTradeParty.class).janitorGetHostValue());
         });
         DISPATCH.addObjectProperty("sender", self -> new MustangTradeParty(self.janitorGetHostValue().getSender()),
-            (self, value) -> self.janitorGetHostValue().setSender(value == null ? null : value.janitorGetHostValue()), MustangTradeParty::new);
+                (self, value) -> self.janitorGetHostValue().setSender(value == null ? null : value.janitorGetHostValue()), MustangTradeParty::new);
         DISPATCH.addBuilderMethod("setIssueDate", (self, process, args) -> {
             self.janitorGetHostValue().setIssueDate(JDate.toLegacyJavaDate(args.require(1).getRequired(0, JDate.class).janitorGetHostValue()));
         });
         DISPATCH.addDateProperty("issueDate", self -> DateTimeUtils.convertDateToLocalDate(self.janitorGetHostValue().getIssueDate()),
-            (self, value) -> self.janitorGetHostValue().setIssueDate(JDate.toLegacyJavaDate(value)));
+                (self, value) -> self.janitorGetHostValue().setIssueDate(JDate.toLegacyJavaDate(value)));
         DISPATCH.addBuilderMethod("setDueDate", (self, process, args) -> {
             self.janitorGetHostValue().setDueDate(JDate.toLegacyJavaDate(args.require(1).getRequired(0, JDate.class).janitorGetHostValue()));
         });
         DISPATCH.addDateProperty("dueDate", self -> DateTimeUtils.convertDateToLocalDate(self.janitorGetHostValue().getDueDate()),
-            (self, value) -> self.janitorGetHostValue().setDueDate(JDate.toLegacyJavaDate(value)));
+                (self, value) -> self.janitorGetHostValue().setDueDate(JDate.toLegacyJavaDate(value)));
         DISPATCH.addBuilderMethod("setRecipient", (self, process, args) -> {
             self.janitorGetHostValue().setRecipient(args.require(1).getRequired(0, MustangTradeParty.class).janitorGetHostValue());
         });
         DISPATCH.addObjectProperty("recipient", self -> new MustangTradeParty(self.janitorGetHostValue().getRecipient()),
-            (self, value) -> self.janitorGetHostValue().setRecipient(value == null ? null : value.janitorGetHostValue()), MustangTradeParty::new);
+                (self, value) -> self.janitorGetHostValue().setRecipient(value == null ? null : value.janitorGetHostValue()), MustangTradeParty::new);
         DISPATCH.addBuilderMethod("setDetailedDeliveryPeriod", (self, process, args) -> {
             final JDate fromDate = args.getRequired(0, JDate.class);
             final JDate toDate = args.getRequired(1, JDate.class);
@@ -68,9 +59,9 @@ public class MustangInvoice extends JanitorWrapper<Invoice> {
             self.janitorGetHostValue().setDetailedDeliveryPeriodTo(JDate.toLegacyJavaDate(toDate));
         });
         DISPATCH.addDateProperty("detailedDeliveryPeriodFrom", self -> DateTimeUtils.convertDateToLocalDate(self.janitorGetHostValue().getDetailedDeliveryPeriodFrom()),
-            (self, date) -> self.janitorGetHostValue().setDetailedDeliveryPeriodFrom(JDate.toLegacyJavaDate(date)));
+                (self, date) -> self.janitorGetHostValue().setDetailedDeliveryPeriodFrom(JDate.toLegacyJavaDate(date)));
         DISPATCH.addDateProperty("detailedDeliveryPeriodTo", self -> DateTimeUtils.convertDateToLocalDate(self.janitorGetHostValue().getDetailedDeliveryPeriodTo()),
-            (self, date) -> self.janitorGetHostValue().setDetailedDeliveryPeriodTo(JDate.toLegacyJavaDate(date)));
+                (self, date) -> self.janitorGetHostValue().setDetailedDeliveryPeriodTo(JDate.toLegacyJavaDate(date)));
 
         DISPATCH.addBuilderMethod("addItem", (self, process, args) -> {
             final MustangItem item = args.getRequired(0, MustangItem.class);
@@ -109,9 +100,9 @@ public class MustangInvoice extends JanitorWrapper<Invoice> {
         });
 
         DISPATCH.addBuilderMethod("setDeliveryDate", (self, process, args) ->
-            self.janitorGetHostValue().setDeliveryDate(JDate.toLegacyJavaDate(args.getRequired(0, JDate.class).janitorGetHostValue())));
+                self.janitorGetHostValue().setDeliveryDate(JDate.toLegacyJavaDate(args.getRequired(0, JDate.class).janitorGetHostValue())));
         DISPATCH.addDateProperty("deliveryDate", self -> DateTimeUtils.convertDateToLocalDate(self.janitorGetHostValue().getDeliveryDate()),
-            (self, value) -> self.janitorGetHostValue().setDeliveryDate(JDate.toLegacyJavaDate(value)));
+                (self, value) -> self.janitorGetHostValue().setDeliveryDate(JDate.toLegacyJavaDate(value)));
 
         DISPATCH.addBuilderMethod("setDeliveryTypeCode", (self, process, args) -> self.janitorGetHostValue().setDeliveryTypeCode(args.getRequiredStringValue(0)));
         DISPATCH.addStringProperty("deliveryTypeCode", self -> self.janitorGetHostValue().getDeliveryTypeCode(), (self, value) -> self.janitorGetHostValue().setDeliveryTypeCode(value));
@@ -125,9 +116,9 @@ public class MustangInvoice extends JanitorWrapper<Invoice> {
         DISPATCH.addBigDecimalProperty("taxConversionRate", self -> self.janitorGetHostValue().getTaxConversionRate(), (self, value) -> self.janitorGetHostValue().setTaxConversionRate(value));
 
         DISPATCH.addBuilderMethod("setTaxConversionRateDateTime", (self, process, args) ->
-            self.janitorGetHostValue().setTaxConversionRateDateTime(JDate.toLegacyJavaDate(args.getRequired(0, JDate.class).janitorGetHostValue())));
+                self.janitorGetHostValue().setTaxConversionRateDateTime(JDate.toLegacyJavaDate(args.getRequired(0, JDate.class).janitorGetHostValue())));
         DISPATCH.addDateProperty("taxConversionRateDateTime", self -> DateTimeUtils.convertDateToLocalDate(self.janitorGetHostValue().getTaxConversionRateDateTime()),
-            (self, value) -> self.janitorGetHostValue().setTaxConversionRateDateTime(JDate.toLegacyJavaDate(value)));
+                (self, value) -> self.janitorGetHostValue().setTaxConversionRateDateTime(JDate.toLegacyJavaDate(value)));
 
         DISPATCH.addBuilderMethod("setRoundingAmount", (self, process, args) -> self.janitorGetHostValue().setRoundingAmount(args.getRequiredJNumber(0).toBigDecimal()));
         DISPATCH.addBigDecimalProperty("roundingAmount", self -> self.janitorGetHostValue().getRoundingAmount(), (self, value) -> self.janitorGetHostValue().setRoundingAmount(value));
@@ -144,14 +135,14 @@ public class MustangInvoice extends JanitorWrapper<Invoice> {
         DISPATCH.addStringProperty("paymentTermDescription", self -> self.janitorGetHostValue().getPaymentTermDescription(), (self, value) -> self.janitorGetHostValue().setPaymentTermDescription(value));
 
         DISPATCH.addBuilderMethod("setPaymentTerms", (self, process, args) ->
-            self.janitorGetHostValue().setPaymentTerms(args.getRequired(0, MustangPaymentTerms.class).janitorGetHostValue()));
+                self.janitorGetHostValue().setPaymentTerms(args.getRequired(0, MustangPaymentTerms.class).janitorGetHostValue()));
         DISPATCH.addObjectProperty("paymentTerms",
-            self -> self.janitorGetHostValue().getPaymentTerms() instanceof PaymentTerms paymentTerms ? new MustangPaymentTerms(paymentTerms) : null,
-            (self, value) -> self.janitorGetHostValue().setPaymentTerms(value == null ? null : value.janitorGetHostValue()),
-            MustangPaymentTerms::new);
+                self -> self.janitorGetHostValue().getPaymentTerms() instanceof PaymentTerms paymentTerms ? new MustangPaymentTerms(paymentTerms) : null,
+                (self, value) -> self.janitorGetHostValue().setPaymentTerms(value == null ? null : value.janitorGetHostValue()),
+                MustangPaymentTerms::new);
 
         DISPATCH.addBuilderMethod("addPaymentTerms", (self, process, args) ->
-            self.janitorGetHostValue().addPaymentTerms(args.getRequired(0, MustangPaymentTerms.class).janitorGetHostValue()));
+                self.janitorGetHostValue().addPaymentTerms(args.getRequired(0, MustangPaymentTerms.class).janitorGetHostValue()));
         DISPATCH.addMethod("getExtendedPaymentTerms", (self, process, args) -> {
             final List<JanitorObject> result = new ArrayList<>();
             final IZUGFeRDPaymentTerms[] terms = self.janitorGetHostValue().getExtendedPaymentTerms();
@@ -166,7 +157,7 @@ public class MustangInvoice extends JanitorWrapper<Invoice> {
         });
 
         DISPATCH.addBuilderMethod("addCashDiscount", (self, process, args) ->
-            self.janitorGetHostValue().addCashDiscount(args.getRequired(0, MustangCashDiscount.class).janitorGetHostValue()));
+                self.janitorGetHostValue().addCashDiscount(args.getRequired(0, MustangCashDiscount.class).janitorGetHostValue()));
         DISPATCH.addMethod("getCashDiscounts", (self, process, args) -> {
             final List<JanitorObject> result = new ArrayList<>();
             final CashDiscount[] discounts = self.janitorGetHostValue().getCashDiscounts();
@@ -181,46 +172,46 @@ public class MustangInvoice extends JanitorWrapper<Invoice> {
         // -- involved parties --------------------------------------------------------
 
         DISPATCH.addBuilderMethod("setPayee", (self, process, args) ->
-            self.janitorGetHostValue().setPayee(args.getRequired(0, MustangTradeParty.class).janitorGetHostValue()));
+                self.janitorGetHostValue().setPayee(args.getRequired(0, MustangTradeParty.class).janitorGetHostValue()));
         DISPATCH.addObjectProperty("payee",
-            self -> self.janitorGetHostValue().getPayee() == null ? null : new MustangTradeParty(self.janitorGetHostValue().getPayee()),
-            (self, value) -> self.janitorGetHostValue().setPayee(value == null ? null : value.janitorGetHostValue()),
-            MustangTradeParty::new);
+                self -> self.janitorGetHostValue().getPayee() == null ? null : new MustangTradeParty(self.janitorGetHostValue().getPayee()),
+                (self, value) -> self.janitorGetHostValue().setPayee(value == null ? null : value.janitorGetHostValue()),
+                MustangTradeParty::new);
 
         DISPATCH.addBuilderMethod("setInvoicer", (self, process, args) ->
-            self.janitorGetHostValue().setInvoicer(args.getRequired(0, MustangTradeParty.class).janitorGetHostValue()));
+                self.janitorGetHostValue().setInvoicer(args.getRequired(0, MustangTradeParty.class).janitorGetHostValue()));
         DISPATCH.addObjectProperty("invoicer",
-            self -> self.janitorGetHostValue().getInvoicer() == null ? null : new MustangTradeParty(self.janitorGetHostValue().getInvoicer()),
-            (self, value) -> self.janitorGetHostValue().setInvoicer(value == null ? null : value.janitorGetHostValue()),
-            MustangTradeParty::new);
+                self -> self.janitorGetHostValue().getInvoicer() == null ? null : new MustangTradeParty(self.janitorGetHostValue().getInvoicer()),
+                (self, value) -> self.janitorGetHostValue().setInvoicer(value == null ? null : value.janitorGetHostValue()),
+                MustangTradeParty::new);
 
         DISPATCH.addBuilderMethod("setInvoicee", (self, process, args) ->
-            self.janitorGetHostValue().setInvoicee(args.getRequired(0, MustangTradeParty.class).janitorGetHostValue()));
+                self.janitorGetHostValue().setInvoicee(args.getRequired(0, MustangTradeParty.class).janitorGetHostValue()));
         DISPATCH.addObjectProperty("invoicee",
-            self -> self.janitorGetHostValue().getInvoicee() == null ? null : new MustangTradeParty(self.janitorGetHostValue().getInvoicee()),
-            (self, value) -> self.janitorGetHostValue().setInvoicee(value == null ? null : value.janitorGetHostValue()),
-            MustangTradeParty::new);
+                self -> self.janitorGetHostValue().getInvoicee() == null ? null : new MustangTradeParty(self.janitorGetHostValue().getInvoicee()),
+                (self, value) -> self.janitorGetHostValue().setInvoicee(value == null ? null : value.janitorGetHostValue()),
+                MustangTradeParty::new);
 
         DISPATCH.addBuilderMethod("setTaxRepresentative", (self, process, args) ->
-            self.janitorGetHostValue().setTaxRepresentative(args.getRequired(0, MustangTradeParty.class).janitorGetHostValue()));
+                self.janitorGetHostValue().setTaxRepresentative(args.getRequired(0, MustangTradeParty.class).janitorGetHostValue()));
         DISPATCH.addObjectProperty("taxRepresentative",
-            self -> self.janitorGetHostValue().getTaxRepresentative() == null ? null : new MustangTradeParty(self.janitorGetHostValue().getTaxRepresentative()),
-            (self, value) -> self.janitorGetHostValue().setTaxRepresentative(value == null ? null : value.janitorGetHostValue()),
-            MustangTradeParty::new);
+                self -> self.janitorGetHostValue().getTaxRepresentative() == null ? null : new MustangTradeParty(self.janitorGetHostValue().getTaxRepresentative()),
+                (self, value) -> self.janitorGetHostValue().setTaxRepresentative(value == null ? null : value.janitorGetHostValue()),
+                MustangTradeParty::new);
 
         DISPATCH.addBuilderMethod("setDeliveryAddress", (self, process, args) ->
-            self.janitorGetHostValue().setDeliveryAddress(args.getRequired(0, MustangTradeParty.class).janitorGetHostValue()));
+                self.janitorGetHostValue().setDeliveryAddress(args.getRequired(0, MustangTradeParty.class).janitorGetHostValue()));
         DISPATCH.addObjectProperty("deliveryAddress",
-            self -> self.janitorGetHostValue().getDeliveryAddress() == null ? null : new MustangTradeParty(self.janitorGetHostValue().getDeliveryAddress()),
-            (self, value) -> self.janitorGetHostValue().setDeliveryAddress(value == null ? null : value.janitorGetHostValue()),
-            MustangTradeParty::new);
+                self -> self.janitorGetHostValue().getDeliveryAddress() == null ? null : new MustangTradeParty(self.janitorGetHostValue().getDeliveryAddress()),
+                (self, value) -> self.janitorGetHostValue().setDeliveryAddress(value == null ? null : value.janitorGetHostValue()),
+                MustangTradeParty::new);
 
         DISPATCH.addBuilderMethod("setEndCustomerDeliveryAddress", (self, process, args) ->
-            self.janitorGetHostValue().setEndCustomerDeliveryAddress(args.getRequired(0, MustangTradeParty.class).janitorGetHostValue()));
+                self.janitorGetHostValue().setEndCustomerDeliveryAddress(args.getRequired(0, MustangTradeParty.class).janitorGetHostValue()));
         DISPATCH.addObjectProperty("endCustomerDeliveryAddress",
-            self -> self.janitorGetHostValue().getEndCustomerDeliveryAddress() == null ? null : new MustangTradeParty(self.janitorGetHostValue().getEndCustomerDeliveryAddress()),
-            (self, value) -> self.janitorGetHostValue().setEndCustomerDeliveryAddress(value == null ? null : value.janitorGetHostValue()),
-            MustangTradeParty::new);
+                self -> self.janitorGetHostValue().getEndCustomerDeliveryAddress() == null ? null : new MustangTradeParty(self.janitorGetHostValue().getEndCustomerDeliveryAddress()),
+                (self, value) -> self.janitorGetHostValue().setEndCustomerDeliveryAddress(value == null ? null : value.janitorGetHostValue()),
+                MustangTradeParty::new);
 
         // -- ship-to (used e.g. for despatch advices) --------------------------------
 
@@ -240,13 +231,13 @@ public class MustangInvoice extends JanitorWrapper<Invoice> {
         // -- "own organisation" read-only convenience getters (mirror sender) -------
 
         DISPATCH.addStringProperty("ownOrganisationFullPlaintextInfo", self -> self.janitorGetHostValue().getOwnOrganisationFullPlaintextInfo(),
-            (self, value) -> self.janitorGetHostValue().setOwnOrganisationFullPlaintextInfo(value));
+                (self, value) -> self.janitorGetHostValue().setOwnOrganisationFullPlaintextInfo(value));
         DISPATCH.addStringProperty("ownTaxID", self -> self.janitorGetHostValue().getOwnTaxID(), (self, value) -> self.janitorGetHostValue().setOwnTaxID(value));
         DISPATCH.addStringProperty("ownVATID", self -> self.janitorGetHostValue().getOwnVATID(), (self, value) -> self.janitorGetHostValue().setOwnVATID(value));
         DISPATCH.addStringProperty("ownForeignOrganisationID", self -> self.janitorGetHostValue().getOwnForeignOrganisationID(),
-            (self, value) -> self.janitorGetHostValue().setOwnForeignOrganisationID(value));
+                (self, value) -> self.janitorGetHostValue().setOwnForeignOrganisationID(value));
         DISPATCH.addStringProperty("ownOrganisationName", self -> self.janitorGetHostValue().getOwnOrganisationName(),
-            (self, value) -> self.janitorGetHostValue().setOwnOrganisationName(value));
+                (self, value) -> self.janitorGetHostValue().setOwnOrganisationName(value));
         DISPATCH.addStringProperty("ownStreet", self -> self.janitorGetHostValue().getOwnStreet());
         DISPATCH.addStringProperty("ownZIP", self -> self.janitorGetHostValue().getOwnZIP());
         DISPATCH.addStringProperty("ownLocation", self -> self.janitorGetHostValue().getOwnLocation());
@@ -255,57 +246,57 @@ public class MustangInvoice extends JanitorWrapper<Invoice> {
         // -- referenced documents ----------------------------------------------------
 
         DISPATCH.addBuilderMethod("setBuyerOrderReferencedDocument", (self, process, args) ->
-            self.janitorGetHostValue().setBuyerOrderReferencedDocument(args.getRequired(0, MustangReferencedDocument.class).janitorGetHostValue()));
+                self.janitorGetHostValue().setBuyerOrderReferencedDocument(args.getRequired(0, MustangReferencedDocument.class).janitorGetHostValue()));
         DISPATCH.addObjectProperty("buyerOrderReferencedDocument",
-            self -> self.janitorGetHostValue().getBuyerOrderReferencedDocument() == null ? null : new MustangReferencedDocument(self.janitorGetHostValue().getBuyerOrderReferencedDocument()),
-            (self, value) -> self.janitorGetHostValue().setBuyerOrderReferencedDocument(value == null ? null : value.janitorGetHostValue()),
-            MustangReferencedDocument::new);
+                self -> self.janitorGetHostValue().getBuyerOrderReferencedDocument() == null ? null : new MustangReferencedDocument(self.janitorGetHostValue().getBuyerOrderReferencedDocument()),
+                (self, value) -> self.janitorGetHostValue().setBuyerOrderReferencedDocument(value == null ? null : value.janitorGetHostValue()),
+                MustangReferencedDocument::new);
 
         DISPATCH.addBuilderMethod("setSellerOrderReferencedDocument", (self, process, args) ->
-            self.janitorGetHostValue().setSellerOrderReferencedDocument(args.getRequired(0, MustangReferencedDocument.class).janitorGetHostValue()));
+                self.janitorGetHostValue().setSellerOrderReferencedDocument(args.getRequired(0, MustangReferencedDocument.class).janitorGetHostValue()));
         DISPATCH.addObjectProperty("sellerOrderReferencedDocument",
-            self -> self.janitorGetHostValue().getSellerOrderReferencedDocument() == null ? null : new MustangReferencedDocument(self.janitorGetHostValue().getSellerOrderReferencedDocument()),
-            (self, value) -> self.janitorGetHostValue().setSellerOrderReferencedDocument(value == null ? null : value.janitorGetHostValue()),
-            MustangReferencedDocument::new);
+                self -> self.janitorGetHostValue().getSellerOrderReferencedDocument() == null ? null : new MustangReferencedDocument(self.janitorGetHostValue().getSellerOrderReferencedDocument()),
+                (self, value) -> self.janitorGetHostValue().setSellerOrderReferencedDocument(value == null ? null : value.janitorGetHostValue()),
+                MustangReferencedDocument::new);
 
         DISPATCH.addBuilderMethod("setContractReferencedDocument", (self, process, args) ->
-            self.janitorGetHostValue().setContractReferencedDocument(args.getRequired(0, MustangReferencedDocument.class).janitorGetHostValue()));
+                self.janitorGetHostValue().setContractReferencedDocument(args.getRequired(0, MustangReferencedDocument.class).janitorGetHostValue()));
         DISPATCH.addObjectProperty("contractReferencedDocument",
-            self -> self.janitorGetHostValue().getContractReferencedDocument() == null ? null : new MustangReferencedDocument(self.janitorGetHostValue().getContractReferencedDocument()),
-            (self, value) -> self.janitorGetHostValue().setContractReferencedDocument(value == null ? null : value.janitorGetHostValue()),
-            MustangReferencedDocument::new);
+                self -> self.janitorGetHostValue().getContractReferencedDocument() == null ? null : new MustangReferencedDocument(self.janitorGetHostValue().getContractReferencedDocument()),
+                (self, value) -> self.janitorGetHostValue().setContractReferencedDocument(value == null ? null : value.janitorGetHostValue()),
+                MustangReferencedDocument::new);
 
         DISPATCH.addBuilderMethod("setDespatchAdviceReferencedDocument", (self, process, args) ->
-            self.janitorGetHostValue().setDespatchAdviceReferencedDocument(args.getRequired(0, MustangReferencedDocument.class).janitorGetHostValue()));
+                self.janitorGetHostValue().setDespatchAdviceReferencedDocument(args.getRequired(0, MustangReferencedDocument.class).janitorGetHostValue()));
         DISPATCH.addObjectProperty("despatchAdviceReferencedDocument",
-            self -> self.janitorGetHostValue().getDespatchAdviceReferencedDocument() == null ? null : new MustangReferencedDocument(self.janitorGetHostValue().getDespatchAdviceReferencedDocument()),
-            (self, value) -> self.janitorGetHostValue().setDespatchAdviceReferencedDocument(value == null ? null : value.janitorGetHostValue()),
-            MustangReferencedDocument::new);
+                self -> self.janitorGetHostValue().getDespatchAdviceReferencedDocument() == null ? null : new MustangReferencedDocument(self.janitorGetHostValue().getDespatchAdviceReferencedDocument()),
+                (self, value) -> self.janitorGetHostValue().setDespatchAdviceReferencedDocument(value == null ? null : value.janitorGetHostValue()),
+                MustangReferencedDocument::new);
 
         DISPATCH.addBuilderMethod("setDeliveryNoteReferencedDocument", (self, process, args) ->
-            self.janitorGetHostValue().setDeliveryNoteReferencedDocument(args.getRequired(0, MustangReferencedDocument.class).janitorGetHostValue()));
+                self.janitorGetHostValue().setDeliveryNoteReferencedDocument(args.getRequired(0, MustangReferencedDocument.class).janitorGetHostValue()));
         DISPATCH.addObjectProperty("deliveryNoteReferencedDocument",
-            self -> self.janitorGetHostValue().getDeliveryNoteReferencedDocument() == null ? null : new MustangReferencedDocument(self.janitorGetHostValue().getDeliveryNoteReferencedDocument()),
-            (self, value) -> self.janitorGetHostValue().setDeliveryNoteReferencedDocument(value == null ? null : value.janitorGetHostValue()),
-            MustangReferencedDocument::new);
+                self -> self.janitorGetHostValue().getDeliveryNoteReferencedDocument() == null ? null : new MustangReferencedDocument(self.janitorGetHostValue().getDeliveryNoteReferencedDocument()),
+                (self, value) -> self.janitorGetHostValue().setDeliveryNoteReferencedDocument(value == null ? null : value.janitorGetHostValue()),
+                MustangReferencedDocument::new);
 
         DISPATCH.addBuilderMethod("setTenderReferencedDocument", (self, process, args) ->
-            self.janitorGetHostValue().setTenderReferencedDocument(args.getRequired(0, MustangReferencedDocument.class).janitorGetHostValue()));
+                self.janitorGetHostValue().setTenderReferencedDocument(args.getRequired(0, MustangReferencedDocument.class).janitorGetHostValue()));
         DISPATCH.addMethod("getTenderReferencedDocument", (self, process, args) ->
-            self.janitorGetHostValue().getTenderReferencedDocument() instanceof ReferencedDocument rd ? new MustangReferencedDocument(rd) : Janitor.NULL);
+                self.janitorGetHostValue().getTenderReferencedDocument() instanceof ReferencedDocument rd ? new MustangReferencedDocument(rd) : Janitor.NULL);
 
         DISPATCH.addBuilderMethod("setObjectIdentifierReferencedDocument", (self, process, args) ->
-            self.janitorGetHostValue().setObjectIdentifierReferencedDocument(args.getRequired(0, MustangReferencedDocument.class).janitorGetHostValue()));
+                self.janitorGetHostValue().setObjectIdentifierReferencedDocument(args.getRequired(0, MustangReferencedDocument.class).janitorGetHostValue()));
         DISPATCH.addMethod("getObjectIdentifierReferencedDocument", (self, process, args) ->
-            self.janitorGetHostValue().getObjectIdentifierReferencedDocument() instanceof ReferencedDocument rd ? new MustangReferencedDocument(rd) : Janitor.NULL);
+                self.janitorGetHostValue().getObjectIdentifierReferencedDocument() instanceof ReferencedDocument rd ? new MustangReferencedDocument(rd) : Janitor.NULL);
 
         DISPATCH.addBuilderMethod("setRelatedReferencedDocument", (self, process, args) ->
-            self.janitorGetHostValue().setRelatedReferencedDocument(args.getRequired(0, MustangReferencedDocument.class).janitorGetHostValue()));
+                self.janitorGetHostValue().setRelatedReferencedDocument(args.getRequired(0, MustangReferencedDocument.class).janitorGetHostValue()));
         DISPATCH.addMethod("getRelatedReferencedDocument", (self, process, args) ->
-            self.janitorGetHostValue().getRelatedReferencedDocument() instanceof ReferencedDocument rd ? new MustangReferencedDocument(rd) : Janitor.NULL);
+                self.janitorGetHostValue().getRelatedReferencedDocument() instanceof ReferencedDocument rd ? new MustangReferencedDocument(rd) : Janitor.NULL);
 
         DISPATCH.addBuilderMethod("addInvoiceReferencedDocument", (self, process, args) ->
-            self.janitorGetHostValue().addInvoiceReferencedDocument(args.getRequired(0, MustangReferencedDocument.class).janitorGetHostValue()));
+                self.janitorGetHostValue().addInvoiceReferencedDocument(args.getRequired(0, MustangReferencedDocument.class).janitorGetHostValue()));
         DISPATCH.addMethod("getInvoiceReferencedDocuments", (self, process, args) -> {
             final List<JanitorObject> result = new ArrayList<>();
             final List<ReferencedDocument> documents = self.janitorGetHostValue().getInvoiceReferencedDocuments();
@@ -318,7 +309,7 @@ public class MustangInvoice extends JanitorWrapper<Invoice> {
         });
 
         DISPATCH.addBuilderMethod("embedFileInXML", (self, process, args) ->
-            self.janitorGetHostValue().embedFileInXML(args.getRequired(0, MustangFileAttachment.class).janitorGetHostValue()));
+                self.janitorGetHostValue().embedFileInXML(args.getRequired(0, MustangFileAttachment.class).janitorGetHostValue()));
         DISPATCH.addMethod("getAdditionalReferencedDocuments", (self, process, args) -> {
             final List<JanitorObject> result = new ArrayList<>();
             final FileAttachment[] attachments = self.janitorGetHostValue().getAdditionalReferencedDocuments();
@@ -347,7 +338,7 @@ public class MustangInvoice extends JanitorWrapper<Invoice> {
             return Janitor.list(result);
         });
         DISPATCH.addBuilderMethod("addIncludedNote", (self, process, args) ->
-            self.janitorGetHostValue().addNotes(List.of(args.getRequired(0, MustangIncludedNote.class).janitorGetHostValue())));
+                self.janitorGetHostValue().addNotes(List.of(args.getRequired(0, MustangIncludedNote.class).janitorGetHostValue())));
         DISPATCH.addBuilderMethod("addGeneralNote", (self, process, args) -> self.janitorGetHostValue().addGeneralNote(args.getRequiredStringValue(0)));
         DISPATCH.addBuilderMethod("addRegulatoryNote", (self, process, args) -> self.janitorGetHostValue().addRegulatoryNote(args.getRequiredStringValue(0)));
         DISPATCH.addBuilderMethod("addLegalNote", (self, process, args) -> self.janitorGetHostValue().addLegalNote(args.getRequiredStringValue(0)));
@@ -370,11 +361,11 @@ public class MustangInvoice extends JanitorWrapper<Invoice> {
         // -- allowances / charges -----------------------------------------------------
 
         DISPATCH.addBuilderMethod("addAllowance", (self, process, args) ->
-            self.janitorGetHostValue().addAllowance(args.getRequired(0, MustangAllowance.class).janitorGetHostValue()));
+                self.janitorGetHostValue().addAllowance(args.getRequired(0, MustangAllowance.class).janitorGetHostValue()));
         DISPATCH.addMethod("getAllowances", (self, process, args) -> Janitor.list(wrapAllowancesAndCharges(self.janitorGetHostValue().getZFAllowances())));
 
         DISPATCH.addBuilderMethod("addCharge", (self, process, args) ->
-            self.janitorGetHostValue().addCharge(args.getRequired(0, MustangCharge.class).janitorGetHostValue()));
+                self.janitorGetHostValue().addCharge(args.getRequired(0, MustangCharge.class).janitorGetHostValue()));
         DISPATCH.addMethod("getCharges", (self, process, args) -> Janitor.list(wrapAllowancesAndCharges(self.janitorGetHostValue().getZFCharges())));
 
         // -- misc identifiers ----------------------------------------------------------
@@ -399,6 +390,25 @@ public class MustangInvoice extends JanitorWrapper<Invoice> {
         // -- validation ------------------------------------------------------------------
 
         DISPATCH.addBooleanProperty("valid", self -> self.janitorGetHostValue().isValid());
+
+
+        DISPATCH.addMethod("exportXmlEn16931", (self, process, args) -> {
+            ZUGFeRD2PullProvider zf2p = new ZUGFeRD2PullProvider();
+            zf2p.setProfile(Profiles.getByName("EN16931"));
+            zf2p.generateXML(self.janitorGetHostValue());
+            byte[] xml = zf2p.getXML(); // nur falls du das XML separat brauchst
+            return Janitor.string(new String(xml, StandardCharsets.UTF_8));
+        });
+
+
+    }
+
+    public MustangInvoice() {
+        super(DISPATCH, new Invoice());
+    }
+
+    public MustangInvoice(final Invoice invoice) {
+        super(DISPATCH, invoice);
     }
 
     private static List<JanitorObject> wrapAllowancesAndCharges(final IZUGFeRDAllowanceCharge[] entries) {
@@ -413,13 +423,5 @@ public class MustangInvoice extends JanitorWrapper<Invoice> {
             }
         }
         return result;
-    }
-
-    public MustangInvoice() {
-        super(DISPATCH, new Invoice());
-    }
-
-    public MustangInvoice(final Invoice invoice) {
-        super(DISPATCH, invoice);
     }
 }
