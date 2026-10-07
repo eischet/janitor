@@ -4,7 +4,8 @@
 - make handling List<Long> properties more convenient
 - mustang: add method exportXmlEn16931() to invoice objects, which returns an XML string of the invoice in EN 16931 format
 - orm: Extend PropertyHandle to OrmPropertyHandle for type-safe Java access to ORM-specific properties
-- deps: h2 2.5.252, install4j 13.1.1, templating-maven-plugin 3.1.1, jansi/jline 4.4.6 
+- deps: h2 2.5.252, install4j 13.1.1, templating-maven-plugin 3.1.1, jansi/jline 4.4.6, jersey (via docusign) 4.0.3,
+  maven-resolver 2.0.24
 
 
 # 0.9.65, 2026-09-30 (internal release only)
