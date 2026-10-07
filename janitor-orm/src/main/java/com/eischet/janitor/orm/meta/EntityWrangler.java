@@ -1,7 +1,6 @@
 package com.eischet.janitor.orm.meta;
 
 import com.eischet.janitor.api.Janitor;
-import com.eischet.janitor.api.metadata.PropertyHandle;
 import com.eischet.janitor.api.types.builtin.JNumber;
 import com.eischet.janitor.api.types.builtin.JString;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
@@ -74,18 +73,18 @@ public interface EntityWrangler<T extends OrmEntity, U extends Uplink> extends W
         };
     }
 
-    default <V extends OrmObject> PropertyHandle<V, ForeignKey<T>> addReference(final DispatchTable<V> dispatch,
+    default <V extends OrmObject> OrmPropertyHandle<V, ForeignKey<T>> addReference(final DispatchTable<V> dispatch,
                                                                  final String propertyName,
                                                                  final String columnName,
                                                                  final NotNullGetter<V, ForeignKey<T>> getter,
                                                                  final NotNullSetter<V, ForeignKey<T>> setter,
                                                                  final Function<V, U> uplinkOf) {
-        return dispatch.addObjectPropertyWithSingletonDefault(
+        return OrmPropertyHandle.of(dispatch.addObjectPropertyWithSingletonDefault(
                         propertyName,
                         getter::get,
                         (v, value) -> setter.set(v, value == null ? getNullReference() : value),
                         getNullReference(),
-                        getValueExpander(uplinkOf))
+                        getValueExpander(uplinkOf)))
                 .setMetaData(JanitorOrm.MetaData.COLUMN_NAME, columnName)
                 .setMetaData(JanitorOrm.MetaData.COLUMN_TYPE, ColumnTypeHint.INT)
                 .setMetaData(Janitor.MetaData.REF, getSimpleClassName());

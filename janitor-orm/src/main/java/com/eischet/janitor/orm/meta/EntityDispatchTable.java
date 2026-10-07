@@ -1,7 +1,6 @@
 package com.eischet.janitor.orm.meta;
 
 import com.eischet.janitor.api.errors.runtime.JanitorError;
-import com.eischet.janitor.api.metadata.PropertyHandle;
 import com.eischet.janitor.api.types.JAssignable;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.TemporaryAssignable;
@@ -104,7 +103,7 @@ public class EntityDispatchTable<T extends OrmEntity, U extends Uplink> extends 
      * Adds a foreign key property to this table, pointing to the entity described by {@code target}.
      * Equivalent to {@code target.addReference(this, ...)}, but reads from the owning side.
      */
-    public <X extends OrmEntity> PropertyHandle<T, ForeignKey<X>> addReference(final @NotNull String propertyName,
+    public <X extends OrmEntity> OrmPropertyHandle<T, ForeignKey<X>> addReference(final @NotNull String propertyName,
                                                                  final @NotNull String columnName,
                                                                  final @NotNull EntityWrangler<X, U> target,
                                                                  final @NotNull NotNullGetter<T, ForeignKey<X>> getter,

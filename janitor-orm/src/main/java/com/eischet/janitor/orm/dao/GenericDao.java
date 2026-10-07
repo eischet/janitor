@@ -24,6 +24,7 @@ import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.types.functions.JCallable;
 import com.eischet.janitor.logging.JanitorLogger;
+import com.eischet.janitor.orm.meta.OrmPropertyHandle;
 import com.eischet.janitor.orm.JanitorOrm;
 import com.eischet.janitor.orm.cache.EntityCache;
 import com.eischet.janitor.orm.cache.SimpleEntityCache;
@@ -163,7 +164,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
 
             // When specified: skip fields that do not match the schema version, to self-adjust to schema changes
             @Nullable final VersionRange versionRange = entityDispatchTable.getMetaData(field, JanitorOrm.MetaData.VERSION_RANGE);
-            if (schemaVersion != null && versionRange != null && !versionRange.includes(schemaVersion)) {
+            if (!OrmPropertyHandle.isAvailableIn(versionRange, schemaVersion)) {
                 continue;
             }
 
