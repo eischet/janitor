@@ -1,6 +1,7 @@
 package com.eischet.janitor.orm;
 
 import com.eischet.janitor.api.metadata.MetaDataKey;
+import com.eischet.janitor.orm.sql.ColumnCase;
 import com.eischet.janitor.orm.sql.ColumnTypeHint;
 import com.eischet.janitor.versioning.VersionRange;
 import org.jetbrains.annotations.NotNull;
@@ -18,6 +19,12 @@ public final class JanitorOrm {
          * A hint for the column type that should be used
          */
         public static MetaDataKey<ColumnTypeHint> COLUMN_TYPE = new MetaDataKey<>("column_type", ColumnTypeHint.class);
+
+        /**
+         * Declares that a text column only ever holds upper-case (or lower-case) values, which lets filters
+         * compare case-insensitively without folding the column; see {@link ColumnCase}. Absent means mixed case.
+         */
+        public static MetaDataKey<ColumnCase> COLUMN_CASE = new MetaDataKey<>("column_case", ColumnCase.class);
 
         public static MetaDataKey<String> ID_SEQUENCE = new MetaDataKey<>("id_sequence", String.class);
 

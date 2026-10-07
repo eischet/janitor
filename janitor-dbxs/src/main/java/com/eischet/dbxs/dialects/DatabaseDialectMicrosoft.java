@@ -44,6 +44,20 @@ public class DatabaseDialectMicrosoft extends DatabaseDialectCommon {
 
 
     @Override
+    public boolean isAdditionalLikeWildcard(final char c) {
+        return c == '[';
+    }
+
+    /**
+     * Unchanged on purpose: with the usual case-insensitive collations, comparisons already ignore case,
+     * and wrapping the column in lower() would defeat index usage.
+     */
+    @Override
+    public @NotNull String foldCase(final @NotNull String expression) {
+        return expression;
+    }
+
+    @Override
     public @NotNull String quoteColumn(final @NotNull String columnName) {
         if (columnName != null && KEYWORDS.contains(columnName.toLowerCase())) {
             return "[" + columnName + "]";

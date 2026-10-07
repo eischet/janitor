@@ -16,8 +16,40 @@ import java.io.Reader;
 import java.sql.NClob;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Locale;
+import java.util.Set;
 
 public class DatabaseDialectOracle extends DatabaseDialectCommon {
+
+    /**
+     * Reserved words (V$RESERVED_WORDS, RESERVED = 'Y') that are plausible as column names. Oracle upper-cases
+     * unquoted identifiers, so we quote these in upper case, which assumes that the schema was created without quoting.
+     */
+    private static final Set<String> RESERVED_WORDS = Set.of(
+            "ACCESS", "AUDIT", "COMMENT", "CURRENT", "DATE", "DEFAULT", "DELETE", "DESC", "FILE", "GROUP", "INDEX",
+            "INITIAL", "LEVEL", "LOCK", "MODE", "NUMBER", "OFFLINE", "ONLINE", "ORDER", "PRIOR", "RAW", "RESOURCE",
+            "ROW", "ROWID", "ROWNUM", "ROWS", "SESSION", "SIZE", "START", "SYSDATE", "TABLE", "TIMESTAMP", "TRIGGER",
+            "UID", "UNIQUE", "USER", "VALIDATE", "VALUES", "VIEW", "WHEN", "WHERE"
+    );
+
+    @Override
+    public @NotNull String quoteColumn(final @NotNull String columnName) {
+        final String upper = columnName.toUpperCase(Locale.ROOT);
+        return RESERVED_WORDS.contains(upper) ? "\"" + upper + "\"" : columnName;
+    }
+
+    /**
+     * Oracle treats the empty string as NULL, so "= ''" never matches.
+     */
+    @Override
+    public @NotNull String isEmptyCondition(final @NotNull String quotedColumn) {
+        return quotedColumn + " is null";
+    }
+
+    @Override
+    public @NotNull String isNotEmptyCondition(final @NotNull String quotedColumn) {
+        return quotedColumn + " is not null";
+    }
 
     @Override
     public boolean canLimitAndOffset(final DatabaseVersion databaseVersion) {

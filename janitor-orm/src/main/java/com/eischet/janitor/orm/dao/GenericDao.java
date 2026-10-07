@@ -33,6 +33,7 @@ import com.eischet.janitor.orm.entity.OrmEntity;
 import com.eischet.janitor.orm.filter.FilterOperator;
 import com.eischet.janitor.orm.filter.MalformedExpression;
 import com.eischet.janitor.orm.meta.EntityDispatchTable;
+import com.eischet.janitor.orm.sql.ColumnCase;
 import com.eischet.janitor.orm.sql.ColumnTypeHint;
 import com.eischet.janitor.orm.sql.StatementCreator;
 import com.eischet.janitor.toolbox.json.api.JsonException;
@@ -384,7 +385,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
 
     public static final ExpressionPrepperBuilder PREP_STARTS_WITH_STRING = filterExpression -> new NamedPrepper((conn, stmt) -> {
         if (filterExpression.getValueString() != null) {
-            stmt.addString(filterExpression.getValueString() + "%");
+            stmt.addString(conn.getDialect().escapeLikePattern(filterExpression.getValueString()) + "%");
         } else {
             stmt.addNullString();
         }
@@ -392,7 +393,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
 
     public static final ExpressionPrepperBuilder PREP_ENDS_WITH_STRING = filterExpression -> new NamedPrepper((conn, stmt) -> {
         if (filterExpression.getValueString() != null) {
-            stmt.addString("%s" + filterExpression.getValueString());
+            stmt.addString("%" + conn.getDialect().escapeLikePattern(filterExpression.getValueString()));
         } else {
             stmt.addNullString();
         }
@@ -400,7 +401,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
 
     public static final ExpressionPrepperBuilder PREP_CONTAINS_STRING = filterExpression -> new NamedPrepper((conn, stmt) -> {
         if (filterExpression.getValueString() != null) {
-            stmt.addString("%" + filterExpression.getValueString() + "%");
+            stmt.addString("%" + conn.getDialect().escapeLikePattern(filterExpression.getValueString()) + "%");
         } else {
             stmt.addNullString();
         }
@@ -432,10 +433,6 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
             return columnTypeHint == ColumnTypeHint.BOOL_CHAR ? PREP_BOOL_CHAR.getPrepper(filterExpression) : PREP_BOOLEAN.getPrepper(filterExpression);
         } else if (filterExpression.isLong()) {
             return PREP_LONG.getPrepper(filterExpression);
-        } else if (filterExpression.isDate()) {
-            return PREP_DATE.getPrepper(filterExpression);
-        } else if (filterExpression.isDouble()) {
-            return PREP_DOUBLE.getPrepper(filterExpression);
         } else {
             return PREP_STRING.getPrepper(filterExpression);
         }
@@ -465,6 +462,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
                     throw new MalformedExpression("missing column for field '" + namedField + "'");
                 }
                 final @Nullable ColumnTypeHint columnTypeHint = entityDispatchTable.getMetaData(namedField, JanitorOrm.MetaData.COLUMN_TYPE);
+                final @Nullable ColumnCase columnCase = entityDispatchTable.getMetaData(namedField, JanitorOrm.MetaData.COLUMN_CASE);
                 if (columnTypeHint == null) {
                     throw new MalformedExpression("missing type for column '" + column + "' of field '" + namedField + "'");
                 }
@@ -472,7 +470,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
                     throw new MalformedExpression("missing operator in expression " + filterExpression);
                 }
                 final String quotedColumn = dialect.quoteColumn(column);
-                return applyExpressionToColumn(filterExpression, quotedColumn, columnTypeHint, prepperConsumer);
+                return applyExpressionToColumn(filterExpression, quotedColumn, columnTypeHint, columnCase, prepperConsumer);
             }
         } else {
             throw new MalformedExpression("part is neither group nor expression");
@@ -489,53 +487,91 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
      * {@code null} for a synthetic/non-entity column whose type isn't known.
      */
     protected String applyExpressionToColumn(final FilterExpression filterExpression, final String quotedColumn, final @Nullable ColumnTypeHint columnTypeHint, final Consumer<Prepper> prepperConsumer) throws MalformedExpression {
-        @Nullable final FilterOperator op = filterExpression.getOperator();
+        return applyExpressionToColumn(filterExpression, quotedColumn, columnTypeHint, null, prepperConsumer);
+    }
+
+    /**
+     * Like {@link #applyExpressionToColumn(FilterExpression, String, ColumnTypeHint, Consumer)}, but also takes the
+     * letter case of the column's values into account (see {@link ColumnCase}); pass {@code null} if unknown.
+     * <p>
+     * Text matching ({@code STARTSWITH}, {@code ENDSWITH}, {@code CONTAINS}, {@code DOESNOTCONTAIN}) ignores case
+     * unless {@link FilterExpression#getIgnoreCase()} is explicitly {@code false}. Comparing a text value with
+     * {@code EQ}, {@code NEQ}, {@code LT} etc. is exact unless {@code ignoreCase} is explicitly {@code true}.
+     * If the column is known to be uniformly upper or lower case, a case-insensitive comparison is done by
+     * normalizing the search value here, instead of folding the column in the database.
+     * </p>
+     */
+    protected String applyExpressionToColumn(final FilterExpression original, final String quotedColumn, final @Nullable ColumnTypeHint columnTypeHint, final @Nullable ColumnCase columnCase, final Consumer<Prepper> prepperConsumer) throws MalformedExpression {
+        @Nullable final FilterOperator op = original.getOperator();
+        final DatabaseDialect dialect = getDataManager().getDialect();
+        final boolean textMatch = switch (op) {
+            case STARTSWITH, ENDSWITH, CONTAINS, DOESNOTCONTAIN -> true;
+            default -> false;
+        };
+        final boolean ignoreCase;
+        if (textMatch) {
+            ignoreCase = !Boolean.FALSE.equals(original.getIgnoreCase()); // text searches ignore case unless asked otherwise
+        } else {
+            ignoreCase = original.isString() && Boolean.TRUE.equals(original.getIgnoreCase()); // comparisons only on request
+        }
+        // For uniformly cased columns, adjust the value to the column and leave the column itself alone.
+        final boolean normalizeValue = ignoreCase && original.isString() && ColumnCase.isUniform(columnCase);
+        final boolean foldColumn = ignoreCase && !normalizeValue;
+        final FilterExpression filterExpression;
+        if (normalizeValue) {
+            filterExpression = original.deepCopy();
+            filterExpression.setValueString(columnCase.normalize(original.getValueString()));
+        } else {
+            filterExpression = original;
+        }
         final Prepper simpleEquality = getPrepper(filterExpression, columnTypeHint);
+        final String left = foldColumn ? dialect.foldCase(quotedColumn) : quotedColumn;
+        final String right = foldColumn ? dialect.foldCase("?") : "?";
         return switch (op) {
             case EQ -> {
                 prepperConsumer.accept(simpleEquality);
-                yield quotedColumn + " = ?";
+                yield left + " = " + right;
             }
             case NEQ -> {
                 prepperConsumer.accept(simpleEquality);
-                yield quotedColumn + " != ?";
+                yield left + " != " + right;
             }
             case LT -> {
                 prepperConsumer.accept(simpleEquality);
-                yield quotedColumn + " < ?";
+                yield left + " < " + right;
             }
             case LTE -> {
                 prepperConsumer.accept(simpleEquality);
-                yield quotedColumn + " <= ?";
+                yield left + " <= " + right;
             }
             case GT -> {
                 prepperConsumer.accept(simpleEquality);
-                yield quotedColumn + " > ?";
+                yield left + " > " + right;
             }
             case GTE -> {
                 prepperConsumer.accept(simpleEquality);
-                yield quotedColumn + " >= ?";
+                yield left + " >= " + right;
             }
             case STARTSWITH -> {
                 prepperConsumer.accept(PREP_STARTS_WITH_STRING.getPrepper(filterExpression));
-                yield quotedColumn + " like ?";
+                yield dialect.likeCondition(quotedColumn, false, foldColumn);
             }
             case ENDSWITH -> {
                 prepperConsumer.accept(PREP_ENDS_WITH_STRING.getPrepper(filterExpression));
-                yield quotedColumn + " like ?";
+                yield dialect.likeCondition(quotedColumn, false, foldColumn);
             }
             case CONTAINS -> {
                 prepperConsumer.accept(PREP_CONTAINS_STRING.getPrepper(filterExpression));
-                yield quotedColumn + " like ?";
+                yield dialect.likeCondition(quotedColumn, false, foldColumn);
             }
             case DOESNOTCONTAIN -> {
                 prepperConsumer.accept(PREP_CONTAINS_STRING.getPrepper(filterExpression));
-                yield quotedColumn + " not like ?";
+                yield dialect.likeCondition(quotedColumn, true, foldColumn);
             }
             case ISNULL -> quotedColumn + " is null";
             case ISNOTNULL -> quotedColumn + " is not null";
-            case ISEMPTY -> "(" + quotedColumn + " is null or " + quotedColumn + " = '')";
-            case ISNOTEMPTY -> "(" + quotedColumn + " is not null and " + quotedColumn + " != '')";
+            case ISEMPTY -> dialect.isEmptyCondition(quotedColumn);
+            case ISNOTEMPTY -> dialect.isNotEmptyCondition(quotedColumn);
         };
 
     }

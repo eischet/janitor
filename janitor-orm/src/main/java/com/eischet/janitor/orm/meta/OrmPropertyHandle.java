@@ -6,6 +6,7 @@ import com.eischet.janitor.api.metadata.PropertyHandle;
 import com.eischet.janitor.api.types.interop.NullableGetter;
 import com.eischet.janitor.api.types.interop.NullableSetter;
 import com.eischet.janitor.orm.JanitorOrm;
+import com.eischet.janitor.orm.sql.ColumnCase;
 import com.eischet.janitor.orm.sql.ColumnTypeHint;
 import com.eischet.janitor.versioning.Version;
 import com.eischet.janitor.versioning.VersionRange;
@@ -113,6 +114,27 @@ public interface OrmPropertyHandle<T, V> extends PropertyHandle<T, V> {
      */
     default OrmPropertyHandle<T, V> until(final @NotNull Version version) {
         return versionRange(VersionRange.endingWith(version));
+    }
+
+    /**
+     * Declares the letter case of the values in this (text) column, see {@link ColumnCase}.
+     */
+    default OrmPropertyHandle<T, V> columnCase(final @NotNull ColumnCase columnCase) {
+        return setMetaData(JanitorOrm.MetaData.COLUMN_CASE, columnCase);
+    }
+
+    /**
+     * Shortcut for {@code columnCase(ColumnCase.UPPER)}: the column only holds upper-case values.
+     */
+    default OrmPropertyHandle<T, V> allUpperCase() {
+        return columnCase(ColumnCase.UPPER);
+    }
+
+    /**
+     * Shortcut for {@code columnCase(ColumnCase.LOWER)}: the column only holds lower-case values.
+     */
+    default OrmPropertyHandle<T, V> allLowerCase() {
+        return columnCase(ColumnCase.LOWER);
     }
 
     @Override
