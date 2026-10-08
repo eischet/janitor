@@ -75,32 +75,10 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
 
         DISPATCH.addMethod("insert", (self, process, arguments) -> self.insertForScript(process, arguments.require(1).get(0)));
         DISPATCH.addVoidMethod("update", (self, process, arguments) -> self.updateForScript(process, arguments.require(1).get(0)));
-        DISPATCH.addMethod("findAll", (self, process, arguments) -> self.callScriptTransaction(process, conn -> Janitor.list(self.findAll(conn))));
-
-
-        DISPATCH.addMethod("getById", (self, process, args) -> {
-            try {
-                final long id = args.getRequiredLongValue(0);
-                return Janitor.nullableObject(self.getDataManager().callTransaction(conn -> self.findById(conn, id)));
-            } catch (DatabaseError e) {
-                throw new JanitorNativeException(process, "error getting entity be id", e);
-            }
-        });
-        DISPATCH.addMethod("getByKey", (self, process, args) -> {
-            try {
-                final String key = args.getRequiredStringValue(0);
-                return Janitor.nullableObject(self.getDataManager().callTransaction(conn -> self.findByKey(conn, key)));
-            } catch (DatabaseError e) {
-                throw new JanitorNativeException(process, "error getting entity by key", e);
-            }
-        });
-        DISPATCH.addMethod("getAll", (self, process, args) -> {
-            try {
-                return Janitor.nullableObject(self.getDataManager().callTransaction(conn -> Janitor.list(self.findAll(conn, null))));
-            } catch (DatabaseError e) {
-                throw new JanitorNativeException(process, "error getting all entities", e);
-            }
-        });
+        DISPATCH.addMethod("findAll", GenericDao::scriptFindAll);
+        DISPATCH.addMethod("getById", GenericDao::scriptFindById);
+        DISPATCH.addMethod("getByKey", GenericDao::scriptFindByKey);
+        DISPATCH.addMethod("getAll", GenericDao::scriptFindAll);
         DISPATCH.addMethod("findById", GenericDao::scriptFindById);
         DISPATCH.addMethod("findByKey", GenericDao::scriptFindByKey);
         DISPATCH.addMethod("queryForEach", GenericDao::scriptQueryForEach);
@@ -200,10 +178,38 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
         this.cache = cache;
         addChangeListener((type, entity) -> {
             switch (type) {
-                case INSERT, UPDATE -> cache.put(entity);
+                case INSERT, UPDATE -> cache.put(copyForCache(entity));
                 case DELETE -> cache.invalidateById(entity.getId());
             }
         });
+    }
+
+    /**
+     * Hook for the entities this DAO hands to <b>scripts</b>: scripts must not be able to change a cached entity just by assigning to
+     * its fields, without ever saving it. A DAO with a cache therefore overrides this to return a private copy. Applied to everything
+     * the script-facing finders return ({@code getById}, {@code getByKey}, {@code getAll}, {@code findAll}, {@code findById},
+     * {@code findByKey}) and to what {@code queryForEach} passes to its callback. Default: the entity itself.
+     */
+    protected @NotNull T forScript(final @NotNull T entity) {
+        return entity;
+    }
+
+    /**
+     * Hook for the entity that goes <b>into the cache</b> after a write. Without it, the cache would share the instance with whoever
+     * called {@code insert}/{@code update} (typically a script, which may well keep working on it). A DAO with a cache overrides this
+     * to return a private copy. Default: the entity itself.
+     */
+    protected @NotNull T copyForCache(final @NotNull T entity) {
+        return entity;
+    }
+
+    /** True if a cache was attached with {@link #enableCache}. */
+    protected final boolean isCachingEnabled() {
+        return (Object) cache != EntityCache.noop();
+    }
+
+    private @NotNull JanitorObject scriptResult(final @Nullable T entity) {
+        return entity == null ? Janitor.NULL : forScript(entity);
     }
 
     /**
@@ -889,7 +895,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
                     throw new DatabaseError(e.getMessage(), e);
                 }
             });
-            return Janitor.nullableObject(single);
+            return scriptResult(single);
         } catch (DatabaseError e) {
             throw new JanitorNativeException(process, e.getMessage(), e);
         }
@@ -904,10 +910,14 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
                     throw new DatabaseError(e.getMessage(), e);
                 }
             });
-            return Janitor.nullableObject(single);
+            return scriptResult(single);
         } catch (DatabaseError e) {
             throw new JanitorNativeException(process, e.getMessage(), e);
         }
+    }
+
+    public JanitorObject scriptFindAll(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+        return callScriptTransaction(process, conn -> Janitor.list(findAll(conn, null).stream().map(this::forScript)));
     }
 
     public JanitorObject scriptQueryForEach(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
@@ -920,7 +930,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
                 final T obj = identifier == null ? null : getDataManager().callTransaction(conn -> findById(conn, identifier));
                 if (obj != null) {
                     ++count;
-                    callback.call(process, new JCallArgs("callback", process, List.of(obj, Janitor.nullableInteger(identifier))));
+                    callback.call(process, new JCallArgs("callback", process, List.of(forScript(obj), Janitor.nullableInteger(identifier))));
                 } else {
                     log.warn("queryForEach: object not found for identifier {}", identifier);
                 }
