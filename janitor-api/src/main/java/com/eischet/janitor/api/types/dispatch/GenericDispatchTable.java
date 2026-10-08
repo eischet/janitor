@@ -759,6 +759,43 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
         ).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.LIST);
     }
 
+    /**
+     * Adds a list property whose elements are Janitor objects themselves, with the JSON handling supplied by the caller.
+     * Like {@link #addObjectPropertyWithJsonAdapter}, this is for lists whose elements can only be created knowing the
+     * instance the list belongs to, e.g. a list of references that have to be looked up through whatever the instance
+     * belongs to. Scripts assign a list; each element is converted by the {@code elementExpander}.
+     *
+     * @param name            property name
+     * @param getter          property getter
+     * @param setter          property setter
+     * @param elementExpander converts each element a script assigns into the list's element type
+     * @param jsonAdapter     reads and writes the property from/to JSON
+     * @param <E>             type of the list's elements
+     * @return a property handle
+     */
+    public <E extends JanitorObject> PropertyHandle<T, List<E>> addListPropertyWithJsonAdapter(final @NotNull String name,
+                                                                                             final @NotNull NullableGetter<T, List<E>> getter,
+                                                                                             final @NotNull NullableSetter<T, List<E>> setter,
+                                                                                             final @NotNull ValueExpander<T, E> elementExpander,
+                                                                                             final @NotNull JsonAdapter<T> jsonAdapter) {
+        return internalAddProperty(name, instance -> TemporaryAssignable.of(name, Conversions.toJanitorList(getter.get(instance), element -> element), value -> {
+                    if (!(value instanceof JList argList)) {
+                        throw new IllegalArgumentException("Expected a list");
+                    }
+                    final List<E> list = new ArrayList<>(argList.size());
+                    for (final JanitorObject element : argList) {
+                        list.add(elementExpander.expandValue(instance, element));
+                    }
+                    setter.set(instance, list);
+                }),
+                jsonAdapter,
+                JsonType.ARRAY,
+                null,
+                getter,
+                setter
+        ).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.LIST);
+    }
+
     public PropertyHandle<T, List<String>> addListOfStringsProperty(final String name, final NullableGetter<T, List<String>> getter, final NullableSetter<T, List<String>> setter) {
         return addListProperty(name, getter, setter, StringConverter.INSTANCE, JSON_STRING).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.LIST);
     }
@@ -1273,11 +1310,32 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
                                                                                               final @NotNull NullableSetter<T, X> setter,
                                                                                               final @NotNull X singletonDefault,
                                                                                               final @NotNull ValueExpander<T, X> expander) {
+        return addObjectPropertyWithJsonAdapter(name, getter, setter, expander, adapt(name, shim(() -> singletonDefault), getter, setter));
+    }
+
+    /**
+     * Adds a read-write object property like {@link #addObjectPropertyWithSingletonDefault}, but with the JSON handling supplied by
+     * the caller. Scripts assign through the {@code expander}; reading and writing JSON is up to {@code jsonAdapter}, which, unlike
+     * the default one, is handed the instance the property belongs to when reading. That is what a reference needs that is stored as
+     * just a short code and has to be looked up in whatever the owning instance belongs to.
+     *
+     * @param name        property name
+     * @param getter      property getter
+     * @param setter      property setter
+     * @param expander    converts what scripts assign into the property's value
+     * @param jsonAdapter reads and writes the property from/to JSON
+     * @return a property handle
+     */
+    public <X extends JanitorObject> PropertyHandle<T, X> addObjectPropertyWithJsonAdapter(final @NotNull String name,
+                                                                                         final @NotNull NullableGetter<T, X> getter,
+                                                                                         final @NotNull NullableSetter<T, X> setter,
+                                                                                         final @NotNull ValueExpander<T, X> expander,
+                                                                                         final @NotNull JsonAdapter<T> jsonAdapter) {
         // because we'll turn a class cast exception into a script runtime error:
         // noinspection unchecked
         return internalAddProperty(name,
                 instance -> TemporaryAssignable.of(name, Janitor.nullableObject(getter.get(instance)), value -> setter.set(instance, expander.expandValue(instance, value))),
-                adapt(name, shim(() -> singletonDefault), getter, setter), JsonType.OBJECT, null, getter, setter).setMetaData(HOST_NULLABLE, true);
+                jsonAdapter, JsonType.OBJECT, null, getter, setter).setMetaData(HOST_NULLABLE, true);
     }
 
 
