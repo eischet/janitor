@@ -28,7 +28,7 @@ public class MustangInvoice extends JanitorWrapper<Invoice> {
         DISPATCH.addBuilderMethod("setSender", (self, process, args) -> {
             self.janitorGetHostValue().setSender(args.require(1).getRequired(0, MustangTradeParty.class).janitorGetHostValue());
         });
-        DISPATCH.addObjectProperty("sender", self -> new MustangTradeParty(self.janitorGetHostValue().getSender()),
+        DISPATCH.addObjectProperty("sender", self -> self.janitorGetHostValue().getSender() == null ? null : new MustangTradeParty(self.janitorGetHostValue().getSender()),
                 (self, value) -> self.janitorGetHostValue().setSender(value == null ? null : value.janitorGetHostValue()), MustangTradeParty::new);
         DISPATCH.addBuilderMethod("setIssueDate", (self, process, args) -> {
             self.janitorGetHostValue().setIssueDate(JDate.toLegacyJavaDate(args.require(1).getRequired(0, JDate.class).janitorGetHostValue()));
@@ -43,7 +43,7 @@ public class MustangInvoice extends JanitorWrapper<Invoice> {
         DISPATCH.addBuilderMethod("setRecipient", (self, process, args) -> {
             self.janitorGetHostValue().setRecipient(args.require(1).getRequired(0, MustangTradeParty.class).janitorGetHostValue());
         });
-        DISPATCH.addObjectProperty("recipient", self -> new MustangTradeParty(self.janitorGetHostValue().getRecipient()),
+        DISPATCH.addObjectProperty("recipient", self -> self.janitorGetHostValue().getRecipient() == null ? null : new MustangTradeParty(self.janitorGetHostValue().getRecipient()),
                 (self, value) -> self.janitorGetHostValue().setRecipient(value == null ? null : value.janitorGetHostValue()), MustangTradeParty::new);
         DISPATCH.addBuilderMethod("setDetailedDeliveryPeriod", (self, process, args) -> {
             final JDate fromDate = args.getRequired(0, JDate.class);
