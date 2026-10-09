@@ -86,7 +86,7 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
     private final MetaDataMap classMetaData = new MetaDataMap();
     private JConstructor<T> constructor;
     private @Nullable Supplier<T> javaDefaultConstructor;
-
+    private @Nullable Map<String, String> aliases;
 
     public GenericDispatchTable(final @Nullable Supplier<T> javaDefaultConstructor, boolean includeApplyMethod) {
         parent = null;
@@ -99,6 +99,13 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
         }
     }
 
+    public GenericDispatchTable<T> addAlias(String alias, String attributeName) {
+        if (aliases == null) {
+            aliases = new HashMap<>();
+        }
+        aliases.put(alias, attributeName);
+        return this;
+    }
 
     /*
 
@@ -1402,6 +1409,12 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
             if (handler != null) {
                 // TODO: this is, I think, the right place to mix in available metadata for "name" into the resulting attribute!?
                 return handler.lookupAttribute(instance);
+            }
+            if (aliases != null) {
+                final String target = aliases.get(name);
+                if (target != null && map.get(target) != null) {
+                    return dispatch(instance, process, target);
+                }
             }
             if (parentLookupHandler != null) {
                 return parentLookupHandler.delegate(instance, process, name);
