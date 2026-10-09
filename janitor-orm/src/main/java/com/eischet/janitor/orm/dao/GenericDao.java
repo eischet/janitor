@@ -321,7 +321,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
     }
 
     /**
-     * Fetches a single lazily-loaded NCLOB column's current value for one row, running its own,
+     * Fetches a single lazily-loaded CLOB or NCLOB column's current value for one row, running its own,
      * independent query instead of going through {@link #findById}/{@link #readAllProperties}. This is
      * what {@link com.eischet.janitor.orm.entity.LazyLoadedString} calls the first time such a field is
      * actually read (see {@link JanitorOrm.MetaData#LAZY_LOAD}); it isn't meant to be called directly
@@ -340,7 +340,12 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
         if (verbose) {
             log.info("{}::fetchLazyColumn(id={}, column='{}'): running {}", className, id, column, select);
         }
-        return getDataManager().callTransaction(conn -> conn.queryForObject(select, stmt -> stmt.addLong(id), rs -> rs.readNationalClob()));
+        final @Nullable String field = fieldForColumn.get(column);
+        final @Nullable ColumnTypeHint columnTypeHint = field == null ? null : entityDispatchTable.getMetaData(field, JanitorOrm.MetaData.COLUMN_TYPE);
+        if (columnTypeHint == ColumnTypeHint.NCLOB) {
+            return getDataManager().callTransaction(conn -> conn.queryForObject(select, stmt -> stmt.addLong(id), rs -> rs.readNationalClob()));
+        }
+        return getDataManager().callTransaction(conn -> conn.queryForObject(select, stmt -> stmt.addLong(id), rs -> rs.readClob()));
     }
 
     @Override

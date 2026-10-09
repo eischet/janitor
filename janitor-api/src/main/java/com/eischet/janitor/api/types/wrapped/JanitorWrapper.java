@@ -28,14 +28,14 @@ public class JanitorWrapper<T> implements JanitorTypedObject<T> {
      * @param wrapped the wrapped object
      */
     public JanitorWrapper(final @NotNull Dispatcher<JanitorWrapper<T>> dispatcher, final @NotNull T wrapped) {
-        this.dispatcher = dispatcher;
-        this.wrapped = wrapped;
+        this.dispatcher = Objects.requireNonNull(dispatcher, "dispatcher");
+        this.wrapped = Objects.requireNonNull(wrapped, "wrapped");
     }
 
     @SuppressWarnings("unchecked")
     public <X extends JanitorWrapper<T>> JanitorWrapper(final @NotNull X dispatcher, final @NotNull T wrapped, final @NotNull Class<X> cls) {
-        this.dispatcher = (Dispatcher<JanitorWrapper<T>>) dispatcher;
-        this.wrapped = wrapped;
+        this.dispatcher = (Dispatcher<JanitorWrapper<T>>) Objects.requireNonNull(dispatcher, "dispatcher");
+        this.wrapped = Objects.requireNonNull(wrapped, "wrapped");
     }
 
     @Override

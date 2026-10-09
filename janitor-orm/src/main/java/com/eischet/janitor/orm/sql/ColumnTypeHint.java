@@ -4,6 +4,13 @@ public enum ColumnTypeHint {
     INT,
     VARCHAR,
     NVARCHAR,
+    /**
+     * A long text in a regular (database character set) CLOB column.
+     */
+    CLOB,
+    /**
+     * A long text in a national character set NCLOB column.
+     */
     NCLOB,
     BIT,
     /**

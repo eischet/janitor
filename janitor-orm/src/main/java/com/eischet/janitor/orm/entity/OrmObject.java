@@ -19,7 +19,20 @@ public interface OrmObject extends JanitorObject {
 
     // TODO: I'd have thought that IntelliJ should report warnings when nullable/non-nullable methods are mixed, but it doesn't'
 
+    /**
+     * A string in a regular (database character set) VARCHAR column.
+     */
     static <X extends JanitorObject> OrmPropertyHandle<X, String> addStringProperty(final DispatchTable<X> dispatchTable, final String name, final String column, final NullableGetter<X, String> getter, final NullableSetter<X, String> setter, final int maxLength) {
+        return OrmPropertyHandle.of(dispatchTable.addStringProperty(name, getter, setter))
+                .setMetaData(JanitorOrm.MetaData.COLUMN_NAME, column)
+                .setMetaData(JanitorOrm.MetaData.COLUMN_TYPE, ColumnTypeHint.VARCHAR)
+                .setMetaData(JanitorOrm.MetaData.MAX_LENGTH, maxLength);
+    }
+
+    /**
+     * A string in a national character set NVARCHAR column.
+     */
+    static <X extends JanitorObject> OrmPropertyHandle<X, String> addNationalStringProperty(final DispatchTable<X> dispatchTable, final String name, final String column, final NullableGetter<X, String> getter, final NullableSetter<X, String> setter, final int maxLength) {
         return OrmPropertyHandle.of(dispatchTable.addStringProperty(name, getter, setter))
                 .setMetaData(JanitorOrm.MetaData.COLUMN_NAME, column)
                 .setMetaData(JanitorOrm.MetaData.COLUMN_TYPE, ColumnTypeHint.NVARCHAR)
@@ -44,7 +57,19 @@ public interface OrmObject extends JanitorObject {
                 .setMetaData(JanitorOrm.MetaData.COLUMN_TYPE, ColumnTypeHint.INT);
     }
 
+    /**
+     * A long text in a regular (database character set) CLOB column.
+     */
     static <X extends JanitorObject> OrmPropertyHandle<X, String> addTextProperty(final DispatchTable<X> dispatchTable, final String name, final String column, final NullableGetter<X, String> getter, final NullableSetter<X, String> setter) {
+        return OrmPropertyHandle.of(dispatchTable.addStringProperty(name, getter, setter))
+                .setMetaData(JanitorOrm.MetaData.COLUMN_NAME, column)
+                .setMetaData(JanitorOrm.MetaData.COLUMN_TYPE, ColumnTypeHint.CLOB);
+    }
+
+    /**
+     * A long text in a national character set NCLOB column (e.g. Assyst on Oracle).
+     */
+    static <X extends JanitorObject> OrmPropertyHandle<X, String> addNationalTextProperty(final DispatchTable<X> dispatchTable, final String name, final String column, final NullableGetter<X, String> getter, final NullableSetter<X, String> setter) {
         return OrmPropertyHandle.of(dispatchTable.addStringProperty(name, getter, setter))
                 .setMetaData(JanitorOrm.MetaData.COLUMN_NAME, column)
                 .setMetaData(JanitorOrm.MetaData.COLUMN_TYPE, ColumnTypeHint.NCLOB);
@@ -74,9 +99,20 @@ public interface OrmObject extends JanitorObject {
      * @param accessor reaches into the entity to get its {@link LazyLoadedString} field
      */
     static <X extends JanitorObject> OrmPropertyHandle<X, String> addLazyTextProperty(final DispatchTable<X> dispatchTable, final String name, final String column, final Function<X, LazyLoadedString> accessor) {
+        return addLazyTextProperty(dispatchTable, name, column, accessor, ColumnTypeHint.CLOB);
+    }
+
+    /**
+     * Like {@link #addLazyTextProperty}, but for a national character set NCLOB column.
+     */
+    static <X extends JanitorObject> OrmPropertyHandle<X, String> addLazyNationalTextProperty(final DispatchTable<X> dispatchTable, final String name, final String column, final Function<X, LazyLoadedString> accessor) {
+        return addLazyTextProperty(dispatchTable, name, column, accessor, ColumnTypeHint.NCLOB);
+    }
+
+    private static <X extends JanitorObject> OrmPropertyHandle<X, String> addLazyTextProperty(final DispatchTable<X> dispatchTable, final String name, final String column, final Function<X, LazyLoadedString> accessor, final ColumnTypeHint columnTypeHint) {
         return OrmPropertyHandle.of(dispatchTable.addStringProperty(name, x -> accessor.apply(x).getValue(), (x, v) -> accessor.apply(x).setValue(v)))
                 .setMetaData(JanitorOrm.MetaData.COLUMN_NAME, column)
-                .setMetaData(JanitorOrm.MetaData.COLUMN_TYPE, ColumnTypeHint.NCLOB)
+                .setMetaData(JanitorOrm.MetaData.COLUMN_TYPE, columnTypeHint)
                 .setMetaData(JanitorOrm.MetaData.LAZY_LOAD, Boolean.TRUE);
     }
 

@@ -98,6 +98,27 @@ public class OrmDispatchTable<T extends OrmObject, U extends Uplink> extends Dis
         return OrmObject.addLazyTextProperty(this, name, column, accessor);
     }
 
+    /**
+     * Like {@link #addStringColumn}, but for a national character set NVARCHAR column.
+     */
+    public OrmPropertyHandle<T, String> addNationalStringColumn(final String name, final String column, final NullableGetter<T, String> getter, final NullableSetter<T, String> setter, final int maxLength) {
+        return OrmObject.addNationalStringProperty(this, name, column, getter, setter, maxLength);
+    }
+
+    /**
+     * Like {@link #addTextColumn}, but for a national character set NCLOB column.
+     */
+    public OrmPropertyHandle<T, String> addNationalTextColumn(final String name, final String column, final NullableGetter<T, String> getter, final NullableSetter<T, String> setter) {
+        return OrmObject.addNationalTextProperty(this, name, column, getter, setter);
+    }
+
+    /**
+     * Like {@link #addLazyTextColumn}, but for a national character set NCLOB column.
+     */
+    public OrmPropertyHandle<T, String> addLazyNationalTextColumn(final String name, final String column, final Function<T, LazyLoadedString> accessor) {
+        return OrmObject.addLazyNationalTextProperty(this, name, column, accessor);
+    }
+
     public OrmPropertyHandle<T, Long> addLongColumn(final String name, final String column, final PrimitiveLongGetter<T> getter, final PrimitiveLongSetter<T> setter) {
         return OrmObject.addLongProperty(this, name, column, getter, setter);
     }

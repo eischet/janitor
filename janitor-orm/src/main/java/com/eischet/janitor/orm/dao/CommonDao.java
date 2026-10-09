@@ -61,6 +61,7 @@ public class CommonDao {
                     case BIT -> Janitor.toBool(rs.getLong() > 0);
                     // only "y" (case-insensitively) counts as true; anything else, including null, is false.
                     case BOOL_CHAR -> Janitor.toBool("y".equalsIgnoreCase(rs.getString()));
+                    case CLOB -> Janitor.nullableString(rs.readClob());
                     case NCLOB -> Janitor.nullableString(rs.readNationalClob());
                     case VARCHAR, NVARCHAR -> Janitor.nullableString(rs.getString());
                     case DATETIME -> Janitor.nullableDateTime(rs.getLocalDateTime());
@@ -130,12 +131,12 @@ public class CommonDao {
                     return;
                 }
             }
-            case VARCHAR, NVARCHAR, NCLOB -> {
+            case VARCHAR, NVARCHAR, CLOB, NCLOB -> {
                 if (propertyValue instanceof JString str) {
-                    if (columnTypeHint == ColumnTypeHint.NCLOB) {
-                        ps.addNationalClob(str.janitorToString());
-                    } else {
-                        ps.addString(str.janitorToString());
+                    switch (columnTypeHint) {
+                        case CLOB -> ps.addClob(str.janitorToString());
+                        case NCLOB -> ps.addNationalClob(str.janitorToString());
+                        default -> ps.addString(str.janitorToString());
                     }
                     return;
                 }
