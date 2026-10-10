@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2021-2026 Eischet Software e.K.
+// SPDX-License-Identifier: MIT
+
 package com.eischet.janitor.api.errors.runtime;
 
 /** Unchecked exception for unexpected internal errors, which indicate a programming error or a broken setup rather than a problem in a script. */

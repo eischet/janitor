@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2021-2026 Eischet Software e.K.
+// SPDX-License-Identifier: MIT
+
 package com.eischet.janitor.api.types.interop;
 
 import com.eischet.janitor.api.errors.glue.JanitorGlueException;

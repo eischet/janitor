@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2021-2026 Eischet Software e.K.
+// SPDX-License-Identifier: MIT
+
 package com.eischet.janitor.orm.sql;
 
 /** The type of a database column, as far as it matters for reading and writing values. */
