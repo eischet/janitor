@@ -139,7 +139,7 @@ public class AutoJsonTestCase extends JanitorTest {
 
     @Test
     public void testMixedClass() throws JsonException, JanitorRuntimeException, JanitorCompilerException {
-        @Language("JSON") final String MY_UGLY_LIST = "{\"a\":{\"list\":[\"a\",\"b\",\"c\",\"d\"]},\"b\":{\"foo\":\"baz\"}}";
+        @Language("JSON") final String MIXED_JSON = "{\"a\":{\"list\":[\"a\",\"b\",\"c\",\"d\"]},\"b\":{\"foo\":\"baz\"}}";
 
         final Mixed mixer = new Mixed();
         mixer.setA(new ThingWithListProp());
@@ -147,10 +147,10 @@ public class AutoJsonTestCase extends JanitorTest {
         mixer.getA().setList(List.of("a", "b", "c", "d"));
         mixer.getB().setFoo("baz");
 
-        assertEquals(MY_UGLY_LIST, mixer.toJson());
+        assertEquals(MIXED_JSON, mixer.toJson());
 
 
-        final Mixed read = Mixed.DISPATCH.readFromJson(Mixed::new, MY_UGLY_LIST);
+        final Mixed read = Mixed.DISPATCH.readFromJson(Mixed::new, MIXED_JSON);
         assertNull(read.getB().getBar());
         assertEquals(4, read.getA().getList().size());
         assertEquals("baz", read.getB().getFoo());
@@ -238,7 +238,7 @@ public class AutoJsonTestCase extends JanitorTest {
     /* TODO: same test as above, but make it work for "subclasses"
     @Test
     public void testMixedClassInheritor() throws JsonException {
-        @Language("JSON") final String MY_UGLY_LIST = "{\"a\":{\"list\":[\"a\",\"b\",\"c\",\"d\"]},\"b\":{\"foo\":\"baz\"}}";
+        @Language("JSON") final String MIXED_JSON = "{\"a\":{\"list\":[\"a\",\"b\",\"c\",\"d\"]},\"b\":{\"foo\":\"baz\"}}";
 
         final Inheritor mixer = new Inheritor();
         mixer.setA(new ThingWithListProp());
@@ -246,10 +246,10 @@ public class AutoJsonTestCase extends JanitorTest {
         mixer.getA().setList(List.of("a", "b", "c", "d"));
         mixer.getB().setFoo("baz");
 
-        assertEquals(MY_UGLY_LIST, mixer.toJson(rt.getEnvironment()));
+        assertEquals(MIXED_JSON, mixer.toJson(rt.getEnvironment()));
 
 
-        final Inheritor read = Inheritor.DISPATCH.readFromJson(rt.getEnvironment(), Inheritor::new, MY_UGLY_LIST);
+        final Inheritor read = Inheritor.DISPATCH.readFromJson(rt.getEnvironment(), Inheritor::new, MIXED_JSON);
         assertNull(read.getB().getBar());
         assertEquals(4, read.getA().getList().size());
         assertEquals("baz", read.getB().getFoo());

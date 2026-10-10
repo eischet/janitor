@@ -597,7 +597,7 @@ public class Scope implements JanitorObject {
      */
     public Scope capture() {
         return this;
-        /* LATER: can we "capture" the scope in a more intelligent way? (or in a less stupid way, at least?)
+        /* LATER: can we "capture" the scope in a more intelligent way? (or at least in a less naive way?)
         final Scope myClone = new Scope(env, location, this, moduleScope);
         myClone.variables.putAll(variables);
         return myClone;

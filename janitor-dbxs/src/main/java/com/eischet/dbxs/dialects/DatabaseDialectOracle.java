@@ -105,6 +105,6 @@ public class DatabaseDialectOracle extends DatabaseDialectCommon {
 
     @Override
     public boolean isLegacySetBytesRequired() {
-        return true; // applies to LONG RAW, which is sadly still used in a few assyst databases...
+        return true; // applies to LONG RAW, which is sadly still found in some legacy databases
     }
 }

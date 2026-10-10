@@ -49,7 +49,7 @@ public class JanitorScriptEngine implements ScriptEngine {
             }
             /*
             if (context != null) {
-                // TODO: use context, whatever that means technically ...
+                // TODO: use the script context ...
             }
 
              */

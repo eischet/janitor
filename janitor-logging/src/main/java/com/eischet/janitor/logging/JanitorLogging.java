@@ -291,7 +291,7 @@ public class JanitorLogging {
             atm.removeHandler(h);
         }
         LoggerPins.pin(name);
-        // we MUST keep a reference to the logger, or it will be garbage collected at the next possible moment and come back strong with 50 belly dancers, *can't stop* the thing then ;-)
+        // we MUST keep a reference to the logger: loggers are only weakly referenced by JUL, so it could be garbage collected and later be recreated with a default configuration, losing our settings
     }
 
     /**

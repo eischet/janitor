@@ -8,7 +8,7 @@ import java.util.Date;
 import java.util.List;
 
 /** A push-style writer for JSON documents. */
-@SuppressWarnings("UnusedReturnValue") // these are builder methods, stupid IDE
+@SuppressWarnings("UnusedReturnValue") // these are builder methods, so ignoring the return value is fine
 public interface JsonOutputStream {
 
     /**

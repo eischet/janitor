@@ -89,7 +89,7 @@ public class JanitorScript implements RunnableScript, JsonExportableObject {
         }
     }
 
-    // LATER: it is actually silly not to throw the exception during the check, because it is an error nevertheless
+    // LATER: it would be preferable to throw the exception during the check, because it is an error nevertheless
     @Override
     public @Nullable Exception getCompilerException() {
         return compilerException;

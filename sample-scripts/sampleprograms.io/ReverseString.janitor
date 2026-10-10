@@ -5,7 +5,7 @@
 
 // These tests are really heavy on command line parsing, which is what Janitor is designed NOT to do, ever, so this is getting really verbose.
 // The fact that 'args' is simply a list of strings bound into the script by the testing code does not really help. Python has the same scenario, though,
-// with sys.argv, and it's just as annoying to parse, so we're probably in good company here. Granted, Python's list has more, and more mature, methods. :-)
+// with sys.argv, and it's just as cumbersome to parse, so we're probably in good company here. Granted, Python's list has more, and more mature, methods. :-)
 
 string = (args or [""])[0] or ""
 

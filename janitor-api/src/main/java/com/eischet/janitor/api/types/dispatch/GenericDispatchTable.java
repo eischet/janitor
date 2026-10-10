@@ -1674,7 +1674,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
         }
         // can we delegate to the optional parent lookup table here, recursing up to the top?
         // the problem is, we need to cast to (P) and make sure the parent is GenericDispatch, too.
-        // This whole structure is a bit messy right now. Writing to JSON has the same problem.
+        // This whole structure could be structured better. Writing to JSON has the same problem.
         return false;
     }
 

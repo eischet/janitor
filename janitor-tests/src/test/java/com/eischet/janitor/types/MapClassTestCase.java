@@ -147,7 +147,7 @@ public class MapClassTestCase extends JanitorTest {
     }
 
     @Test void serializingDefaultValuesInMapsIsNeeded() throws Exception {
-        // This used to return {}, but that's nonsense for maps.
+        // This used to return {}, but that does not make sense for maps.
         assertEquals("{\"foo\":false}\n", getOutput("print({foo: false}.toJson())"));
     }
 

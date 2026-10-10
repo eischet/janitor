@@ -97,7 +97,7 @@ public interface OrmObject extends JanitorObject {
     }
 
     /**
-     * A long text in a national character set NCLOB column (e.g. Assyst on Oracle).
+     * A long text in a national character set NCLOB column (e.g. on Oracle).
      */
     static <X extends JanitorObject> OrmPropertyHandle<X, String> addNationalTextProperty(final DispatchTable<X> dispatchTable, final String name, final String column, final NullableGetter<X, String> getter, final NullableSetter<X, String> setter) {
         return OrmPropertyHandle.of(dispatchTable.addStringProperty(name, getter, setter))

@@ -20,8 +20,8 @@ import java.util.logging.LogRecord;
 /**
  * A simple formatter that looks like the Janitor authors like their logging.
  *
- * <p>My main gripe with the original format is that it uses a strikingly ugly and utterly unreadable 2-line format ... for my tastes.
- * People are free to disagree, of course, even when they're wrong. ;-)</p>
+ * <p>The default JUL format uses a 2-line layout, which is harder to scan in log files than a compact single-line format.
+ * This formatter produces one line per record.</p>
  *
  */
 public abstract class BasicFormatter extends Formatter {

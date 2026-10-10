@@ -22,7 +22,7 @@ public class JanitorUnitTestLogging {
 
     /** Configures the root logger with a colored console handler. */
     public static void setup() {
-        // shut the f up: System.out.println("CONFIGURING UNIT TEST LOGGING");
+        // intentionally silent: System.out.println("CONFIGURING UNIT TEST LOGGING");
         final ErrorManager errorManager = new JanitorLoggingErrorManager();
         final ColoredConsoleFormatter formatter = new ColoredConsoleFormatter();
         final JanitorLoggingConsoleHandler consoleHandler = new JanitorLoggingConsoleHandler(System.out, formatter, errorManager);

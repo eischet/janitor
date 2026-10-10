@@ -134,7 +134,7 @@ public final class Janitor {
      * @return the object or NULL
      * @param <T> any type of JanitorObject
      */
-    @SuppressWarnings("OptionalUsedAsFieldOrParameterType") // For wrapping Optional<T> results, actually, which is, IHMO, absofuckinglutely OK.
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType") // For wrapping Optional<T> results, actually, which is perfectly fine.
     public static <T extends JanitorObject> JanitorObject nullable(final @NotNull Optional<T> optional) {
         return optional.map(result -> (JanitorObject) result).orElse(Janitor.NULL);
     }

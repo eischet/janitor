@@ -167,7 +167,7 @@ public class BlindSSLSocketFactory extends SSLSocketFactory {
      * @throws IOException on network errors
      */
     public Socket createSocket() throws IOException {
-        log.info("funny: someone is calling the unspecified createSocket method");
+        log.info("someone is calling the unspecified createSocket method");
         return proxiedFactory.createSocket();
     }
 

@@ -85,7 +85,7 @@ public interface Dispatcher<T extends JanitorObject> extends HasMetaData {
      */
     static <P extends JanitorObject, C extends JanitorObject> Dispatcher<P> inherit(Dispatcher<P> parent, Dispatcher<C> child) {
         // WE know that inherit works only when C extends P, but it's not easy to drive this point home to the Java compiler.
-        // Therefore, this method looks more dangerous than it really is, with all those stupid casts.
+        // Therefore, this method looks more dangerous than it really is, with all those casts.
 
         return new Dispatcher<P>() {
 
