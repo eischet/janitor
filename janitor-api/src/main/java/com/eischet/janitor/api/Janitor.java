@@ -299,6 +299,11 @@ public final class Janitor {
         return getBuiltins().integer(value);
     }
 
+    /**
+     * Converts a decimal number to an integer value, or to NULL if it is null.
+     * @param value the number, may be null
+     * @return the integer, or NULL
+     */
     public static @NotNull JanitorObject nullableInteger(@Nullable BigDecimal value) {
         return getBuiltins().nullableInteger(value);
     }
@@ -333,6 +338,11 @@ public final class Janitor {
         return getBuiltins().binary(arr);
     }
 
+    /**
+     * Creates a binary value, or NULL if the array is null.
+     * @param arr the bytes, may be null
+     * @return the binary value, or NULL
+     */
     public static @NotNull JanitorObject nullableBinary(byte @Nullable [] arr) {
         return arr == null ? NULL : binary(arr);
     }
@@ -502,18 +512,40 @@ public final class Janitor {
         return getBuiltins().date(year, month, day);
     }
 
+    /**
+     * Parses a date from its JSON representation, or returns NULL if the string is null.
+     * @param jsonString the string, may be null
+     * @return the date, or NULL
+     * @throws JsonException if the string is not a valid date
+     */
     public static @NotNull JanitorObject nullableDateFromJsonString(@Nullable String jsonString) throws JsonException {
         return getBuiltins().nullableDateFromJsonString(jsonString);
     }
 
+    /**
+     * Parses a datetime from its JSON representation, or returns NULL if the string is null.
+     * @param jsonString the string, may be null
+     * @return the datetime, or NULL
+     * @throws JsonException if the string is not a valid datetime
+     */
     public static @NotNull JanitorObject nullableDateTimeFromJsonString(@Nullable String jsonString) throws JsonException {
         return getBuiltins().nullableDateTimeFromJsonString(jsonString);
     }
 
+    /**
+     * Converts a legacy {@link Date} to a date value, or to NULL if it is null.
+     * @param legacyDate the date, may be null
+     * @return the date value, or NULL
+     */
     public static @NotNull JanitorObject nullableLegacyDate(@Nullable Date legacyDate) {
         return getBuiltins().nullableLegacyDate(legacyDate);
     }
 
+    /**
+     * Converts a legacy {@link Date} to a datetime value, or to NULL if it is null.
+     * @param legacyDateTime the date, may be null
+     * @return the datetime value, or NULL
+     */
     public static @NotNull JanitorObject nullableLegacyDateTime(@Nullable Date legacyDateTime) {
         return getBuiltins().nullableLegacyDateTime(legacyDateTime);
     }
@@ -731,6 +763,14 @@ public final class Janitor {
     }
 
     // TODO: properly document this, and when you're at it make this more useful.
+    /**
+     * Compiles the given source code to check it for errors, without running it.
+     * @param runtime the runtime to compile with
+     * @param moduleName the name of the module (script) being compiled, used in error messages
+     * @param source the Janitor source code
+     * @return the compiled script
+     * @throws JanitorCompilerException if the source code cannot be compiled
+     */
     public RunnableScript checkCompile(JanitorRuntime runtime, String moduleName, @Language("Janitor") String source) throws JanitorCompilerException {
         return runtime.checkCompile(moduleName, source);
     }
@@ -817,6 +857,7 @@ public final class Janitor {
 
     }
 
+    /** Namespace class for the semantics of the language's basic operations, e.g. equality of values. */
     public static final class Semantics {
         /**
          * Check two objects for equality.
@@ -846,6 +887,12 @@ public final class Janitor {
             return Janitor.FALSE;
         }
 
+        /**
+         * Checks two objects for equality, comparing their string representations case-insensitively.
+         * @param leftValue the left value
+         * @param rightValue the right value
+         * @return TRUE if the string representations are equal, ignoring case, or FALSE if not
+         */
         public static JanitorObject areCaseInsensitiveEquals(final @NotNull JanitorObject leftValue, final @NotNull JanitorObject rightValue) {
             return Janitor.toBool(Objects.equals(leftValue.janitorToString().toLowerCase(Janitor.getLocale()), rightValue.janitorToString().toLowerCase(Janitor.getLocale())));
         }

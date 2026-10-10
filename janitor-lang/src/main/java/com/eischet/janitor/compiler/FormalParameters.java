@@ -6,6 +6,7 @@ import org.jetbrains.annotations.Unmodifiable;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/** The list of parameters in the declaration of a function. */
 public class FormalParameters implements Iterable<FormalParameter> {
 
     private final List<FormalParameter> parameters;
@@ -47,22 +48,40 @@ public class FormalParameters implements Iterable<FormalParameter> {
         throw new CompilerError("unknown parameter kind: " + currentKind);
     }
 
+    /**
+     * Creates a parameter list.
+     * @param parameters the parameters
+     * @return the parameter list
+     * @throws CompilerError if the parameters are invalid, e.g. when names are duplicated
+     */
     public static FormalParameters of(final List<FormalParameter> parameters) throws CompilerError {
         return new FormalParameters(List.copyOf(parameters));
     }
 
+    /**
+     * @return an empty parameter list
+     */
     public static FormalParameters empty() {
         return new FormalParameters(Collections.emptyList());
     }
 
+    /**
+     * @return all parameters
+     */
     public @NotNull @Unmodifiable List<FormalParameter> getParameters() {
         return parameters;
     }
 
+    /**
+     * @return the number of parameters
+     */
     public int size() {
         return parameters.size();
     }
 
+    /**
+     * @return the parameters that callers must always supply
+     */
     public @NotNull @Unmodifiable List<FormalParameter> getPositionalParameters() {
         return parameters.stream().filter(FormalParameter::isMinimallyRequired).toList();
     }
@@ -72,6 +91,9 @@ public class FormalParameters implements Iterable<FormalParameter> {
         return parameters.stream().map(FormalParameter::toString).collect(Collectors.joining(", "));
     }
 
+    /**
+     * @return the number of parameters that callers must always supply
+     */
     public int minSize() {
         return (int) parameters.stream().filter(it -> it.isMinimallyRequired()).count();
     }
@@ -81,6 +103,10 @@ public class FormalParameters implements Iterable<FormalParameter> {
         return parameters.iterator();
     }
 
+    /**
+     * @param index the index of the parameter
+     * @return the parameter at the given index
+     */
     public FormalParameter get(final int index) {
         return parameters.get(index);
     }

@@ -64,6 +64,9 @@ public class JPDFPCell extends JanitorWrapper<PdfPCell> {
         super(DISPATCH_TABLE, new PdfPCell(table.getTable()));
     }
 
+    /**
+     * @return the wrapped PdfPCell object
+     */
     public PdfPCell getCell() {
         return wrapped;
     }

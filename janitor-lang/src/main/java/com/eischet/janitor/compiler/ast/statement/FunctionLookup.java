@@ -75,7 +75,7 @@ public class FunctionLookup extends Statement implements Expression, JsonExporta
                 function = object.janitorGetAttribute(process, functionName, false);
             }
 
-            // LATER: auch Listen-Properties etc. berücksichtigen!
+            // LATER: also consider list properties etc.!
 
             if ((function == null || function == JNull.NULL) && object instanceof FlatProperty cp) {
                 final Object v = cp.getValue();

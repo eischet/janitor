@@ -13,6 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+/** Wrapper for the Mustang invoice, i.e. an electronic invoice in the ZUGFeRD/Factur-X format. */
 public class MustangInvoice extends JanitorWrapper<Invoice> {
     public static WrapperDispatchTable<Invoice> DISPATCH = new WrapperDispatchTable<>(MustangInvoice::new);
 
@@ -396,7 +397,7 @@ public class MustangInvoice extends JanitorWrapper<Invoice> {
             ZUGFeRD2PullProvider zf2p = new ZUGFeRD2PullProvider();
             zf2p.setProfile(Profiles.getByName("EN16931"));
             zf2p.generateXML(self.janitorGetHostValue());
-            byte[] xml = zf2p.getXML(); // nur falls du das XML separat brauchst
+            byte[] xml = zf2p.getXML(); // only in case you need the XML separately
             return Janitor.string(new String(xml, StandardCharsets.UTF_8));
         });
 

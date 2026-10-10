@@ -3,6 +3,11 @@ package com.eischet.janitor.api.types.dispatch;
 import com.eischet.janitor.api.types.JanitorObject;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * Converts values that scripts assign to a property into the type that the property requires.
+ * @param <T> the type of the object that owns the property
+ * @param <U> the type of the property
+ */
 public interface ValueExpander<T extends JanitorObject, U extends JanitorObject> {
     /**
      * Convert 'value' into an appropriate object type for assigning to a property.

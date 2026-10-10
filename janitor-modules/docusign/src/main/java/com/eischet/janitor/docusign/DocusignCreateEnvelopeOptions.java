@@ -4,6 +4,7 @@ import com.docusign.esign.api.EnvelopesApi;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 
+/** Wrapper for the options that are used when an envelope is created. */
 public class DocusignCreateEnvelopeOptions extends JanitorComposed<DocusignEnvelopeDefinition> {
 
     public static final DispatchTable<DocusignEnvelopeDefinition> DISPATCHER = new DispatchTable<>();

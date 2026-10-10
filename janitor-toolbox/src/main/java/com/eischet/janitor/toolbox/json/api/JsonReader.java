@@ -6,5 +6,10 @@ package com.eischet.janitor.toolbox.json.api;
  * This works with the dispatch tables to support reading object properties.
  */
 public interface JsonReader {
+    /**
+     * Reads this object from a JSON stream.
+     * @param stream the source
+     * @throws JsonException if the JSON is invalid
+     */
     void readJson(final JsonInputStream stream) throws JsonException;
 }

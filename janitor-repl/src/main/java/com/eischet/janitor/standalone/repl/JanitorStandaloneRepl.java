@@ -50,6 +50,10 @@ import java.util.Locale;
 public class JanitorStandaloneRepl {
 
 
+    /**
+     * Starts the launcher.
+     * @param args the command line arguments
+     */
     public static void main(String[] args) {
         final ReplCommandLine cli = ReplCommandLine.parse(args);
         if (cli.getError() != null) {
@@ -199,6 +203,14 @@ public class JanitorStandaloneRepl {
         };
     }
 
+    /**
+     * Runs the interactive shell on a terminal with line editing and history.
+     * @param env the environment
+     * @param verbose true to show diagnostics
+     * @param seedScope a scope with variables to start with, or null
+     * @param suppressBanner true to skip the welcome banner
+     * @throws IOException if the terminal cannot be set up
+     */
     protected static void runJlineConsole(final JanitorEnvironment env, final boolean verbose, final @Nullable Scope seedScope, final boolean suppressBanner) throws IOException {
 
         final Terminal terminal = TerminalBuilder.builder().system(true).build();
@@ -261,6 +273,13 @@ public class JanitorStandaloneRepl {
 
     }
 
+    /**
+     * Runs the interactive shell on the plain console, without line editing.
+     * @param env the environment
+     * @param verbose true to show diagnostics
+     * @param seedScope a scope with variables to start with, or null
+     * @param suppressBanner true to skip the welcome banner
+     */
     protected static void runPlainConsole(final JanitorEnvironment env, final boolean verbose, final @Nullable Scope seedScope, final boolean suppressBanner) {
         final JanitorRuntime runtime = createStdoutRuntime(env);
         final ConsoleReplIO io = new ConsoleReplIO() {

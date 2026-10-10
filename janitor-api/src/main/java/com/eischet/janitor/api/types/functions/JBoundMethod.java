@@ -95,14 +95,26 @@ public class JBoundMethod<T> implements JCallable, JanitorObject, HasMetaData {
     }
 
 
+    /**
+     * @return the help text of this method, if any
+     */
     public String getHelp() {
         return help;
     }
 
+    /**
+     * Sets the help text of this method.
+     * @param help the help text
+     */
     public void setHelp(final String help) {
         this.help = help;
     }
 
+    /**
+     * Sets the help text of this method, and returns the method for chaining.
+     * @param help the help text
+     * @return this method
+     */
     public JBoundMethod<T> withHelp(final String help) {
         setHelp(help);
         return this;

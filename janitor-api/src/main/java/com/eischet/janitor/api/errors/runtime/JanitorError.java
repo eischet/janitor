@@ -1,5 +1,6 @@
 package com.eischet.janitor.api.errors.runtime;
 
+/** Unchecked exception for unexpected internal errors, which indicate a programming error or a broken setup rather than a problem in a script. */
 public class JanitorError extends RuntimeException {
     public JanitorError() {
     }

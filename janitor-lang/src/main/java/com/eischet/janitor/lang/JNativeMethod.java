@@ -23,6 +23,13 @@ public class JNativeMethod implements JCallable, JanitorObject {
      */
     @FunctionalInterface
     public interface NativeCall {
+        /**
+         * Executes the call.
+         * @param process the running script process
+         * @param arguments the call arguments
+         * @return the result
+         * @throws Exception on errors
+         */
         JanitorObject execute(final JanitorScriptProcess process, final JCallArgs arguments) throws Exception;
     }
 
@@ -35,6 +42,12 @@ public class JNativeMethod implements JCallable, JanitorObject {
      */
     @FunctionalInterface
     public interface NativeCallArgsOnly {
+        /**
+         * Executes the call.
+         * @param arguments the call arguments
+         * @return the result
+         * @throws Exception on errors
+         */
         JanitorObject execute(final JCallArgs arguments) throws Exception;
     }
 
@@ -46,6 +59,11 @@ public class JNativeMethod implements JCallable, JanitorObject {
      */
     @FunctionalInterface
     public interface NativeCallArgsOnlyVoid {
+        /**
+         * Executes the call.
+         * @param arguments the call arguments
+         * @throws Exception on errors
+         */
         void execute(final JCallArgs arguments) throws Exception;
     }
 

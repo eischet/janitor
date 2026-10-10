@@ -17,10 +17,20 @@ import java.util.Date;
  */
 public abstract class GsonOutputStream implements JsonOutputStream {
 
+    /**
+     * Creates a writer that produces indented JSON.
+     * @param outputStreamWriter the target
+     * @return the writer
+     */
     public static GsonOutputStream prettyWriter(final OutputStreamWriter outputStreamWriter) {
         return new GsonStreamOut(JsonExportControls.pretty(), outputStreamWriter);
     }
 
+    /**
+     * Creates a writer that produces JSON in memory.
+     * @param jsonExportControls controls how the JSON is produced
+     * @return the writer
+     */
     public static GsonStringOut stringWriter(final JsonExportControls jsonExportControls) {
         return new GsonStringOut(jsonExportControls);
     }
@@ -45,6 +55,9 @@ public abstract class GsonOutputStream implements JsonOutputStream {
         return jsonExportControls.isOmitting(object);
     }
 
+    /**
+     * @return the controls that govern the export
+     */
     public @NotNull JsonExportControls exportControls() {
         return jsonExportControls;
     }
@@ -61,7 +74,7 @@ public abstract class GsonOutputStream implements JsonOutputStream {
 
     @Override
     public JsonOutputStream pair(final String name, String value) throws JsonException {
-        // LATER: wenn die export controls sagen, dass leere Objekte nicht geliefert werden sollen, beide unterdrücken!
+        // LATER: if the export controls say that empty objects should not be emitted, suppress both!
         return key(name).value(value);
     }
 
@@ -198,18 +211,23 @@ public abstract class GsonOutputStream implements JsonOutputStream {
         }
     }
 
+    /** A JSON output stream that writes to a string. */
     public static class GsonStringOut extends GsonOutputStream {
 
         public GsonStringOut(final JsonExportControls jsonExportControls) {
             super(jsonExportControls, new StringWriter());
         }
 
+        /**
+         * @return the JSON that was written so far
+         */
         public String getString() {
             return sw.toString();
         }
 
     }
 
+    /** A JSON output stream that writes to an {@link OutputStreamWriter}. */
     public static class GsonStreamOut extends GsonOutputStream {
         public GsonStreamOut(final JsonExportControls pretty, final OutputStreamWriter outputStreamWriter) {
             super(pretty, outputStreamWriter);

@@ -59,10 +59,16 @@ public interface JCallable {
             return functionName;
         }
 
+        /**
+         * @return the name of the function
+         */
         public String getFunctionName() {
             return functionName;
         }
 
+        /**
+         * @return the wrapped callable
+         */
         public JCallable getCallable() {
             return callable;
         }

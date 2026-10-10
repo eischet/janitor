@@ -19,6 +19,9 @@ public final class JanitorScriptThrownException extends JanitorRuntimeException 
         this.scriptMessage = message;
     }
 
+    /**
+     * @return the value that the script threw
+     */
     public @NotNull JanitorObject getScriptMessage() {
         return scriptMessage;
     }

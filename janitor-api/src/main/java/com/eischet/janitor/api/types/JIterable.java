@@ -7,5 +7,8 @@ import java.util.Iterator;
  * if you want to make your own host object iterable, implement this interface.
  */
 public interface JIterable extends JanitorObject {
+    /**
+     * @return an iterator over the elements
+     */
     Iterator<? extends JanitorObject> getIterator();
 }

@@ -54,6 +54,11 @@ public class JulLoggerFactory implements ILoggerFactory {
         java.util.logging.Logger.getLogger("");
     }
 
+    /**
+     * Gets the SLF4J logger of the given name; loggers are created on demand and cached.
+     * @param name the name of the logger
+     * @return the logger
+     */
     public Logger getLogger(final String name) {
         final Logger logger = loggerMap.computeIfAbsent(name, k -> new JulLoggerAdapter(mdcAdapter, java.util.logging.Logger.getLogger(Logger.ROOT_LOGGER_NAME.equalsIgnoreCase(name) ? "" : name)));
         // System.out.println("getLogger: " + name + " => " + logger);
@@ -61,8 +66,8 @@ public class JulLoggerFactory implements ILoggerFactory {
 
         /*
 
-        ich weiß nicht, warum das so umständlich gemacht wurde, denn Java 8 und computeIfAbsent sind schon ein paar Jahre auf dem Markt...
-        Allerdings wird der Code auch beworben als für Java 1.4, also passt das wohl, und die Jungs von SLF4J wollen sich wohl selbst auch keine Konkurrenz machen ;-)
+        It is unclear why this was done in such a roundabout way, since Java 8 and computeIfAbsent have been around for years...
+        However, the original code is also advertised as being compatible with Java 1.4, so that probably explains it.
 
         // the root logger is called "" in JUL
         if (name.equalsIgnoreCase(Logger.ROOT_LOGGER_NAME)) {

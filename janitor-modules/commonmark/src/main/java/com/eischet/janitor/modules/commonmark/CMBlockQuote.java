@@ -4,6 +4,7 @@ import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import org.commonmark.node.BlockQuote;
 
+/** Wrapper for the CommonMark block quote node. */
 public class CMBlockQuote extends CMNode {
     private static final WrapperDispatchTable<BlockQuote> dispatch = new WrapperDispatchTable<>();
 

@@ -101,6 +101,12 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
         this.builtins = new DefaultBuiltinTypes();
     }
 
+    /**
+     * Creates an environment that hands all warnings to the given consumer.
+     * @param formatting the formatting rules, e.g. for dates
+     * @param warningEmitter receives the warning messages
+     * @return the new environment
+     */
     public static JanitorDefaultEnvironment create(final JanitorFormatting formatting, final Consumer<String> warningEmitter) {
         return new JanitorDefaultEnvironment(formatting) {
             @Override
@@ -264,6 +270,7 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
         return this;
     }
 
+    /** Registers all modules that are provided by {@link DiscoverableModules} services on the class path. */
     public void autoDiscoverModules() {
         for (final DiscoverableModules discoverableModules : ServiceLoader.load(DiscoverableModules.class)) {
             for (JanitorModuleRegistration registration : discoverableModules.getModules()) {

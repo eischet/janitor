@@ -13,6 +13,10 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Objects;
 import java.util.Optional;
 
+/**
+ * A foreign key that refers to an entity by its key, which is a string.
+ * @param <T> the type of the referenced entity
+ */
 public final class ForeignKeyString<T extends OrmEntity> implements ForeignKey<T> {
 
     private final @NotNull String key;
@@ -24,6 +28,9 @@ public final class ForeignKeyString<T extends OrmEntity> implements ForeignKey<T
         this.dao = dao;
     }
 
+    /**
+     * @return the key of the referenced entity
+     */
     public @NotNull String getKey() {
         return key;
     }
@@ -86,6 +93,13 @@ public final class ForeignKeyString<T extends OrmEntity> implements ForeignKey<T
         producer.value(key);
     }
 
+    /**
+     * Creates a foreign key without checking that the referenced entity exists.
+     * @param key the key of the referenced entity
+     * @param dao the DAO of the referenced entity
+     * @param <X> the type of the referenced entity
+     * @return the foreign key
+     */
     public static <X extends OrmEntity> ForeignKeyString<X> createWithForce(String key, final Dao<X> dao) {
         return new ForeignKeyString<>(key, dao);
     }

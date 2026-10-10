@@ -4,6 +4,7 @@ import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import org.mustangproject.BankDetails;
 
+/** Wrapper for the Mustang bank details of a trade party. */
 public class MustangBankDetails extends JanitorWrapper<BankDetails> {
 
     public static WrapperDispatchTable<BankDetails> DISPATCH = new WrapperDispatchTable<>(MustangBankDetails::new);

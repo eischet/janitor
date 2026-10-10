@@ -54,6 +54,9 @@ public class JPDFRectangle extends JanitorWrapper<Rectangle> {
         super(DISPATCH_TABLE, new Rectangle(llx, lly, urx, ury));
     }
 
+    /**
+     * @return the wrapped Rectangle object
+     */
     public Rectangle getRectangle() {
         return wrapped;
     }

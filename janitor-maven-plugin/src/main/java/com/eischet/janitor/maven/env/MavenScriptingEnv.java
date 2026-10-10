@@ -10,6 +10,7 @@ import org.apache.maven.plugin.logging.SystemStreamLog;
 
 import java.util.Locale;
 
+/** The Janitor environment for scripts that run in a Maven build. */
 public class MavenScriptingEnv extends JanitorDefaultEnvironment {
 
 
@@ -31,6 +32,9 @@ public class MavenScriptingEnv extends JanitorDefaultEnvironment {
         log.warn(message);
     }
 
+    /**
+     * @return a new runtime for running a script in a Maven build
+     */
     public JanitorRuntime newRuntime() {
         return new MavenScriptingRuntime(this);
     }

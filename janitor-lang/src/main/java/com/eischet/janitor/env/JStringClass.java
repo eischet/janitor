@@ -42,6 +42,14 @@ public class JStringClass {
 
     public static final String STRING_LENGTH = "String.length(): Returns the number of characters in the string.";
 
+    /**
+     * Script method {@code string.length()}: the number of characters in the string.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return the length
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static @NotNull JanitorObject length(final @NotNull JString self, final @NotNull JanitorScriptProcess process, final @NotNull JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);
         return process.getBuiltins().integer(self.janitorGetHostValue().length());
@@ -49,23 +57,63 @@ public class JStringClass {
 
     public static final String STRING_TRIM = "String.trim(): Returns the String with leading and trailing spaces removed";
 
+    /**
+     * Script method {@code string.trim()}: removes leading and trailing whitespace.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return the trimmed string
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static JString trim(final @NotNull JString self, final @NotNull JanitorScriptProcess process, final @NotNull JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);
         return process.getBuiltins().string(self.janitorGetHostValue().trim());
     }
 
+    /**
+     * Script method {@code string.format(args...)}: formats the string as a Java format string with the arguments.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return the formatted string
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static @NotNull JString format(final @NotNull JString self, final @NotNull JanitorScriptProcess process, final @NotNull JCallArgs arguments) throws JanitorRuntimeException {
         return process.getBuiltins().string(self.janitorGetHostValue().formatted(arguments.requireArgListOnly().stream().map(JanitorObject::janitorGetHostValue).toArray()));
     }
 
+    /**
+     * Script method {@code string.expand(map)}: expands a template, i.e. replaces placeholders such as {@code ${name}} by the values from the map.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return the expanded string
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static @NotNull JString expand(final @NotNull JString self, final @NotNull JanitorScriptProcess process, final @NotNull JCallArgs arguments) throws JanitorRuntimeException {
         return process.expandTemplate(self, arguments);
     }
 
+    /**
+     * Script method {@code string.toBinaryUtf8()}: encodes the string as UTF-8.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return the binary data
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static @NotNull JBinary toBinaryUtf8(final @NotNull JString self, final @NotNull JanitorScriptProcess process, final @NotNull JCallArgs arguments) throws JanitorRuntimeException {
         return process.getBuiltins().binary(self.janitorGetHostValue().getBytes(StandardCharsets.UTF_8));
     }
 
+    /**
+     * Script method {@code string.encode(charset)}: encodes the string with a character set, UTF-8 by default.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return the binary data
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static @NotNull JBinary encode(final @NotNull JString self, final @NotNull JanitorScriptProcess process, final @NotNull JCallArgs arguments) throws JanitorRuntimeException {
         final String enc = arguments.getOptionalStringValue(0, "UTF-8");
         try {
@@ -139,6 +187,14 @@ public class JStringClass {
         return Math.max(min, Math.min(value, max));
     }
 
+    /**
+     * Script method {@code string.toFloat()}: converts the string to a float; a blank string is converted to 0.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return the number
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static @NotNull JFloat toFloat(final @NotNull JString self, final @NotNull JanitorScriptProcess process, final @NotNull JCallArgs arguments) throws JanitorRuntimeException {
         final String string = self.janitorGetHostValue();
         if (string.isBlank()) {
@@ -153,6 +209,14 @@ public class JStringClass {
     }
 
 
+    /**
+     * Script method {@code string.toInt()}: converts the string to an integer; a blank string is converted to 0.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return the number
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static @NotNull JInt toInt(final @NotNull JString self, final @NotNull JanitorScriptProcess process, final @NotNull JCallArgs arguments) throws JanitorRuntimeException {
         arguments.notAllowed();
         final String string = self.janitorGetHostValue();
@@ -167,20 +231,52 @@ public class JStringClass {
         }
     }
 
+    /**
+     * Script method {@code string.toUpperCase()}: converts the string to upper case.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return the converted string
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static @NotNull JString toUpperCase(final @NotNull JString self, final @NotNull JanitorScriptProcess process, final @NotNull JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);
         return process.getBuiltins().string(self.janitorGetHostValue().toUpperCase(Locale.ROOT));
     }
 
+    /**
+     * Script method {@code string.toLowerCase()}: converts the string to lower case.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return the converted string
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static @NotNull JString toLowerCase(final @NotNull JString self, final @NotNull JanitorScriptProcess process, final @NotNull JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);
         return process.getBuiltins().string(self.janitorGetHostValue().toLowerCase(Locale.ROOT));
     }
 
+    /**
+     * Script method {@code string.count(text)}: counts how often a text occurs in the string.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return the number of occurrences
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static @NotNull JInt count(final JString self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         return process.getBuiltins().integer(StringHelpers.countMatches(self.janitorGetHostValue(), arguments.require(1).getString(0).janitorGetHostValue()));
     }
 
+    /**
+     * Script method {@code string.replace(what, with)}: replaces all occurrences of a literal text.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return the new string
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static JString replace(final JString self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(2);
         final String what = arguments.getString(0).janitorGetHostValue();
@@ -189,6 +285,14 @@ public class JStringClass {
         return process.getBuiltins().string(result);
     }
 
+    /**
+     * Script method {@code string.replaceFirst(regex, with)}: replaces the first match of a regular expression.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return the new string
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static JString replaceFirst(final JString self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(2);
         final String what = arguments.getString(0).janitorGetHostValue();
@@ -197,6 +301,14 @@ public class JStringClass {
         return process.getBuiltins().string(result);
     }
 
+    /**
+     * Script method {@code string.replaceAll(regex, with)}: replaces all matches of a regular expression.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return the new string
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static JString replaceAll(final JString self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(2);
         final String what = arguments.getString(0).janitorGetHostValue();
@@ -207,21 +319,53 @@ public class JStringClass {
 
 
 
+    /**
+     * Script method {@code string.empty()}: checks whether the string has no characters.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return true if the string is empty
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static JanitorObject empty(final JString self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);
         return Janitor.toBool(self.janitorGetHostValue().isEmpty());
     }
 
+    /**
+     * Script method {@code string.contains(text)}: checks whether the string contains a text.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return true if the text was found
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static JBool contains(final JString self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         return Janitor.toBool(self.janitorGetHostValue().contains(arguments.getString(0).janitorGetHostValue()));
     }
 
+    /**
+     * Script method {@code string.containsIgnoreCase(text)}: checks whether the string contains a text, ignoring case.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return true if the text was found
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static JBool containsIgnoreCase(final JString self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         return Janitor.toBool(self.janitorGetHostValue().toLowerCase(Locale.GERMANY)
             .contains(arguments.getString(0).janitorGetHostValue().toLowerCase(Locale.GERMANY)));
     }
 
 
+    /**
+     * Script method {@code string.splitLines()}: splits the string into lines, accepting both Unix and Windows line breaks.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return a list of the lines
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static JList splitLines(final JString self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         final ArrayList<JanitorObject> list = new ArrayList<>();
         for (final String s : self.janitorGetHostValue().split("\r?\n\r?")) {
@@ -230,6 +374,14 @@ public class JStringClass {
         return process.getBuiltins().list(list);
     }
 
+    /**
+     * Script method {@code string.endsWith(text)}: checks whether the string ends with a text. An empty text never matches.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return true if the string ends with the text
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static JBool endsWith(final JString self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         final JString with = arguments.require(1).getString(0);
         if (with.isEmpty()) {
@@ -243,18 +395,42 @@ public class JStringClass {
     private static final Pattern NUMBERS_ONLY = Pattern.compile("^\\d+$");
     private static final Pattern NUMBERS_AT_THE_START = Pattern.compile("^\\d+.*");
 
+    /**
+     * Script method {@code string.startsWithNumbers()}: checks whether the string starts with a digit.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return true if the string starts with a digit
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static JBool startsWithNumbers(final JString self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);
         final String string = self.janitorGetHostValue();
         return Janitor.toBool(string != null && NUMBERS_AT_THE_START.matcher(string).matches());
     }
 
+    /**
+     * Script method {@code string.isNumeric()}: checks whether the string consists of digits only.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return true if the string is numeric
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static JBool isNumeric(final JString self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);
         final String string = self.janitorGetHostValue();
         return Janitor.toBool(string != null && NUMBERS_ONLY.matcher(string).matches());
     }
 
+    /**
+     * Script method {@code string.startsWith(text)}: checks whether the string starts with a text. An empty text never matches.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return true if the string starts with the text
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static JBool startsWith(final JString self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         final JString with = arguments.require(1).getString(0);
         if (with.isEmpty()) {
@@ -265,21 +441,53 @@ public class JStringClass {
         }
     }
 
+    /**
+     * Script method {@code string.indexOf(text)}: finds the first occurrence of a text.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return the index, or -1 if the text was not found
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static JInt indexOf(final JString self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         return process.getBuiltins().integer(self.janitorGetHostValue().indexOf(arguments.getString(0).janitorGetHostValue()));
     }
 
+    /**
+     * Script method {@code string.lastIndexOf(text)}: finds the last occurrence of a text.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return the index, or -1 if the text was not found
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static JInt lastIndexOf(final JString self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         return process.getBuiltins().integer(self.janitorGetHostValue().lastIndexOf(arguments.getString(0).janitorGetHostValue()));
     }
 
 
+    /**
+     * Script method {@code string.substring(from, to)}: extracts a part of the string. The end index is optional.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return the substring
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static JString substring(final JString self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         final int from = (int) arguments.getInt(0).getValue();
         final int to = arguments.size() > 1 ? (int) arguments.getInt(1).getValue() : self.janitorGetHostValue().length();
         return process.getBuiltins().string(self.janitorGetHostValue().substring(from, to));
     }
 
+    /**
+     * Script method {@code string.removeLeadingZeros()}: removes all zeros at the start of the string.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return the new string
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static JString removeLeadingZeros(final JString self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);
         var s = self.janitorGetHostValue();
@@ -290,22 +498,52 @@ public class JStringClass {
     }
 
 
+    /**
+     * Script method {@code string.parseDate(pattern)}: parses the string as a date.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return the date
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static JanitorObject parseDate(final JString self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         final String format = arguments.require(1).getString(0).janitorGetHostValue();
         return  process.getBuiltins().parseNullableDate(process, self.janitorGetHostValue(), format);
     }
 
+    /**
+     * Script method {@code string.parseDateTime(pattern)}: parses the string as a datetime.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return the datetime
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static JanitorObject parseDateTime(final JString self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         final String format = arguments.require(1).getString(0).janitorGetHostValue();
         return JDateTime.parse(process, self.janitorGetHostValue(), format);
     }
 
+    /**
+     * Script method {@code string.cutFilename(maxLength)}: reduces a file name to the given length, preserving the file extension.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return the shortened file name
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static JanitorObject cutFilename(final JString self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         // TODO: remove this from the language, as it is only of interest for a single application!
         arguments.require(1);
         return process.getBuiltins().string(cutFilename(self.janitorGetHostValue(), arguments.getInt(0).getAsInt()));
     }
 
+    /**
+     * Reduces a file name to the given length, preserving the file extension.
+     * @param filename the file name or path, may be null
+     * @param maxLength the maximum length of the result
+     * @return the shortened file name, or null if the file name is null
+     */
     public static @Nullable String cutFilename(@Nullable String filename, int maxLength) {
         // TODO: remove this from the language, as it is only of interest for a single application!
         if (filename == null) {
@@ -326,21 +564,53 @@ public class JStringClass {
     }
 
 
+    /**
+     * Script method {@code string.urlEncode()}: encodes the string for use in a URL.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return the encoded string
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static JanitorObject urlEncode(final @NotNull JString self, final @NotNull JanitorScriptProcess process, final @NotNull JCallArgs arguments) throws JanitorRuntimeException {
         arguments.notAllowed();
         return process.getBuiltins().string(URLEncoder.encode(self.janitorGetHostValue(), StandardCharsets.UTF_8));
     }
 
+    /**
+     * Script method {@code string.urlDecode()}: decodes a string that was encoded for use in a URL.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return the decoded string
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static JanitorObject urlDecode(final @NotNull JString self, final @NotNull JanitorScriptProcess process, final @NotNull JCallArgs arguments) throws JanitorRuntimeException {
         arguments.notAllowed();
         return process.getBuiltins().string(URLDecoder.decode(self.janitorGetHostValue(), StandardCharsets.UTF_8));
     }
 
+    /**
+     * Script method {@code string.decodeBase64()}: decodes a base64 string.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return the decoded binary data
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static JanitorObject decodeBase64(final @NotNull JString self, final @NotNull JanitorScriptProcess process, final @NotNull JCallArgs arguments) throws JanitorRuntimeException {
         arguments.notAllowed();
         return process.getBuiltins().binary(Base64.getDecoder().decode(self.janitorGetHostValue()));
     }
 
+    /**
+     * Script method {@code string.toConstantCase()}: converts the string to an upper case constant name, e.g. "fooBar baz" to "FOOBAR_BAZ".
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param args the call arguments
+     * @return the converted string
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static JString toConstantCase(final @NotNull JString self, final @NotNull JanitorScriptProcess process, final @NotNull JCallArgs args) throws JanitorRuntimeException {
         args.notAllowed();
         if (self.janitorGetHostValue().isBlank()) {
@@ -349,6 +619,14 @@ public class JStringClass {
         return process.getBuiltins().string(toConstant(self.janitorGetHostValue()));
     }
 
+    /**
+     * Script method {@code string.toCamelCase()}: converts the string to camel case, e.g. "FOO_BAR" to "fooBar".
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param args the call arguments
+     * @return the converted string
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static JString toCamelCase(final @NotNull JString self, final @NotNull JanitorScriptProcess process, final @NotNull JCallArgs args) throws JanitorRuntimeException {
         args.notAllowed();
         if (self.janitorGetHostValue().isBlank()) {
@@ -358,6 +636,11 @@ public class JStringClass {
     }
 
 
+    /**
+     * Converts a string to an upper case constant name, with underscores between the words.
+     * @param string the string, may be null
+     * @return the constant name, or null if the string is null or empty
+     */
     public static @Nullable String toConstant(final @Nullable String string) {
         if (string == null || string.isEmpty()) {
             return null;
@@ -373,11 +656,16 @@ public class JStringClass {
         }
     }
 
+    /**
+     * Converts a string to camel case.
+     * @param string the string, may be null
+     * @return the camel case string, or null if the string is null or empty
+     */
     public static @Nullable String camelize(final @Nullable String string) {
         if (string == null || string.isEmpty()) {
             return null;
         }
-        // alt: return CaseUtils.toCamelCase(string.toUpperCase().replaceAll("[^_A-Z0-9]+|_+", "_"), false, '_');
+        // old: return CaseUtils.toCamelCase(string.toUpperCase().replaceAll("[^_A-Z0-9]+|_+", "_"), false, '_');
         final String fullCamel = Arrays.stream(string.toUpperCase().replaceAll("[^_A-Z0-9]+|_+", "_").split("_"))
                 .map(s -> s.toLowerCase(Locale.ROOT))
                 .map(s -> s.substring(0, 1).toUpperCase(Locale.ROOT) + s.substring(1))
@@ -387,6 +675,15 @@ public class JStringClass {
         return fullCamel.substring(0, 1).toLowerCase(Locale.ROOT) + fullCamel.substring(1);
     }
 
+    /**
+     * Script method {@code string.split(separator)}: splits the string at a separator, which is either a string or a regular expression.
+     * An empty separator splits the string into single characters.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param args the call arguments
+     * @return a list of the parts
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static JanitorObject split(JString self, JanitorScriptProcess process, JCallArgs args) throws JanitorRuntimeException {
         final JanitorObject splitBy = args.require(1).get(0);
         if (splitBy instanceof JRegex regex) {
@@ -417,6 +714,10 @@ public class JStringClass {
         return null;
     }
 
+    /**
+     * Registers the standard methods and properties of strings.
+     * @param stringDispatcher the dispatch table to add them to
+     */
     public static void applyDefaults(DispatchTable<JString> stringDispatcher) {
                 stringDispatcher.setMetaData(Janitor.MetaData.HELP, JStringClass.STRING_CLASS);
         // OLD: addStringMethod("length", JStringClass::__length);
@@ -459,7 +760,7 @@ public class JStringClass {
         stringDispatcher.addMethod("decodeBase64", JStringClass::decodeBase64);
         stringDispatcher.addMethod("toCamelCase", JStringClass::toCamelCase);
         stringDispatcher.addMethod("toConstantCase", JStringClass::toConstantCase);
-        stringDispatcher.addMethod(JanitorAntlrCompiler.INDEXED_GET_METHOD, JStringClass::indexedGet); // das lassen wir auch so: keine Zuweisung per Index an String-Teile, die sind ja immutable
+        stringDispatcher.addMethod(JanitorAntlrCompiler.INDEXED_GET_METHOD, JStringClass::indexedGet); // leave this as it is: no assignment by index to parts of a string, since strings are immutable
     }
 
 }

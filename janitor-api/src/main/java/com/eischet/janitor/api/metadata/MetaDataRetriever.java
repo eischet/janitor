@@ -8,5 +8,11 @@ import org.jetbrains.annotations.Nullable;
  */
 @FunctionalInterface
 public interface MetaDataRetriever {
+    /**
+     * Gets a meta-data entry.
+     * @param key the key
+     * @param <K> the type of the value
+     * @return the value, or null if there is none
+     */
     <K> @Nullable K retrieveMetaData(final @NotNull MetaDataKey<K> key);
 }

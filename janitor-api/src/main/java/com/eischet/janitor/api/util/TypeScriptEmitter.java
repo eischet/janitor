@@ -23,29 +23,54 @@ public class TypeScriptEmitter {
     public TypeScriptEmitter() {
     }
 
+    /**
+     * @return the text that is emitted before the type definitions, if any
+     */
     public String getHeader() {
         return header;
     }
 
+    /**
+     * Sets the text that is emitted before the type definitions.
+     * @param header the header text
+     * @return this emitter
+     */
     public TypeScriptEmitter setHeader(final String header) {
         this.header = header;
         return this;
     }
 
+    /**
+     * @return the text that is emitted after the type definitions, if any
+     */
     public String getFooter() {
         return footer;
     }
 
+    /**
+     * Sets the text that is emitted after the type definitions.
+     * @param footer the footer text
+     * @return this emitter
+     */
     public TypeScriptEmitter setFooter(final String footer) {
         this.footer = footer;
         return this;
     }
 
+    /**
+     * Adds a dispatch table whose type will be emitted as a TypeScript interface.
+     * @param dispatchTable the dispatch table
+     * @return this emitter
+     */
     public TypeScriptEmitter addDispatchTable(DispatchTable<?> dispatchTable) {
         dispatchTables.add(dispatchTable);
         return this;
     }
 
+    /**
+     * Generates the TypeScript source with the type definitions of all dispatch tables that were added.
+     * @return the TypeScript code
+     */
     public String emit() {
         final StringBuilder out = new StringBuilder();
         if (header != null) {
@@ -64,6 +89,12 @@ public class TypeScriptEmitter {
 
     private static final String NEWLINE = "\n";
 
+    /**
+     * Generates a TypeScript interface for a dispatch table.
+     * @param dispatch the dispatch table; it needs a CLASS meta-data entry
+     * @param <T> the type that the table dispatches for
+     * @return the TypeScript interface definition
+     */
     public static <T extends JanitorObject> String buildTypeScriptDefinition(DispatchTable<T> dispatch) {
         final @Nullable String className = Objects.requireNonNull(dispatch.getMetaData(Janitor.MetaData.CLASS), "CLASS metadata entry required, but missing");
         final List<String> attributes = dispatch.streamAttributeNames().toList();

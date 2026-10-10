@@ -11,6 +11,9 @@ public enum JsonType {
     BOOLEAN,
     NULL;
 
+    /**
+     * @return the name of this type in JSON Schema
+     */
     public String getJsonSchemaType() {
         return switch (this) {
             case ARRAY -> "array";

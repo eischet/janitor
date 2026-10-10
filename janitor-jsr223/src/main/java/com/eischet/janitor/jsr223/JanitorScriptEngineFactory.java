@@ -20,7 +20,7 @@ import java.util.Locale;
 import java.util.stream.Collectors;
 
 /**
- * JSR224 (javax.scripting) wrappers for Janitor.
+ * JSR223 (javax.scripting) wrappers for Janitor.
  * <p>This factory is automatically discovered by the Java ServiceLoader mechanism used by the ScriptEngineManager.</p>
  * <p>Note that this is just a by-product, not the main artifact, of the Janitor language implementation.</p>
  */
@@ -37,7 +37,7 @@ public class JanitorScriptEngineFactory implements ScriptEngineFactory {
     private Bindings bindings;
 
     public JanitorScriptEngineFactory() {
-        // Usually a caller should do this himself, but with JSR224, that's not part of the official API, so let's provide a default.
+        // Usually a caller should do this himself, but with JSR223, that's not part of the official API, so let's provide a default.
         if (Janitor.getUserProvider() == null) {
             Janitor.setUserProvider(() -> environment);
         }
@@ -50,6 +50,9 @@ public class JanitorScriptEngineFactory implements ScriptEngineFactory {
         return new JanitorScriptEngine(this);
     }
 
+    /**
+     * @return new bindings with an empty global scope
+     */
     public Bindings createBindings() {
         return new JanitorBindings(Scope.createGlobalScope(environment, ScriptSource.builtin()), environment);
     }
@@ -109,6 +112,9 @@ public class JanitorScriptEngineFactory implements ScriptEngineFactory {
         return String.join("\n", statements);
     }
 
+    /**
+     * @return a runtime that prints to the standard output
+     */
     public JanitorRuntime getRuntime() {
         return new BaseRuntime(environment) {
             @Override
@@ -119,14 +125,24 @@ public class JanitorScriptEngineFactory implements ScriptEngineFactory {
         };
     }
 
+    /**
+     * Sets the global bindings.
+     * @param bindings the bindings
+     */
     public void setBindings(final Bindings bindings) {
         this.bindings = bindings;
     }
 
+    /**
+     * @return the global bindings
+     */
     public Bindings getBindings() {
         return bindings;
     }
 
+    /**
+     * @return the global scope
+     */
     public Scope getGlobalScope() {
         return globalScope;
     }

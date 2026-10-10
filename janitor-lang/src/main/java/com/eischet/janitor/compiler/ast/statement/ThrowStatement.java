@@ -13,6 +13,7 @@ import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
 
 import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
+/** Throw statement, which raises an error in the script from the value of an expression. */
 public class ThrowStatement extends Statement implements JsonExportableObject {
     private final Expression expression;
 

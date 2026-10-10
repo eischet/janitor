@@ -11,6 +11,7 @@ import org.mustangproject.Product;
 import java.util.ArrayList;
 import java.util.List;
 
+/** Wrapper for the Mustang product of an invoice item. */
 public class MustangProduct extends JanitorWrapper<Product> {
     public static WrapperDispatchTable<Product> DISPATCH = new WrapperDispatchTable<>(MustangProduct::new);
 

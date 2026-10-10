@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+/** The dialect for MySQL and compatible databases. */
 public class DatabaseDialectMySql extends DatabaseDialectCommon {
 
     /** {@code LIMIT ? OFFSET ?} is supported by every version we run against. */

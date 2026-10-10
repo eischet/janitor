@@ -9,6 +9,7 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.versioning.OverConstrainedVersionException;
 import org.jetbrains.annotations.NotNull;
 
+/** Makes a Maven artifact available to scripts. */
 public class ArtifactWrapper extends JanitorWrapper<Artifact> {
 
     private static final WrapperDispatchTable<Artifact> dispatcher = new WrapperDispatchTable<>();
@@ -49,6 +50,10 @@ public class ArtifactWrapper extends JanitorWrapper<Artifact> {
         super(dispatcher, wrapped);
     }
 
+    /**
+     * @param wrapped the artifact
+     * @return a wrapper for scripts
+     */
     public static ArtifactWrapper of(final @NotNull Artifact wrapped) {
         return new ArtifactWrapper(wrapped);
     }

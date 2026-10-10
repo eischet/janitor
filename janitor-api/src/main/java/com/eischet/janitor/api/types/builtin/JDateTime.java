@@ -43,6 +43,12 @@ public class JDateTime extends JanitorComposed<JDateTime> implements JConstant {
         this.dateTime = packLocalDateTime(dateTime);
     }
 
+    /**
+     * Creates a new datetime value.
+     * @param dispatcher the dispatcher for datetimes
+     * @param dateTime the datetime to wrap
+     * @return the new value
+     */
     public static JDateTime newInstance(final Dispatcher<JDateTime> dispatcher, final LocalDateTime dateTime) {
         return new JDateTime(dispatcher, dateTime);
     }

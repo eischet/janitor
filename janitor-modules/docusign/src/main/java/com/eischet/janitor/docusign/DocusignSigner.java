@@ -6,6 +6,7 @@ import com.eischet.janitor.api.types.dispatch.DispatchTable;
 
 import java.util.Objects;
 
+/** Wrapper for the DocuSign signer. */
 public class DocusignSigner extends JanitorComposed<DocusignSigner> {
 
     public static final DispatchTable<DocusignSigner> DISPATCHER = new DispatchTable<>();
@@ -112,6 +113,9 @@ public class DocusignSigner extends JanitorComposed<DocusignSigner> {
         this.wrapped = new Signer();
     }
 
+    /**
+     * @return the wrapped DocuSign object
+     */
     public Signer getWrapped() {
         return wrapped;
     }

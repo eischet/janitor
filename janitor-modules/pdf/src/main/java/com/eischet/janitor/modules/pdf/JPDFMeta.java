@@ -27,6 +27,9 @@ public class JPDFMeta extends JanitorWrapper<Meta> {
         super(DISPATCH_TABLE, new Meta(tag, content));
     }
 
+    /**
+     * @return the wrapped Meta object
+     */
     public Meta getMeta() {
         return wrapped;
     }

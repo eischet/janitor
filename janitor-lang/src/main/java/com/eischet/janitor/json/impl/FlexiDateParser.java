@@ -14,6 +14,7 @@ import java.time.format.DateTimeParseException;
 import java.util.List;
 
 
+/** A Gson deserializer that reads datetimes from JSON strings in several ISO formats, with or without a time zone offset. */
 public class FlexiDateParser implements JsonDeserializer<LocalDateTime> {
 
     private static final JanitorLogger log = JanitorLogger.getLogger(FlexiDateParser.class);

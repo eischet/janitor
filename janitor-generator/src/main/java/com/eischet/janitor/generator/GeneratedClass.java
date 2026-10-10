@@ -12,6 +12,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
 
+/** A Java class that is going to be generated: it consists of a name and fields, for which accessors and a dispatch table are generated. */
 public class GeneratedClass extends JanitorComposed<GeneratedClass> implements JavaType {
 
     public static final DispatchTable<GeneratedClass> DISPATCH = new DispatchTable<>();
@@ -31,6 +32,11 @@ public class GeneratedClass extends JanitorComposed<GeneratedClass> implements J
         this.name = name;
     }
 
+    /**
+     * Generates the source code of this class.
+     * @param generator the generator that this class belongs to, which supplies the package name
+     * @return the Java source code
+     */
     public String generate(final Generator generator) {
         final var out = new CodeOutputStream();
         out.write("package ").write(generator.getJavaPackageName()).write(";").newline();
@@ -84,16 +90,32 @@ public class GeneratedClass extends JanitorComposed<GeneratedClass> implements J
         return name;
     }
 
+    /**
+     * @return the fields of this class
+     */
     public @NotNull @Unmodifiable List<GeneratedField> getFields() {
         return List.copyOf(fields);
     }
 
 
+    /**
+     * Adds a field.
+     * @param type the type of the field
+     * @param name the name of the field
+     * @return this class
+     */
     public GeneratedClass addField(final @NotNull JavaType type,
                                    final @NotNull String name) {
         return addField(type, name, null);
     }
 
+    /**
+     * Adds a field, and lets a customizer adjust it.
+     * @param type the type of the field
+     * @param name the name of the field
+     * @param customizer adjusts the field, may be null
+     * @return this class
+     */
     public GeneratedClass addField(final @NotNull JavaType type,
                                    final @NotNull String name,
                                    final @Nullable Consumer<@NotNull GeneratedField> customizer) {

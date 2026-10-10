@@ -4,6 +4,7 @@ import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import org.commonmark.node.SoftLineBreak;
 
+/** Wrapper for the CommonMark soft line break node. */
 public class CMSoftLineBreak extends CMNode {
     private static final WrapperDispatchTable<SoftLineBreak> dispatch = new WrapperDispatchTable<>();
 

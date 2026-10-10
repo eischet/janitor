@@ -19,6 +19,7 @@ import org.mustangproject.ZUGFeRD.IZUGFeRDAllowanceCharge;
 import java.util.ArrayList;
 import java.util.List;
 
+/** Wrapper for an item (line) of a Mustang invoice. */
 public class MustangItem extends JanitorWrapper<Item> {
     public static WrapperDispatchTable<Item> DISPATCH = new WrapperDispatchTable<>(MustangItem::new);
 

@@ -118,6 +118,12 @@ public class Script extends Statement implements JsonExportableList {
 
     }
 
+    /**
+     * Creates a script whose only job is to call a callable with the given arguments.
+     * @param callable the callable to call
+     * @param args the arguments to pass to it
+     * @return the script
+     */
     public static Script wrapperForCallback(final JCallable callable, final List<JanitorObject> args) {
         return new Script(Location.BUILTIN_LOCATION, List.of(new CallbackWrapper(Location.BUILTIN_LOCATION, callable, List.copyOf(args))), null);
     }

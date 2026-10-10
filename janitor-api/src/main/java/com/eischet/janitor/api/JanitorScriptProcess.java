@@ -48,40 +48,98 @@ public interface JanitorScriptProcess {
      */
     @Nullable String getSource();
 
+    /**
+     * @return the scope of the main script
+     */
     Scope getMainScope();
 
     @NotNull Scope getCurrentScope();
 
+    /**
+     * @return the runtime that this process runs in
+     */
     JanitorRuntime getRuntime();
 
+    /**
+     * Enters a block of code, which gets its own scope.
+     * @param location the location of the block, or null for anonymous blocks
+     */
     void enterBlock(final Location location);
 
+    /** Leaves the block that was entered last. */
     void exitBlock();
 
+    /**
+     * Finds the scope that defines a variable.
+     * @param id the name of the variable
+     * @return the variable's value together with the scope that it was found in
+     */
     ResultAndScope lookupScopedVar(String id);
 
+    /**
+     * @return the location in the source code that is currently executed
+     */
     Location getCurrentLocation();
 
+    /**
+     * Sets the location in the source code that is currently executed.
+     * @param ip the location
+     */
     void setCurrentLocation(Location ip);
 
+    /**
+     * @return the result of the script so far
+     */
     JanitorObject getScriptResult();
 
+    /**
+     * Sets the result of the script.
+     * @param scriptResult the result
+     */
     void setScriptResult(JanitorObject scriptResult);
 
+    /**
+     * Emits a trace message, if tracing is enabled.
+     * @param traceMessageSupplier supplies the message; it is only called if the message is needed
+     */
     default void trace(Supplier<String> traceMessageSupplier) {
         getRuntime().trace(traceMessageSupplier);
     }
 
+    /**
+     * @return the locations of the calls that led to the current location
+     */
     List<Location> getStackTrace();
 
+    /**
+     * Makes a module scope the current module scope.
+     * @param moduleScope the scope
+     */
     void pushModuleScope(Scope moduleScope);
 
+    /**
+     * Removes a module scope that was pushed earlier.
+     * @param moduleScope the scope
+     */
     void popModuleScope(Scope moduleScope);
 
+    /**
+     * Makes a closure scope available for lookups.
+     * @param closureScope the scope
+     */
     void pushClosureScope(Scope closureScope);
 
+    /**
+     * Removes a closure scope that was pushed earlier.
+     * @param closureScope the scope
+     */
     void popClosureScope(Scope closureScope);
 
+    /**
+     * Looks up a variable by name, starting in the current scope.
+     * @param text the name of the variable
+     * @return the value, or null if there is no such variable
+     */
     JanitorObject lookup(String text);
 
     /**
@@ -94,19 +152,33 @@ public interface JanitorScriptProcess {
      */
     JString expandTemplate(JString template, JCallArgs arguments) throws JanitorRuntimeException;
 
+    /**
+     * Runs the script.
+     * @return the result of the script
+     * @throws JanitorRuntimeException if the script fails
+     */
     @NotNull
     JanitorObject run() throws JanitorRuntimeException;
 
+    /**
+     * @return the environment of the runtime
+     */
     @NotNull
     default JanitorEnvironment getEnvironment() {
         return getRuntime().getEnvironment();
     }
 
+    /**
+     * @return the built-in types of the environment
+     */
     @NotNull
     default BuiltinTypes getBuiltins() {
         return getEnvironment().getBuiltinTypes();
     }
 
+    /**
+     * @return the formatting rules of the environment
+     */
     @NotNull
     default JanitorFormatting getFormatting() {
         return getEnvironment().getFormatting();
@@ -137,10 +209,18 @@ public interface JanitorScriptProcess {
      */
     void countInstruction() throws JanitorRuntimeException;
 
+    /**
+     * Limits the number of instructions that the script may execute.
+     * @param maxInstructionCount the maximum number, or 0 for no limit
+     */
     void setMaxInstructionCount(final long maxInstructionCount);
 
     @FunctionalInterface
     interface ProtectedCall {
+        /**
+         * Runs the protected code.
+         * @throws JanitorRuntimeException if the code fails
+         */
         void call() throws JanitorRuntimeException;
     }
 

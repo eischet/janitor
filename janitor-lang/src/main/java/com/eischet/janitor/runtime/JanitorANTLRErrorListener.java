@@ -9,6 +9,7 @@ import org.jetbrains.annotations.Unmodifiable;
 import java.util.LinkedList;
 import java.util.List;
 
+/** Collects syntax errors from the ANTLR parser, and improves their messages. */
 public class JanitorANTLRErrorListener extends BaseErrorListener implements ANTLRErrorListener {
 
     protected final String source;
@@ -60,6 +61,9 @@ public class JanitorANTLRErrorListener extends BaseErrorListener implements ANTL
         }
     }
 
+    /**
+     * @return the issues that were found
+     */
     public List<String> getIssues() {
         return issues;
     }
@@ -84,10 +88,16 @@ public class JanitorANTLRErrorListener extends BaseErrorListener implements ANTL
         return improved;
     }
 
+    /**
+     * @return true if there were any issues
+     */
     public boolean hasIssues() {
         return !issues.isEmpty();
     }
 
+    /**
+     * @return the number of issues
+     */
     public int numberOfIssues() {
         return issues.size();
     }

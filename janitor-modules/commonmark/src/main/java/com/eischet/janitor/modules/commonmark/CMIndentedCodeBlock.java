@@ -4,6 +4,7 @@ import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import org.commonmark.node.IndentedCodeBlock;
 
+/** Wrapper for the CommonMark indented code block node. */
 public class CMIndentedCodeBlock extends CMNode {
     private static final WrapperDispatchTable<IndentedCodeBlock> dispatch = new WrapperDispatchTable<>();
 

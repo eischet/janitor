@@ -15,6 +15,7 @@ import com.eischet.janitor.api.types.functions.JCallArgs;
 
 import java.util.List;
 
+/** The script module "brrr", which sends push notifications through the Brrr service. */
 public class BrrrModule extends JanitorComposed<BrrrModule> implements JanitorModule {
 
     public static final JanitorModuleRegistration REGISTRATION = new JanitorModuleRegistration("brrr", BrrrModule::new);
@@ -41,6 +42,14 @@ public class BrrrModule extends JanitorComposed<BrrrModule> implements JanitorMo
         });
     }
 
+    /**
+     * Sends a message.
+     * @param process the running script process
+     * @param url the URL of the Brrr webhook, or null to use the BRRR_URL environment variable
+     * @param messageArg the message, as a BrrrMessage, a map or a string
+     * @return null
+     * @throws JanitorRuntimeException if the argument is invalid or the message cannot be sent
+     */
     public JanitorObject sendMessage(final JanitorScriptProcess process, final String url, final JanitorObject messageArg) throws JanitorRuntimeException {
         final JCallArgs sendArgs = url == null ? JCallArgs.empty("send", process) : new JCallArgs("send", process, List.of(Janitor.string(url)));
         if (messageArg instanceof BrrrMessage msg) {

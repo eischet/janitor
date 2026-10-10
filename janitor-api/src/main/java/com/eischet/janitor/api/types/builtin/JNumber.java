@@ -7,6 +7,7 @@ import com.eischet.janitor.toolbox.json.api.JsonExportablePrimitive;
 
 import java.math.BigDecimal;
 
+/** Common interface of the numeric types, i.e. integers and floats. */
 public interface JNumber extends JConstant, JsonExportablePrimitive, Comparable<JNumber> {
 
     /**
@@ -31,6 +32,9 @@ public interface JNumber extends JConstant, JsonExportablePrimitive, Comparable<
      */
     long toLong();
 
+    /**
+     * @return the number as a BigDecimal
+     */
     BigDecimal toBigDecimal();
 
     @Override

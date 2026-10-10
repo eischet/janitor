@@ -8,6 +8,10 @@ import com.eischet.dbxs.results.ResultSetReader;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * An SQL query that comes with the code that converts the result rows to objects.
+ * @param <T> the type of the objects
+ */
 public class SelectStatementWithMapper<T> extends SelectStatement {
 
     private final @NotNull ResultSetReader<T> mapper;
@@ -17,6 +21,9 @@ public class SelectStatementWithMapper<T> extends SelectStatement {
         this.mapper = mapper;
     }
 
+    /**
+     * @return the reader that converts a result row to an object
+     */
     public @NotNull ResultSetReader<T> getMapper() {
         return mapper;
     }

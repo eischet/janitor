@@ -53,6 +53,9 @@ public class JPDFList extends JanitorWrapper<List> {
         super(DISPATCH_TABLE, new List(numbered, lettered));
     }
 
+    /**
+     * @return the wrapped List object
+     */
     public List getList() {
         return wrapped;
     }

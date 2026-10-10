@@ -26,12 +26,21 @@ public class BlindSSLSocketFactory extends SSLSocketFactory {
 
     public static final SSLSocketFactory defaultFactory = new BlindSSLSocketFactory();
 
+    /**
+     * @return the shared factory instance
+     */
     public static SSLSocketFactory getDefault() {
         return defaultFactory;
     }
 
     private SSLSocketFactory proxiedFactory = null;
 
+    /**
+     * Creates an SSL context that trusts every certificate. This is insecure, and only meant for deliberately ignoring security issues, e.g. in tests.
+     * @return the context
+     * @throws NoSuchAlgorithmException if SSL is not available
+     * @throws KeyManagementException if the context cannot be initialized
+     */
     public static SSLContext getSSLContext() throws NoSuchAlgorithmException, KeyManagementException {
         final SSLContext sslContext = SSLContext.getInstance("SSL");
         final X509TrustManager[] trumanShow = { getBlindTrustManager() };
@@ -39,6 +48,9 @@ public class BlindSSLSocketFactory extends SSLSocketFactory {
         return sslContext;
     }
 
+    /**
+     * @return a trust manager that accepts every certificate, which is insecure
+     */
     public static X509ExtendedTrustManager getBlindTrustManager() {
         return new X509ExtendedTrustManager() {
             @Override
@@ -61,14 +73,29 @@ public class BlindSSLSocketFactory extends SSLSocketFactory {
 
             }
 
+            /**
+             * @return null, because there are no restrictions
+             */
             public X509Certificate[] getAcceptedIssuers() {
                 return null;
             }
 
+            /**
+             * Accepts every server certificate.
+             * @param arg0 the certificate chain
+             * @param arg1 the authentication type
+             * @throws CertificateException never
+             */
             public void checkServerTrusted(final X509Certificate[] arg0, final String arg1) throws CertificateException {
                 // never fails, which is the whole point
             }
 
+            /**
+             * Accepts every client certificate.
+             * @param arg0 the certificate chain
+             * @param arg1 the authentication type
+             * @throws CertificateException never
+             */
             public void checkClientTrusted(final X509Certificate[] arg0, final String arg1) throws CertificateException {
                 // never fails, which is the whole point
             }
@@ -134,6 +161,11 @@ public class BlindSSLSocketFactory extends SSLSocketFactory {
         return proxiedFactory.createSocket(arg0, arg1, arg2, arg3);
     }
 
+    /**
+     * Creates an unconnected socket.
+     * @return the socket
+     * @throws IOException on network errors
+     */
     public Socket createSocket() throws IOException {
         log.info("funny: someone is calling the unspecified createSocket method");
         return proxiedFactory.createSocket();

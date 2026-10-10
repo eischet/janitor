@@ -85,6 +85,11 @@ public class EntityDispatchTable<T extends OrmEntity, U extends Uplink> extends 
         return this;
     }
 
+    /**
+     * Lets a consumer configure this table, which is convenient for keeping the setup code together.
+     * @param consumer the configuration code
+     * @return this table
+     */
     public EntityDispatchTable<T, U> configure(final Consumer<EntityDispatchTable<T, U>> consumer) {
         consumer.accept(this);
         return this;

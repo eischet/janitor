@@ -4,6 +4,7 @@ import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import org.commonmark.node.CustomNode;
 
+/** Wrapper for custom CommonMark nodes, which come from extensions. */
 public class CMCustomNode extends CMNode {
     private static final WrapperDispatchTable<CustomNode> dispatch = new WrapperDispatchTable<>();
 

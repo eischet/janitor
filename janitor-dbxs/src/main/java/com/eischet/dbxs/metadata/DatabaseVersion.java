@@ -13,6 +13,7 @@ import org.jetbrains.annotations.Nullable;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 
+/** Describes the product and version of a database, as reported by its JDBC driver. */
 public class DatabaseVersion {
 
     private static final JanitorLogger log = JanitorLogger.getLogger(DatabaseVersion.class);
@@ -30,6 +31,11 @@ public class DatabaseVersion {
         }
     }
 
+    /**
+     * Asks a database for its product name and version.
+     * @param dataManager the data manager of the database
+     * @return the version information; fields that could not be determined are left empty
+     */
     @NotNull
     public static DatabaseVersion getDatabaseVersion(final DataManager dataManager) {
         final DatabaseVersion databaseVersion = new DatabaseVersion();
@@ -62,34 +68,62 @@ public class DatabaseVersion {
         return databaseVersion;
     }
 
+    /**
+     * @return the major version of the database
+     */
     public int getMajorVersion() {
         return majorVersion;
     }
 
+    /**
+     * Sets the major version of the database.
+     * @param majorVersion the major version
+     */
     public void setMajorVersion(final int majorVersion) {
         this.majorVersion = majorVersion;
     }
 
+    /**
+     * @return the minor version of the database
+     */
     public int getMinorVersion() {
         return minorVersion;
     }
 
+    /**
+     * Sets the minor version of the database.
+     * @param minorVersion the minor version
+     */
     public void setMinorVersion(final int minorVersion) {
         this.minorVersion = minorVersion;
     }
 
+    /**
+     * @return the name of the database product
+     */
     public String getProductName() {
         return productName;
     }
 
+    /**
+     * Sets the name of the database product.
+     * @param productName the product name
+     */
     public void setProductName(final String productName) {
         this.productName = productName;
     }
 
+    /**
+     * @return the version of the database product, as a string
+     */
     public String getProductVersion() {
         return productVersion;
     }
 
+    /**
+     * Sets the version of the database product, as a string.
+     * @param productVersion the product version
+     */
     public void setProductVersion(final String productVersion) {
         this.productVersion = productVersion;
     }

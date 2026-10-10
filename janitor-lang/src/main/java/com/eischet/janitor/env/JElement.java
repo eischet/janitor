@@ -10,6 +10,7 @@ import org.jetbrains.annotations.Debug;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+/** An element of an XML document, as seen by scripts: it has a name, attributes, text, and child elements. */
 public class JElement extends JanitorComposed<JElement> {
 
     public static final DispatchTable<JElement> DISPATCH = new DispatchTable<>(null);
@@ -35,14 +36,24 @@ public class JElement extends JanitorComposed<JElement> {
         this.name = name;
     }
 
+    /**
+     * @return the name of this element, or null
+     */
     public @Nullable String getName() {
         return name;
     }
 
+    /**
+     * Sets the name of this element.
+     * @param name the new name, or null
+     */
     public void setName(final @Nullable String name) {
         this.name = name;
     }
 
+    /**
+     * @return the attributes of this element, as a map
+     */
     public @NotNull JMap getAttributes() {
         if (attributes == null) {
             attributes = Janitor.map();
@@ -50,6 +61,9 @@ public class JElement extends JanitorComposed<JElement> {
         return attributes;
     }
 
+    /**
+     * @return the child elements, as a list
+     */
     public @NotNull JList getChildren() {
         if (children == null) {
             children = Janitor.list();
@@ -57,14 +71,27 @@ public class JElement extends JanitorComposed<JElement> {
         return children;
     }
 
+    /**
+     * @return the text of this element, or null
+     */
     public @Nullable String getText() {
         return text;
     }
 
+    /**
+     * Sets the text of this element.
+     * @param text the new text, or null
+     */
     public void setText(@Nullable final String text) {
         this.text = text;
     }
 
+    /**
+     * Finds the first child element with the given name.
+     * @param name the name of the child
+     * @return the child
+     * @throws IllegalArgumentException if there is no such child
+     */
     public @NotNull JElement requireFirstChild(final String name) throws IllegalArgumentException {
         final JElement child = firstChild(name);
         if (child == null) {
@@ -73,6 +100,11 @@ public class JElement extends JanitorComposed<JElement> {
         return child;
     }
 
+    /**
+     * Finds the first child element with the given name.
+     * @param name the name of the child
+     * @return the child, or null if there is none
+     */
     public @Nullable JElement firstChild(final String name) {
         if (children != null) {
             for (final JanitorObject child : children) {
@@ -84,6 +116,11 @@ public class JElement extends JanitorComposed<JElement> {
         return null;
     }
 
+    /**
+     * Gets the text of the first child element with the given name.
+     * @param childName the name of the child
+     * @return the text, or null if there is no such child
+     */
     public @Nullable String optionalChildText(final String childName) {
         @Nullable final JElement child = firstChild(childName);
         return child == null ? null : child.getText();

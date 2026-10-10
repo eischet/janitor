@@ -48,6 +48,7 @@ import java.util.jar.Manifest;
 
 import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
+/** The Maven goal {@code run-script-file}, which runs a Janitor script that is given as a file or inline. */
 @Mojo(name = "run-script-file", defaultPhase = LifecyclePhase.PROCESS_SOURCES)
 public class RunScriptMojo extends AbstractMojo {
 
@@ -75,6 +76,10 @@ public class RunScriptMojo extends AbstractMojo {
 
     private RepositorySystem repoSystem;
 
+    /**
+     * Injects the repository system.
+     * @param repoSystem the repository system
+     */
     @Inject
     public void setRepoSystem(final RepositorySystem repoSystem) {
         this.repoSystem = repoSystem;

@@ -18,10 +18,33 @@ import java.util.function.Supplier;
  */
 public interface JanitorRuntime {
 
+    /**
+     * @return the environment that this runtime belongs to
+     */
     JanitorEnvironment getEnvironment();
 
+    /**
+     * Compiles a script.
+     * @param moduleName the name of the script, for error messages
+     * @param source the source code
+     * @return the compiled script
+     * @throws JanitorCompilerException if the source code cannot be compiled
+     */
     RunnableScript compile(String moduleName, @Language("Janitor") String source) throws JanitorCompilerException;
+    /**
+     * Compiles a script to check it for errors, without running it.
+     * @param moduleName the name of the script, for error messages
+     * @param source the source code
+     * @return the compiled script
+     * @throws JanitorCompilerException if the source code cannot be compiled
+     */
     RunnableScript checkCompile(String moduleName, @Language("Janitor") String source) throws JanitorCompilerException;
+    /**
+     * Implements the {@code print} function of scripts, whose output goes wherever the host wants it to.
+     * @param process the running script process
+     * @param args the values to print
+     * @return the result of the call, usually null
+     */
     JanitorObject print(JanitorScriptProcess process, JCallArgs args);
 
     /**
@@ -36,9 +59,16 @@ public interface JanitorRuntime {
     JanitorObject executeCallback(Scope scope, JCallable callable, List<JanitorObject> args) throws JanitorRuntimeException;
 
 
+    /**
+     * Emits a trace message, if tracing is enabled.
+     * @param traceMessageSupplier supplies the message; it is only called if the message is needed
+     */
     void trace(Supplier<String> traceMessageSupplier);
 
 
+    /**
+     * @return the built-in types of the environment
+     */
     default BuiltinTypes getBuiltinTypes() {
         return getEnvironment().getBuiltinTypes();
     }

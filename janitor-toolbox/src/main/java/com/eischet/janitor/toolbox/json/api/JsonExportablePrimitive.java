@@ -1,5 +1,6 @@
 package com.eischet.janitor.toolbox.json.api;
 
+/** A {@link JsonExportable} that is exported as a single JSON value, e.g. a number or a string. */
 public interface JsonExportablePrimitive extends JsonExportable {
     @Override
     default boolean isList() {

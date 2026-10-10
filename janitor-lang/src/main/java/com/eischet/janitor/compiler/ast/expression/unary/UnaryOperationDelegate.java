@@ -9,5 +9,12 @@ import com.eischet.janitor.api.types.JanitorObject;
  */
 @FunctionalInterface
 public interface UnaryOperationDelegate {
+    /**
+     * Performs the operation.
+     * @param process the running script process
+     * @param parameter the operand
+     * @return the result
+     * @throws JanitorRuntimeException if the operation fails
+     */
     JanitorObject perform(final JanitorScriptProcess process, final JanitorObject parameter) throws JanitorRuntimeException;
 }

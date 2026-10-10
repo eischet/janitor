@@ -4,6 +4,7 @@ import com.docusign.esign.client.auth.OAuth;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 
+/** Wrapper for a DocuSign account, as listed in the user information. */
 public class DocusignAccount extends JanitorComposed<DocusignAccount> {
 
     public static final DispatchTable<DocusignAccount> DISPATCH = new DispatchTable<>();

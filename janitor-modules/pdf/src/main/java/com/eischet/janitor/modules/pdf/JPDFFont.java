@@ -65,6 +65,9 @@ public class JPDFFont extends JanitorWrapper<Font> {
         super(DISPATCH_TABLE, new Font(family, size, style, color));
     }
 
+    /**
+     * @return the wrapped Font object
+     */
     public Font getFont() {
         return wrapped;
     }

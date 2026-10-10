@@ -7,6 +7,7 @@ package com.eischet.dbxs.statements;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 
+/** An SQL statement, which can be a query or an update. */
 public class GenericStatement {
     private final @NotNull String sql;
 
@@ -14,6 +15,9 @@ public class GenericStatement {
         this.sql = sql;
     }
 
+    /**
+     * @return the SQL text
+     */
     public @NotNull String getSql() {
         return sql;
     }

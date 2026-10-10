@@ -5,6 +5,13 @@ import com.eischet.dbxs.SimplePreparedStatement;
 
 import java.sql.SQLException;
 
+/** Binds a value to the next parameter of a prepared statement. */
 public interface Prepper {
+    /**
+     * Binds the value to the next parameter of the statement.
+     * @param conn the database connection
+     * @param stmt the statement
+     * @throws SQLException if the value cannot be bound
+     */
     void prepare(final DatabaseConnection conn, SimplePreparedStatement stmt) throws SQLException;
 }

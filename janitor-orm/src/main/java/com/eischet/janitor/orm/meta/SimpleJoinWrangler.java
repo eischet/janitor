@@ -8,6 +8,13 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Function;
 
+/**
+ * The standard {@link JoinWrangler}, which creates join records with a constructor function.
+ * @param <J> the type of the join records
+ * @param <L> the type of the entities on the left side
+ * @param <R> the type of the entities on the right side
+ * @param <U> the type of the uplink
+ */
 public class SimpleJoinWrangler<
         J extends OrmJoiner<L, R>,
         L extends OrmEntity,

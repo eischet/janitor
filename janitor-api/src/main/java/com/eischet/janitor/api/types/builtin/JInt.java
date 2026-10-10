@@ -87,6 +87,12 @@ public class JInt extends JanitorWrapper<Long> implements JNumber {
         producer.value(wrapped);
     }
 
+    /**
+     * Creates a new integer value.
+     * @param dispatcher the dispatcher for integers
+     * @param value the number to wrap
+     * @return the new value
+     */
     public static JInt newInstance(final Dispatcher<JanitorWrapper<Long>> dispatcher, final long value) {
         return new JInt(dispatcher, value);
     }

@@ -121,21 +121,45 @@ public interface JanitorEnvironment extends JsonOutputSupport {
     Scope getBuiltinScope();
 
 
+    /**
+     * Parses JSON text to a map.
+     * @param json the JSON text
+     * @return the map
+     * @throws JsonException if the JSON is invalid
+     */
     @NotNull
     JMap parseJsonToMap(@Language("JSON") final String json) throws JsonException;
 
+    /**
+     * Parses JSON text to a list.
+     * @param json the JSON text
+     * @return the list
+     * @throws JsonException if the JSON is invalid
+     */
     @NotNull
     JList parseJsonToList(@Language("JSON") final String json) throws JsonException;
 
+    /**
+     * Finds a module by its qualified name, e.g. when a script imports it.
+     * @param process the running script process
+     * @param name the qualified name of the module
+     * @return the module
+     * @throws JanitorRuntimeException if there is no such module
+     */
     @NotNull
     JanitorModule getModuleByQualifier(final JanitorScriptProcess process, String name) throws JanitorRuntimeException;
 
     @NotNull JanitorModule getModuleByStringName(final JanitorScriptProcess process, String name) throws JanitorRuntimeException;
 
+    /** Registers all modules that can be discovered automatically, e.g. through the Java service loader. */
     void autoDiscoverModules();
 
 
     @Nullable Scope.ImplicitObjectProvider getImplicitTemplateObjectProvider();
 
+    /**
+     * Sets the provider of implicit objects for template expansion.
+     * @param implicitTemplateObjectProvider the provider, or null to remove it
+     */
     void setImplicitTemplateObjectProvider(@Nullable Scope.ImplicitObjectProvider implicitTemplateObjectProvider);
 }

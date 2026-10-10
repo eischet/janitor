@@ -238,7 +238,7 @@ public class JanitorLogging {
             final ErrorManager errorManager = new JanitorLoggingErrorManager();
 
             if (color) {
-                // scheint die Farben AUSzuschalten: AnsiConsole.systemInstall();
+                // seems to turn the colors OFF: AnsiConsole.systemInstall();
                 final ColoredConsoleFormatter formatter = new ColoredConsoleFormatter();
                 final JanitorLoggingConsoleHandler consoleHandler = new JanitorLoggingConsoleHandler(System.out, formatter, errorManager);
                 // consoleHandler.setFilter(cda.getAntiFileFiler());
@@ -294,6 +294,11 @@ public class JanitorLogging {
         // we MUST keep a reference to the logger, or it will be garbage collected at the next possible moment and come back strong with 50 belly dancers, *can't stop* the thing then ;-)
     }
 
+    /**
+     * Chooses the console color for a log category.
+     * @param category the category, may be null
+     * @return the color
+     */
     public static Ansi.Color foregroundFor(final ToolLogCategory category) {
         if (category != null) {
             return switch (category) {

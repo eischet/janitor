@@ -17,6 +17,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+/** Operations for binary objects. */
 public class JBinaryClass {
 
     /**
@@ -105,6 +106,10 @@ public class JBinaryClass {
         return __hash("SHA-256", self, process);
     }
 
+    /**
+     * Registers the standard methods and properties of binary objects.
+     * @param binaryDispatcher the dispatch table to add them to
+     */
     public static void applyDefaults(WrapperDispatchTable<byte[]> binaryDispatcher) {
         binaryDispatcher.addMethod("encodeBase64", JBinaryClass::__encodeBase64);
         binaryDispatcher.addMethod("decode", JBinaryClass::__toString);

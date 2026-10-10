@@ -54,6 +54,12 @@ public class JCallArgs {
         return new JCallArgs(functionName, process, null);
     }
 
+    /**
+     * Creates call arguments for a single argument.
+     * @param process the running script process
+     * @param arg the argument
+     * @return the call arguments
+     */
     public static @NotNull JCallArgs ofSingleArgument(final JanitorScriptProcess process, final JanitorObject arg) {
         return new JCallArgs(process, "anonymous", List.of(new EvaluatedArgument("arg0", arg)));
     }
@@ -91,6 +97,12 @@ public class JCallArgs {
         return this;
     }
 
+    /**
+     * Requires a minimum number of arguments.
+     * @param minSize the minimum number of arguments
+     * @return this object, for chaining
+     * @throws JanitorRuntimeException if fewer arguments were passed
+     */
     public JCallArgs requireAtLeast(final int minSize) throws JanitorRuntimeException {
         if (size() < minSize) {
             throw new JanitorArgumentException(process, "%s: requires at least %s arguments, but got: %s".formatted(functionName, minSize, args));
@@ -160,6 +172,12 @@ public class JCallArgs {
         throw new JanitorArgumentException(process, "%s: argument %s must be a string value, but the caller provided: %s".formatted(functionName, i, args));
     }
 
+    /**
+     * Gets a required numeric argument.
+     * @param i the index of the argument
+     * @return the number
+     * @throws JanitorArgumentException if the argument is missing or not a number
+     */
     public JNumber getRequiredJNumber(final int i) throws JanitorArgumentException {
         final JanitorObject arg = get(i);
         if (arg instanceof JNumber num) {
@@ -168,6 +186,12 @@ public class JCallArgs {
         throw new JanitorArgumentException(process, "%s: argument %s must be a numeric value, but the caller provided: %s".formatted(functionName, i, args));
     }
 
+    /**
+     * Gets a required integer argument.
+     * @param i the index of the argument
+     * @return the value as a Java int
+     * @throws JanitorArgumentException if the argument is missing, not an integer, or too big for an int
+     */
     public int getRequiredIntValue(final int i) throws JanitorArgumentException {
         final JanitorObject arg = get(i);
         if (arg instanceof JInt num) {
@@ -180,6 +204,12 @@ public class JCallArgs {
         throw new JanitorArgumentException(process, "%s: argument %s must be a numeric value, but the caller provided: %s".formatted(functionName, i, args));
     }
 
+    /**
+     * Gets a required numeric argument as a long.
+     * @param i the index of the argument
+     * @return the value as a Java long
+     * @throws JanitorArgumentException if the argument is missing or not a number
+     */
     public long getRequiredLongValue(final int i) throws JanitorArgumentException {
         final JanitorObject arg = get(i);
         if (arg instanceof JNumber num) {
@@ -330,6 +360,11 @@ public class JCallArgs {
                '}';
     }
 
+    /**
+     * Gets a keyword argument by its name.
+     * @param name the name of the argument
+     * @return the value, or null if there is no argument of this name
+     */
     public JanitorObject getByName(final @NotNull String name) {
         return args.stream()
                 .filter(element -> Objects.nonNull(element.getName()))
@@ -339,6 +374,11 @@ public class JCallArgs {
                 .orElse(null);
     }
 
+    /**
+     * Collects all keyword arguments into a map.
+     * @param except names of arguments to leave out, may be null
+     * @return a map of all named arguments
+     */
     public JMap asKwargs(final Set<String> except) {
         @NotNull final JMap map = Janitor.map();
         for (final EvaluatedArgument arg : args) {
@@ -376,6 +416,10 @@ public class JCallArgs {
         }
     }
 
+    /**
+     * Requires that no arguments were passed at all.
+     * @throws JanitorRuntimeException if there are any arguments
+     */
     public void notAllowed() throws JanitorRuntimeException {
         require(0);
     }

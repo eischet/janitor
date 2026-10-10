@@ -49,6 +49,9 @@ public class JPDFSection extends JanitorWrapper<Section> {
         super(DISPATCH_TABLE, section);
     }
 
+    /**
+     * @return the wrapped Section object
+     */
     public Section getSection() {
         return wrapped;
     }

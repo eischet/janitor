@@ -1,5 +1,6 @@
 package com.eischet.janitor.logging;
 
+/** An immutable copy of a logging context, taken at one point in time. */
 public class SnapshotLoggingContext implements ILoggingContext {
     private final String app;
     private final String user;

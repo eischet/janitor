@@ -7,6 +7,7 @@ import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.builtin.JFloat;
 import com.eischet.janitor.api.types.builtin.JInt;
 
+/** Converts between Janitor integers and Java {@link Long} values. */
 public class LongConverter implements TwoWayConverter<Long> {
 
     public static final LongConverter INSTANCE = new LongConverter();

@@ -9,6 +9,7 @@ import com.eischet.janitor.compiler.ast.statement.Statement;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
 
+/** A statement that does nothing, e.g. a lone semicolon. */
 public class EmptyStatement extends Statement implements Ast {
     public EmptyStatement(final Location location) {
         super(location);

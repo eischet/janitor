@@ -11,6 +11,7 @@ import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.FormatStyle;
 import java.util.Locale;
 
+/** Formatting rules for dates and times that are derived from a {@link Locale}. */
 public class JanitorFormattingLocale implements JanitorFormatting {
 
     private final DateTimeFormatter noSeconds;

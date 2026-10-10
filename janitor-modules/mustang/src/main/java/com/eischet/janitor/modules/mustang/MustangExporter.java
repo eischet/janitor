@@ -12,6 +12,7 @@ import org.mustangproject.ZUGFeRD.ZUGFeRDExporterFromA3;
 
 import java.io.IOException;
 
+/** Wrapper for the Mustang ZUGFeRD exporter, which embeds invoice data into PDF files. */
 public class MustangExporter extends JanitorWrapper<IZUGFeRDExporter> {
 
     public static final JanitorLogger log = JanitorLogger.getLogger(MustangExporter.class);

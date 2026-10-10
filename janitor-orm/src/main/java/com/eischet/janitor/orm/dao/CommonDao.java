@@ -19,10 +19,25 @@ import org.jetbrains.annotations.Nullable;
 import java.sql.SQLException;
 import java.util.NoSuchElementException;
 
+/** Static helpers for reading and writing entity properties from and to database columns, shared by the DAO implementations. */
 public class CommonDao {
 
     protected static final JanitorLogger log = JanitorLogger.getLogger(CommonDao.class);
 
+    /**
+     * Reads the value of a column from the current row of a result set, and assigns it to a property.
+     * Columns that refer to other entities are turned into foreign keys.
+     * @param collection the DAO collection, used to resolve the DAO of a referenced entity
+     * @param columnName the name of the column, for error messages
+     * @param conn the database connection
+     * @param assignableProperty the property to assign the value to
+     * @param rs the result set, positioned at the row to read
+     * @param columnTypeHint the type of the column
+     * @param lookupType the class name of the referenced entity if the column holds a foreign key, otherwise null
+     * @param hostNullable whether the property accepts null values
+     * @throws SQLException on database errors
+     * @throws JanitorGlueException if the value cannot be assigned
+     */
     public static void readProperty(final OrmDaoCollection<?> collection,
                                     final String columnName,
                                     final DatabaseConnection conn,
@@ -79,6 +94,17 @@ public class CommonDao {
         }
     }
 
+    /**
+     * Binds the value of a property to the next parameter of a prepared statement, according to the column type.
+     * @param conn the database connection
+     * @param className the name of the entity class, for error messages
+     * @param column the name of the column
+     * @param field the name of the property
+     * @param propertyValue the value to write
+     * @param ps the statement to bind the value to
+     * @param columnTypeHint the type of the column
+     * @throws SQLException if the value cannot be bound
+     */
     public static void writeProperty(final DatabaseConnection conn,
                                      final String className,
                                      final String column,
@@ -180,7 +206,7 @@ public class CommonDao {
                 }
             }
             case DATE -> {
-                // TODO: dbxs könnte ggf. noch ein "Date" statt nur "DateTime" ermöglichen, damit der JDBC-Treiber besser bedient wird.
+                // TODO: dbxs could possibly support a "Date" in addition to "DateTime", to serve the JDBC driver better.
                 if (propertyValue instanceof JDate date) {
                     ps.addLocalDateTime(date.janitorGetHostValue().atStartOfDay());
                     return;

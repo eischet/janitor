@@ -27,6 +27,7 @@ import org.jetbrains.annotations.Unmodifiable;
 import java.util.List;
 import java.util.function.Consumer;
 
+/** A compiled script, which can be run. */
 public class JanitorScript implements RunnableScript, JsonExportableObject {
 
     private static final JanitorLogger log = JanitorLogger.getLogger(JanitorScript.class);
@@ -88,12 +89,16 @@ public class JanitorScript implements RunnableScript, JsonExportableObject {
         }
     }
 
-    // LATER: eigentlich ist es bescheuert, die Exception beim Check nicht zu werfen, denn es ist ja trotzdem ein Fehler
+    // LATER: it is actually silly not to throw the exception during the check, because it is an error nevertheless
     @Override
     public @Nullable Exception getCompilerException() {
         return compilerException;
     }
 
+    /**
+     * @param obj the value, may be null
+     * @return the string representation of the value, or null if the value is null or the Janitor null value
+     */
     public static @Nullable String hostString(final JanitorObject obj) {
         return obj == null || obj == JNull.NULL ? null : obj.janitorToString();
     }
@@ -103,6 +108,12 @@ public class JanitorScript implements RunnableScript, JsonExportableObject {
         return List.copyOf(issues);
     }
 
+    /**
+     * Parses a script, and logs any compiler warnings.
+     * @param text the source code
+     * @return the parse tree
+     * @throws JanitorCompilerException if the script cannot be parsed
+     */
     public static JanitorParser.ScriptContext parseScript(final @NotNull String text) throws JanitorCompilerException {
         final JanitorANTLRErrorListener listener = new JanitorANTLRErrorListener(text);
         try {
@@ -115,6 +126,13 @@ public class JanitorScript implements RunnableScript, JsonExportableObject {
         }
     }
 
+    /**
+     * Parses a script, reporting problems to the given listener.
+     * @param text the source code
+     * @param listener receives syntax errors
+     * @return the parse tree
+     * @throws JanitorCompilerException if the script cannot be parsed
+     */
     public static JanitorParser.ScriptContext parseScript(final @NotNull String text, final ANTLRErrorListener listener) throws JanitorCompilerException {
         String modText = text;
         if (text == null || text.isBlank()) {
@@ -180,6 +198,9 @@ public class JanitorScript implements RunnableScript, JsonExportableObject {
     }
 
 
+    /**
+     * @return the source code of this script
+     */
     public String getSource() {
         return scriptObject.getSource();
     }

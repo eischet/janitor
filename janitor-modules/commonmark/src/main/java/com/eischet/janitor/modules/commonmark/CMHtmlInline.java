@@ -4,6 +4,7 @@ import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import org.commonmark.node.HtmlInline;
 
+/** Wrapper for the CommonMark html inline node. */
 public class CMHtmlInline extends CMNode {
     private static final WrapperDispatchTable<HtmlInline> dispatch = new WrapperDispatchTable<>();
 

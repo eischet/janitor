@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+/** A {@link ReplIO} that uses the system console, i.e. standard input and output. */
 public class ConsoleReplIO implements ReplIO {
     private final BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 

@@ -8,6 +8,7 @@ import org.jetbrains.annotations.VisibleForTesting;
 import java.util.HashMap;
 import java.util.Map;
 
+/** A {@link JavaWriter} that keeps the generated files in memory, for use in tests. */
 public class TestWriter implements JavaWriter {
 
     private final Map<@NotNull String, @NotNull String> generatedFiles = new HashMap<>();
@@ -17,6 +18,9 @@ public class TestWriter implements JavaWriter {
         generatedFiles.put(filename, contents);
     }
 
+    /**
+     * @return the generated files, by file name
+     */
     @VisibleForTesting
     public @Unmodifiable Map<@NotNull String, @NotNull String> getGeneratedFiles() {
         return Map.copyOf(generatedFiles);

@@ -140,7 +140,7 @@ public class ScriptFunction extends AstNode implements Expression, JsonExportabl
                     if (getLocation() != null) {
                         process.enterBlock(getLocation().nested(name));
                     } else {
-                        process.enterBlock(null); // anonyme Blöcke NICHT in den Stacktrace packen
+                        process.enterBlock(null); // do NOT put anonymous blocks into the stack trace
                     }
                     process.pushClosureScope(closureScope);
                     final int nonDefaultSize = formalParameters.minSize();

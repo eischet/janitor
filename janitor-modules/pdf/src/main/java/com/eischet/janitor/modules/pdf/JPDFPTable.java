@@ -66,6 +66,9 @@ public class JPDFPTable extends JanitorWrapper<PdfPTable> {
         super(DISPATCH_TABLE, new PdfPTable(relativeWidths));
     }
 
+    /**
+     * @return the wrapped PdfPTable object
+     */
     public PdfPTable getTable() {
         return wrapped;
     }

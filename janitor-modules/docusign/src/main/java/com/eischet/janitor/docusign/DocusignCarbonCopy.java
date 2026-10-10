@@ -4,6 +4,7 @@ import com.docusign.esign.model.CarbonCopy;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 
+/** Wrapper for the DocuSign carbon copy. */
 public class DocusignCarbonCopy extends JanitorComposed<DocusignCarbonCopy> {
 
     public static final DispatchTable<DocusignCarbonCopy> DISPATCHER = new DispatchTable<>();
@@ -78,6 +79,9 @@ public class DocusignCarbonCopy extends JanitorComposed<DocusignCarbonCopy> {
         this.wrapped = new CarbonCopy();
     }
 
+    /**
+     * @return the wrapped DocuSign object
+     */
     public CarbonCopy getWrapped() {
         return wrapped;
     }

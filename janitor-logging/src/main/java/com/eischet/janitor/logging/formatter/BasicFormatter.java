@@ -31,6 +31,10 @@ public abstract class BasicFormatter extends Formatter {
 
     private static final List<ExceptionFormattingHandler> exceptionFormattingHandlers = new ArrayList<>();
 
+    /**
+     * Registers a handler that can format specific kinds of exceptions in log output.
+     * @param handler the handler
+     */
     public static void registerExceptionFormattingHandler(final ExceptionFormattingHandler handler) {
         if (handler != null) {
             exceptionFormattingHandlers.add(handler);
@@ -123,6 +127,20 @@ public abstract class BasicFormatter extends Formatter {
         return formatLogRecord(cat, thread, ts, record.getLoggerName(), message, arguments, keyValuePairs, markers, contextMap, loggingContext);
     }
 
+    /**
+     * Formats a log record, after its parts have been collected.
+     * @param cat the category of the record
+     * @param thread the name of the thread
+     * @param ts the timestamp, as a string
+     * @param loggerName the name of the logger
+     * @param message the message
+     * @param arguments the arguments of the message
+     * @param keyValuePairs the key-value pairs attached to the record
+     * @param markers the markers attached to the record
+     * @param contextMap the diagnostic context
+     * @param loggingContext the logging context, may be null
+     * @return the formatted text
+     */
     protected abstract String formatLogRecord(final ToolLogCategory cat, final String thread, final String ts, final String loggerName, final String message, final List<Object> arguments, final List<KeyValuePair> keyValuePairs, final List<Marker> markers, final Map<String, String> contextMap, final ILoggingContext loggingContext);
 
 }

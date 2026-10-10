@@ -4,6 +4,7 @@ import com.docusign.esign.api.EnvelopesApi;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 
+/** Wrapper for the DocuSign get envelope options. */
 public class DocusignGetEnvelopeOptions extends JanitorComposed<DocusignGetEnvelopeOptions> {
     public static DispatchTable<DocusignGetEnvelopeOptions> DISPATCH = new  DispatchTable<>();
 
@@ -20,6 +21,9 @@ public class DocusignGetEnvelopeOptions extends JanitorComposed<DocusignGetEnvel
         this.wrapped = wrapped;
     }
 
+    /**
+     * @return the wrapped DocuSign options
+     */
     public EnvelopesApi.GetEnvelopeOptions getWrapped() {
         return wrapped;
     }

@@ -10,12 +10,25 @@ import javax.xml.stream.XMLStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 
+/** Parses XML documents into {@link JElement} trees. DTDs and external entities are disabled for security. */
 public final class JanitorXmlParser {
 
+    /**
+     * Parses an XML document.
+     * @param xml the XML text
+     * @return the root element
+     * @throws XMLStreamException if the XML is malformed
+     */
     public static JElement parseXml(String xml) throws XMLStreamException {
         return parseXml(new StringReader(xml));
     }
 
+    /**
+     * Parses an XML document.
+     * @param input the XML text
+     * @return the root element
+     * @throws XMLStreamException if the XML is malformed
+     */
     public static JElement parseXml(final Reader input) throws XMLStreamException {
         final XMLInputFactory factory = XMLInputFactory.newFactory();
         factory.setProperty(XMLInputFactory.IS_COALESCING, true);
@@ -137,7 +150,7 @@ public final class JanitorXmlParser {
 
                 default -> {
 
-                    // Für einfache XML-Files ignorieren.
+                    // Ignored for simple XML files.
 
                 }
 
@@ -307,7 +320,7 @@ public final class JanitorXmlParser {
                 }
 
                 default -> {
-                    // Für einfache XML-Dateien reicht es meist, andere Events zu ignorieren.
+                    // For simple XML files, it is usually sufficient to ignore other events.
                 }
             }
         }

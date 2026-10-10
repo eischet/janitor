@@ -4,6 +4,7 @@ import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import org.jetbrains.annotations.Nullable;
 
+/** Resolves modules by name when a script imports them. */
 @FunctionalInterface
 public interface ModuleResolver {
     /**

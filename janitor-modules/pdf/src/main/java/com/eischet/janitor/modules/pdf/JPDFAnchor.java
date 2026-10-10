@@ -39,6 +39,9 @@ public class JPDFAnchor extends JanitorWrapper<Anchor> {
         super(DISPATCH_TABLE, new Anchor(text, font.getFont()));
     }
 
+    /**
+     * @return the wrapped Anchor object
+     */
     public Anchor getAnchor() {
         return wrapped;
     }

@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
 
+/** A {@link JavaWriter} that writes the generated files to the file system. */
 public class DefaultJavaWriter implements JavaWriter {
     @Override
     public void write(@NotNull final String filename, @NotNull final String contents) throws JanitorError {

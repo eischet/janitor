@@ -43,6 +43,13 @@ public class BrrrMessage extends JanitorComposed<BrrrMessage> {
         DISPATCHER.addMethod("send", (BrrrMessage::send));
     }
 
+    /**
+     * Sends this message.
+     * @param process the running script process
+     * @param arguments the call arguments; the optional first one is the URL, which defaults to the BRRR_URL environment variable
+     * @return null
+     * @throws JanitorRuntimeException if there is no URL or the message cannot be sent
+     */
     public JanitorObject send(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         final String url = arguments.getOptionalStringValue(0, System.getenv("BRRR_URL"));
         if (url == null || url.isBlank()) {
@@ -77,98 +84,182 @@ public class BrrrMessage extends JanitorComposed<BrrrMessage> {
         super(DISPATCHER);
     }
 
+    /**
+     * @return the title
+     */
     public @Nullable String getTitle() {
         return title;
     }
 
+    /**
+     * Sets the title.
+     * @param title the new value
+     */
     public void setTitle(@Nullable final String title) {
         this.title = title;
     }
 
+    /**
+     * @return the subtitle
+     */
     public @Nullable String getSubtitle() {
         return subtitle;
     }
 
+    /**
+     * Sets the subtitle.
+     * @param subtitle the new value
+     */
     public void setSubtitle(@Nullable final String subtitle) {
         this.subtitle = subtitle;
     }
 
+    /**
+     * @return the text of the message
+     */
     public @NotNull String getMessage() {
         return message;
     }
 
+    /**
+     * Sets the text of the message.
+     * @param message the new value
+     */
     public void setMessage(@NotNull final String message) {
         this.message = message;
     }
 
+    /**
+     * @return the ID of the thread that the message belongs to
+     */
     public @Nullable String getThreadId() {
         return threadId;
     }
 
+    /**
+     * Sets the ID of the thread that the message belongs to.
+     * @param threadId the new value
+     */
     public void setThreadId(@Nullable final String threadId) {
         this.threadId = threadId;
     }
 
+    /**
+     * @return the name of the sound
+     */
     public @Nullable String getSoundAsString() {
         return sound == null ? null : sound.getStringRepresentation();
     }
 
+    /**
+     * Sets the name of the sound.
+     * @param sound the new value
+     */
     public void setSoundAsString(@Nullable final String sound) {
         this.sound = sound == null ? null : BrrrSound.fromString(sound);
     }
 
+    /**
+     * @return the sound
+     */
     public @Nullable BrrrSound getSound() {
         return sound;
     }
 
+    /**
+     * Sets the sound.
+     * @param sound the new value
+     */
     public void setSound(@Nullable final BrrrSound sound) {
         this.sound = sound;
     }
 
+    /**
+     * @return the URL that opens when the notification is tapped
+     */
     public @Nullable String getOpenUrl() {
         return openUrl;
     }
 
+    /**
+     * Sets the URL that opens when the notification is tapped.
+     * @param openUrl the new value
+     */
     public void setOpenUrl(@Nullable final String openUrl) {
         this.openUrl = openUrl;
     }
 
+    /**
+     * @return the URL of an image to show
+     */
     public @Nullable String getImageUrl() {
         return imageUrl;
     }
 
+    /**
+     * Sets the URL of an image to show.
+     * @param imageUrl the new value
+     */
     public void setImageUrl(@Nullable final String imageUrl) {
         this.imageUrl = imageUrl;
     }
 
+    /**
+     * @return the date and time after which the notification expires
+     */
     public @Nullable LocalDateTime getExpirationDate() {
         return expirationDate;
     }
 
+    /**
+     * Sets the date and time after which the notification expires.
+     * @param expirationDate the new value
+     */
     public void setExpirationDate(@Nullable final LocalDateTime expirationDate) {
         this.expirationDate = expirationDate;
     }
 
+    /**
+     * @return the filter criteria
+     */
     public @Nullable String getFilterCriteria() {
         return filterCriteria;
     }
 
+    /**
+     * Sets the filter criteria.
+     * @param filterCriteria the new value
+     */
     public void setFilterCriteria(@Nullable final String filterCriteria) {
         this.filterCriteria = filterCriteria;
     }
 
+    /**
+     * @return the name of the interruption level
+     */
     public @Nullable String getInterruptionLevelAsString() {
         return interruptionLevel == null ? null : interruptionLevel.getStringRepresentation();
     }
 
+    /**
+     * @return the interruption level
+     */
     public @Nullable BrrrInterruptionLevel getInterruptionLevel() {
         return interruptionLevel;
     }
 
+    /**
+     * Sets the name of the interruption level.
+     * @param interruptionLevel the new value
+     */
     public void setInterruptionLevelAsString(@Nullable final String interruptionLevel) {
         this.interruptionLevel = interruptionLevel == null ? null : BrrrInterruptionLevel.fromString(interruptionLevel);
     }
 
+    /**
+     * Sets the interruption level.
+     * @param interruptionLevel the new value
+     */
     public void setInterruptionLevel(@Nullable final BrrrInterruptionLevel interruptionLevel) {
         this.interruptionLevel = interruptionLevel;
     }

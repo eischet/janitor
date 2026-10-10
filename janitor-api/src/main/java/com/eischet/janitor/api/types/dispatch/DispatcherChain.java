@@ -15,6 +15,10 @@ import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+/**
+ * An experimental dispatcher that chains several dispatchers, so a lookup falls through from one to the next.
+ * @param <T> the type of object dispatched
+ */
 public class DispatcherChain<T extends JanitorObject> implements Dispatcher<T> {
 
     // TODO: unfinished experiment for chaining dispatchers, e.g. composite dispatcher instead of pseudo inheritance

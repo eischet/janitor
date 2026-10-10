@@ -206,7 +206,7 @@ public class FirstParserTestCase extends JanitorTest {
     @Test
     public void definingFunctions() throws JanitorCompilerException, JanitorRuntimeException {
         Assertions.assertEquals("", getOutput("function foo(x) { print(x); }", JanitorTest.NO_GLOBALS));
-        Assertions.assertEquals("4\n", getOutput("function foo(x) { print(4); } foo(4);", JanitorTest.NO_GLOBALS)); // beachte: x wird ignoriert!
+        Assertions.assertEquals("4\n", getOutput("function foo(x) { print(4); } foo(4);", JanitorTest.NO_GLOBALS)); // note: x is ignored!
         Assertions.assertEquals("17\n", getOutput("function foo() { print(17); } foo();", JanitorTest.NO_GLOBALS));
         Assertions.assertEquals("17\n", getOutput("function foo() { return 17; } print(foo());", JanitorTest.NO_GLOBALS));
         Assertions.assertEquals("2\n3\n4\n", getOutput("x = 1; function pp() { x = x + 1; print(x); } pp(); pp(); pp();", JanitorTest.NO_GLOBALS));
@@ -222,7 +222,7 @@ public class FirstParserTestCase extends JanitorTest {
         Assertions.assertEquals("4\n", getOutput("a = x -> x + 1; print(a(a(a(1)))); ", JanitorTest.NO_GLOBALS));
         Assertions.assertEquals("4\n", getOutput("a = x -> { return x + 1; }; print(a(a(a(1)))); ", JanitorTest.NO_GLOBALS));
         Assertions.assertEquals("55\n", getOutput("z = (x -> 5*x); print(z(11));", JanitorTest.NO_GLOBALS));
-        // das ist vielleicht auch etwas schräg: assertEquals("55\n", getOutput("z = a -> { return b -> a*b; }; print((z(11))(5));", NO_GLOBALS));
+        // this may be a bit odd as well: assertEquals("55\n", getOutput("z = a -> { return b -> a*b; }; print((z(11))(5));", NO_GLOBALS));
 
 
     }
@@ -293,7 +293,7 @@ public class FirstParserTestCase extends JanitorTest {
                 TestEnv.env.getBuiltinTypes().integer(2),
                 TestEnv.env.getBuiltinTypes().integer(3)
         )))));
-        // i im inneren Block ist separat vom i im äußeren Block:
+        // i in the inner block is separate from i in the outer block:
         Assertions.assertEquals("1\n2\n3\n4\n", getOutput("i=4; for (i in list) { print(i); } print(i);", globals -> globals.bind("list", TestEnv.env.getBuiltinTypes().list(List.of(
                 TestEnv.env.getBuiltinTypes().integer(1),
                 TestEnv.env.getBuiltinTypes().integer(2),
@@ -369,15 +369,15 @@ public class FirstParserTestCase extends JanitorTest {
             log.info(e.getMessage());
         }
         /*
-        Noch nicht perfekt, sieht aktuell so aus:
-        Script Error (CockpitScriptRuntimeException): math failure
+        Not perfect yet, currently it looks like this:
+        Script Error (JanitorRuntimeException): math failure
           at unnamed [line 3 col 11]: return 1/0;
           at unnamed [line 2 col 16]: function fail() {
           at unnamed [line 5 col 0]: fail();
           at unnamed [line 2 col 0]: function fail() {
         caused by Java Exception java.lang.ArithmeticException: / by zero
 
-        Script Error (CockpitScriptRuntimeException): math failure
+        Script Error (JanitorRuntimeException): math failure
           at unnamed [line 3 col 11]: return 1/0;
           at unnamed [line 2 col 16]: function fail() {
           at unnamed [line 5 col 0]: fail();
@@ -522,7 +522,7 @@ public class FirstParserTestCase extends JanitorTest {
 
         Assertions.assertEquals(LocalDateTime.of(1976, 1, 10, 12, 30, 45), rt.compile("test", "@1976-01-10 + @12h + @30mi + @45s").run(JanitorTest.NO_GLOBALS).janitorGetHostValue());
 
-        // Dates müssen auch SUBTRAHIERBAR sein!
+        // Dates must also be SUBTRACTABLE!
         Assertions.assertEquals(DurationLiteral.parse("1d", TestEnv.env.getBuiltinTypes()), rt.compile("test", "@1976-01-11 - @1976-01-10").run(JanitorTest.NO_GLOBALS));
         Assertions.assertEquals(DurationLiteral.parse("2d", TestEnv.env.getBuiltinTypes()), rt.compile("test", "@1976-01-12 - @1976-01-10").run(JanitorTest.NO_GLOBALS));
         Assertions.assertEquals(JBool.TRUE, rt.compile("test", "( @1976-01-12 - @1976-01-10 ) > @1d").run(JanitorTest.NO_GLOBALS));
@@ -571,14 +571,14 @@ public class FirstParserTestCase extends JanitorTest {
         final String JSON = """
                 [
                     {
-                        "className": "CockpitTool",
-                        "shortCode": "ACTPROC-BV",
-                        "name": "Action Processor Bankverlag",
-                        "remarks": "Unter Einstellungen bitte noch die Datenbank auswählen!\\nAchtung, aktuell gibt es noch ein konzeptionelles Problem mit der Maske: \\ndie \\"Zuletzt verarbeitete ACT_REG_ID\\" wird mit gespeichert! F5 drücken vor Skriptänderungen!\\n",
+                        "className": "ScriptTool",
+                        "shortCode": "SAMPLE-TOOL",
+                        "name": "Sample Tool",
+                        "remarks": "Please select the database in the settings!\\nNote: the \\"last processed ID\\" is saved as well.\\n",
                         "toolType": "action-processor",
                         "keepRunLogs": 10,
-                        "jsonConfig": "{\\n  \\"dataSourceGroup\\": \\"ASSYST1075\\"\\n}",
-                        "jsCode": "if (action.actionType.id == 6) {\\n    svd = assyst.getAssignedServDeptBeforeReopen(action.eventId, \\"SERVICE-DESK\\");\\n    if (svd) {\\n        print(\\"das ticket wurde wurde wiedereröffnet und geht zurück an:\\", svd);\\n        a = assyst.newAction();\\n        a.eventId = action.eventId;\\n        a.actionTypeId = 1;\\n        a.assignedServiceDepartment = svd;\\n        a.remarks = \\"Wiedereröffnung: zurück zu \\" + svd;\\n        assyst.createAction(a);\\n    } else {\\n        print(\\"das ticket wurde wiedereröffnet, aber wir wissen nicht wohin es soll\\");\\n    }\\n} else {\\n    print(\\"irrelevanter Aktionstyp:\\", action.actionType.shortCode);\\n}\\n"
+                        "jsonConfig": "{\\n  \\"dataSourceGroup\\": \\"SAMPLE\\"\\n}",
+                        "jsCode": "if (action.id == 6) {\\n    print(\\"action 6 was triggered\\");\\n} else {\\n    print(\\"irrelevant action\\");\\n}"
                     }
                 ]
                 """;
@@ -586,7 +586,7 @@ public class FirstParserTestCase extends JanitorTest {
         final JList list = (JList) rt.compile("test", JSON).run(JanitorTest.NO_GLOBALS);
         final JMap map = (JMap) list.get(TestEnv.env.getBuiltinTypes().integer(0));
         Assertions.assertEquals(TestEnv.env.getBuiltinTypes().integer(10), map.get(TestEnv.env.getBuiltinTypes().string("keepRunLogs")));
-        Assertions.assertEquals("ACTPROC-BV", map.get(TestEnv.env.getBuiltinTypes().string("shortCode")).janitorGetHostValue());
+        Assertions.assertEquals("SAMPLE-TOOL", map.get(TestEnv.env.getBuiltinTypes().string("shortCode")).janitorGetHostValue());
     }
 
 
@@ -941,7 +941,7 @@ public class FirstParserTestCase extends JanitorTest {
     @Test
 
     public void detectIllegalAssignment() throws Exception {
-        // LATER: mir wäre eigentlich lieber, wenn hier die neue AssignmentException geworfen würde
+        // LATER: it would actually be preferable if the new AssignmentException were thrown here
         Assertions.assertThrows(JanitorNameException.class, new Executable() {
             @Override
             public void execute() throws Throwable {
@@ -1110,19 +1110,19 @@ public class FirstParserTestCase extends JanitorTest {
 
     @Test
     public void problemsWithColons() throws JanitorRuntimeException, JanitorCompilerException {
-        // Denksportaufgabe. Als print() noch ein Statement war, da waren diese beiden Aufrufe gültig.
-        // Jetzt, wo es eine Function ist, sind sie es nicht mehr. Das ist schon sonderbar.
+        // Brain teaser: when print() was still a statement, these two calls were valid.
+        // Now that it is a function, they no longer are. That is rather strange.
 
-        // Da das Konstrukt [:] ungebräuchlich ist, merkt das erstmal niemand, aber ich wüsste schon
-        // gerne wo das herkommt.
+        // Since the [:] construct is uncommon, nobody notices at first, but it would be good to know
+        // where it comes from.
 
-        // Des Rätsels Lösung: [:] fehlte in der Grammatik. Da dort aber das Print-Statement drin war, wurde der Fehler offenbar irgendwie übertüncht..?
+        // The solution: [:] was missing from the grammar. Since the print statement was in there, however, the error was apparently masked somehow..?
         log.info("---- problematic code follows ----");
 
         Assertions.assertEquals("[1, 2, 3]\n", getOutput("print( ([1,2,3]) );", g -> {
         }));
         Assertions.assertEquals("[1, 2, 3]\n", getOutput("l = ([1,2,3])[:]; print( l );", g -> {
-        })); // das geht noch?!
+        })); // this still works?!
 
         Assertions.assertEquals("[1, 2, 3]\n", getOutput("print([1,2,3][0:] );", g -> {
         }));
@@ -1213,7 +1213,7 @@ public class FirstParserTestCase extends JanitorTest {
 
     @Test
     public void localKeywordsProblematic() throws JanitorRuntimeException, JanitorCompilerException {
-        // Problem: for (i from 1 to 10) { ... } reserviert sich das gesamte Keyword "from"
+        // Problem: for (i from 1 to 10) { ... } reserves the entire keyword "from"
         final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
 
         rt.compile("from_test_1", """
@@ -1443,8 +1443,8 @@ public class FirstParserTestCase extends JanitorTest {
                 
                 // i = 1; do { print(i); i = i + 1; } while (i < 4);
                 """;
-        // wenn man im do{} auf x Zugreift, dann hat das x=x+1 Erfolg, sonst nicht!?
-        // Ich glaube, dank des verbesserten Codes für Closures ist das Problem gelöst...?
+        // if x is accessed inside the do{} block, x=x+1 succeeds, otherwise it does not!?
+        // I believe the improved closure code has solved this problem...?
         final JanitorParser.ScriptContext script = JanitorScript.parseScript(scriptSource);
         final ScriptSource module = ScriptSource.unnamed(scriptSource);
         final Script scriptObject = JanitorCompiler.build(TestEnv.env, module, script, scriptSource);

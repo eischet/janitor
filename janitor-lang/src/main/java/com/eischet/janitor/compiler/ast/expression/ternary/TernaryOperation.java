@@ -12,7 +12,7 @@ import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
  * Ternary operations.
  * Right now, there's only one ternary operation: if-then-else.
  * BUT there are two syntaxes for it: if foo then bar else baz
- * and die equivalent foo ? bar : baz.
+ * and the equivalent foo ? bar : baz.
  */
 public abstract class TernaryOperation extends AstNode implements Expression {
     protected final Expression a;

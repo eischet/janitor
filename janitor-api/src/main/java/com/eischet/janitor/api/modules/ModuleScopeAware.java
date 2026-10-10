@@ -2,6 +2,7 @@ package com.eischet.janitor.api.modules;
 
 import com.eischet.janitor.api.scopes.Scope;
 
+/** Implemented by objects, typically functions, that need to know the scope of the module that defines them. */
 public interface ModuleScopeAware {
 
     /**

@@ -553,6 +553,12 @@ public class JanitorSemantics {
      */
     @FunctionalInterface
     public interface Comparer<LEFT extends JanitorObject, RIGHT extends JanitorObject> {
+        /**
+         * Compares two values.
+         * @param left the left value
+         * @param right the right value
+         * @return the result of the comparison
+         */
         ComparisonResult compare(LEFT left, RIGHT right);
     }
 

@@ -4,6 +4,7 @@ import com.docusign.esign.model.Envelope;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 
+/** Wrapper for a DocuSign envelope. */
 public class DocusignEnvelope extends JanitorComposed<DocusignEnvelope> {
     public static final DispatchTable<DocusignEnvelope> DISPATCH = new DispatchTable<>();
 

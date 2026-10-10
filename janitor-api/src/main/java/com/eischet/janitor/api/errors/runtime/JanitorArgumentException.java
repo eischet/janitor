@@ -74,6 +74,12 @@ public class JanitorArgumentException extends JanitorRuntimeException {
         super(process, cause, cls);
     }
 
+    /**
+     * Converts a glue exception to an argument exception.
+     * @param process the running script process
+     * @param glueException the glue exception to convert
+     * @return the equivalent argument exception, with the same message and cause
+     */
     public static JanitorArgumentException fromGlue(final JanitorScriptProcess process, final JanitorGlueException glueException) {
         return new JanitorArgumentException(process, glueException.getMessage(), glueException.getCause());
     }

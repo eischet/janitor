@@ -6,5 +6,8 @@ package com.eischet.janitor.api.types.dispatch;
  */
 @FunctionalInterface
 public interface FlatProperty {
+    /**
+     * @return the value of the property
+     */
     Object getValue();
 }

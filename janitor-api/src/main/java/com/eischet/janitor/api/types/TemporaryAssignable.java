@@ -98,10 +98,16 @@ public class TemporaryAssignable implements JAssignable, JanitorObject {
         return value;
     }
 
+    /**
+     * @return the current value
+     */
     public @NotNull JanitorObject getValue() {
         return value;
     }
 
+    /**
+     * @return the function that assigns a new value
+     */
     public @NotNull RuntimeConsumer<JanitorObject> getSetter() {
         return setter;
     }

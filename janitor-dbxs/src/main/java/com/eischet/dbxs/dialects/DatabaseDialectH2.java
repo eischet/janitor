@@ -9,6 +9,7 @@ import org.jetbrains.annotations.Nullable;
 import java.sql.SQLException;
 import java.util.Set;
 
+/** The dialect for the H2 database. */
 public class DatabaseDialectH2 extends DatabaseDialectCommon {
 
     /** {@code LIMIT ? OFFSET ?} is supported by every version we run against. */

@@ -17,6 +17,12 @@ import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+/**
+ * A lazily loaded list of the entities that refer to a parent entity through a foreign key column, i.e. a one-to-many association.
+ * The entities are loaded from the database when they are first needed.
+ * @param <T> the type of the associated entities
+ * @param <U> the type of the uplink
+ */
 public class AssociatedList<T extends OrmEntity, U extends Uplink> implements Associated<T>, JanitorAware {
 
     protected final @NotNull JanitorAssociatedList companion = new JanitorAssociatedList(this);
@@ -51,14 +57,24 @@ public class AssociatedList<T extends OrmEntity, U extends Uplink> implements As
         this(parent, entityClass, foreignKeyColumn, wrangler, uplinkSupplier, null);
     }
 
+    /**
+     * @return true if the entities were loaded from the database
+     */
     public boolean isLoaded() {
         return loaded;
     }
 
+    /**
+     * @return a stream of a copy of the entities that are in the list now; this does not load them from the database
+     */
     public Stream<T> stream() {
         return readList().stream();
     }
 
+    /**
+     * Loads the entities from the database, unless that has already happened.
+     * @return this list
+     */
     public AssociatedList<T, U> lazyLoad() {
         if (!loaded) {
             final U uplink = uplinkSupplier.get();
@@ -73,6 +89,9 @@ public class AssociatedList<T extends OrmEntity, U extends Uplink> implements As
         return this;
     }
 
+    /**
+     * @return the list of entities, which is created if it does not exist yet
+     */
     protected @NotNull List<T> ensureList() {
         if (list == null) {
             list = new ArrayList<>();
@@ -80,25 +99,40 @@ public class AssociatedList<T extends OrmEntity, U extends Uplink> implements As
         return list;
     }
 
+    /**
+     * @return a copy of the list of entities, to protect against concurrent modification
+     */
     protected @NotNull @Unmodifiable List<T> readList() {
         // copy the existing list to prevent concurrent modification exceptions
         return list == null ? Collections.emptyList() : List.copyOf(list);
     }
 
+    /**
+     * Adds an entity to the list in memory; this does not save it in the database.
+     * @param entity the entity
+     */
     public void add(T entity) {
         ensureList().add(entity);
     }
 
+    /** Removes all entities from the list in memory; this does not delete them in the database. */
     public void clear() {
         if (list != null) {
             list.clear();
         }
     }
 
+    /**
+     * Adds an entity of unknown type to the list, as called from scripts.
+     * @param entity the entity, which must be of the entity class of this list
+     */
     protected void addGeneric(JanitorObject entity) {
         add(entityClass.cast(entity));
     }
 
+    /**
+     * @return the number of entities that are in the list now
+     */
     public int size() {
         return list == null ? 0 : list.size();
     }
@@ -108,14 +142,21 @@ public class AssociatedList<T extends OrmEntity, U extends Uplink> implements As
         return companion;
     }
 
+    /**
+     * @return the class of the associated entities
+     */
     public Class<T> getEntityClass() {
         return entityClass;
     }
 
+    /**
+     * @return the wrangler of the associated entities
+     */
     public EntityWrangler<T, ?> getWrangler() {
         return wrangler;
     }
 
+    /** The script view of an {@link AssociatedList}, which offers methods such as add, size and clear. */
     protected static class JanitorAssociatedList extends JanitorComposed<JanitorAssociatedList> implements JIterable {
         public static DispatchTable<JanitorAssociatedList> DISPATCH = new DispatchTable<>();
         static {

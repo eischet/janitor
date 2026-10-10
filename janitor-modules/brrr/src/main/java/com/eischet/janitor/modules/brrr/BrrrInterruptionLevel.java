@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.List;
 
+/** How strongly a Brrr notification interrupts the user. */
 public enum BrrrInterruptionLevel implements StringMappedEnum {
     PASSIVE("passive"), ACTIVE("active"), TIME_SENSITIVE("time-sensitive");
 
@@ -23,6 +24,10 @@ public enum BrrrInterruptionLevel implements StringMappedEnum {
 
     public static @NotNull @Unmodifiable List<BrrrInterruptionLevel> VALUES = List.of(values());
 
+    /**
+     * @param stringRepresentation the string, e.g. "passive"
+     * @return the matching level, or null if the string is blank or unknown
+     */
     public static @Nullable BrrrInterruptionLevel fromString(final @Nullable String stringRepresentation) {
         if (stringRepresentation == null || stringRepresentation.isBlank()) {
             return null;

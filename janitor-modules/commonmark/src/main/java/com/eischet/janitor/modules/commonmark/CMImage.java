@@ -4,6 +4,7 @@ import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import org.commonmark.node.Image;
 
+/** Wrapper for the CommonMark image node. */
 public class CMImage extends CMNode {
     private static final WrapperDispatchTable<Image> dispatch = new WrapperDispatchTable<>();
 

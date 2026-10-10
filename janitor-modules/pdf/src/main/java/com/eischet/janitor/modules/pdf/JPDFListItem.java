@@ -43,6 +43,9 @@ public class JPDFListItem extends JanitorWrapper<ListItem> {
         super(DISPATCH_TABLE, new ListItem(text, font.getFont()));
     }
 
+    /**
+     * @return the wrapped ListItem object
+     */
     public ListItem getListItem() {
         return wrapped;
     }

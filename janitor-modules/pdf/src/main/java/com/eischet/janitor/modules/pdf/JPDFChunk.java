@@ -57,6 +57,9 @@ public class JPDFChunk extends JanitorWrapper<Chunk> {
         super(DISPATCH_TABLE, new Chunk(content, font.getFont()));
     }
 
+    /**
+     * @return the wrapped Chunk object
+     */
     public Chunk getChunk() {
         return wrapped;
     }

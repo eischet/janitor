@@ -55,6 +55,9 @@ public class JPDFImage extends JanitorWrapper<Image> {
         super(DISPATCH_TABLE, image);
     }
 
+    /**
+     * @return the wrapped Image object
+     */
     public Image getImage() {
         return wrapped;
     }

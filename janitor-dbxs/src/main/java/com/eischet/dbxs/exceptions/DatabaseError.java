@@ -10,6 +10,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.stream.Collectors;
 
+/** Checked exception for all errors that occur while working with a database. */
 public class DatabaseError extends Exception {
 
     public DatabaseError(final String message) {

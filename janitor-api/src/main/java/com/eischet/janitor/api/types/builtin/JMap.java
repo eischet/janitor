@@ -375,10 +375,20 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
         producer.endObject();
     }
 
+    /**
+     * Creates a new, empty map.
+     * @param dispatch the dispatch table for maps
+     * @return the new map
+     */
     public static JMap newInstance(final WrapperDispatchTable<Map<JanitorObject, JanitorObject>> dispatch) {
         return new JMap(dispatch);
     }
 
+    /**
+     * Reads the entries of a JSON object from the stream into this map.
+     * @param stream the JSON stream, positioned at the start of an object
+     * @throws JsonException if the JSON is malformed
+     */
     public void readJson(final JsonInputStream stream) throws JsonException {
         stream.beginObject();
         while (stream.hasNext()) {
@@ -405,10 +415,18 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
         stream.endObject();
     }
 
+    /**
+     * Exports this map as JSON, using the current environment.
+     * @return the JSON text
+     * @throws JsonException if the export fails
+     */
     public @Language("JSON") String exportToJson() throws JsonException {
         return exportToJson(Janitor.current());
     }
 
+    /**
+     * @return a read-only view of this map, which scripts cannot change
+     */
     public @NotNull JanitorObject readonlyView() {
         return new JMapReadonly();
     }

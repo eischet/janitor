@@ -42,10 +42,17 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class Scope implements JanitorObject {
 
+    /** Supplies objects that are looked up when a name cannot be found in a scope, see "implicit object" above. */
     @FunctionalInterface
     public interface ImplicitObjectProvider {
         @Nullable JanitorObject getImplicitObject(final @NotNull JanitorScriptProcess process, final @NotNull String name);
 
+        /**
+         * Combines two providers: the second one is only asked if the first one does not know the name.
+         * @param first the first provider
+         * @param second the second provider
+         * @return the combined provider
+         */
         static @NotNull ImplicitObjectProvider combine(final @NotNull ImplicitObjectProvider first, final @NotNull ImplicitObjectProvider second) {
             return (process, name) -> {
                 final var firstMatch = first.getImplicitObject(process, name);
@@ -58,6 +65,12 @@ public class Scope implements JanitorObject {
 
         static final @NotNull ImplicitObjectProvider NONE = (process, name) -> null;
 
+        /**
+         * Combines two providers, either of which may be null.
+         * @param first the first provider, may be null
+         * @param second the second provider, may be null
+         * @return the combined provider, or null if both are null
+         */
         static @NotNull ImplicitObjectProvider combineNullable(final @Nullable ImplicitObjectProvider first, final @Nullable ImplicitObjectProvider second) {
             return combine(first == null ? NONE : first, second == null ? NONE : second);
         }
@@ -155,6 +168,10 @@ public class Scope implements JanitorObject {
         }
     }
 
+    /**
+     * Sets the provider of implicit objects, which is consulted when a lookup in this scope fails.
+     * @param implicitObjectProvider the provider, or null to remove it
+     */
     public void setImplicitObjectProvider(final @Nullable ImplicitObjectProvider implicitObjectProvider) {
         this.implicitObjectProvider = implicitObjectProvider;
     }
@@ -242,10 +259,21 @@ public class Scope implements JanitorObject {
         return getVariable(variableName);
     }
 
+    /**
+     * Looks up a variable in this scope only.
+     * @param variableName the name of the variable
+     * @return the value, or null if there is no such variable
+     */
     protected @Nullable JanitorObject getVariable(final String variableName) {
         return _variables.get(variableName);
     }
 
+    /**
+     * Stores a variable in this scope, and registers it for cleanup if it requires that.
+     * @param variableName the name of the variable
+     * @param value the value to store
+     * @param process the running script process, if any
+     */
     protected void setVariable(final @NotNull String variableName, final @NotNull JanitorObject value, final @Nullable JanitorScriptProcess process) {
         _variables.put(variableName, value);
         value.janitorEnterScope();
@@ -329,12 +357,12 @@ public class Scope implements JanitorObject {
             if (v != null) {
                 return v;
             }
-            // LATER: *hier* wird per Fallthrough erlaubt, dass auch der Scope des Hauptskripts angewendet wird.
-            // Das wollte ich eigentlich nicht, es war aber bis Cockpit 1.9.260 so ("Lua Style").
-            // Und da fehlte ganz der Module Scope, so dass das Modul IMMER im Hauptscope lief.
-            // Das aber abzuklemmen macht alle Mailimporte des BV kaputt, daher hier wieder erlaubt.
+            // LATER: *here* we fall through and allow the scope of the main script to be used as well.
+            // This was not really intended, but it used to work like this in earlier versions ("Lua style"),
+            // where there was no module scope at all, so a module ALWAYS ran in the main scope.
+            // Disabling that behavior would break existing scripts, so it is still allowed here.
         }
-        // für debugging des o.g. Sachverhalts: log.info("failed lookup: {} in scope {} -> trying parent {}",  this, variableName, parent);
+        // for debugging the above: log.info("failed lookup: {} in scope {} -> trying parent {}",  this, variableName, parent);
         return parent == null ? null : parent.lookup(process, variableName, closureScopes);
         // });
     }
@@ -356,7 +384,7 @@ public class Scope implements JanitorObject {
             return this;
         }
         if (variable == null) {
-            // ist kein Fehler mehr: log.debug("tried to bind null as {} in scope {}", variableName, this);
+            // no longer an error: log.debug("tried to bind null as {} in scope {}", variableName, this);
             setVariable(name, JNull.NULL, process);
         } else {
             final JanitorObject existing = getVariable(name);
@@ -576,7 +604,7 @@ public class Scope implements JanitorObject {
          */
         // return new Scope.captureOf(this);
         // boolean heldByClosure = true;
-        // hier muss ggf. noch was getan werden, damit wir einen Scope nicht leer räumen, der noch in Benutzung ist.
+        // something may still need to be done here so that we do not clear a scope that is still in use.
         // ALT: return this;
     }
 

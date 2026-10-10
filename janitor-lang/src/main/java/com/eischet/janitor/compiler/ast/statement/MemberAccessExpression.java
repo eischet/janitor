@@ -16,6 +16,7 @@ import org.jetbrains.annotations.Nullable;
 
 import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
+/** Access to a member of an object, e.g. {@code foo.bar}. In the guarded form, {@code foo?.bar}, the result is null if {@code foo} is null. */
 public class MemberAccessExpression extends AstNode implements Expression {
 
     private final boolean guarded;

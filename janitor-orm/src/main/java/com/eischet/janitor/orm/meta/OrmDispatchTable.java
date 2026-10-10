@@ -71,6 +71,9 @@ public class OrmDispatchTable<T extends OrmObject, U extends Uplink> extends Dis
         return constructor.apply(uplink);
     }
 
+    /**
+     * @return the function that creates new instances from an uplink
+     */
     public @NotNull Function<U, T> getUplinkConstructor() {
         return constructor;
     }
@@ -82,10 +85,27 @@ public class OrmDispatchTable<T extends OrmObject, U extends Uplink> extends Dis
 
     // column-backed properties, see OrmObject for the implementation
 
+    /**
+     * Adds a string property that is stored in a VARCHAR column.
+     * @param name the name of the property
+     * @param column the name of the column
+     * @param getter reads the property
+     * @param setter writes the property
+     * @param maxLength the maximum length of the string
+     * @return a handle for adding meta-data to the property
+     */
     public OrmPropertyHandle<T, String> addStringColumn(final String name, final String column, final NullableGetter<T, String> getter, final NullableSetter<T, String> setter, final int maxLength) {
         return OrmObject.addStringProperty(this, name, column, getter, setter, maxLength);
     }
 
+    /**
+     * Adds a string property that is stored in a long text (CLOB) column.
+     * @param name the name of the property
+     * @param column the name of the column
+     * @param getter reads the property
+     * @param setter writes the property
+     * @return a handle for adding meta-data to the property
+     */
     public OrmPropertyHandle<T, String> addTextColumn(final String name, final String column, final NullableGetter<T, String> getter, final NullableSetter<T, String> setter) {
         return OrmObject.addTextProperty(this, name, column, getter, setter);
     }
@@ -119,30 +139,86 @@ public class OrmDispatchTable<T extends OrmObject, U extends Uplink> extends Dis
         return OrmObject.addLazyNationalTextProperty(this, name, column, accessor);
     }
 
+    /**
+     * Adds a long property that is stored in a column.
+     * @param name the name of the property
+     * @param column the name of the column
+     * @param getter reads the property
+     * @param setter writes the property
+     * @return a handle for adding meta-data to the property
+     */
     public OrmPropertyHandle<T, Long> addLongColumn(final String name, final String column, final PrimitiveLongGetter<T> getter, final PrimitiveLongSetter<T> setter) {
         return OrmObject.addLongProperty(this, name, column, getter, setter);
     }
 
+    /**
+     * Adds a nullable long property that is stored in a column.
+     * @param name the name of the property
+     * @param column the name of the column
+     * @param getter reads the property
+     * @param setter writes the property
+     * @return a handle for adding meta-data to the property
+     */
     public OrmPropertyHandle<T, Long> addNullableLongColumn(final String name, final String column, final NullableGetter<T, Long> getter, final NullableSetter<T, Long> setter) {
         return OrmObject.addNullableLongProperty(this, name, column, getter, setter);
     }
 
+    /**
+     * Adds an integer property that is stored in a column.
+     * @param name the name of the property
+     * @param column the name of the column
+     * @param getter reads the property
+     * @param setter writes the property
+     * @return a handle for adding meta-data to the property
+     */
     public OrmPropertyHandle<T, Integer> addIntegerColumn(final String name, final String column, final PrimitiveIntGetter<T> getter, final PrimitiveIntSetter<T> setter) {
         return OrmObject.addIntegerProperty(this, name, column, getter, setter);
     }
 
+    /**
+     * Adds a date property that is stored in a column.
+     * @param name the name of the property
+     * @param column the name of the column
+     * @param getter reads the property
+     * @param setter writes the property
+     * @return a handle for adding meta-data to the property
+     */
     public OrmPropertyHandle<T, LocalDate> addDateColumn(final String name, final String column, final NullableGetter<T, LocalDate> getter, final NullableSetter<T, LocalDate> setter) {
         return OrmObject.addDateProperty(this, name, column, getter, setter);
     }
 
+    /**
+     * Adds a datetime property that is stored in a column.
+     * @param name the name of the property
+     * @param column the name of the column
+     * @param getter reads the property
+     * @param setter writes the property
+     * @return a handle for adding meta-data to the property
+     */
     public OrmPropertyHandle<T, LocalDateTime> addDateTimeColumn(final String name, final String column, final NullableGetter<T, LocalDateTime> getter, final NullableSetter<T, LocalDateTime> setter) {
         return OrmObject.addDateTimeProperty(this, name, column, getter, setter);
     }
 
+    /**
+     * Adds a boolean property that is stored in a column.
+     * @param name the name of the property
+     * @param column the name of the column
+     * @param getter reads the property
+     * @param setter writes the property
+     * @return a handle for adding meta-data to the property
+     */
     public OrmPropertyHandle<T, Boolean> addBooleanColumn(final String name, final String column, final PrimitiveBooleanGetter<T> getter, final PrimitiveBooleanSetter<T> setter) {
         return OrmObject.addBooleanProperty(this, name, column, getter, setter);
     }
 
+    /**
+     * Adds a nullable boolean property that is stored in a column.
+     * @param name the name of the property
+     * @param column the name of the column
+     * @param getter reads the property
+     * @param setter writes the property
+     * @return a handle for adding meta-data to the property
+     */
     public OrmPropertyHandle<T, Boolean> addNullableBooleanColumn(final String name, final String column, final NullableGetter<T, Boolean> getter, final NullableSetter<T, Boolean> setter) {
         return OrmObject.addNullableBooleanProperty(this, name, column, getter, setter);
     }

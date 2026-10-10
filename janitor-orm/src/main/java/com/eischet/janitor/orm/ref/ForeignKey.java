@@ -27,8 +27,12 @@ import static com.eischet.janitor.api.Janitor.nullable;
  * @param <T>
  */
 
+/** A reference to another entity, which is resolved lazily, see above. */
 public sealed interface ForeignKey<T extends OrmEntity> extends JanitorObject, JsonWriter permits ForeignKeyNull, ForeignKeyInteger, ForeignKeyString, ForeignKeyIdentity, ForeignKeySearchResult {
 
+    /**
+     * @return the ID of the referenced entity
+     */
     long getId();
 
     @NotNull Optional<T> resolve();
@@ -36,20 +40,46 @@ public sealed interface ForeignKey<T extends OrmEntity> extends JanitorObject, J
     @NotNull Optional<T> resolve(@NotNull DatabaseConnection conn) throws DatabaseError;
 
     // TODO: I think the preResolve stuff hurts more than it helps, so it should be removed.
+    /**
+     * Loads the referenced entity ahead of time, so that later calls to resolve do not need the database.
+     * @param conn the database connection
+     * @throws DatabaseError on database errors
+     */
     void preResolve(@NotNull DatabaseConnection conn) throws DatabaseError;
 
+    /**
+     * @return the referenced entity, or null if there is none
+     */
     default @Nullable T resolveOrNull() {
         return resolve().orElse(null);
     }
 
+    /**
+     * @param conn the database connection
+     * @return the referenced entity, or null if there is none
+     * @throws DatabaseError on database errors
+     */
     default @Nullable T resolveOrNull(final @NotNull DatabaseConnection conn) throws DatabaseError {
         return resolve(conn).orElse(null);
     }
 
+    /**
+     * Converts the referenced entity, if there is one.
+     * @param mapper the conversion
+     * @param defaultValue the result if there is no referenced entity
+     * @param <R> the type of the result
+     * @return the converted entity, or the default value
+     */
     default <R> @NotNull R map(@NotNull final Function<T, R> mapper, @NotNull R defaultValue) {
         return resolve().map(mapper).orElse(defaultValue);
     }
 
+    /**
+     * Converts the referenced entity, if there is one.
+     * @param mapper the conversion
+     * @param <R> the type of the result
+     * @return the converted entity, or null if there is none
+     */
     default <R> @Nullable R map(@NotNull final Function<T, R> mapper) {
         return resolve().map(mapper).orElse(null);
     }

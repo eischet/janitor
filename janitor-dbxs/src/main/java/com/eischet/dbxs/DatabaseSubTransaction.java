@@ -9,5 +9,10 @@ import com.eischet.dbxs.exceptions.DatabaseError;
  */
 @FunctionalInterface
 public interface DatabaseSubTransaction {
+    /**
+     * Runs the code on the connection of the surrounding transaction.
+     * @param conn the database connection
+     * @throws DatabaseError on database errors
+     */
     void apply(DatabaseConnection conn) throws DatabaseError;
 }

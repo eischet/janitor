@@ -31,6 +31,7 @@ import org.commonmark.node.Text;
 import org.commonmark.node.ThematicBreak;
 import org.commonmark.node.Visitor;
 
+/** A CommonMark visitor that calls a script function for every node it visits. */
 public class CMVisitor implements Visitor {
 
     private final JanitorScriptProcess process;
@@ -41,6 +42,10 @@ public class CMVisitor implements Visitor {
         this.callable = callable;
     }
 
+    /**
+     * Calls the script function with the wrapper of a node.
+     * @param node the node
+     */
     public void visitAny(final Node node) {
         try {
             callable.call(process, JCallArgs.ofSingleArgument(process, CMNode.createNullable(node)));

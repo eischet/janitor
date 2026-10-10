@@ -2,6 +2,7 @@ package com.eischet.janitor.compiler;
 
 import java.io.Serial;
 
+/** Unchecked exception for errors that are detected while the compiler builds the syntax tree, e.g. duplicate parameter names. */
 public class CompilerError extends RuntimeException {
 
     @Serial

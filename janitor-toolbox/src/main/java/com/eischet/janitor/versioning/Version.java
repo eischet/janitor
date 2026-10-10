@@ -3,8 +3,13 @@ package com.eischet.janitor.versioning;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * A version number of the form {@code major.minor.patch}, where minor and patch are below 1000.
+ * Versions are stored as a single number, so they can be compared quickly.
+ */
 public class Version implements Comparable<Version> {
 
+    /** Thrown when a version string cannot be parsed. */
     public static class MalformedVersion extends Exception {
         public MalformedVersion(final String message) {
             super(message);
@@ -43,6 +48,12 @@ public class Version implements Comparable<Version> {
         return i;
     }
 
+    /**
+     * Parses a version string.
+     * @param versionString the string, in the form {@code major.minor.patch}
+     * @return the version
+     * @throws RuntimeException if the string is malformed
+     */
     public static Version ofWithRuntimeError(final String versionString) {
         try {
             return new Version(versionString);
@@ -59,6 +70,9 @@ public class Version implements Comparable<Version> {
         this.versionString = String.format("%s.%s.%s", a, b, c);
     }
 
+    /**
+     * @return the series of this version, i.e. its major and minor number, e.g. "1.2.x"
+     */
     public String getSeries() {
         long a = version / 1000000 % 1000;
         long b = version / 1000 % 1000;
@@ -77,22 +91,41 @@ public class Version implements Comparable<Version> {
         return Long.hashCode(version);
     }
 
+    /**
+     * @param version the version, may be null
+     * @param defaultVersion the version to use if the first one is null
+     * @return the version, or the default version if it was null
+     */
     public static @NotNull Version coalesce(final @Nullable Version version, final @NotNull Version defaultVersion) {
         return version == null ? defaultVersion : version;
     }
 
+    /**
+     * @param version the version, may be null
+     * @return the version, or the earliest possible version if it was null
+     */
     public static @NotNull Version coalesceMin(final @Nullable Version version) {
         return coalesce(version, EARLIEST);
     }
 
+    /**
+     * @param version the version, may be null
+     * @return the version, or the latest possible version if it was null
+     */
     public static @NotNull Version coalesceMax(final @Nullable Version version) {
         return coalesce(version, LATEST);
     }
 
+    /**
+     * @return the numeric representation of this version
+     */
     public long getVersion() {
         return version;
     }
 
+    /**
+     * @return the version as a string
+     */
     public String getVersionString() {
         return versionString;
     }
@@ -102,6 +135,10 @@ public class Version implements Comparable<Version> {
         return versionString;
     }
 
+    /**
+     * @param number the numeric representation of the version
+     * @return the version
+     */
     public static Version of(final long number) {
         return new Version(number);
     }

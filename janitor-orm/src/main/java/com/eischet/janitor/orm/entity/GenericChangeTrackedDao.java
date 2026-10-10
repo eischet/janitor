@@ -8,6 +8,11 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Supplier;
 
+/**
+ * A {@link GenericDao} for entities that track their changes.
+ * @param <T> the type of the entities
+ * @param <U> the type of the DAO collection that this DAO belongs to
+ */
 public abstract class GenericChangeTrackedDao<T extends ChangeTrackedOrmEntity, U extends OrmDaoCollection<U>> extends GenericDao<T, U> {
 
     public GenericChangeTrackedDao(

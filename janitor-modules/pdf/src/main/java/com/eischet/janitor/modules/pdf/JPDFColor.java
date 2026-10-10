@@ -34,6 +34,9 @@ public class JPDFColor extends JanitorWrapper<Color> {
         super(DISPATCH_TABLE, new Color(red, green, blue, alpha));
     }
 
+    /**
+     * @return the wrapped Color object
+     */
     public Color getColor() {
         return wrapped;
     }

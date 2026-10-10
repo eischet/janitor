@@ -4,6 +4,7 @@ import com.docusign.esign.model.ErrorDetails;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 
+/** Wrapper for the DocuSign error details. */
 public class DocusignErrorDetails extends JanitorComposed<DocusignErrorDetails> {
 
     public static final DispatchTable<DocusignErrorDetails> DISPATCHER = new DispatchTable<>();
@@ -26,6 +27,9 @@ public class DocusignErrorDetails extends JanitorComposed<DocusignErrorDetails> 
         this.wrapped = wrapped;
     }
 
+    /**
+     * @return the wrapped DocuSign object
+     */
     public ErrorDetails getWrapped() {
         return wrapped;
     }

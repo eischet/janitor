@@ -4,6 +4,7 @@ import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import org.commonmark.node.OrderedList;
 
+/** Wrapper for the CommonMark ordered list node. */
 public class CMOrderedList extends CMListBlock {
     private static final WrapperDispatchTable<OrderedList> dispatch = new WrapperDispatchTable<>();
 

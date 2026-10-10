@@ -264,6 +264,9 @@ public interface EntityWrangler<T extends OrmEntity, U extends Uplink> extends W
      * Interface for objects that will duplicate themselves, instead of relying on the simple approach of the duplicate method.
      */
     interface Duplicating {
+        /**
+         * @return a copy of this entity
+         */
         OrmEntity duplicate();
     }
 

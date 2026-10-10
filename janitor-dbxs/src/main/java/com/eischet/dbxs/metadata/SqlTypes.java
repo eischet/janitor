@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import java.sql.Types;
 import java.util.Arrays;
 
+/** The SQL column types that are known to this library, mapped to the constants of {@link java.sql.Types}. */
 public enum SqlTypes {
 
     BIT(Types.BIT),
@@ -56,10 +57,17 @@ public enum SqlTypes {
         this.jdbcValue = jdbcValue;
     }
 
+    /**
+     * @return the corresponding constant from {@link java.sql.Types}
+     */
     public int getJdbcValue() {
         return jdbcValue;
     }
 
+    /**
+     * @param jdbcValue the type code from {@link java.sql.Types}
+     * @return the corresponding type, or UNKNOWN if there is none
+     */
     public static @NotNull SqlTypes fromJdbc(final int jdbcValue) {
         return Arrays.stream(values()).filter(v -> v.jdbcValue == jdbcValue).findFirst().orElse(UNKNOWN);
     }

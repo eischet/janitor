@@ -13,6 +13,12 @@ import java.util.Arrays;
  */
 public class JBinary extends JanitorWrapper<byte[]> implements JConstant {
 
+    /**
+     * Creates a new binary value.
+     * @param dispatcher the dispatcher for binary values
+     * @param wrapped the bytes to wrap
+     * @return the new value
+     */
     public static JBinary newInstance(final @NotNull Dispatcher<JanitorWrapper<byte[]>> dispatcher, final byte @NotNull [] wrapped) {
         return new JBinary(dispatcher, wrapped);
     }

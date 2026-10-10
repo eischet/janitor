@@ -4,6 +4,7 @@ import com.eischet.dbxs.statements.SelectStatement;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+/** The dialect for IBM DB2. */
 public class DatabaseDialectDB2 extends DatabaseDialectGeneric {
     @Override
     public SelectStatement getNextValueQuery(final @Nullable String schema, final @NotNull String seq) {

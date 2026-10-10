@@ -2,7 +2,14 @@ package com.eischet.janitor.toolbox.i18n;
 
 import java.util.*;
 
+/** Loads resource bundles from properties files that are encoded in UTF-8. */
 public class UTF8ResourceBundle {
+    /**
+     * Loads a resource bundle, reading its properties file as UTF-8.
+     * @param baseName the base name of the bundle
+     * @param locale the locale
+     * @return the bundle
+     */
     public static ResourceBundle getBundle(String baseName, Locale locale) {
         return ResourceBundle.getBundle(baseName, locale, new UTF8Control());
     }

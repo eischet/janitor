@@ -34,6 +34,14 @@ public final class PdfElements {
         throw new JanitorArgumentException(process, "expected a pdf element (Chunk, Phrase, Paragraph, List, ListItem, Anchor, ...), but got " + value.janitorClassName());
     }
 
+    /**
+     * Gets a required argument that is a PDF element, e.g. a chunk, phrase, paragraph, list or anchor.
+     * @param process the running script process
+     * @param args the call arguments
+     * @param position the position
+     * @return the element
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static @NotNull Element requireElement(final @NotNull JanitorScriptProcess process, final @NotNull JCallArgs args, final int position) throws JanitorRuntimeException {
         return requireElement(process, args.get(position));
     }
@@ -50,6 +58,15 @@ public final class PdfElements {
         throw new JanitorArgumentException(process, "argument " + position + " must be a number, but got " + value.janitorClassName());
     }
 
+    /**
+     * Reads an optional numeric argument as a float.
+     * @param process the running script process
+     * @param args the call arguments
+     * @param position the index of the argument
+     * @param defaultValue the value to use if the argument was not passed
+     * @return the value
+     * @throws JanitorRuntimeException if the argument is not a number
+     */
     public static float optionalFloatArg(final @NotNull JanitorScriptProcess process, final @NotNull JCallArgs args, final int position, final float defaultValue) throws JanitorRuntimeException {
         if (args.size() <= position) {
             return defaultValue;

@@ -39,18 +39,48 @@ public interface OrmObject extends JanitorObject {
                 .setMetaData(JanitorOrm.MetaData.MAX_LENGTH, maxLength);
     }
 
+    /**
+     * Adds a long property that is stored in an integer column.
+     * @param dispatchTable the dispatch table to add the property to
+     * @param name the name of the property
+     * @param column the name of the database column
+     * @param getter reads the property
+     * @param setter writes the property
+     * @param <X> the type of the object
+     * @return a handle for adding meta-data to the property
+     */
     static <X extends JanitorObject> OrmPropertyHandle<X, Long> addLongProperty(final DispatchTable<X> dispatchTable, final String name, final String column, final PrimitiveLongGetter<X> getter, final PrimitiveLongSetter<X> setter) {
         return OrmPropertyHandle.of(dispatchTable.addLongProperty(name, getter, setter))
                 .setMetaData(JanitorOrm.MetaData.COLUMN_NAME, column)
                 .setMetaData(JanitorOrm.MetaData.COLUMN_TYPE, ColumnTypeHint.INT);
     }
 
+    /**
+     * Adds a nullable long property that is stored in an integer column.
+     * @param dispatchTable the dispatch table to add the property to
+     * @param name the name of the property
+     * @param column the name of the database column
+     * @param getter reads the property
+     * @param setter writes the property
+     * @param <X> the type of the object
+     * @return a handle for adding meta-data to the property
+     */
     static <X extends JanitorObject> OrmPropertyHandle<X, Long> addNullableLongProperty(final DispatchTable<X> dispatchTable, final String name, final String column, final NullableGetter<X, Long> getter, final NullableSetter<X, Long> setter) {
         return OrmPropertyHandle.of(dispatchTable.addNullableLongProperty(name, getter, setter))
                 .setMetaData(JanitorOrm.MetaData.COLUMN_NAME, column)
                 .setMetaData(JanitorOrm.MetaData.COLUMN_TYPE, ColumnTypeHint.INT);
     }
 
+    /**
+     * Adds an integer property that is stored in an integer column.
+     * @param dispatchTable the dispatch table to add the property to
+     * @param name the name of the property
+     * @param column the name of the database column
+     * @param getter reads the property
+     * @param setter writes the property
+     * @param <X> the type of the object
+     * @return a handle for adding meta-data to the property
+     */
     static <X extends JanitorObject> OrmPropertyHandle<X, Integer> addIntegerProperty(final DispatchTable<X> dispatchTable, final String name, final String column, final PrimitiveIntGetter<X> getter, final PrimitiveIntSetter<X> setter) {
         return OrmPropertyHandle.of(dispatchTable.addIntegerProperty(name, getter, setter))
                 .setMetaData(JanitorOrm.MetaData.COLUMN_NAME, column)
@@ -109,6 +139,16 @@ public interface OrmObject extends JanitorObject {
         return addLazyTextProperty(dispatchTable, name, column, accessor, ColumnTypeHint.NCLOB);
     }
 
+    /**
+     * Adds a lazily loaded text property that is stored in a column of the given type.
+     * @param dispatchTable the dispatch table to add the property to
+     * @param name the name of the property
+     * @param column the name of the database column
+     * @param accessor gets the lazily loaded string of an object
+     * @param columnTypeHint the type of the column, i.e. CLOB or NCLOB
+     * @param <X> the type of the object
+     * @return a handle for adding meta-data to the property
+     */
     private static <X extends JanitorObject> OrmPropertyHandle<X, String> addLazyTextProperty(final DispatchTable<X> dispatchTable, final String name, final String column, final Function<X, LazyLoadedString> accessor, final ColumnTypeHint columnTypeHint) {
         return OrmPropertyHandle.of(dispatchTable.addStringProperty(name, x -> accessor.apply(x).getValue(), (x, v) -> accessor.apply(x).setValue(v)))
                 .setMetaData(JanitorOrm.MetaData.COLUMN_NAME, column)
@@ -116,18 +156,48 @@ public interface OrmObject extends JanitorObject {
                 .setMetaData(JanitorOrm.MetaData.LAZY_LOAD, Boolean.TRUE);
     }
 
+    /**
+     * Adds a date property that is stored in a DATE column.
+     * @param dispatchTable the dispatch table to add the property to
+     * @param name the name of the property
+     * @param column the name of the database column
+     * @param getter reads the property
+     * @param setter writes the property
+     * @param <X> the type of the object
+     * @return a handle for adding meta-data to the property
+     */
     static <X extends JanitorObject> OrmPropertyHandle<X, LocalDate> addDateProperty(final DispatchTable<X> dispatchTable, final String name, final String column, final NullableGetter<X, LocalDate> getter, final NullableSetter<X, LocalDate> setter) {
         return OrmPropertyHandle.of(dispatchTable.addDateProperty(name, getter, setter))
                 .setMetaData(JanitorOrm.MetaData.COLUMN_NAME, column)
                 .setMetaData(JanitorOrm.MetaData.COLUMN_TYPE, ColumnTypeHint.DATE);
     }
 
+    /**
+     * Adds a datetime property that is stored in a datetime column.
+     * @param dispatchTable the dispatch table to add the property to
+     * @param name the name of the property
+     * @param column the name of the database column
+     * @param getter reads the property
+     * @param setter writes the property
+     * @param <X> the type of the object
+     * @return a handle for adding meta-data to the property
+     */
     static <X extends JanitorObject> OrmPropertyHandle<X, LocalDateTime> addDateTimeProperty(final DispatchTable<X> dispatchTable, final String name, final String column, final NullableGetter<X, LocalDateTime> getter, final NullableSetter<X, LocalDateTime> setter) {
         return OrmPropertyHandle.of(dispatchTable.addDateTimeProperty(name, getter, setter))
                 .setMetaData(JanitorOrm.MetaData.COLUMN_NAME, column)
                 .setMetaData(JanitorOrm.MetaData.COLUMN_TYPE, ColumnTypeHint.DATETIME);
     }
 
+    /**
+     * Adds a boolean property that is stored in a bit column.
+     * @param dispatchTable the dispatch table to add the property to
+     * @param name the name of the property
+     * @param column the name of the database column
+     * @param getter reads the property
+     * @param setter writes the property
+     * @param <X> the type of the object
+     * @return a handle for adding meta-data to the property
+     */
     static <X extends JanitorObject> OrmPropertyHandle<X, Boolean> addBooleanProperty(final DispatchTable<X> dispatchTable, final String name, final String column, final PrimitiveBooleanGetter<X> getter, final PrimitiveBooleanSetter<X> setter) {
         return OrmPropertyHandle.of(dispatchTable.addBooleanProperty(name, getter, setter))
                 .setMetaData(JanitorOrm.MetaData.COLUMN_NAME, column)
@@ -144,6 +214,16 @@ public interface OrmObject extends JanitorObject {
                 .setMetaData(JanitorOrm.MetaData.COLUMN_TYPE, ColumnTypeHint.BOOL_CHAR);
     }
 
+    /**
+     * Adds a nullable boolean property that is stored in a bit column.
+     * @param dispatchTable the dispatch table to add the property to
+     * @param name the name of the property
+     * @param column the name of the database column
+     * @param getter reads the property
+     * @param setter writes the property
+     * @param <X> the type of the object
+     * @return a handle for adding meta-data to the property
+     */
     static <X extends JanitorObject> OrmPropertyHandle<X, Boolean> addNullableBooleanProperty(final DispatchTable<X> dispatchTable, final String name, final String column, final NullableGetter<X, Boolean> getter, final NullableSetter<X, Boolean> setter) {
         return OrmPropertyHandle.of(dispatchTable.addNullableBooleanProperty(name, getter, setter))
                 .setMetaData(JanitorOrm.MetaData.COLUMN_NAME, column)

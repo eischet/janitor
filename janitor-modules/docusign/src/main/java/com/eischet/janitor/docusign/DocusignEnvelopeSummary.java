@@ -5,6 +5,7 @@ import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
 
+/** Wrapper for the summary that DocuSign returns after an envelope was created. */
 public class DocusignEnvelopeSummary extends JanitorComposed<DocusignEnvelopeSummary> {
 
     public static final DispatchTable<DocusignEnvelopeSummary> DISPATCHER = new DispatchTable<>();
@@ -37,6 +38,9 @@ public class DocusignEnvelopeSummary extends JanitorComposed<DocusignEnvelopeSum
         this.envelopeSummary = envelopeSummary;
     }
 
+    /**
+     * @return the wrapped DocuSign envelope summary
+     */
     public EnvelopeSummary getEnvelopeSummary() {
         return envelopeSummary;
     }

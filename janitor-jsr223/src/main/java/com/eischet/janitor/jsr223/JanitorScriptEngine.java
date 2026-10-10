@@ -18,6 +18,7 @@ import java.io.StringWriter;
 
 import static javax.script.ScriptContext.ENGINE_SCOPE;
 
+/** The JSR 223 script engine for Janitor. */
 public class JanitorScriptEngine implements ScriptEngine {
 
     private final JanitorScriptEngineFactory factory;

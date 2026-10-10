@@ -2,6 +2,10 @@ package com.eischet.janitor.api.metadata;
 
 import java.util.Objects;
 
+/**
+ * A typed, named key for meta-data entries.
+ * @param <T> the type of the value stored under this key
+ */
 public class MetaDataKey<T> {
 
     private final String name;
@@ -13,10 +17,16 @@ public class MetaDataKey<T> {
         this.type = (Class<T>) type;
     }
 
+    /**
+     * @return the name of this key
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * @return the type of the values stored under this key
+     */
     public Class<T> getType() {
         return type;
     }

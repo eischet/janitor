@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+/** Reads values of the various SQL column types from a {@link ResultSet}, and converts them to suitable Java objects. */
 public enum SqlTypeInterpreter {
 
     // the codes come from java.sql.Types!
@@ -61,7 +62,8 @@ public enum SqlTypeInterpreter {
     TIME_WITH_TIMEZONE("TIME_WITH_TIMEZONE", Types.TIME_WITH_TIMEZONE, (SimpleExtractor) ResultSet::getTimestamp),
     TIMESTAMP_WITH_TIMEZONE("TIMESTAMP_WITH_TIMEZONE", Types.TIMESTAMP_WITH_TIMEZONE, (SimpleExtractor) ResultSet::getTimestamp),
     NUMERIC("NUMERIC", Types.NUMERIC, (rs, i, nr) -> {
-        // beim Default gilt: INCIDENT_ID gut, Balken schlecht... daher kann man das jetzt übersteuern im Statement.
+        // by default, NUMERIC values are read as integers where possible: good for ID columns, bad for fractional
+        // values such as chart data... so this can now be overridden in the statement.
         if (nr) {
             return rs.getDouble(i);
         } else {
@@ -85,10 +87,20 @@ public enum SqlTypeInterpreter {
         this.extractor = extractor;
     }
 
+    /**
+     * @return the extractor that reads values of this type from a result set
+     */
     public @NotNull Extractor getExtractor() {
         return extractor;
     }
 
+    /**
+     * Reads a nullable integer, sharing instances of small values to conserve memory.
+     * @param rs the result set
+     * @param index the index of the column, starting at 1
+     * @return the value, or null if the column is NULL
+     * @throws SQLException on database errors
+     */
     public static @Nullable Integer readIntegerAndIntern(final @NotNull ResultSet rs, final int index) throws SQLException {
         // rs.getInt() returns 0 for a SQL NULL, per the JDBC contract -- wasNull() is the only way to
         // tell that apart from an actual 0. Must be checked immediately after the get call, before
@@ -97,16 +109,37 @@ public enum SqlTypeInterpreter {
         return rs.wasNull() ? null : Interner.maybeIntern(value);
     }
 
+    /**
+     * Reads a nullable float.
+     * @param rs the result set
+     * @param index the index of the column, starting at 1
+     * @return the value, or null if the column is NULL
+     * @throws SQLException on database errors
+     */
     public static @Nullable Float readFloatInstance(final @NotNull ResultSet rs, final int index) throws SQLException {
         final float value = rs.getFloat(index);
         return rs.wasNull() ? null : value;
     }
 
+    /**
+     * Reads a nullable double.
+     * @param rs the result set
+     * @param index the index of the column, starting at 1
+     * @return the value, or null if the column is NULL
+     * @throws SQLException on database errors
+     */
     public static @Nullable Double readDoubleInstance(final @NotNull ResultSet rs, final int index) throws SQLException {
         final double value = rs.getDouble(index);
         return rs.wasNull() ? null : value;
     }
 
+    /**
+     * Reads binary data from a column, by reading its binary stream completely.
+     * @param rs the result set
+     * @param index the index of the column, starting at 1
+     * @return the data, or null if the column is NULL
+     * @throws SQLException on database errors
+     */
     public static byte @Nullable [] readAsBinaryStream(final @NotNull ResultSet rs, final int index) throws SQLException {
         final InputStream stream = rs.getBinaryStream(index);
         if (stream == null) {
@@ -120,6 +153,12 @@ public enum SqlTypeInterpreter {
         }
     }
 
+    /**
+     * Reads a stream completely.
+     * @param stream the stream, may be null
+     * @return the bytes, or an empty array if the stream is null
+     * @throws IOException if the stream cannot be read
+     */
     public static byte @Nullable [] toByteArray(final @Nullable InputStream stream) throws IOException {
         if (stream == null) {
             return new byte[0];
@@ -129,6 +168,12 @@ public enum SqlTypeInterpreter {
         return baos.toByteArray();
     }
 
+    /**
+     * Reads a reader completely.
+     * @param stream the reader
+     * @return the text
+     * @throws IOException if the reader cannot be read
+     */
     public static @NotNull String transferToString(final @NotNull Reader stream) throws IOException {
         final StringWriter out = new StringWriter();
         stream.transferTo(out);
@@ -136,6 +181,13 @@ public enum SqlTypeInterpreter {
     }
 
 
+    /**
+     * Reads text from a column, by reading its character stream completely.
+     * @param rs the result set
+     * @param index the index of the column, starting at 1
+     * @return the text, or null if the column is NULL
+     * @throws SQLException on database errors
+     */
     public static @Nullable String readAsTextStream(final @NotNull ResultSet rs, final int index) throws SQLException {
         final Reader stream = rs.getCharacterStream(index);
         if (stream == null) {
@@ -149,14 +201,19 @@ public enum SqlTypeInterpreter {
         }
     }
 
+    /**
+     * @return the name of this type
+     */
     public @NotNull String getTypeName() {
         return toString();
     }
 
+    /** Reads a value from a result set; for numeric columns, a flag decides whether numbers are read as real numbers. */
     public interface Extractor {
         @Nullable Object extract(final @NotNull ResultSet rs, final int index, final boolean numReal) throws SQLException;
     }
 
+    /** Reads a value from a result set. */
     public interface SimpleExtractor {
         @Nullable Object extract(final @NotNull ResultSet rs, final int index) throws SQLException;
     }
@@ -175,18 +232,36 @@ public enum SqlTypeInterpreter {
         }
     }
 
+    /**
+     * @return all interpreters, by the name of their type
+     */
     public static @NotNull Map<String, SqlTypeInterpreter> getNamedInterpreters() {
         return namedInterpreters;
     }
 
+    /**
+     * @param code the type code from {@link java.sql.Types}
+     * @return the interpreter for the type code, or UNKNOWN if there is none
+     */
     public static @NotNull SqlTypeInterpreter forSqlTypeCode(int code) {
         return interpreters.getOrDefault(code, UNKNOWN);
     }
 
+    /**
+     * @param n the name of the type
+     * @return the interpreter for the type, or null if there is none
+     */
     public static @Nullable SqlTypeInterpreter byTypeName(final String n) {
         return Arrays.stream(values()).filter(it -> Objects.equals(it.typeName, n)).findFirst().orElse(null);
     }
 
+    /**
+     * Reads a string, sharing instances of short strings to conserve memory.
+     * @param rs the result set
+     * @param index the index of the column, starting at 1
+     * @return the string, or null if the column is NULL
+     * @throws SQLException on database errors
+     */
     public static @Nullable String readStringAndIntern(final ResultSet rs, final int index) throws SQLException {
         return Interner.maybeIntern(rs.getString(index));
     }

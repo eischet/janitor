@@ -59,10 +59,10 @@ public abstract class Assignment extends Statement implements JsonExportableObje
             // "() -> { n = n + 1; return n; }" could never accumulate state across calls, since every
             // call kept creating and discarding its own fresh local shadow of "n").
             final ResultAndScope scoped = process.lookupScopedVar(id);
-            // LATER: hier muss auch beachtet werden, dass es einen module scope gibt!
-            // das funktioniert hier wahrscheinlich nicht, wenn eine Function aus einem Modul versucht,
-            // an eine eigene (im Modul definierte) Variable etwas zuzuweisen. Das ist aber ohnehin keine
-            // gute Idee, weil die Module in mehreren Skripten parallel im Einsatz sein könnten.
+            // LATER: the module scope must be taken into account here as well!
+            // This probably does not work if a function from a module tries to assign to one of its own
+            // variables (defined in the module). That is not a good idea anyway, because modules
+            // may be in use by several scripts in parallel.
             final JanitorObject valueToAssign = produce(left, right, process).janitorUnpack();
             if (scoped == null) {
                 process.trace(() -> "  will assign " + id + " = " + valueToAssign + " in current scope of script = " + process.getCurrentScope());
@@ -79,7 +79,7 @@ public abstract class Assignment extends Statement implements JsonExportableObje
             }
         }
 
-        final JanitorObject evalLeft = left.evaluate(process); // hier NICHT auspacken, weil wir sonst nicht mehr wissen, wohin wir zuweisen sollen!
+        final JanitorObject evalLeft = left.evaluate(process); // do NOT unpack here, or we would no longer know where to assign to!
         final JanitorObject evalRight = right.evaluate(process).janitorUnpack();
 
         process.trace(() -> "assigning " + evalRight + " to " + evalLeft);
@@ -100,6 +100,14 @@ public abstract class Assignment extends Statement implements JsonExportableObje
         }
     }
 
+    /**
+     * Produces the value to assign to the left-hand side.
+     * @param left the expression on the left-hand side
+     * @param right the expression on the right-hand side
+     * @param process the running script process
+     * @return the value to assign
+     * @throws JanitorRuntimeException if the value cannot be produced
+     */
     protected abstract JanitorObject produce(final Expression left, final Expression right, final JanitorScriptProcess process) throws JanitorRuntimeException;
 
     @Override

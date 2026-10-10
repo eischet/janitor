@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+/** Base class for script processes: it manages the scopes, the closure scopes and the cleanup of resources while a script runs. */
 public abstract class AbstractScriptProcess implements JanitorScriptProcess {
 
     private static final JanitorLogger log = JanitorLogger.getLogger(AbstractScriptProcess.class);
@@ -89,7 +90,7 @@ public abstract class AbstractScriptProcess implements JanitorScriptProcess {
 
     @Override
     public JanitorObject lookup(final String text) {
-        // hat variablen in Modulen unsichtbar gemacht, weil push/popModuleScope noch nicht existierten!
+        // this made variables in modules invisible, because push/popModuleScope did not exist yet!
         return getCurrentScope().lookup(this, text, closureScopes);
     }
 
@@ -150,7 +151,7 @@ public abstract class AbstractScriptProcess implements JanitorScriptProcess {
         }
         // before checking parent scopes, let's have a look at possible closure scopes we need to apply...
         // this fixes the issues in DispatchTests.java, where it was not possible to access variables from enclosing scopes
-        // ist that really right? because we do not iterate from one closure scope to the next... wow, this is complicated.
+        // is that really right? because we do not iterate from one closure scope to the next... wow, this is complicated.
         for (int i = closureScopes.size()-1; i >= 0; i--) {
             Scope currentClosureScope = closureScopes.get(i);
             variable = currentClosureScope.lookupLocally(this, id);
@@ -204,6 +205,7 @@ public abstract class AbstractScriptProcess implements JanitorScriptProcess {
         }
     }
 
+    /** Calls the cleanup method of all objects that require cleanup, e.g. to close files that a script left open. */
     protected void processCleanups() {
         for (final JanitorCleanupRequired janitorCleanupRequired : cleanupList) {
             janitorCleanupRequired.janitorCleanup();

@@ -4,6 +4,7 @@ import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import org.commonmark.node.ListBlock;
 
+/** Base class for the script wrappers of CommonMark list blocks, i.e. bullet lists and ordered lists. */
 public abstract class CMListBlock extends CMNode {
     protected static final WrapperDispatchTable<ListBlock> dispatch = new WrapperDispatchTable<>();
 

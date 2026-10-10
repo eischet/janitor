@@ -4,6 +4,7 @@ import com.docusign.esign.model.BulkEnvelopeStatus;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 
+/** Wrapper for the DocuSign bulk envelope status. */
 public class DocusignBulkEnvelopeStatus extends JanitorComposed<DocusignBulkEnvelopeStatus> {
 
     public static final DispatchTable<DocusignBulkEnvelopeStatus> DISPATCHER = new DispatchTable<>();
@@ -40,6 +41,9 @@ public class DocusignBulkEnvelopeStatus extends JanitorComposed<DocusignBulkEnve
         this.wrapped = wrapped;
     }
 
+    /**
+     * @return the wrapped DocuSign object
+     */
     public BulkEnvelopeStatus getWrapped() {
         return wrapped;
     }

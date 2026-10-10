@@ -9,6 +9,12 @@ import java.util.function.Function;
  */
 @FunctionalInterface
 public interface ThrowingFunction<T, U> {
+    /**
+     * Applies the function.
+     * @param t the argument
+     * @return the result
+     * @throws Exception on errors
+     */
     U apply(T t) throws Exception;
 
     /**

@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+/** The dialect for Microsoft SQL Server. */
 public class DatabaseDialectMicrosoft extends DatabaseDialectCommon {
 
     private static final Set<String> KEYWORDS = new HashSet<>(Arrays.asList("key", "forbidden"));
@@ -35,7 +36,7 @@ public class DatabaseDialectMicrosoft extends DatabaseDialectCommon {
         return new SelectStatement(selectStatement.getSql() + " OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
     }
 
-    // LATER: es wird zwei Varianten geben müssen: eine, die ZUERST limit/offset setzt, und diese hier die es am Ende tut. Glaube ich.
+    // LATER: we will probably need two variants: one that applies limit/offset FIRST, and this one, which applies it at the end.
 
     @Override
     public @NotNull SimplePreparedStatement addLimitAndOffset(final @NotNull SimplePreparedStatement statement, final int limit, final int offset) throws SQLException {

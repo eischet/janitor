@@ -33,6 +33,9 @@ public class ReturnStatement extends Statement implements JsonExportableObject {
             this.value = value;
         }
 
+        /**
+         * @return the value that is returned from the function
+         */
         public JanitorObject getValue() {
             return value.janitorUnpack();
         }

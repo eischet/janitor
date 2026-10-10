@@ -19,6 +19,7 @@ import java.sql.SQLException;
 import java.util.Locale;
 import java.util.Set;
 
+/** The dialect for Oracle databases. */
 public class DatabaseDialectOracle extends DatabaseDialectCommon {
 
     /**
@@ -61,7 +62,7 @@ public class DatabaseDialectOracle extends DatabaseDialectCommon {
         return new SelectStatement(selectStatement.getSql() + " OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
     }
 
-    // LATER: es wird zwei Varianten geben müssen: eine, die ZUERST limit/offset setzt, und diese hier die es am Ende tut. Glaube ich.
+    // LATER: we will probably need two variants: one that applies limit/offset FIRST, and this one, which applies it at the end.
 
     @Override
     public @NotNull SimplePreparedStatement addLimitAndOffset(final @NotNull SimplePreparedStatement statement, final int limit, final int offset) throws SQLException {

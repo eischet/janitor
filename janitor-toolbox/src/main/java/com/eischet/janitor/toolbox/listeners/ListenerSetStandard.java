@@ -4,6 +4,10 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
 
+/**
+ * A {@link ListenerSet} that keeps strong references to its listeners.
+ * @param <T> the type of the listeners
+ */
 public class ListenerSetStandard<T> implements ListenerSet<T> {
 
     private final Set<T> listeners = new HashSet<>();

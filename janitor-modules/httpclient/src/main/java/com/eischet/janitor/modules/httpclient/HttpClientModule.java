@@ -9,6 +9,7 @@ import com.eischet.janitor.lang.JNativeMethod;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+/** The script module "httpclient", with a simple {@code fetch(url)} function and a {@code build()} function that creates HTTP clients. */
 public class HttpClientModule extends JanitorNativeModule {
 
     public static final JanitorModuleRegistration REGISTRATION = new JanitorModuleRegistration("httpclient", HttpClientModule::new);

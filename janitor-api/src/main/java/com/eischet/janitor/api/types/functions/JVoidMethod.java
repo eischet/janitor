@@ -9,5 +9,12 @@ import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
  */
 @FunctionalInterface
 public interface JVoidMethod<T> {
+    /**
+     * Calls the method.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @throws JanitorRuntimeException if the call fails
+     */
     void call(final T self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException;
 }

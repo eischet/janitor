@@ -13,6 +13,12 @@ import javax.xml.stream.XMLStreamReader;
  */
 public abstract class JCollection {
 
+    /**
+     * Reads the next value from a JSON stream, creating lists and maps for arrays and objects.
+     * @param reader the JSON stream
+     * @return the value
+     * @throws JsonException if the JSON is malformed
+     */
     public static JanitorObject parseJsonValue(JsonInputStream reader) throws JsonException {
         return switch (reader.peek()) {
             case BEGIN_ARRAY ->  JListClass.parseJson(Janitor.list(), reader);

@@ -5,6 +5,7 @@ import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.Set;
 
+/** Implemented by entities that keep track of which of their fields were modified. */
 public interface ChangeTracker {
 
     /**

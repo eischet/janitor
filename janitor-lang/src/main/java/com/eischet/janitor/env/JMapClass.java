@@ -19,6 +19,7 @@ import org.intellij.lang.annotations.Language;
 
 import java.util.Map;
 
+/** Operations for map objects. */
 public class JMapClass {
 
     /**
@@ -56,40 +57,107 @@ public class JMapClass {
         }
     }
 
+    /**
+     * Script method {@code map.get(key)}: gets the value for a key.
+     * @param mapJanitorWrapper the object that the method is called on
+     * @param process the running script process
+     * @param jCallArgs the call arguments
+     * @return the value, or null if there is none
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static JanitorObject __get(JanitorWrapper<Map<JanitorObject, JanitorObject>> mapJanitorWrapper, JanitorScriptProcess process, JCallArgs jCallArgs) throws JanitorRuntimeException {
         final JanitorObject key = jCallArgs.require(1).get(0);
         return ((JMap) mapJanitorWrapper).get(key);
     }
 
+    /**
+     * Script method for indexing, e.g. {@code map[key]}: gets the value for a key, in a form that can be assigned to.
+     * @param mapJanitorWrapper the object that the method is called on
+     * @param process the running script process
+     * @param jCallArgs the call arguments
+     * @return the value
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static JanitorObject __getIndexed(JanitorWrapper<Map<JanitorObject, JanitorObject>> mapJanitorWrapper, JanitorScriptProcess process, JCallArgs jCallArgs) throws JanitorRuntimeException {
         return ((JMap) mapJanitorWrapper).getIndexed(jCallArgs.require(1).get(0));
     }
 
+    /**
+     * Script method {@code map.put(key, value)}: stores a value under a key.
+     * @param mapJanitorWrapper the object that the method is called on
+     * @param process the running script process
+     * @param jCallArgs the call arguments
+     * @return null
+     */
     public static JanitorObject __put(JanitorWrapper<Map<JanitorObject, JanitorObject>> mapJanitorWrapper, JanitorScriptProcess process, JCallArgs jCallArgs) {
         ((JMap) mapJanitorWrapper).put(jCallArgs.get(0), jCallArgs.get(1));
         return JNull.NULL;
     }
 
+    /**
+     * Script method {@code map.size()}: the number of entries in this map.
+     * @param mapJanitorWrapper the object that the method is called on
+     * @param process the running script process
+     * @param jCallArgs the call arguments
+     * @return the number of entries
+     */
     public static JanitorObject __size(JanitorWrapper<Map<JanitorObject, JanitorObject>> mapJanitorWrapper, JanitorScriptProcess process, JCallArgs jCallArgs) {
         return Janitor.integer(mapJanitorWrapper.janitorGetHostValue().size());
     }
 
+    /**
+     * Script method {@code map.isEmpty()}: checks whether this map has no entries.
+     * @param mapJanitorWrapper the object that the method is called on
+     * @param process the running script process
+     * @param jCallArgs the call arguments
+     * @return true if the map is empty
+     */
     public static JanitorObject __isEmpty(JanitorWrapper<Map<JanitorObject, JanitorObject>> mapJanitorWrapper, JanitorScriptProcess process, JCallArgs jCallArgs) {
         return Janitor.toBool(mapJanitorWrapper.janitorGetHostValue().isEmpty());
     }
 
+    /**
+     * Script method {@code map.keys()}: the keys of this map.
+     * @param mapJanitorWrapper the object that the method is called on
+     * @param process the running script process
+     * @param jCallArgs the call arguments
+     * @return a list of the keys
+     */
     public static JanitorObject __keys(JanitorWrapper<Map<JanitorObject, JanitorObject>> mapJanitorWrapper, JanitorScriptProcess process, JCallArgs jCallArgs) {
         return Janitor.list(mapJanitorWrapper.janitorGetHostValue().keySet().stream());
     }
 
+    /**
+     * Script method {@code map.values()}: the values of this map.
+     * @param mapJanitorWrapper the object that the method is called on
+     * @param process the running script process
+     * @param jCallArgs the call arguments
+     * @return a list of the values
+     */
     public static JanitorObject __values(JanitorWrapper<Map<JanitorObject, JanitorObject>> mapJanitorWrapper, JanitorScriptProcess process, JCallArgs jCallArgs) {
         return Janitor.list(mapJanitorWrapper.janitorGetHostValue().values().stream());
     }
 
+    /**
+     * Script method {@code map.containsKey(key)}: checks whether this map has an entry for the key.
+     * @param mapJanitorWrapper the object that the method is called on
+     * @param process the running script process
+     * @param jCallArgs the call arguments
+     * @return true if the key was found
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static JanitorObject __containsKey(JanitorWrapper<Map<JanitorObject, JanitorObject>> mapJanitorWrapper, JanitorScriptProcess process, JCallArgs jCallArgs) throws JanitorRuntimeException {
         return Janitor.toBool(mapJanitorWrapper.janitorGetHostValue().containsKey(jCallArgs.require(1).get(0)));
     }
 
+    /**
+     * Script method {@code map.containsValue(value)}: checks whether this map has an entry with the value.
+     * @param mapJanitorWrapper the object that the method is called on
+     * @param process the running script process
+     * @param jCallArgs the call arguments
+     * @return true if the value was found
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static JanitorObject __containsValue(JanitorWrapper<Map<JanitorObject, JanitorObject>> mapJanitorWrapper, JanitorScriptProcess process, JCallArgs jCallArgs) throws JanitorRuntimeException {
         return Janitor.toBool(mapJanitorWrapper.janitorGetHostValue().containsValue(jCallArgs.require(1).get(0)));
     }
@@ -145,12 +213,24 @@ public class JMapClass {
         return self;
     }
 
+    /**
+     * Script method {@code map.clear()}: removes all entries from this map.
+     * @param mapJanitorWrapper the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return null
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static JNull __clear(JanitorWrapper<Map<JanitorObject, JanitorObject>> mapJanitorWrapper, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);
         mapJanitorWrapper.janitorGetHostValue().clear();
         return JNull.NULL;
     }
 
+    /**
+     * Registers the standard methods and properties of maps.
+     * @param mapDispatcher the dispatch table to add them to
+     */
     public static void applyDefaults(WrapperDispatchTable<Map<JanitorObject, JanitorObject>> mapDispatcher) {
         mapDispatcher.addMethod("toJson", JMapClass::__toJson);
         mapDispatcher.addMethod("parseJson", JMapClass::__parseJson);

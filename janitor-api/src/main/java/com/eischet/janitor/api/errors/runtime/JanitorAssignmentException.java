@@ -47,6 +47,12 @@ public class JanitorAssignmentException extends JanitorArgumentException {
         super(process, cause, JanitorAssignmentException.class);
     }
 
+    /**
+     * Converts a glue exception to an assignment exception.
+     * @param process the running script process
+     * @param glueException the glue exception to convert
+     * @return the equivalent assignment exception, with the same message and cause
+     */
     public static JanitorAssignmentException fromGlue(final JanitorScriptProcess process, final JanitorGlueException glueException) {
         return new JanitorAssignmentException(process, glueException.getMessage(), glueException.getCause());
     }

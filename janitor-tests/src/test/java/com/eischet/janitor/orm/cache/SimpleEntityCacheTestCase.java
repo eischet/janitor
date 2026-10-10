@@ -12,8 +12,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
 /**
- * Regression tests for SimpleEntityCache, in particular the key-change invalidation bug that motivated
- * this class: the predecessor (Cockpit's MisoEntityCache) removed a cache entry under an entity's
+ * Regression tests for SimpleEntityCache, in particular the key-change invalidation bug that a naive
+ * cache implementation suffers from: it removes a cache entry under an entity's
  * *current* key at invalidation time, which left a stale entry behind under the *old* key whenever a
  * caller changed an entity's key in place before invalidating/re-caching it. SimpleEntityCache avoids
  * this by remembering the key each entry was actually cached under, instead of re-reading it live.
@@ -124,7 +124,7 @@ public class SimpleEntityCacheTestCase extends JanitorTest {
         assertSame(e, cache.findByKey("OLD"));
 
         // caller renames the entity in place, then re-caches it (e.g. after an update) -- this is
-        // exactly the scenario MisoEntityCache.invalidate() got wrong, because it would have looked at
+        // exactly the scenario a naive invalidate() gets wrong, because it would have looked at
         // e.getKey() (now "NEW") to decide what to evict, instead of what was actually cached ("OLD").
         e.setKey("NEW");
         cache.put(e);

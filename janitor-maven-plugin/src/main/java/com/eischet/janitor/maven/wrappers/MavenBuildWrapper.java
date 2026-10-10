@@ -4,6 +4,7 @@ import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import org.apache.maven.model.Build;
 
+/** Makes the build section of a Maven project available to scripts. */
 public class MavenBuildWrapper extends JanitorWrapper<Build> {
 
     private static final WrapperDispatchTable<Build> dispatcher = new WrapperDispatchTable<>();

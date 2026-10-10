@@ -11,6 +11,7 @@ import com.eischet.janitor.api.types.builtin.JMap;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 
+/** Wrapper for the DocuSign envelopes API: it creates envelopes and fetches envelopes and their documents. */
 public class DocusignEnvelopesApi extends JanitorComposed<DocusignEnvelopesApi> {
 
     public static final DispatchTable<DocusignEnvelopesApi> DISPATCHER = new DispatchTable<>();
@@ -83,6 +84,9 @@ public class DocusignEnvelopesApi extends JanitorComposed<DocusignEnvelopesApi> 
         this.envelopesApi = new EnvelopesApi(apiClient);
     }
 
+    /**
+     * @return new options for creating an envelope
+     */
     public EnvelopesApi.CreateEnvelopeOptions getCreateEnvelopeOptions() {
         return envelopesApi.new CreateEnvelopeOptions(); // I learned about this syntax just now.
     }

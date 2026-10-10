@@ -5,6 +5,7 @@ import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import org.apache.maven.model.Dependency;
 import org.jetbrains.annotations.NotNull;
 
+/** Makes a Maven dependency available to scripts. */
 public class DependencyWrapper extends JanitorWrapper<Dependency> {
 
     private static final WrapperDispatchTable<Dependency> dispatcher = new WrapperDispatchTable<>();

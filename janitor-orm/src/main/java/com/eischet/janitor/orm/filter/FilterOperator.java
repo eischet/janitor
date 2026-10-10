@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.Objects;
 
+/** The operators of a filter expression, which compare a field with a value. */
 public enum FilterOperator {
     EQ("eq"),
     NEQ("neq"),
@@ -29,6 +30,11 @@ public enum FilterOperator {
 
     public static final List<FilterOperator> OPERATORS = List.of(values());
 
+    /**
+     * @param code the code, as used in JSON, e.g. "eq"
+     * @return the operator
+     * @throws MalformedExpression if the code is unknown
+     */
     public static @NotNull FilterOperator fromCode(final String code) {
         return OPERATORS.stream()
                 .filter(it -> Objects.equals(it.code, code))
@@ -36,6 +42,9 @@ public enum FilterOperator {
                 .orElseThrow(() -> new MalformedExpression("unknown filter operator code '" + code + "'"));
     }
 
+    /**
+     * @return the code of this operator, as used in JSON
+     */
     public String getCode() {
         return code;
     }

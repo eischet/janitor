@@ -2,6 +2,7 @@ package com.eischet.janitor.generator;
 
 import org.jetbrains.annotations.NotNull;
 
+/** A reference to an existing Java type that is identified by its package and its name. */
 public class ExternalType implements JavaType {
 
     private final @NotNull String packageName;

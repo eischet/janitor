@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 
+/** Makes a Maven project available to scripts. */
 public class MavenProjectWrapper extends JanitorWrapper<MavenProject> {
 
     private static final WrapperDispatchTable<MavenProject> dispatcher = new WrapperDispatchTable<>();
@@ -65,6 +66,7 @@ public class MavenProjectWrapper extends JanitorWrapper<MavenProject> {
         super(dispatcher, wrapped);
     }
 
+    /** Placeholder for experiments with the names of the Maven model's properties; it does nothing. */
     public void testNames() {
         // wrapped.modelgetPackaging()
     }

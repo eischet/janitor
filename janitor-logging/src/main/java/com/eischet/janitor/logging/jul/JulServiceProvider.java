@@ -9,6 +9,7 @@ import org.slf4j.helpers.BasicMarkerFactory;
 import org.slf4j.spi.MDCAdapter;
 import org.slf4j.spi.SLF4JServiceProvider;
 
+/** The SLF4J service provider that routes SLF4J logging to java.util.logging. */
 @AutoService(SLF4JServiceProvider.class)
 public class JulServiceProvider implements SLF4JServiceProvider {
 
@@ -33,6 +34,9 @@ public class JulServiceProvider implements SLF4JServiceProvider {
         return markerFactory;
     }
 
+    /**
+     * @return the adapter for the mapped diagnostic context
+     */
     public MDCAdapter getMDCAdapter() {
         return mdcAdapter;
     }

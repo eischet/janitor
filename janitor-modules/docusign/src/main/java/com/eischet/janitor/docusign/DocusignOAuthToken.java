@@ -4,6 +4,7 @@ import com.docusign.esign.client.auth.OAuth;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 
+/** Wrapper for the DocuSign o auth token. */
 public class DocusignOAuthToken extends JanitorComposed<DocusignOAuthToken> {
 
     public static final DispatchTable<DocusignOAuthToken> DISPATCHER = new DispatchTable<>();
@@ -23,6 +24,9 @@ public class DocusignOAuthToken extends JanitorComposed<DocusignOAuthToken> {
         this.wrapped = wrapped;
     }
 
+    /**
+     * @return the wrapped DocuSign object
+     */
     public OAuth.OAuthToken getWrapped() {
         return wrapped;
     }

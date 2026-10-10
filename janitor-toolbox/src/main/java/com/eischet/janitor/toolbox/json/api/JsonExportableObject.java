@@ -1,5 +1,6 @@
 package com.eischet.janitor.toolbox.json.api;
 
+/** A {@link JsonExportable} that is exported as a JSON object. */
 public interface JsonExportableObject extends JsonExportable {
     @Override
     default boolean isList() {

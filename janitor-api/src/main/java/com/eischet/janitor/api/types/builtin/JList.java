@@ -78,19 +78,36 @@ public class JList extends JanitorComposed<JList> implements JIterable, Iterable
         throw new IllegalArgumentException("cannot assign " + replacementValue + " to a list slice: not iterable");
     }
 
+    /**
+     * Sets the dispatch table that describes the elements of this list, and returns this list for chaining.
+     * @param elementDispatchTable the dispatch table for the elements
+     * @return this list
+     */
     public JList withElementDispatchTable(final DispatchTable<?> elementDispatchTable) {
         setElementDispatchTable(elementDispatchTable);
         return this;
     }
 
+    /**
+     * @return the dispatch table that describes the elements of this list, if any
+     */
     public DispatchTable<?> getElementDispatchTable() {
         return elementDispatchTable;
     }
 
+    /**
+     * Sets the dispatch table that describes the elements of this list.
+     * @param elementDispatchTable the dispatch table for the elements
+     */
     public void setElementDispatchTable(final DispatchTable<?> elementDispatchTable) {
         this.elementDispatchTable = elementDispatchTable;
     }
 
+    /**
+     * Registers a receiver that is notified when the list is changed.
+     * @param onUpdate the receiver
+     * @return this list
+     */
     public @NotNull JList onUpdate(final @NotNull Consumer<JList> onUpdate) {
         if (updateReceivers == null) {
             updateReceivers = new LinkedList<>();
@@ -99,6 +116,9 @@ public class JList extends JanitorComposed<JList> implements JIterable, Iterable
         return this;
     }
 
+    /**
+     * @return the number of update receivers that are registered with this list
+     */
     public int countOnUpdateReceivers() {
         return updateReceivers == null ? 0 : updateReceivers.size();
     }
@@ -360,6 +380,10 @@ public class JList extends JanitorComposed<JList> implements JIterable, Iterable
         list.clear();
     }
 
+    /**
+     * Replaces the contents of this list, and notifies the update receivers once.
+     * @param withTheseElements the new elements
+     */
     public void replaceAllElements(final List<JanitorObject> withTheseElements) {
         list.clear();
         list.addAll(withTheseElements);
@@ -471,6 +495,11 @@ public class JList extends JanitorComposed<JList> implements JIterable, Iterable
         return list.toString();
     }
 
+    /**
+     * Exports this list as JSON, using the current environment.
+     * @return the JSON text
+     * @throws JsonException if the export fails
+     */
     public @Language("JSON") String exportToJson() throws JsonException {
         return exportToJson(Janitor.current());
     }

@@ -65,7 +65,7 @@ public class JacksonOutputStream implements JsonOutputStream {
 
     @Override
     public JsonOutputStream pair(final String name, String value) throws JsonException {
-        // LATER: wenn die export controls sagen, dass leere Objekte nicht geliefert werden sollen, beide unterdrücken!
+        // LATER: if the export controls say that empty objects should not be emitted, suppress both!
         return key(name).value(value);
     }
 

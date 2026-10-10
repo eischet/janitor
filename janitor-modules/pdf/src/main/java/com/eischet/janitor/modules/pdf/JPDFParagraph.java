@@ -54,6 +54,9 @@ public class JPDFParagraph extends JanitorWrapper<Paragraph> {
         super(DISPATCH_TABLE, new Paragraph(phrase.getPhrase()));
     }
 
+    /**
+     * @return the wrapped Paragraph object
+     */
     public Paragraph getParagraph() {
         return wrapped;
     }

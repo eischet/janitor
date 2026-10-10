@@ -21,6 +21,7 @@ import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
  */
 public class ArgumentList extends AstNode implements JsonExportableObject {
 
+    /** A single argument in a function call, which may be named. */
     public class Argument {
         final @Nullable String name;
         final Expression expression;
@@ -30,10 +31,16 @@ public class ArgumentList extends AstNode implements JsonExportableObject {
             this.expression = expression;
         }
 
+        /**
+         * @return the name of the argument, or null if it is passed by position
+         */
         public @Nullable String getName() {
             return name;
         }
 
+        /**
+         * @return the expression that produces the value of this argument
+         */
         public Expression getExpression() {
             return expression;
         }
@@ -48,6 +55,13 @@ public class ArgumentList extends AstNode implements JsonExportableObject {
         super(location);
     }
 
+    /**
+     * Evaluates all arguments, and packages them for the call of a function.
+     * @param identifier the name of the function that is called
+     * @param process the running script process
+     * @return the evaluated arguments
+     * @throws JanitorRuntimeException if the evaluation of an argument fails
+     */
     public JCallArgs toCallArguments(final String identifier, final JanitorScriptProcess process) throws JanitorRuntimeException {
         final List<EvaluatedArgument> evaluatedArguments = new LinkedList<>();
         for (final Argument argument : arguments) {
@@ -81,6 +95,12 @@ public class ArgumentList extends AstNode implements JsonExportableObject {
         return this;
     }
 
+    /**
+     * Adds a named argument.
+     * @param name the name of the argument
+     * @param expression the expression that produces the value of the argument
+     * @return this list
+     */
     public ArgumentList addNamedExpression(final String name, final Expression expression) {
         arguments.add(new Argument(name, expression));
         return this;

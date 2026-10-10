@@ -15,6 +15,14 @@ import java.util.*;
 
 // TODO: I think this can be deleted, as it's not used anywhere.
 
+/**
+ * A basic {@link JoinManager} that is set up from the dispatch table of the join records.
+ * Note that the join lookups are not implemented yet: they currently return no join records.
+ * @param <J> the type of the join records
+ * @param <L> the type of the entities on the left side
+ * @param <R> the type of the entities on the right side
+ * @param <U> the type of the uplink
+ */
 public class GenericJoinManager<
         J extends OrmJoiner<L, R>,
         L extends OrmEntity,

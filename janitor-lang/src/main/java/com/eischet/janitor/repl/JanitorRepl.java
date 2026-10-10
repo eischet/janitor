@@ -145,6 +145,14 @@ public class JanitorRepl {
         return new Fragment(scriptContext);
     }
 
+    /**
+     * Checks whether the text forms a complete statement, adding a missing semicolon if that helps.
+     * @param text the text entered so far
+     * @return OK if the text can be run, or INCOMPLETE if more input is needed
+     * @throws JanitorControlFlowException on control flow errors
+     * @throws JanitorRuntimeException on runtime errors
+     * @throws CompilerError on compiler errors
+     */
     public PartialParseResult parse(final String text) throws JanitorControlFlowException, JanitorRuntimeException, CompilerError {
         if (endsInsideMultilineConstruct(text) || hasUnclosedBrackets(text)) {
             io.verbose("looks incomplete");
@@ -409,46 +417,83 @@ public class JanitorRepl {
     }
 
 
+    /**
+     * @return the banner that is shown when the REPL starts
+     */
     public String getLogo() {
         return logo;
     }
 
+    /**
+     * Sets the banner that is shown when the REPL starts.
+     * @param logo the banner
+     */
     public void setLogo(final String logo) {
         this.logo = logo;
     }
 
+    /**
+     * @return the module that the REPL's input is compiled as
+     */
     public ScriptSource getModule() {
         return module;
     }
 
+    /**
+     * @return the scope that holds the REPL's variables
+     */
     public Scope getGlobalScope() {
         return globalScope;
     }
 
+    /**
+     * @return the prompt that is shown for a new statement
+     */
     public String getDefaultPrompt() {
         return defaultPrompt;
     }
 
+    /**
+     * Sets the prompt that is shown for a new statement.
+     * @param defaultPrompt the prompt
+     */
     public void setDefaultPrompt(final String defaultPrompt) {
         this.defaultPrompt = defaultPrompt;
     }
 
+    /**
+     * @return true if the user asked to leave the REPL
+     */
     public boolean isQuit() {
         return quit;
     }
 
+    /**
+     * @return the prompt that is shown when a statement continues on the next line
+     */
     public String getContinuePrompt() {
         return continuePrompt;
     }
 
+    /**
+     * Sets the prompt that is shown when a statement continues on the next line.
+     * @param continuePrompt the prompt
+     */
     public void setContinuePrompt(final String continuePrompt) {
         this.continuePrompt = continuePrompt;
     }
 
+    /**
+     * Sets whether the REPL should be left.
+     * @param quit true to leave the REPL
+     */
     public void setQuit(final boolean quit) {
         this.quit = quit;
     }
 
+    /**
+     * @return the prompt that is currently active
+     */
     public String getPrompt() {
         return prompt;
     }

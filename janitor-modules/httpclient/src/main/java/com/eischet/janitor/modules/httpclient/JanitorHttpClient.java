@@ -185,6 +185,9 @@ public class JanitorHttpClient extends JanitorComposed<JanitorHttpClient> implem
         super(DISPATCH);
     }
 
+    /**
+     * @return a new client
+     */
     public static JanitorHttpClient create() {
         return new JanitorHttpClient();
     }
@@ -202,21 +205,41 @@ public class JanitorHttpClient extends JanitorComposed<JanitorHttpClient> implem
         return result;
     }
 
+    /**
+     * Adds a header that is sent with every request.
+     * @param header the name of the header
+     * @param value the value
+     * @return this client
+     */
     public JanitorHttpClient addHeader(final String header, final String value) {
         additionalHeaders.put(header, value);
         return this;
     }
 
+    /**
+     * Sets the timeout for connecting.
+     * @param connectTimeoutSeconds the timeout in seconds
+     */
     public void setConnectTimeoutSeconds(final int connectTimeoutSeconds) {
         this.connectTimeoutSeconds = connectTimeoutSeconds;
         this.mustRebuild = true;
     }
 
+    /**
+     * Makes this client remember the cookies that servers set.
+     * @return this client
+     */
     public JanitorHttpClient allowCookies() {
         cookies = new CopyOnWriteArrayList<>();
         return this;
     }
 
+    /**
+     * Enables HTTP basic authentication.
+     * @param username the user name; an empty one disables authentication
+     * @param password the password
+     * @return this client
+     */
     public JanitorHttpClient basic(final String username, final String password) {
         if (username == null || username.isEmpty()) {
             authHeaderContents = null;
@@ -227,6 +250,11 @@ public class JanitorHttpClient extends JanitorComposed<JanitorHttpClient> implem
         return this;
     }
 
+    /**
+     * Sets whether to ignore security problems such as invalid certificates and host names. This is insecure.
+     * @param yes true to ignore them
+     * @return this client
+     */
     public JanitorHttpClient ignoreSecurityIssues(final boolean yes) {
         insecure = yes;
         mustRebuild = true;
@@ -262,7 +290,7 @@ public class JanitorHttpClient extends JanitorComposed<JanitorHttpClient> implem
     private HttpClient _buildClient() {
         try {
             if (insecure) {
-                // Ich weiß nicht, was für ein Problem die Penner vom JDK haben, dass dieses Problem auch nach 100 Jahren noch besteht:
+                // The JDK still offers no proper way to disable hostname verification, so we need this workaround:
                 // https://stackoverflow.com/questions/52988677/allow-insecure-https-connection-for-java-jdk-11-httpclient
                 System.setProperty("jdk.internal.httpclient.disableHostnameVerification", "true");
                 return HttpClient.newBuilder().sslContext(BlindSSLSocketFactory.getSSLContext())
@@ -282,13 +310,24 @@ public class JanitorHttpClient extends JanitorComposed<JanitorHttpClient> implem
         return builder.build();
     }
 
+    /**
+     * Sets the proxy to use.
+     * @param proxy the address of the proxy
+     * @return this client
+     */
     public JanitorHttpClient setProxy(final InetSocketAddress proxy) {
-        // Authentication für den Proxy muss man separat liefern: https://stackoverflow.com/questions/53333556/proxy-authentication-with-jdk-11-httpclient
-        // Als Header "Proxy-Authorization".
+        // Authentication for the proxy has to be supplied separately: https://stackoverflow.com/questions/53333556/proxy-authentication-with-jdk-11-httpclient
+        // As the header "Proxy-Authorization".
         this.proxy = proxy;
         return this;
     }
 
+    /**
+     * Sets the proxy to use.
+     * @param host the host name of the proxy
+     * @param port the port of the proxy
+     * @return this client
+     */
     @SuppressWarnings("UnusedReturnValue")
     public JanitorHttpClient setProxy(final String host, final int port) {
         setProxy(InetSocketAddress.createUnresolved(host, port));
@@ -309,6 +348,11 @@ public class JanitorHttpClient extends JanitorComposed<JanitorHttpClient> implem
         }
     }
 
+    /**
+     * Sends a DELETE request.
+     * @param url the URL
+     * @throws HttpException if the request fails
+     */
     public void delete(final String url) throws HttpException {
         final HttpRequest req = configureRequest(HttpRequest.newBuilder(URI.create(url)).DELETE());
         var future = buildClient().sendAsync(req, HttpResponse.BodyHandlers.discarding());
@@ -320,6 +364,12 @@ public class JanitorHttpClient extends JanitorComposed<JanitorHttpClient> implem
         }
     }
 
+    /**
+     * Sends a GET request and returns the response body as binary data.
+     * @param url the URL
+     * @return the response body
+     * @throws HttpException if the request fails or the status is not successful
+     */
     public byte[] getBinary(final String url) throws HttpException {
         final HttpRequest req = configureRequest(HttpRequest.newBuilder(URI.create(url)).GET());
         report(req, null);
@@ -338,6 +388,12 @@ public class JanitorHttpClient extends JanitorComposed<JanitorHttpClient> implem
         }
     }
 
+    /**
+     * Sends a GET request and returns the response body as a string.
+     * @param url the URL
+     * @return the response body
+     * @throws HttpException if the request fails or the status is not successful
+     */
     public String getString(final String url) throws HttpException {
         final HttpRequest req = configureRequest(HttpRequest.newBuilder(URI.create(url)).GET());
         report(req, null);
@@ -394,6 +450,12 @@ public class JanitorHttpClient extends JanitorComposed<JanitorHttpClient> implem
         return result;
     }
 
+    /**
+     * Sends a GET request that asks for JSON, and returns the response body.
+     * @param url the URL
+     * @return the response body
+     * @throws HttpException if the request fails or the status is not successful
+     */
     public String getJson(final String url) throws HttpException {
         final HttpRequest req = configureRequest(HttpRequest.newBuilder(URI.create(url)).GET().header("Accept", "application/json; charset=utf-8"));
         report(req, null);
@@ -414,6 +476,13 @@ public class JanitorHttpClient extends JanitorComposed<JanitorHttpClient> implem
         }
     }
 
+    /**
+     * Sends a POST request with form data.
+     * @param url the URL
+     * @param values the form fields
+     * @return the response body
+     * @throws HttpException if the request fails or the status is not successful
+     */
     public String postForm(final String url, final Map<String, String> values) throws HttpException {
         final String body = encodeForm(values);
         final HttpRequest req = configureRequest(
@@ -451,6 +520,13 @@ public class JanitorHttpClient extends JanitorComposed<JanitorHttpClient> implem
         return sb.toString();
     }
 
+    /**
+     * Sends a POST request with a JSON body.
+     * @param url the URL
+     * @param json the JSON text
+     * @return the response body
+     * @throws HttpException if the request fails or the status is not successful
+     */
     public String postJson(final String url, final String json) throws HttpException {
         final HttpRequest req = configureRequest(
                 HttpRequest.newBuilder(
@@ -478,6 +554,13 @@ public class JanitorHttpClient extends JanitorComposed<JanitorHttpClient> implem
         }
     }
 
+    /**
+     * Sends a PUT request with a JSON body.
+     * @param url the URL
+     * @param json the JSON text
+     * @return the response body
+     * @throws HttpException if the request fails or the status is not successful
+     */
     public String putJson(final String url, final String json) throws HttpException {
         final HttpRequest req = configureRequest(
                 HttpRequest.newBuilder(URI.create(url)).PUT(HttpRequest.BodyPublishers.ofString(json))
@@ -496,10 +579,17 @@ public class JanitorHttpClient extends JanitorComposed<JanitorHttpClient> implem
             return resp.getBody();
         } catch (RuntimeException | IOException e) {
             future.cancel(true);
-            throw HttpException.failedPost(url, json, e);
+            throw HttpException.failedPut(url, json, e);
         }
     }
 
+    /**
+     * Sends a PATCH request with a JSON body.
+     * @param url the URL
+     * @param json the JSON text
+     * @return the response body
+     * @throws HttpException if the request fails or the status is not successful
+     */
     public String patchJson(final String url, final String json) throws HttpException {
         final HttpRequest req = configureRequest(
                 HttpRequest.newBuilder(
@@ -514,13 +604,13 @@ public class JanitorHttpClient extends JanitorComposed<JanitorHttpClient> implem
         try {
             final HttpResponse<String> httpResponse = future.orTimeout(requestTimeoutSeconds, TimeUnit.SECONDS).join();
             report(httpResponse);
-            final JanitorJsonResponse resp = new JanitorJsonResponse(httpResponse, url, "POST");
+            final JanitorJsonResponse resp = new JanitorJsonResponse(httpResponse, url, "PATCH");
             resp.throwIfFailed(resp);
             return resp.getBody();
 
         } catch (RuntimeException | IOException e) {
             future.cancel(true);
-            throw HttpException.failedPost(url, json, e);
+            throw HttpException.failedPatch(url, json, e);
         }
     }
 
@@ -534,17 +624,25 @@ public class JanitorHttpClient extends JanitorComposed<JanitorHttpClient> implem
         return "http-client";
     }
 
+    /**
+     * Switches on detailed logging of the requests and responses.
+     * @return this client
+     */
     public JanitorHttpClient verbose() {
         this.verbose = true;
         return this;
     }
 
+    /**
+     * Sets response headers that are left out of error reports.
+     * @param ignoreResponseHeaders the names of the headers
+     */
     public void ignoreErrorHeaders(final Set<String> ignoreResponseHeaders) {
         ignoreResponseHeaders.forEach(header -> ignoreErrorHeaders.add(header.toLowerCase(Locale.ROOT)));
     }
 
-    /* dieser Code könnte noch interessant werden, aus altem CockpitHttpClient. Momentan (August '21) gibt es keinen Weg, dem
-       neuen Http-Client einen Hostname Verifier mitzugeben... das haben sie wohl einfach vergessen.
+    /* This code from an older HTTP client implementation might still become interesting. As of August 2021, there is no way
+       to supply a hostname verifier to the new JDK HttpClient... they apparently just forgot about that.
         https://bugs.openjdk.java.net/browse/JDK-8213309
 
     private static CloseableHttpClient createAcceptSelfSignedCertificateClient() throws Exception {
@@ -579,10 +677,22 @@ public class JanitorHttpClient extends JanitorComposed<JanitorHttpClient> implem
     }
     */
 
+    /**
+     * Sets the bearer token that is sent in the Authorization header.
+     * @param token the token
+     * @return this client
+     */
     public JanitorHttpClient setBearerToken(final String token) {
         return addHeader("Authorization", "Bearer " + token);
     }
 
+    /**
+     * Converts a script value to JSON text; strings are used as they are. Depending on the settings, non-ASCII characters are escaped.
+     * @param proc the running script process
+     * @param arg the value
+     * @return the JSON text
+     * @throws JanitorArgumentException if the value cannot be converted
+     */
     public String convertToValidJson(final JanitorScriptProcess proc, final JanitorObject arg) throws JanitorArgumentException {
         final String json = _convertToValidJson(proc, arg);
         if (json != null && convertJsonToPureAscii) {
@@ -593,6 +703,13 @@ public class JanitorHttpClient extends JanitorComposed<JanitorHttpClient> implem
         return json;
     }
 
+    /**
+     * Converts a script value to JSON text; strings are used as they are.
+     * @param proc the running script process
+     * @param arg the value
+     * @return the JSON text
+     * @throws JanitorArgumentException if the value cannot be converted
+     */
     public String _convertToValidJson(final JanitorScriptProcess proc, final JanitorObject arg) throws JanitorArgumentException {
         if (arg instanceof JString str) {
             return str.janitorGetHostValue();
@@ -626,14 +743,22 @@ public class JanitorHttpClient extends JanitorComposed<JanitorHttpClient> implem
         throw new JanitorArgumentException(proc, "failed to convert to JSON: " + arg + " [" + simpleClassNameOf(arg) + "]");
     }
 
+    /**
+     * @return the timeout for requests, in seconds
+     */
     public int getRequestTimeoutSeconds() {
         return requestTimeoutSeconds;
     }
 
+    /**
+     * Sets the timeout for requests.
+     * @param requestTimeoutSeconds the timeout in seconds
+     */
     public void setRequestTimeoutSeconds(final int requestTimeoutSeconds) {
         this.requestTimeoutSeconds = requestTimeoutSeconds;
     }
 
+    /** Closes the underlying client; called automatically when the reference count drops to zero. */
     public void cleanClose() {
         if (verbose) {
             log.info("closing HTTP client (auto closed via ref counter)");
@@ -716,6 +841,7 @@ public class JanitorHttpClient extends JanitorComposed<JanitorHttpClient> implem
 
     }
 
+    /** The response to a request, from which errors can be derived. */
     public class JanitorJsonResponse {
         private final String url;
         private final String method;
@@ -740,18 +866,32 @@ public class JanitorHttpClient extends JanitorComposed<JanitorHttpClient> implem
             body = response.body();
         }
 
+        /**
+         * @return the HTTP status code
+         */
         public int getCode() {
             return code;
         }
 
+        /**
+         * @return the response headers
+         */
         public Map<String, String> getHeaders() {
             return headers;
         }
 
+        /**
+         * @return the response body
+         */
         public String getBody() {
             return body;
         }
 
+        /**
+         * Throws an exception if the status code indicates a failure, i.e. it is below 200 or 400 and above.
+         * @param resp the response
+         * @throws HttpException if the request failed
+         */
         public void throwIfFailed(final JanitorJsonResponse resp) throws HttpException {
             if (code < 200 || code >= 400) {
                 final String respBody = resp.getBody();

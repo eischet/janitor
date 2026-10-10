@@ -10,12 +10,22 @@ package com.eischet.janitor.api;
  *
  */
 public interface JanitorEnvironmentProvider {
+    /**
+     * @return the current environment
+     */
     JanitorEnvironment getCurrentEnvironment();
 
+    /**
+     * @return the priority of this provider; if there are several providers, the one with the highest priority is used
+     */
     default int priority() {
         return 0;
     }
 
+    /**
+     * @param env the environment
+     * @return a provider that always returns the given environment
+     */
     static JanitorEnvironmentProvider returning(JanitorEnvironment env) {
         return new JanitorEnvironmentProvider() {
             @Override

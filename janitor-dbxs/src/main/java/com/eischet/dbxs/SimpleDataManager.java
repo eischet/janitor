@@ -27,6 +27,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
+/**
+ * The standard {@link DataManager}: it runs transactions on connections that it takes from a {@link DataSource},
+ * and binds one connection to the current thread while a transaction is running.
+ */
 @SuppressWarnings("unused") // this is not unused, it's our main API, currently all the tests are hidden from the public in an app though...
 public class SimpleDataManager implements DataManager {
 
@@ -53,6 +57,9 @@ public class SimpleDataManager implements DataManager {
         this.initStatements = initStatements == null ? Collections.emptyList() : List.copyOf(initStatements);
     }
 
+    /**
+     * @return the data source that connections are taken from
+     */
     public DataSource getDataSource() {
         return dataSource;
     }
@@ -87,7 +94,7 @@ public class SimpleDataManager implements DataManager {
 
     @Override
     public void scheduleTransaction(final DatabaseTransaction transaction) {
-        // war früher im Hintergrund, hatte sich aber nicht bewährt...
+        // this used to run in the background, but that did not work out...
         try {
             executeTransaction(transaction);
         } catch (DatabaseError e) {
@@ -140,12 +147,22 @@ public class SimpleDataManager implements DataManager {
         }
     }
 
+    /** Receives exceptions that occur while a data manager runs transactions. */
     public interface ExceptionConsumer {
+        /**
+         * Called when an exception occurs.
+         * @param self the data manager
+         * @param e the exception
+         */
         void accept(SimpleDataManager self, Throwable e);
     }
 
     protected static @Nullable ExceptionConsumer exceptionConsumer = null;
 
+    /**
+     * Sets a global consumer for exceptions that occur while data managers run transactions.
+     * @param exceptionConsumer the consumer, or null to remove it
+     */
     public static void setExceptionConsumer(@Nullable final ExceptionConsumer exceptionConsumer) {
         SimpleDataManager.exceptionConsumer = exceptionConsumer;
     }
@@ -164,6 +181,7 @@ public class SimpleDataManager implements DataManager {
         return defaultSchema;
     }
 
+    /** A JDBC connection together with some bookkeeping, e.g. when it was checked out and how many updates were made with it. */
     public static class ConnectionWrapper {
         private final Connection conn;
         private final long checkoutTime;
@@ -176,18 +194,28 @@ public class SimpleDataManager implements DataManager {
             this.checkoutTime = System.currentTimeMillis();
         }
 
+        /**
+         * @return the wrapped JDBC connection
+         */
         public Connection getConn() {
             return conn;
         }
 
+        /**
+         * @return the time when the connection was checked out, in milliseconds since the epoch
+         */
         public long getCheckoutTime() {
             return checkoutTime;
         }
 
+        /**
+         * @return the number of updates that were made with this connection
+         */
         public long getUpdates() {
             return updates;
         }
 
+        /** Counts an update, so that the transaction knows that it has to be committed or rolled back. */
         public void countUpdate() {
             ++updates;
         }
@@ -202,10 +230,17 @@ public class SimpleDataManager implements DataManager {
                    '}';
         }
 
+        /**
+         * @return true if the connection was orphaned, i.e. the owning transaction ended without releasing it
+         */
         public boolean getOrphaned() {
             return orphaned;
         }
 
+        /**
+         * Marks the connection as orphaned or not.
+         * @param orphaned true if the connection is orphaned
+         */
         public void setOrphaned(final boolean orphaned) {
             this.orphaned = orphaned;
         }
@@ -306,6 +341,7 @@ public class SimpleDataManager implements DataManager {
             }
         }
 
+        /** Rolls back the transaction, if any updates were made. */
         public void rollback() {
             if (conn.getUpdates() > 0) {
                 log.info("rolling back on {}", this);
@@ -319,6 +355,7 @@ public class SimpleDataManager implements DataManager {
             }
         }
 
+        /** Commits the transaction, if any updates were made. */
         public void commit() {
             if (conn.getUpdates() > 0) {
                 log.debug("committing on {}", this);

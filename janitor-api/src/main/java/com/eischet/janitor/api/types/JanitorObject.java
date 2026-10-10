@@ -253,6 +253,9 @@ public interface JanitorObject {
     default void janitorWarn(final @NotNull String message) {
     }
 
+    /**
+     * @return a provider that looks up names as attributes of this object
+     */
     default Scope.ImplicitObjectProvider asImplicitObjectProvider() {
         return (process, name) -> {
             try {

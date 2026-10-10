@@ -4,6 +4,7 @@ import com.docusign.esign.model.SignHere;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 
+/** Wrapper for the DocuSign sign here. */
 public class DocusignSignHere extends JanitorComposed<DocusignSignHere> {
 
     public static final DispatchTable<DocusignSignHere> DISPATCHER = new DispatchTable<>();
@@ -66,6 +67,9 @@ public class DocusignSignHere extends JanitorComposed<DocusignSignHere> {
         this.wrapped = new SignHere();
     }
 
+    /**
+     * @return the wrapped DocuSign object
+     */
     public SignHere getWrapped() {
         return wrapped;
     }

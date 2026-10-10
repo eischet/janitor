@@ -9,7 +9,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Test JSR224 integration of Janitor (javax.script).
+ * Test JSR223 integration of Janitor (javax.script).
  */
 public class Jsr223TestCase {
 

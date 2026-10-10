@@ -5,6 +5,7 @@ import com.eischet.janitor.api.modules.JanitorModuleRegistration;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 
+/** The script module "generator", which lets scripts generate Java code. */
 public class GeneratorModule extends JanitorComposed<GeneratorModule> implements JanitorModule {
 
     public static final DispatchTable<GeneratorModule> DISPATCH = new DispatchTable<>(GeneratorModule::new);

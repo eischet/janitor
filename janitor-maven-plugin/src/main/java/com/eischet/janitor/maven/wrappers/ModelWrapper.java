@@ -7,6 +7,7 @@ import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import com.eischet.janitor.maven.env.MavenScriptingEnv;
 import org.apache.maven.model.*;
 
+/** Makes a Maven model, i.e. the contents of a POM, available to scripts. */
 public class ModelWrapper extends JanitorWrapper<Model> {
 
     private static final WrapperDispatchTable<Model> dispatcher = new WrapperDispatchTable<>();
@@ -72,6 +73,12 @@ public class ModelWrapper extends JanitorWrapper<Model> {
 
     }
 
+    /**
+     * Creates a new, empty model, for use as the constructor in scripts. The call arguments are not used yet.
+     * @param process the running script process
+     * @param args the call arguments
+     * @return the new model
+     */
     public static ModelWrapper construct(final JanitorScriptProcess process, final JCallArgs args) {
         return new ModelWrapper(new Model()); // TODO: .applyConstructorArgs(args)
     }

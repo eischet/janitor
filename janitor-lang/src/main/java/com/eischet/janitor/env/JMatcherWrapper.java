@@ -8,6 +8,7 @@ import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 
 import java.util.regex.Matcher;
 
+/** Wraps a Java regular expression {@link Matcher} for use in scripts. */
 public class JMatcherWrapper extends JanitorWrapper<Matcher> {
 
     private static final WrapperDispatchTable<Matcher> DISPATCH = new WrapperDispatchTable<>(null);

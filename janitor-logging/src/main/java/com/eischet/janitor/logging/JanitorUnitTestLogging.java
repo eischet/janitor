@@ -4,6 +4,7 @@ import com.eischet.janitor.logging.formatter.ColoredConsoleFormatter;
 
 import java.util.logging.*;
 
+/** Configures java.util.logging for unit tests: colored console output, with warnings and errors only. */
 public class JanitorUnitTestLogging {
 
     /*
@@ -19,6 +20,7 @@ public class JanitorUnitTestLogging {
         setup();
     }
 
+    /** Configures the root logger with a colored console handler. */
     public static void setup() {
         // shut the f up: System.out.println("CONFIGURING UNIT TEST LOGGING");
         final ErrorManager errorManager = new JanitorLoggingErrorManager();

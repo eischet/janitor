@@ -113,6 +113,13 @@ public class JString extends JanitorComposed<JString> implements JConstant, Json
         producer.value(wrapped);
     }
 
+    /**
+     * Creates a new string value.
+     * @param dispatcher the dispatcher for strings
+     * @param value the string to wrap
+     * @param interner a function that interns strings, to conserve memory
+     * @return the new value
+     */
     public static JString newInstance(final Dispatcher<JString> dispatcher, final String value, final Function<String, String> interner) {
         return new JString(dispatcher, value, interner);
     }

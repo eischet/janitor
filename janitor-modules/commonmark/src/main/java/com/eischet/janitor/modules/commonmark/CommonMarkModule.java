@@ -6,6 +6,7 @@ import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import org.commonmark.parser.Parser;
 
+/** The script module "commonmark", which parses Markdown and offers the document as a tree of nodes. */
 public class CommonMarkModule extends JanitorComposed<CommonMarkModule> implements JanitorModule {
 
     private static final DispatchTable<CommonMarkModule> dispatch = new DispatchTable<>(CommonMarkModule::new, false);

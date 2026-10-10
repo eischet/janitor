@@ -8,6 +8,7 @@ import com.eischet.janitor.version.Revision;
 
 import java.util.Arrays;
 
+/** The script module "janitor", which offers information about the Janitor runtime and its host. */
 public class JanitorInternalsModule extends JanitorComposed<JanitorInternalsModule> implements com.eischet.janitor.api.modules.JanitorModule {
 
     public static final DispatchTable<JanitorInternalsModule> dispatcher = new DispatchTable<>(JanitorInternalsModule::new, false);

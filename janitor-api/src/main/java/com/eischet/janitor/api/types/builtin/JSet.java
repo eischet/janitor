@@ -86,6 +86,12 @@ public class JSet extends JanitorWrapper<Set<JanitorObject>> implements JIterabl
     }
 
 
+    /**
+     * Creates a new set value.
+     * @param dispatcher the dispatcher for sets
+     * @param set the set to wrap
+     * @return the new value
+     */
     public static JSet newInstance(final Dispatcher<JanitorWrapper<Set<JanitorObject>>> dispatcher, final Set<JanitorObject> set) {
         return new JSet(dispatcher, set);
     }

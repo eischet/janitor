@@ -32,6 +32,13 @@ public class JanitorWrapper<T> implements JanitorTypedObject<T> {
         this.wrapped = Objects.requireNonNull(wrapped, "wrapped");
     }
 
+    /**
+     * Creates a wrapper whose dispatcher is another wrapper of the same kind.
+     * @param dispatcher the dispatcher, which must be a {@link JanitorWrapper} itself
+     * @param wrapped the Java object to wrap
+     * @param cls the class of the dispatcher
+     * @param <X> the type of the dispatcher
+     */
     @SuppressWarnings("unchecked")
     public <X extends JanitorWrapper<T>> JanitorWrapper(final @NotNull X dispatcher, final @NotNull T wrapped, final @NotNull Class<X> cls) {
         this.dispatcher = (Dispatcher<JanitorWrapper<T>>) Objects.requireNonNull(dispatcher, "dispatcher");
@@ -70,6 +77,9 @@ public class JanitorWrapper<T> implements JanitorTypedObject<T> {
         return Objects.hashCode(wrapped);
     }
 
+    /**
+     * @return the dispatcher of this wrapper
+     */
     public Dispatcher<JanitorWrapper<T>> getDispatcher() {
         return dispatcher;
     }

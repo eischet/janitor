@@ -1,5 +1,6 @@
 package com.eischet.janitor.toolbox.json.api;
 
+/** The types of tokens that a {@link JsonInputStream} can encounter. */
 public enum JsonTokenType {
 
     BEGIN_ARRAY,

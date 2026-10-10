@@ -8,6 +8,7 @@ import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.runtime.BaseRuntime;
 import org.apache.maven.plugin.logging.SystemStreamLog;
 
+/** The runtime for scripts that run in a Maven build: it writes output and warnings to the Maven log. */
 public class MavenScriptingRuntime extends BaseRuntime {
 
     private final SystemStreamLog log;

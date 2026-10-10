@@ -10,12 +10,20 @@ import com.eischet.janitor.runtime.modules.CollectionsModule;
 
 import java.util.function.Consumer;
 
+/** A runtime for tests, which collects everything a script prints instead of writing it to the console. */
 public class OutputCatchingTestRuntime extends BaseRuntime {
 
+    /**
+     * @return a new runtime with a default environment
+     */
     public static OutputCatchingTestRuntime fresh() {
         return fresh(null);
     }
 
+    /**
+     * @param environmentConfigurer configures the environment, e.g. by adding modules; may be null
+     * @return a new runtime with a default environment
+     */
     public static OutputCatchingTestRuntime fresh(final Consumer<JanitorEnvironment> environmentConfigurer) {
         final JanitorEnvironment env = new JanitorDefaultEnvironment(new JanitorFormattingGerman()) {
             @Override
@@ -57,10 +65,14 @@ public class OutputCatchingTestRuntime extends BaseRuntime {
         output.append("WARNING: ").append(warning).append("\n");
     }
 
+    /**
+     * @return everything that was printed so far
+     */
     public String getAllOutput() {
         return output.toString();
     }
 
+    /** Discards everything that was printed so far. */
     public void resetOutput() {
         output.setLength(0);
     }

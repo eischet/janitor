@@ -15,10 +15,16 @@ public class ExpressionHandler {
         this.prepper = prepper;
     }
 
+    /**
+     * @return the SQL text for the expression
+     */
     public @NotNull String getSqlFragment() {
         return sqlFragment;
     }
 
+    /**
+     * @return the builder for the prepper that binds the values of the expression, or null if the SQL needs no parameters
+     */
     public @Nullable ExpressionPrepperBuilder buildPrepper() {
         return prepper;
     }

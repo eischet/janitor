@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * <p>
  * There's already a comment marking this exact spot: Assignment.java:49
  * "// LATER: turn into :   runningScript.lookupScopedVar(id);" -- and PostfixIncrement.java:51 has
- * a matching "// vorher falsch: ..." comment showing the same fix was already applied there, just
+ * a matching "// previously wrong: ..." comment showing the same fix was already applied there, just
  * never carried over to plain/compound assignment.
  */
 public class ClosureVariableAssignmentTestCase extends JanitorTest {

@@ -27,6 +27,13 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+/**
+ * A lazily loaded list of the join records that connect a parent entity to other entities, i.e. a many-to-many association.
+ * @param <T> the type of the join records
+ * @param <U> the type of the uplink
+ * @param <V> the type of the DAO for the join records
+ * @param <W> the type of the entities on the other side of the join
+ */
 public class JoinedList<T extends OrmJoined, U extends Uplink, V extends JoinDao<T>, W extends OrmEntity> implements JanitorAware {
 
     protected final @NotNull JoinedList.JanitorJoinedList companion = new JanitorJoinedList(this);
@@ -54,14 +61,24 @@ public class JoinedList<T extends OrmJoined, U extends Uplink, V extends JoinDao
     }
 
 
+    /**
+     * @return true if the join records were loaded from the database
+     */
     public boolean isLoaded() {
         return loaded;
     }
 
+    /**
+     * @return a stream of a copy of the join records that are in the list now; this does not load them from the database
+     */
     public Stream<T> stream() {
         return readList().stream();
     }
 
+    /**
+     * Loads the join records from the database, unless that has already happened.
+     * @return this list
+     */
     public JoinedList<T, U, V, W> lazyLoad() {
         if (!loaded) {
             final U uplink = uplinkSupplier.get();
@@ -108,6 +125,9 @@ public class JoinedList<T extends OrmJoined, U extends Uplink, V extends JoinDao
     }
 
 
+    /**
+     * @return the list of join records, which is created if it does not exist yet
+     */
     protected @NotNull List<T> ensureList() {
         if (list == null) {
             list = new ArrayList<>();
@@ -115,25 +135,40 @@ public class JoinedList<T extends OrmJoined, U extends Uplink, V extends JoinDao
         return list;
     }
 
+    /**
+     * @return a copy of the list of join records, to protect against concurrent modification
+     */
     protected @NotNull @Unmodifiable List<T> readList() {
         // copy the existing list to prevent concurrent modification exceptions
         return list == null ? Collections.emptyList() : List.copyOf(list);
     }
 
+    /**
+     * Adds a join record to the list in memory; this does not save it in the database.
+     * @param entity the join record
+     */
     public void add(T entity) {
         ensureList().add(entity);
     }
 
+    /** Removes all join records from the list in memory; this does not delete them in the database. */
     public void clear() {
         if (list != null) {
             list.clear();
         }
     }
 
+    /**
+     * Adds a join record of unknown type to the list.
+     * @param entity the join record, which must be of the join record class of this list
+     */
     protected void addGeneric(JanitorObject entity) {
         add(entityClass.cast(entity));
     }
 
+    /**
+     * @return the number of join records that are in the list now
+     */
     public int size() {
         return list == null ? 0 : list.size();
     }
@@ -143,23 +178,36 @@ public class JoinedList<T extends OrmJoined, U extends Uplink, V extends JoinDao
         return companion;
     }
 
+    /**
+     * @return true if there are no join records in the list now
+     */
     public boolean isEmpty() {
         return list == null || list.isEmpty();
     }
 
+    /**
+     * @return the join records
+     */
     public Stream<T> getFullJoinedObjects() {
         return list == null ? Stream.empty() : list.stream();
     }
 
+    /**
+     * @return the references to the entities on the other side of the join, one for each join record
+     */
     public Stream<ForeignKey<W>> getMainJoinedObjects() {
         return getFullJoinedObjects().map(plucker);
     }
 
+    /**
+     * @return the class of the join records
+     */
     public Class<T> getEntityClass() {
         return entityClass;
     }
 
 
+    /** The script view of a {@link JoinedList}, which offers the methods size and add. */
     protected static class JanitorJoinedList extends JanitorComposed<JanitorJoinedList> implements JIterable {
         public static DispatchTable<JanitorJoinedList> DISPATCH = new DispatchTable<>();
 
@@ -194,6 +242,9 @@ public class JoinedList<T extends OrmJoined, U extends Uplink, V extends JoinDao
         }
     }
 
+    /**
+     * @return a short description of this list, including whether it was loaded
+     */
     public String toString() {
         return "JoinedList<" + entityClass.getSimpleName() + ">(" + (loaded && list != null ? list.size() : "not loaded yet") + ")";
     }

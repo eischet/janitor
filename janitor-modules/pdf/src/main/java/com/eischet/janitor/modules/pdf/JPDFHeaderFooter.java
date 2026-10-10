@@ -39,6 +39,9 @@ public class JPDFHeaderFooter extends JanitorWrapper<HeaderFooter> {
         super(DISPATCH_TABLE, new HeaderFooter(before.getPhrase(), after.getPhrase()));
     }
 
+    /**
+     * @return the wrapped HeaderFooter object
+     */
     public HeaderFooter getHeaderFooter() {
         return wrapped;
     }

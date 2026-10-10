@@ -5,6 +5,12 @@ import com.eischet.janitor.orm.entity.OrmJoiner;
 
 import java.util.List;
 
+/**
+ * Finds the join records that connect entities.
+ * @param <J> the type of the join records
+ * @param <L> the type of the entities on the left side
+ * @param <R> the type of the entities on the right side
+ */
 public interface JoinManager<
         J extends OrmJoiner<L, R>,
         L extends OrmEntity,

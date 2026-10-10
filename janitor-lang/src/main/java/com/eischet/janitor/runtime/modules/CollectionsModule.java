@@ -10,6 +10,7 @@ import com.eischet.janitor.api.types.JanitorObject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+/** A native module with factory functions for collections: {@code set}, {@code list} and {@code map}. */
 public class CollectionsModule extends JanitorNativeModule {
 
     public static final JanitorModuleRegistration REGISTRATION = new JanitorModuleRegistration("collections", CollectionsModule::new);

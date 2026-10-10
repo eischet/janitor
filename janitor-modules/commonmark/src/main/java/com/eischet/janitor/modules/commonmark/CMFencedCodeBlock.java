@@ -4,6 +4,7 @@ import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import org.commonmark.node.FencedCodeBlock;
 
+/** Wrapper for the CommonMark fenced code block node. */
 public class CMFencedCodeBlock extends CMNode {
     private static final WrapperDispatchTable<FencedCodeBlock> dispatch = new WrapperDispatchTable<>();
 

@@ -43,6 +43,13 @@ public class OperatingSystemModule extends JanitorComposed<OperatingSystemModule
         super(dispatcher);
     }
 
+    /**
+     * Script method {@code os.getenv(name)}: reads an environment variable.
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return the value, or null if the variable is not set
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public JanitorObject getenv(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(1);
         final String name = arguments.getString(0).janitorGetHostValue();

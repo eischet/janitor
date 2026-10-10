@@ -11,9 +11,11 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
+/** Namespace for the ORM support: it holds the meta-data keys that describe how entities map to database tables and columns. */
 public final class JanitorOrm {
 
 
+    /** The meta-data keys used by the ORM, which are attached to dispatch tables and their properties. */
     public static class MetaData {
         /**
          * A hint for the column type that should be used
@@ -81,16 +83,28 @@ public final class JanitorOrm {
         public static MetaDataKey<VersionRange> VERSION_RANGE = new MetaDataKey<>("version_range", VersionRange.class);
 
         // Work around the situation that we cannot pass List<String>.class nor List.class to new MetaDataKey.... LOL
+        /** A list of strings that can be used as a value of a {@link MetaDataKey}, which cannot be declared for a generic list type. */
         public static class StringList extends ArrayList<String> {
             private StringList(@NotNull final Collection<? extends String> c) {
                 super(c);
             }
+            /**
+             * @param elements the elements
+             * @return a list with the given elements
+             */
             public static StringList of(@NotNull final String... elements) {
                 return new StringList(List.of(elements));
             }
+            /**
+             * @param c the elements
+             * @return a list with the given elements
+             */
             public static StringList of(@NotNull final Collection<? extends String> c) {
                 return new StringList(c);
             }
+            /**
+             * @return an empty list
+             */
             public static StringList of() {
                 return new StringList(new LinkedList<>());
             }
@@ -99,6 +113,7 @@ public final class JanitorOrm {
 
     }
 
+    /** Reserved for a fluent configuration API; it has no functionality yet. */
     public static final class Builder {
 
 

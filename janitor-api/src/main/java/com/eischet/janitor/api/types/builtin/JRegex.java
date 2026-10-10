@@ -31,6 +31,12 @@ public class JRegex extends JanitorWrapper<Pattern> implements JConstant {
         return "regex";
     }
 
+    /**
+     * Creates a new regular expression value.
+     * @param dispatch the dispatch table for regular expressions
+     * @param pattern the compiled pattern
+     * @return the new value
+     */
     public static JRegex newInstance(final WrapperDispatchTable<Pattern> dispatch, final Pattern pattern) {
         return new JRegex(dispatch, pattern);
     }

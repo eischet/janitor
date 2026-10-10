@@ -4,6 +4,7 @@ import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import org.commonmark.node.Emphasis;
 
+/** Wrapper for the CommonMark emphasis node. */
 public class CMEmphasis extends CMNode {
     private static final WrapperDispatchTable<Emphasis> dispatch = new WrapperDispatchTable<>();
 

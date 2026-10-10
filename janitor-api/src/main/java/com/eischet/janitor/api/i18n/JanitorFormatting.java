@@ -38,5 +38,10 @@ public interface JanitorFormatting {
      */
     String formatDateTimeNoSeconds(final LocalDateTime hostValue);
 
+    /**
+     * Formats a date as a string.
+     * @param date the date
+     * @return the formatted string
+     */
     String formatDate(final LocalDate date);
 }

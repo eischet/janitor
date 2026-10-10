@@ -4,6 +4,7 @@ import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.compiler.ast.expression.Expression;
 
+/** Binary operation that compares the string representations of two values for equality, ignoring case. */
 public class CaseInsensitiveEquality extends BinaryOperation {
     /**
      * Constructor.

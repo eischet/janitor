@@ -18,6 +18,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+/** A ZIP file that scripts can add files and text to. It is closed automatically when the script process ends. */
 public class ZipFile extends JanitorComposed<ZipFile> implements JanitorCleanupRequired {
 
     private static final JanitorLogger log = JanitorLogger.getLogger(ZipFile.class);
@@ -128,6 +129,12 @@ public class ZipFile extends JanitorComposed<ZipFile> implements JanitorCleanupR
         }
     }
 
+    /**
+     * Adds a file from the file system.
+     * @param filePath the path of the file
+     * @param zipEntryName the name inside the ZIP file, or null to use the name of the file
+     * @throws IOException if the file cannot be read or written
+     */
     public void addFile(String filePath, String zipEntryName) throws IOException {
         final File file = new File(filePath);
         final ZipEntry zipEntry = new ZipEntry(zipEntryName == null ? file.getName() : zipEntryName);
@@ -138,6 +145,13 @@ public class ZipFile extends JanitorComposed<ZipFile> implements JanitorCleanupR
         }
     }
 
+    /**
+     * Adds a text.
+     * @param text the text
+     * @param zipEntryName the name inside the ZIP file
+     * @param encoding the character set, or null for UTF-8
+     * @throws IOException if the entry cannot be written
+     */
     public void addText(String text, String zipEntryName, @Nullable String encoding) throws IOException {
         ZipEntry zipEntry = new ZipEntry(zipEntryName);
         zos.putNextEntry(zipEntry);
@@ -145,6 +159,12 @@ public class ZipFile extends JanitorComposed<ZipFile> implements JanitorCleanupR
         zos.closeEntry();
     }
 
+    /**
+     * Adds binary data.
+     * @param bytes the data
+     * @param zipEntryName the name inside the ZIP file
+     * @throws IOException if the entry cannot be written
+     */
     public void addBinary(byte[] bytes, String zipEntryName) throws IOException {
         ZipEntry zipEntry = new ZipEntry(zipEntryName);
         zos.putNextEntry(zipEntry);

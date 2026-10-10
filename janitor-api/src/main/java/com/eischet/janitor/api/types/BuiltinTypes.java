@@ -49,25 +49,53 @@ public interface BuiltinTypes {
     @NotNull
     JanitorObject nullableString(final @Nullable String value);
 
+    /**
+     * @return a new, empty map
+     */
     @NotNull
     JMap map();
 
+    /**
+     * @return a new, empty list
+     */
     @NotNull
     JList list();
 
+    /**
+     * @param initialSize the initial capacity
+     * @return a new, empty list
+     */
     @NotNull
     JList list(int initialSize);
 
+    /**
+     * @param list the elements
+     * @return a new list with the given elements
+     */
     @NotNull
     JList list(@NotNull List<? extends JanitorObject> list);
 
+    /**
+     * @param stream the elements
+     * @return a new list with the given elements
+     */
     @NotNull
     JList list(@NotNull Stream<? extends JanitorObject> stream);
 
+    /**
+     * Creates a list that notifies a consumer when it is changed.
+     * @param elementDispatchTable the dispatch table of the elements
+     * @param stream the initial elements
+     * @param onChange called when the list changes
+     * @return the new list
+     */
     @NotNull
     JList responsiveList(final DispatchTable<?> elementDispatchTable, @NotNull Stream<? extends JanitorObject> stream, @NotNull Consumer<JList> onChange);
 
 
+    /**
+     * @return a new, empty set
+     */
     @NotNull
     JSet set();
 
@@ -76,6 +104,10 @@ public interface BuiltinTypes {
     @NotNull JSet set(@NotNull Stream<? extends JanitorObject> stream);
 
 
+    /**
+     * @param value the number
+     * @return an integer value
+     */
     @NotNull
     JInt integer(long value);
 
@@ -83,6 +115,10 @@ public interface BuiltinTypes {
 
     @NotNull JanitorObject nullableInteger(@Nullable Number value);
 
+    /**
+     * @param arr the bytes
+     * @return a binary value
+     */
     @NotNull
     JBinary binary(byte @NotNull [] arr);
 
@@ -105,6 +141,9 @@ public interface BuiltinTypes {
 
     @NotNull JDateTime dateTime(@NotNull LocalDateTime dateTime);
 
+    /**
+     * @return access to the dispatch tables of the built-in types
+     */
     BuiltinTypeInternals internals();
 
     @NotNull JanitorObject nullableDateTimeFromLiteral(@Nullable String text);

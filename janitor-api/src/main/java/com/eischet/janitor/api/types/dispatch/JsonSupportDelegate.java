@@ -5,6 +5,10 @@ import com.eischet.janitor.toolbox.json.api.JsonInputStream;
 import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * A {@link JsonSupport} that is assembled from separate reader, writer and default-value check functions.
+ * @param <U> the type of the value
+ */
 public class JsonSupportDelegate<U> implements JsonSupport<U> {
 
     private final JsonSupportDelegateRead<U> _read;

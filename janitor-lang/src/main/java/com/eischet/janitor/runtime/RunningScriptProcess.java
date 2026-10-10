@@ -11,6 +11,7 @@ import com.eischet.janitor.compiler.ast.statement.Script;
 import com.eischet.janitor.compiler.ast.statement.controlflow.ReturnStatement;
 import org.jetbrains.annotations.NotNull;
 
+/** A script process that is actually running a script, and counts the instructions that it executes. */
 public class RunningScriptProcess extends AbstractScriptProcess {
 
     private final Script script;
@@ -34,10 +35,16 @@ public class RunningScriptProcess extends AbstractScriptProcess {
         }
     }
 
+    /**
+     * @return the number of instructions executed so far
+     */
     public long getInstructionCounter() {
         return instructionCounter;
     }
 
+    /**
+     * @return the maximum number of instructions that the script may execute, or 0 if there is no limit
+     */
     public long getMaxInstructionCount() {
         return maxInstructionCount;
     }
@@ -52,6 +59,11 @@ public class RunningScriptProcess extends AbstractScriptProcess {
         getRuntime().warn(warning);
     }
 
+    /**
+     * Runs the script.
+     * @return the result of the script, i.e. the value that it returned or its last value
+     * @throws JanitorRuntimeException if the script fails
+     */
     public @NotNull JanitorObject run() throws JanitorRuntimeException {
         try {
             script.execute(this);

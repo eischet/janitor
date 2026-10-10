@@ -9,6 +9,7 @@ import com.eischet.janitor.api.types.builtin.JInt;
 
 import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
+/** Converts between Janitor numbers and Java {@link Double} values. */
 public class FloatConverter implements TwoWayConverter<Double> {
     public static final FloatConverter INSTANCE = new FloatConverter();
 

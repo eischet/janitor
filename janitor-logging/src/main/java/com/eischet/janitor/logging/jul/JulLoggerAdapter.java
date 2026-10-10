@@ -310,11 +310,11 @@ public final class JulLoggerAdapter extends LegacyAbstractLogger implements Loca
 
         // there's nothing I can do without changing the SLF4J API, thank you.
         // noinspection deprecation
-        // Schön wäre: record.setInstant(event.getInstant());
+        // It would be nice to have: record.setInstant(event.getInstant());
         if (event.getTimeStamp() > 0) {
             record.setMillis(event.getTimeStamp());
         } else {
-            // Ich weiß nicht warum, aber manche Records kommen hier ohne Zeit, darum müssen wir eine substituieren:
+            // For some reason, some records arrive here without a timestamp, so we have to substitute one:
             record.setMillis(System.currentTimeMillis());
         }
 

@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import java.nio.charset.StandardCharsets;
 import java.util.stream.Collectors;
 
+/** Wrapper for the DocuSign API client: it handles authentication, e.g. via JWT, and provides access to the APIs. */
 public class DocusignApiClient extends JanitorComposed<DocusignApiClient> {
 
     protected static final Logger log = LoggerFactory.getLogger(DocusignApiClient.class);

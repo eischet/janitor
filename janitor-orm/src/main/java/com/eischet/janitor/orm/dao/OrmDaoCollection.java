@@ -74,45 +74,84 @@ public abstract class OrmDaoCollection<S extends OrmDaoCollection<S>> extends Ja
 
     // registration: called by the DAO constructors
 
+    /**
+     * Registers a DAO, so that it can be found by the name of its entity class.
+     * @param dao the DAO
+     */
     protected void registerDao(final @NotNull Dao<? extends OrmEntity> dao) {
         entities.put(dao.getEntityClassName(), dao.getEntityDispatchTable());
         daos.put(dao.getEntityClassName(), dao);
     }
 
+    /**
+     * Registers a DAO for a join table, so that it can be found by the name of its entity class.
+     * @param dao the DAO
+     */
     protected void registerJoinDao(final @NotNull JoinDao<? extends OrmJoined> dao) {
         joinDaos.put(dao.getEntityClassName(), dao);
     }
 
     // lookup by class name, as needed for foreign keys and scripts
 
+    /**
+     * Looks up the DAO of an entity class.
+     * @param className the simple name of the entity class
+     * @return the DAO, or null if there is none
+     */
     public @Nullable Dao<? extends OrmEntity> getDao(final @Nullable String className) {
         return daos.get(className);
     }
 
+    /**
+     * Looks up the DAO of a join table.
+     * @param className the simple name of the join record class
+     * @return the DAO, or null if there is none
+     */
     public @Nullable JoinDao<? extends OrmJoined> getJoinDao(final @Nullable String className) {
         return joinDaos.get(className);
     }
 
+    /**
+     * Looks up the dispatch table of an entity class.
+     * @param className the simple name of the entity class
+     * @return the dispatch table, or null if there is none
+     */
     public @Nullable DispatchTable<?> getEntity(final @Nullable String className) {
         return entities.get(className);
     }
 
+    /**
+     * @return the names of all registered entity classes
+     */
     public @Unmodifiable Set<String> getEntityNames() {
         return Collections.unmodifiableSet(new LinkedHashSet<>(entities.keySet()));
     }
 
+    /**
+     * @return the names of all registered join record classes
+     */
     public @Unmodifiable Set<String> getJoinNames() {
         return Collections.unmodifiableSet(new LinkedHashSet<>(joinDaos.keySet()));
     }
 
+    /**
+     * @return the dispatch tables of all registered entities
+     */
     public @Unmodifiable Collection<DispatchTable<?>> getEntities() {
         return List.copyOf(entities.values());
     }
 
+    /**
+     * @return all registered DAOs
+     */
     public @Unmodifiable Collection<Dao<? extends OrmEntity>> getDaos() {
         return List.copyOf(daos.values());
     }
 
+    /**
+     * Calls the consumer for the dispatch table of each entity and join table.
+     * @param consumer receives the name of the entity class and its dispatcher
+     */
     public void forEachDispatchTable(final BiConsumer<String, Dispatcher<?>> consumer) {
         entities.forEach(consumer);
         joinDaos.forEach((name, dao) -> consumer.accept(name, dao.getDispatcher()));

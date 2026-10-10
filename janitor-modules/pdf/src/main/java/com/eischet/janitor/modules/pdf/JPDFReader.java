@@ -33,6 +33,9 @@ public class JPDFReader extends JanitorWrapper<PdfReader> {
         super(DISPATCH_TABLE, reader);
     }
 
+    /**
+     * @return the wrapped PdfReader object
+     */
     public PdfReader getReader() {
         return wrapped;
     }

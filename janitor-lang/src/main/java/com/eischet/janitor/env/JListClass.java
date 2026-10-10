@@ -24,6 +24,14 @@ import java.util.stream.Collectors;
 public class JListClass {
 
 
+    /**
+     * Script method {@code list.parseJson(json)}: reads a JSON array into this list.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return the list
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static JList __parseJson(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         try {
             return parseJson(self, arguments.require(1).getString(0).janitorGetHostValue());
@@ -65,6 +73,14 @@ public class JListClass {
     }
 
 
+    /**
+     * Script method {@code list.toJson()}: converts this list to JSON.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return the JSON text
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static JString __toJson(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         try {
             arguments.require(0);
@@ -74,6 +90,14 @@ public class JListClass {
         }
     }
 
+    /**
+     * Script method {@code list.count(x)}: counts how often an element occurs in this list.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return the number of occurrences
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static JInt __count(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         final JanitorObject countable = arguments.require(1).get(0);
         int count = 0;
@@ -85,6 +109,14 @@ public class JListClass {
         return Janitor.integer(count);
     }
 
+    /**
+     * Script method {@code list.filter(f)}: creates a new list with those elements for which the function returns true.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return the filtered list
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static JList __filter(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         final JanitorObject callable = arguments.getRequired(0, JanitorObject.class);
         if (callable instanceof JCallable func) {
@@ -100,6 +132,14 @@ public class JListClass {
         }
     }
 
+    /**
+     * Script method {@code list.map(f)}: creates a new list with the results of calling the function on each element.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return the mapped list
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static JList __map(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         final JanitorObject callable = arguments.getRequired(0, JanitorObject.class);
         if (callable instanceof JCallable func) {
@@ -113,31 +153,79 @@ public class JListClass {
         }
     }
 
+    /**
+     * Script method {@code list.join(separator)}: joins the string representations of the elements, separated by a space by default.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return the joined string
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static JString __join(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         final String separator = arguments.getOptionalStringValue(0, " ");
         return Janitor.string(self.janitorGetHostValue().stream().map(JanitorObject::janitorToString).collect(Collectors.joining(separator)));
     }
 
+    /**
+     * Script method {@code list.toList()}: creates a copy of this list.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return the copy
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static JList __toList(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);
         return Janitor.list(self.janitorGetHostValue());
     }
 
+    /**
+     * Script method {@code list.toSet()}: creates a set from the elements of this list.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return the set
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static JSet __toSet(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);
         return Janitor.set(self.janitorGetHostValue().stream());
     }
 
+    /**
+     * Script method {@code list.isEmpty()}: checks whether this list has no elements.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return true if the list is empty
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static JBool __isEmpty(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);
         return Janitor.toBool(self.janitorGetHostValue().isEmpty());
     }
 
+    /**
+     * Script method {@code list.size()}: the number of elements in this list.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return the number of elements
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static JInt __size(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);
         return Janitor.integer(self.janitorGetHostValue().size());
     }
 
+    /**
+     * Script method {@code list.contains(x)}: checks whether this list contains an element that is equal to the argument.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return true if the element was found
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static JBool __contains(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         final JanitorObject countable = arguments.require(1).get(0);
         for (final JanitorObject element : self.janitorGetHostValue()) {
@@ -148,6 +236,14 @@ public class JListClass {
         return JBool.FALSE;
     }
 
+    /**
+     * Script method {@code list.randomSublist(n)}: picks n random elements from this list.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return a new list with n elements, or a copy of this list if it has fewer
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static JList __randomSublist(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         final int count = arguments.getInt(0).getAsInt();
         if (count >= self.janitorGetHostValue().size()) {
@@ -163,6 +259,14 @@ public class JListClass {
         return Janitor.list(result);
     }
 
+    /**
+     * Script method {@code list.put(index, x)}: replaces the element at the given index.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return null
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static JNull __put(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         // The size check already happened via arguments.require(2) above -- there used to be a
         // second, errant arguments.require(1) call here (demanding *exactly* 1 argument) before
@@ -173,6 +277,14 @@ public class JListClass {
         return JNull.NULL;
     }
 
+    /**
+     * Script method {@code list.addAll(other)}: appends all elements of another list.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return null
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static JNull __addAll(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         for (final JanitorObject jObj : arguments.getRequired(0, JList.class)) {
             self.add(jObj);
@@ -180,12 +292,28 @@ public class JListClass {
         return JNull.NULL;
     }
 
+    /**
+     * Script method {@code list.sort()}: sorts this list in place.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return null
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static JNull __sort(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);
         self.replaceAllElements(self.stream().sorted().toList());
         return JNull.NULL;
     }
 
+    /**
+     * Script method {@code list.add(x)} or {@code list.add(index, x)}: appends an element, or inserts it at the given index.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return null
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static JNull __add(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(1, 2);
         if (arguments.size() == 1) {
@@ -210,6 +338,14 @@ public class JListClass {
         return Janitor.list(self.janitorGetHostValue());
     }
 
+    /**
+     * Script method {@code list.get(index)}, {@code list.get(from, to)} or {@code list.get(from, to, step)}: gets an element or a (read-only) range of elements.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return the element or the range
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static JanitorObject __get(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         if (arguments.size() == 1) {
             return self.get(arguments.require(1).getInt(0));
@@ -232,6 +368,14 @@ public class JListClass {
 
     // __get results cannot be assigned to, but __getSliced can be
 
+    /**
+     * Script method for indexing and slicing, e.g. {@code list[1]} or {@code list[1:3]}. In contrast to {@code get}, the results can be assigned to.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return the element or the range
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static JanitorObject __getSliced(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         if (arguments.size() == 1) {
             return self.getIndexed(arguments.require(1).getInt(0));
@@ -262,12 +406,28 @@ public class JListClass {
     }
 
 
+    /**
+     * Script method {@code list.remove(x)}: removes an element from this list.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return null
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static JNull __remove(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(1);
         self.remove(arguments.get(0));
         return JNull.NULL;
     }
 
+    /**
+     * Script method {@code list.removeAll(other)}: removes all elements of another list from this list.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return null
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static JNull __removeAll(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);
         for (final JanitorObject jObj : arguments.getRequired(0, JList.class)) {
@@ -276,6 +436,14 @@ public class JListClass {
         return JNull.NULL;
     }
 
+    /**
+     * Script method {@code list.clear()}: removes all elements from this list.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return null
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static JNull __clear(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);
         self.clear();
@@ -283,6 +451,10 @@ public class JListClass {
     }
 
 
+    /**
+     * Registers the standard methods and properties of lists.
+     * @param listDispatcher the dispatch table to add them to
+     */
     public static void applyDefaults(DispatchTable<JList> listDispatcher) {
         listDispatcher.addMethod("toJson", JListClass::__toJson);
         listDispatcher.addMethod("parseJson", JListClass::__parseJson);

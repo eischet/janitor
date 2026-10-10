@@ -4,6 +4,7 @@ import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import org.commonmark.node.Document;
 
+/** Wrapper for the CommonMark document node. */
 public class CMDocument extends CMNode {
     private static final WrapperDispatchTable<Document> dispatch = new WrapperDispatchTable<>();
 

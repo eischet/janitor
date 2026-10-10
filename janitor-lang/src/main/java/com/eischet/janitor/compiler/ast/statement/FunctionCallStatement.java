@@ -92,7 +92,7 @@ public class FunctionCallStatement extends Statement implements Expression, Json
                     process.warn("expected result != null from call of " + functionName + "(" + args + ")");
                 }
 
-                // LATER: hier nochmal genau prüfen, wo/wann wir auspacken müssen!
+                // LATER: double-check where/when we need to unpack here!
                 if (result instanceof JAssignable) {
                     return result;
                 }

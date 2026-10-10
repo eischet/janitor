@@ -5,6 +5,7 @@ import com.eischet.dbxs.SimplePreparedStatement;
 
 import java.sql.SQLException;
 
+/** A {@link Prepper} with a description, which is used when the prepper is printed, e.g. in logs. */
 public class NamedPrepper implements Prepper {
     private final Prepper wrapped;
     private final String description;

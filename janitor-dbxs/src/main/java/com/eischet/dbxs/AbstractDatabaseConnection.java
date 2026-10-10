@@ -17,6 +17,7 @@ import org.jetbrains.annotations.Unmodifiable;
 import java.time.LocalDateTime;
 import java.util.*;
 
+/** Base class for database connections: it implements the convenience query methods on top of the basic query methods. */
 public abstract class AbstractDatabaseConnection implements DatabaseConnection {
 
     @Override
@@ -74,7 +75,7 @@ public abstract class AbstractDatabaseConnection implements DatabaseConnection {
     @Override
     public @Nullable String queryForString(final @NotNull SelectStatement sql,
                                            final @NotNull StatementConfigurator sc) throws DatabaseError {
-        // .filter(Objects::nonNull) ist entscheidend wichtig, denn wenn der String NULL ist, gibt es sonst in findFirst() einen NPE!!!
+        // .filter(Objects::nonNull) is crucial: if the string is NULL, findFirst() would otherwise throw an NPE!
         return queryForList(sql, sc, rs -> rs.getString(1)).stream().filter(Objects::nonNull).findFirst().orElse(null);
     }
 

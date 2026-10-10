@@ -6,6 +6,10 @@ import com.eischet.janitor.toolbox.listeners.ListenerSetStandard;
 
 import java.util.function.Consumer;
 
+/**
+ * A {@link Keeper} that notifies listeners when its value changes.
+ * @param <T> the type of the value
+ */
 public class ObservableKeeper<T> extends Keeper<T> {
 
     private final ListenerSet<Consumer<T>> selectionListeners = new ListenerSetStandard<>();
@@ -23,10 +27,20 @@ public class ObservableKeeper<T> extends Keeper<T> {
         super.setValue(value);
     }
 
+    /**
+     * Adds a listener that is notified when the value changes.
+     * @param listener the listener
+     * @return a registration that can be used to remove the listener
+     */
     public ListenerRegistration addValueChangeListener(final Consumer<T> listener) {
         return selectionListeners.add(listener);
     }
 
+    /**
+     * Adds a listener that is notified when the value changes.
+     * @param listener the listener
+     * @return this keeper
+     */
     public ObservableKeeper<T> withValueChangeListener(final Consumer<T> listener) {
         addValueChangeListener(listener);
         return this;

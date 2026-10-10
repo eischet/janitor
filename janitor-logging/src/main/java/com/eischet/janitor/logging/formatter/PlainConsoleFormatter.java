@@ -8,6 +8,7 @@ import org.slf4j.event.KeyValuePair;
 import java.util.List;
 import java.util.Map;
 
+/** A formatter that produces plain text log lines, without colors. */
 public class PlainConsoleFormatter extends BasicFormatter {
 
     @Override
@@ -55,7 +56,7 @@ public class PlainConsoleFormatter extends BasicFormatter {
         if (keyValuePairs != null) {
             keyValuePairs.forEach(keyValuePair -> result.append(' ').append(keyValuePair.key).append('=').append(keyValuePair.value));
         }
-        // ggf. später noch Markers
+        // markers may be added later
 
         result.append('\n');
         return result.toString();

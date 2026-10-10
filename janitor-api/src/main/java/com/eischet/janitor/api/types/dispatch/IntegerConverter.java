@@ -7,6 +7,7 @@ import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.builtin.JFloat;
 import com.eischet.janitor.api.types.builtin.JInt;
 
+/** Converts between Janitor integers and Java {@link Integer} values. */
 public class IntegerConverter implements TwoWayConverter<Integer> {
 
     public static final IntegerConverter INSTANCE = new IntegerConverter();

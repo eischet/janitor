@@ -38,6 +38,7 @@ import org.commonmark.renderer.markdown.MarkdownRenderer;
 import org.commonmark.renderer.text.TextContentRenderer;
 import org.slf4j.Logger;
 
+/** Base class for the script wrappers of CommonMark nodes. */
 public abstract class CMNode extends JanitorWrapper<Node> {
 
     protected static final Logger LOG = JanitorLogger.getLogger(CMNode.class);
@@ -94,10 +95,17 @@ public abstract class CMNode extends JanitorWrapper<Node> {
         super(dispatcher, wrapped);
     }
 
+    /**
+     * @return the simple class name of the wrapped node
+     */
     public String getType() {
         return wrapped.getClass().getSimpleName();
     }
 
+    /**
+     * @param node the node, may be null
+     * @return the wrapper for the node, or the Janitor null value if the node is null
+     */
     public static JanitorObject createNullable(final Node node) {
         if (node == null) {
             return Janitor.NULL;
@@ -106,11 +114,20 @@ public abstract class CMNode extends JanitorWrapper<Node> {
         }
     }
 
+    /**
+     * @return the node and its children, rendered as HTML
+     */
     public String toHtml() {
         var renderer = HtmlRenderer.builder().build();
         return renderer.render(janitorGetHostValue());
     }
 
+    /**
+     * Creates the wrapper that matches the type of a node.
+     * @param node the node
+     * @return the wrapper; nodes of unknown types are wrapped as {@link CMUnknown}
+     * @throws IllegalArgumentException if the node is null
+     */
     public static CMNode create(final Node node) {
         if (node == null) {
             throw new IllegalArgumentException("Node cannot be null");
@@ -168,6 +185,9 @@ public abstract class CMNode extends JanitorWrapper<Node> {
         }
     }
 
+    /**
+     * @return the wrapped node
+     */
     public Node getNode() {
         return wrapped;
     }

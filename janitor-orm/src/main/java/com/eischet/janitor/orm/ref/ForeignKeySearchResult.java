@@ -14,6 +14,10 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Objects;
 import java.util.Optional;
 
+/**
+ * A foreign key that carries some basic information about the referenced entity, i.e. its ID, key and name, e.g. as returned by a search.
+ * @param <T> the type of the referenced entity
+ */
 public non-sealed class ForeignKeySearchResult<T extends OrmEntity> implements ForeignKey<T>, OrmEntity {
 
     protected final long id;
@@ -41,6 +45,9 @@ public non-sealed class ForeignKeySearchResult<T extends OrmEntity> implements F
         // ignore
     }
 
+    /**
+     * @return true if the ID is not a valid one, i.e. zero or negative
+     */
     public boolean isEmpty() {
         return getId() <= 0;
     }
@@ -132,6 +139,9 @@ public non-sealed class ForeignKeySearchResult<T extends OrmEntity> implements F
         // ignore
     }
 
+    /**
+     * @return the DAO of the referenced entity
+     */
     public Dao<T> getDao() {
         return dao;
     }

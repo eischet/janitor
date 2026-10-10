@@ -9,6 +9,7 @@ import org.jetbrains.annotations.Unmodifiable;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/** Creates SQL statements for the basic operations on a table, using the quoting rules of a {@link DatabaseDialect}. */
 public class StatementCreator {
 
     protected final DatabaseDialect dialect;
@@ -17,10 +18,22 @@ public class StatementCreator {
         this.dialect = dialect;
     }
 
+    /**
+     * Quotes column names for the database.
+     * @param fields the column names
+     * @return the quoted column names
+     */
     protected @NotNull @Unmodifiable List<String> quoteAllFields(final @NotNull List<String> fields) {
         return fields.stream().map(dialect::quoteColumn).toList();
     }
 
+    /**
+     * Creates a statement that selects the given columns of all rows of a table.
+     * @param table the name of the table
+     * @param fields the columns to select
+     * @return the SQL statement
+     * @throws IllegalArgumentException if the table name is blank, or there are no fields
+     */
     @NotNull
     @Language("sql")
     public String createSelectAllStatement(final @NotNull String table,
@@ -35,6 +48,12 @@ public class StatementCreator {
         return "select " + String.join(", ", quoteAllFields(fields)) + " from " + table;
     }
 
+    /**
+     * Creates a statement that counts all rows of a table.
+     * @param table the name of the table
+     * @return the SQL statement
+     * @throws IllegalArgumentException if the table name is blank
+     */
     @NotNull
     @Language("sql")
     public String createCountStatement(final @NotNull String table) throws IllegalArgumentException {
@@ -47,6 +66,14 @@ public class StatementCreator {
 
 
 
+    /**
+     * Creates a statement that selects the given columns of the rows where a column has a given value, which is a parameter.
+     * @param table the name of the table
+     * @param fields the columns to select
+     * @param whereField the column to compare with the parameter
+     * @return the SQL statement
+     * @throws IllegalArgumentException if the table name or the where field is blank, or there are no fields
+     */
     @NotNull
     @Language("sql")
     public String createSelectStatement(final @NotNull String table,
@@ -96,6 +123,13 @@ public class StatementCreator {
         return out.toString();
     }
 
+    /**
+     * Creates a statement that deletes the rows where a column has a given value, which is a parameter.
+     * @param table the name of the table
+     * @param whereColumn the column to compare with the parameter
+     * @return the SQL statement
+     * @throws IllegalArgumentException if the table name or the where column is blank
+     */
     @NotNull
     @Language("sql")
     public String createDeleteStatement(final @NotNull String table, final @NotNull String whereColumn) throws IllegalArgumentException {
@@ -109,6 +143,13 @@ public class StatementCreator {
         return "delete from " + table + " where " + dialect.quoteColumn(whereColumn) + " = ?";
     }
 
+    /**
+     * Creates a statement that deletes the rows where all of the given columns have a given value, each of which is a parameter.
+     * @param table the name of the table
+     * @param whereColumns the columns to compare with the parameters
+     * @return the SQL statement
+     * @throws IllegalArgumentException if the table name is blank, or there are no where columns
+     */
     @NotNull
     @Language("sql")
     public String createDeleteStatement(final @NotNull String table, final @NotNull List<String> whereColumns) throws IllegalArgumentException {
@@ -123,6 +164,14 @@ public class StatementCreator {
     }
 
 
+    /**
+     * Creates a statement that updates the given columns of the rows where a column has a given value. The parameters are the new values, followed by the value to compare.
+     * @param table the name of the table
+     * @param columns the columns to update
+     * @param whereColumn the column to compare with the last parameter
+     * @return the SQL statement
+     * @throws IllegalArgumentException if the table name or the where column is blank, or there are no columns
+     */
     @NotNull
     @Language("sql")
     public String createUpdateStatement(final @NotNull String table,
@@ -144,6 +193,14 @@ public class StatementCreator {
         return out.toString();
     }
 
+    /**
+     * Creates a statement that updates the given columns of the rows where all of the given columns have a given value. The parameters are the new values, followed by the values to compare.
+     * @param table the name of the table
+     * @param columns the columns to update
+     * @param whereColumns the columns to compare with the last parameters
+     * @return the SQL statement
+     * @throws IllegalArgumentException if the table name is blank, or there are no columns or where columns
+     */
     @NotNull
     @Language("sql")
     public String createUpdateStatement(final @NotNull String table,
@@ -165,6 +222,13 @@ public class StatementCreator {
         return out.toString();
     }
 
+    /**
+     * Creates a statement that counts the rows where all of the given columns have a given value, each of which is a parameter.
+     * @param table the name of the table
+     * @param whereColumns the columns to compare with the parameters
+     * @return the SQL statement
+     * @throws IllegalArgumentException if the table name is blank, or there are no where columns
+     */
     @NotNull
     @Language("sql")
     public String createCountStatement(final @NotNull String table,

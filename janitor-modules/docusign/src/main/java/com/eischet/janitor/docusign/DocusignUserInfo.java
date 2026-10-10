@@ -5,6 +5,7 @@ import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 
+/** Wrapper for the DocuSign user information, which includes the accounts of the user. */
 public class DocusignUserInfo extends JanitorComposed<DocusignUserInfo> {
 
     public static final DispatchTable<DocusignUserInfo> DISPATCH =  new DispatchTable();

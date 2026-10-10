@@ -26,14 +26,23 @@ class Fragment {
         this.missingStatementTerminator = missingStatementTerminator;
     }
 
+    /**
+     * @return whether the parsed text was complete, or null if the parse result is unknown
+     */
     public PartialParseResult getParseResult() {
         return parseResult;
     }
 
+    /**
+     * @return the parse tree, or null if the text could not be parsed
+     */
     public JanitorParser.ScriptContext getScriptContext() {
         return scriptContext;
     }
 
+    /**
+     * @return true if parsing failed because the final statement terminator (semicolon) is missing
+     */
     public boolean isMissingStatementTerminator() {
         return missingStatementTerminator;
     }

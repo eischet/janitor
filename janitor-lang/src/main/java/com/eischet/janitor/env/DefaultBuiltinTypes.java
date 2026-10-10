@@ -28,6 +28,7 @@ import static com.eischet.janitor.api.types.builtin.JDate.DATE_FORMAT;
 import static com.eischet.janitor.api.types.builtin.JDateTime.DATE_FORMAT_LONG;
 import static com.eischet.janitor.api.types.builtin.JDateTime.DATE_FORMAT_SHORT;
 
+/** The default implementation of {@link BuiltinTypes}: it owns the dispatch tables of the built-in types, and creates the built-in values. */
 public class DefaultBuiltinTypes implements BuiltinTypes {
 
     /**

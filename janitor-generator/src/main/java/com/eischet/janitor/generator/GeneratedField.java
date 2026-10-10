@@ -8,6 +8,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
 
+/** A field of a {@link GeneratedClass}. */
 public class GeneratedField extends JanitorComposed<GeneratedField> {
 
     public static final DispatchTable<GeneratedField> DISPATCH = new DispatchTable<>();
@@ -29,18 +30,31 @@ public class GeneratedField extends JanitorComposed<GeneratedField> {
         this.type = type;
     }
 
+    /**
+     * @return the name of the field
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * @return the type of the field
+     */
     public JavaType getType() {
         return type;
     }
 
+    /**
+     * @return the class that the field belongs to
+     */
     public @NotNull GeneratedClass getParent() {
         return parent;
     }
 
+    /**
+     * Writes the line that registers this field as a property in the dispatch table.
+     * @param out the output
+     */
     public void generateDispatch(final @NotNull CodeOutputStream out) {
         String dispatchMethod = type.getName(); // TODO: must be improved to better fit the actual dispatch table layout
 
@@ -54,6 +68,10 @@ public class GeneratedField extends JanitorComposed<GeneratedField> {
         // DISPATCH.addStringProperty("bar", Foo::getBar, Foo::setBar);
     }
 
+    /**
+     * Writes the declaration of the field.
+     * @param out the output
+     */
     public void generateDeclaration(final @NotNull CodeOutputStream out) {
         out.writeIndent().write("private ");
         out.optional(!type.isPrimitive(), nullability(out, nullable));
@@ -66,6 +84,10 @@ public class GeneratedField extends JanitorComposed<GeneratedField> {
         out.write(";").newline();
     }
 
+    /**
+     * Writes the getter of the field.
+     * @param out the output
+     */
     public void generateGetter( final @NotNull CodeOutputStream out) {
         out.writeIndent().write("public ").optional(!type.isPrimitive(), nullability(out, nullable))
                 .space().write(type.getName()).space().write("get").capitalize(name).write("() {").newline();
@@ -81,6 +103,10 @@ public class GeneratedField extends JanitorComposed<GeneratedField> {
         }
     }
 
+    /**
+     * Writes the setter of the field.
+     * @param out the output
+     */
     public void generateSetter( final @NotNull CodeOutputStream out) {
         out.writeIndent().write("public void set").capitalize(name)
                 .write("(final ")
@@ -91,6 +117,10 @@ public class GeneratedField extends JanitorComposed<GeneratedField> {
         out.writeIndent().write("}").newline().newline();
     }
 
+    /**
+     * Writes the "with" method of the field, which sets the field and returns the object for chaining.
+     * @param out the output
+     */
     public void generateWither( final @NotNull CodeOutputStream out) {
         out.writeIndent().write("public @NotNull ")
                 .write(parent.getName()).space().write("with").capitalize(name).write("(final ")

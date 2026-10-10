@@ -7,6 +7,7 @@ import com.eischet.janitor.api.types.dispatch.DispatchTable;
 
 import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
+/** Wrapper for the DocuSign envelope definition. */
 public class DocusignEnvelopeDefinition extends JanitorComposed<DocusignEnvelopeDefinition> {
 
     public static final DispatchTable<DocusignEnvelopeDefinition> DISPATCHER = new DispatchTable<>();
@@ -138,6 +139,9 @@ public class DocusignEnvelopeDefinition extends JanitorComposed<DocusignEnvelope
         this.wrapped = new EnvelopeDefinition();
     }
 
+    /**
+     * @return the wrapped DocuSign object
+     */
     public EnvelopeDefinition getWrapped() {
         return wrapped;
     }

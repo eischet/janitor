@@ -7,6 +7,7 @@ import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+/** The Janitor {@code null} value. There is only one instance of it, {@link #NULL}. */
 public final class JNull implements JanitorObject, JsonExportablePrimitive {
     public static final JNull NULL = new JNull();
 

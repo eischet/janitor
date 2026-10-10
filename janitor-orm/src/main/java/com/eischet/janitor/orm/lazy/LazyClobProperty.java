@@ -5,6 +5,7 @@ import com.eischet.dbxs.results.SimpleResultSet;
 
 import java.sql.SQLException;
 
+/** A lazily loaded long text (CLOB) property. */
 public class LazyClobProperty extends LazyProperty<String> {
     public LazyClobProperty(final String propertyName) {
         super(propertyName);

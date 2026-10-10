@@ -57,6 +57,11 @@ import java.util.stream.Collectors;
 
 import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
+/**
+ * The standard {@link Dao}, which maps an entity type to a database table according to the meta-data in the entity's dispatch table.
+ * @param <T> the type of the entities
+ * @param <U> the type of the DAO collection that this DAO belongs to
+ */
 public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection<U>> extends JanitorComposed<GenericDao<?, ?>> implements Dao<T>, JCallable {
 
     // TOOD: cache the database version after first retrieving it
@@ -71,7 +76,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
         DISPATCH.addListProperty("columns", dao -> Janitor.list(dao.columns.stream().map(Janitor::string)));
         DISPATCH.addStringProperty("keyColumn", dao -> dao.keyColumn);
         DISPATCH.addStringProperty("className", dao -> dao.className);
-        // soll ich auch columnForField und fieldForColumn veröffentlichen!?
+        // should columnForField and fieldForColumn be made public as well!?
 
         DISPATCH.addMethod("insert", (self, process, arguments) -> self.insertForScript(process, arguments.require(1).get(0)));
         DISPATCH.addVoidMethod("update", (self, process, arguments) -> self.updateForScript(process, arguments.require(1).get(0)));
@@ -222,6 +227,9 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
         return collection.getDataManager();
     }
 
+    /**
+     * @return true if the entities of this DAO track their changes; the default is false
+     */
     public boolean isChangeTracked() {
         return false;
     }
@@ -253,10 +261,17 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
         throw new JanitorNativeException(process, "the constructor for new objects takes no parameter, a map to apply, or a string to parse to a map and then apply", null);
     }
 
+    /**
+     * @return true if this DAO logs what it does in detail
+     */
     public boolean isVerbose() {
         return verbose;
     }
 
+    /**
+     * Sets whether this DAO logs what it does in detail.
+     * @param verbose true to enable detailed logging
+     */
     public void setVerbose(final boolean verbose) {
         this.verbose = verbose;
     }
@@ -419,10 +434,20 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
     }, filterExpression.getValueString() != null ? ("string='%" + filterExpression.getValueString() + "%'") : ("string=null"));
 
 
+    /**
+     * Hook for subclasses to handle certain filter expressions with custom SQL, e.g. for virtual fields.
+     * @param filterExpression the expression
+     * @return the handler, or null to use the default handling
+     */
     protected @Nullable ExpressionHandler getCustomExpressionHandler(final FilterExpression filterExpression) {
         return null;
     }
 
+    /**
+     * Creates the prepper that binds the value of a filter expression, according to the type of the value.
+     * @param filterExpression the expression
+     * @return the prepper
+     */
     protected @NotNull Prepper getPrepper(final FilterExpression filterExpression) {
         return getPrepper(filterExpression, null);
     }
@@ -449,6 +474,13 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
         }
     }
 
+    /**
+     * Converts a filter expression to an SQL condition, collecting the preppers that bind its values.
+     * @param filterExpression the expression
+     * @param prepperConsumer receives the preppers, in the order of the parameters in the SQL
+     * @return the SQL condition
+     * @throws MalformedExpression if the expression is invalid
+     */
     protected String expressionToSql(final FilterExpression filterExpression, final Consumer<Prepper> prepperConsumer) throws MalformedExpression {
         @NotNull final DatabaseDialect dialect = getDataManager().getDialect();
         if (filterExpression.getField() != null && INVALID_FIELD.test(filterExpression.getField())) {
@@ -488,6 +520,14 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
         }
     }
 
+    /**
+     * Converts a filter expression to an SQL condition for one column, collecting the preppers that bind its values.
+     * @param filterExpression the expression
+     * @param quotedColumn the column, already quoted for the database
+     * @param prepperConsumer receives the preppers, in the order of the parameters in the SQL
+     * @return the SQL condition
+     * @throws MalformedExpression if the expression is invalid
+     */
     protected String applyExpressionToColumn(final FilterExpression filterExpression, final String quotedColumn, final Consumer<Prepper> prepperConsumer) throws MalformedExpression {
         return applyExpressionToColumn(filterExpression, quotedColumn, null, prepperConsumer);
     }
@@ -620,6 +660,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
 
     // TODO: what I actually want to have is a class that contains the SQL and all information to fully prepare the stmt.
     //   The whole query side, really. A calles can then look at them and e.g. report on them when needed.
+    /** A query for a filter, together with its row limit and the preppers that bind its parameters. */
     public static class LimitedSelectStatement extends SelectStatement {
 
         protected final @Nullable Integer rowLimit;
@@ -637,19 +678,33 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
             this.preppers = List.copyOf(preppers);
         }
 
+        /**
+         * @return the maximum number of rows, or null if the query is not limited
+         */
         public @Nullable Integer getRowLimit() {
             return rowLimit;
         }
 
+        /**
+         * @return true if the query has a row limit
+         */
         public boolean isLimited() {
             return rowLimit != null;
         }
 
+        /**
+         * @return the preppers that bind the parameters of the query, in order
+         */
         public @NotNull @Unmodifiable List<Prepper> getPreppers() {
             return preppers;
         }
     }
 
+    /**
+     * Creates the query for finding entities by a filter, including the ordering and the row limit.
+     * @param filterQuery the filter query
+     * @return the query
+     */
     protected LimitedSelectStatement createFindByFilterQuery(@NotNull final FilterQuery filterQuery) {
         final List<Prepper> preppers = new LinkedList<>();
         final @Nullable String orderBy = filterQuery.getOrderByClause();
@@ -685,6 +740,13 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
             rs -> readAllProperties(conn, rs));
     }
 
+    /**
+     * Reads all selected columns of the current row into a new entity.
+     * @param conn the database connection
+     * @param rs the result set, positioned at the row to read
+     * @return the new entity
+     * @throws DatabaseError if a column cannot be read
+     */
     protected T readAllProperties(final DatabaseConnection conn, final SimpleResultSet rs) throws DatabaseError {
         final T value = newValue.get();
         int columnIndex = 0;
@@ -727,7 +789,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
         }
         record.beforeInsert();
         conn.update(insertStatement, ps -> {
-            // unsinnig / schädlich: ps.addLong(generatedId);
+            // pointless / harmful: ps.addLong(generatedId);
             writeAllColumns(conn, record, insertingColumns, ps);
         });
         entityChangeListeners.fire(listener -> listener.onChange(EntityChangeListener.Type.INSERT, record));
@@ -754,6 +816,14 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
         entityChangeListeners.fire(listener -> listener.onChange(EntityChangeListener.Type.DELETE, record));
     }
 
+    /**
+     * Binds the values of the given columns of an entity to the next parameters of a prepared statement.
+     * @param conn the database connection
+     * @param record the entity
+     * @param updatingColumns the columns to write, in the order of the parameters
+     * @param ps the statement to bind the values to
+     * @throws SQLException if a value cannot be written
+     */
     protected void writeAllColumns(final DatabaseConnection conn, final T record, final List<String> updatingColumns, final SimplePreparedStatement ps) throws SQLException {
         if (verbose) {
             log.info("writeAllColumns({})", updatingColumns);
@@ -770,9 +840,14 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
         }
     }
 
+    /**
+     * Throws an exception that tells that a function is not supported by this DAO.
+     * @param what a description of the function
+     * @throws DatabaseError always
+     */
     @SuppressWarnings("unused") // it's used, the IDE just can't see it.
     protected void unsupported(final String what) throws DatabaseError {
-        throw new DatabaseError("Nicht unterstützte Funktion für " + getClass().getSimpleName() + ": " + what);
+        throw new DatabaseError("Unsupported function for " + getClass().getSimpleName() + ": " + what);
     }
 
     @Override
@@ -780,6 +855,11 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
         return getClass().getSimpleName();
     }
 
+    /**
+     * Returns all columns that are mapped to properties, quoted for the database.
+     * @param qualifyWithTableName true to prefix each column with the table name
+     * @return the column names
+     */
     protected @NotNull @Unmodifiable List<String> getAllMappedColumns(boolean qualifyWithTableName) {
         final var dialect = getDataManager().getDialect();
         if (qualifyWithTableName) {
@@ -833,6 +913,14 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
         }
     }
 
+    /**
+     * Runs a function in a transaction on behalf of a script, turning database errors into script errors.
+     * @param process the running script process
+     * @param function the function to run
+     * @param <X> the type of the result
+     * @return the result of the function
+     * @throws JanitorRuntimeException if the function fails
+     */
     protected <X> X callScriptTransaction(final JanitorScriptProcess process, final DatabaseFunction<DatabaseConnection, X> function) throws JanitorRuntimeException {
         try {
             return getDataManager().callTransaction(function);
@@ -891,6 +979,13 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
         throw new JanitorArgumentException(process, "invalid argument " + janitorObject + " [" + simpleClassNameOf(janitorObject) + "], expecting map or " + entityClass.getSimpleName());
     }
 
+    /**
+     * Script method {@code dao.findById(id)}: finds an entity by its ID.
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return the entity, or null if there is none
+     * @throws JanitorRuntimeException if the arguments are invalid or the query fails
+     */
     public JanitorObject scriptFindById(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         try {
             final T single = getDataManager().callTransaction(conn -> {
@@ -906,6 +1001,13 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
         }
     }
 
+    /**
+     * Script method {@code dao.findByKey(key)}: finds an entity by its key.
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return the entity, or null if there is none
+     * @throws JanitorRuntimeException if the arguments are invalid or the query fails
+     */
     public JanitorObject scriptFindByKey(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         try {
             final T single = getDataManager().callTransaction(conn -> {
@@ -921,10 +1023,24 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
         }
     }
 
+    /**
+     * Script method {@code dao.findAll()}: finds all entities.
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return a list of the entities
+     * @throws JanitorRuntimeException if the query fails
+     */
     public JanitorObject scriptFindAll(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         return callScriptTransaction(process, conn -> Janitor.list(findAll(conn, null).stream().map(this::forScript)));
     }
 
+    /**
+     * Script method {@code dao.queryForEach(sql, callback)}: runs a query that returns IDs, and calls the callback with each entity and its ID.
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return the number of entities that the callback was called for
+     * @throws JanitorRuntimeException if the arguments are invalid or the query fails
+     */
     public JanitorObject scriptQueryForEach(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         try {
             @Language("SQL") final String sql = arguments.require(2).getString(0).janitorGetHostValue();

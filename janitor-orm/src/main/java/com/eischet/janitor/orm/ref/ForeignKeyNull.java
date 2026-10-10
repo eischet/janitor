@@ -15,7 +15,7 @@ import java.util.Optional;
 
 /**
  * A null-pointer to a foreign key.
- * You are encouraged to create one instance of this class per entity class, e.g.: {@code public static final ForeignKeyNull<MisoBranch> NULL = new ForeignKeyNull<>();}.
+ * You are encouraged to create one instance of this class per entity class, e.g.: {@code public static final ForeignKeyNull<Branch> NULL = new ForeignKeyNull<>();}.
  * This can be more readable than creating dummy instances where needed, and will conserve memory.
  * @param <T> some entity class.
  */
@@ -29,7 +29,7 @@ public final class ForeignKeyNull<T extends OrmEntity> implements ForeignKey<T> 
 
     /**
      * Returns a pointer to this object.
-     * This comes in handy when you need a factory method for NULL objects, e.g.: {@code MisoBranch.NULL::pointer} instead of {@code () -> new ForeignKeyNull<>()}.
+     * This comes in handy when you need a factory method for NULL objects, e.g.: {@code Branch.NULL::pointer} instead of {@code () -> new ForeignKeyNull<>()}.
      * @return a pointer to this object
      */
     public ForeignKeyNull<T> pointer() {

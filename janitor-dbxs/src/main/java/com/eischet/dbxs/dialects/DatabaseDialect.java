@@ -19,16 +19,33 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+/** Encapsulates the differences between database products, e.g. how identifiers are quoted and how queries are limited. */
 public interface DatabaseDialect {
 
+    /**
+     * Quotes a column name if the database needs that, e.g. because it is a reserved word.
+     * @param columnName the column name
+     * @return the quoted column name
+     */
     default @NotNull String quoteColumn(@NotNull String columnName) {
         return columnName;
     }
 
+    /**
+     * Quotes a table name if the database needs that.
+     * @param tableName the table name
+     * @return the quoted table name
+     */
     default @NotNull String quoteTableName(@NotNull String tableName) {
         return quoteTableName(null, tableName);
     }
 
+    /**
+     * Quotes a table name if the database needs that, and prefixes it with the schema.
+     * @param schema the schema, may be null
+     * @param tableName the table name
+     * @return the qualified table name
+     */
     default @NotNull String quoteTableName(@Nullable String schema, @NotNull String tableName) {
         if (schema == null || schema.isEmpty()) {
             return tableName;
@@ -104,38 +121,71 @@ public interface DatabaseDialect {
         return "(" + quotedColumn + " is not null and " + quotedColumn + " != '')";
     }
 
+    /**
+     * @return true if the database requires an ORDER BY clause to use limit and offset
+     */
     boolean limitAndOffsetRequiresOrderBy();
+    /**
+     * Checks whether the database supports limiting the number of rows in a query.
+     * @param databaseVersion the version of the database
+     * @return true if limit and offset are supported
+     */
     boolean canLimitAndOffset(final DatabaseVersion databaseVersion);
 
     @NotNull SelectStatement addLimitAndOffset(@NotNull SelectStatement selectStatement);
     @NotNull SimplePreparedStatement addLimitAndOffset(@NotNull SimplePreparedStatement statement, int limit, int offset) throws SQLException;
 
     /**
-     * Gibt ein Statement zurück, das den nächsten Wert aus der angegebenen Sequence holt.
+     * Returns a statement that fetches the next value from the given sequence.
      *
-     * Nicht alle Datenbanken <b>haben</b> Sequences, aber das ist nicht schlimm, weil diese Funktion nur intern
-     * genutzt wird und nicht für Kunden zugänglich ist. Darum kann sie nur gegen unterstützte Datenbanken
-     * ausgeführt werden, das sind aktuell PostgreSQL, Oracle und MS SQL, und die haben allesamt Sequences.
+     * Not all databases <b>have</b> sequences, but that is not a problem, because this function is only used
+     * internally and is not exposed to end users. It is therefore only ever run against supported databases,
+     * which currently are PostgreSQL, Oracle and MS SQL, and all of them have sequences.
      *
      * @param schema optionales Schema
-     * @param seq Name der Sequence
-     * @return eine Abfrage für den nächsten Wert der Sequence, oder null wenn die Datenbank keine Sequences kennt
+     * @param seq the name of the sequence
+     * @return a query for the next value of the sequence, or null if the database does not support sequences
      */
     @Nullable
     SelectStatement getNextValueQuery(@Nullable String schema, @NotNull String seq);
 
+    /**
+     * Returns a statement that fetches the next value from a sequence of the default schema.
+     * @param sequence the name of the sequence
+     * @return a query for the next value, or null if the database does not support sequences
+     */
     @Nullable
     default SelectStatement getNextValueQuery(@NotNull String sequence) {
         return getNextValueQuery(null, sequence);
     }
 
+    /**
+     * Returns a statement that fetches the current value of a sequence.
+     * @param schema the schema, may be null
+     * @param seq the name of the sequence
+     * @return a query for the current value, or null if the database does not support sequences
+     */
     @Nullable
     SelectStatement getCurrentValueQuery(@Nullable String schema, @NotNull String seq);
 
+    /**
+     * Binds a long text to a parameter of a prepared statement.
+     * @param ps the statement
+     * @param i the index of the parameter
+     * @param clob the text
+     * @throws SQLException if the value cannot be set
+     */
     default void addClobToStatement(@NotNull PreparedStatement ps, int i, StringReader clob) throws SQLException {
         ps.setClob(i, clob);
     }
 
+    /**
+     * Reads a long text in a national character set from a column.
+     * @param rs the result set
+     * @param col the index of the column
+     * @return the text, or null if the column is NULL
+     * @throws SQLException on database errors
+     */
     default @Nullable String readNationalClob(@NotNull ResultSet rs, int col) throws SQLException {
         final Clob clob = rs.getClob(col);
         if (clob == null) {
@@ -152,6 +202,13 @@ public interface DatabaseDialect {
 
     }
 
+    /**
+     * Reads a long text from a column.
+     * @param rs the result set
+     * @param col the index of the column
+     * @return the text, or null if the column is NULL
+     * @throws SQLException on database errors
+     */
     default @Nullable String readRegularClob(@NotNull ResultSet rs, int col) throws SQLException {
         final Clob clob = rs.getClob(col);
         if (clob == null) {
@@ -168,6 +225,9 @@ public interface DatabaseDialect {
 
     }
 
+    /**
+     * @return true if binary data has to be bound with {@code setBytes}, e.g. for LONG RAW columns
+     */
     default boolean isLegacySetBytesRequired() {
         return false;
     }

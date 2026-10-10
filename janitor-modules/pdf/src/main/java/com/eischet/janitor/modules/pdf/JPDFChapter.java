@@ -36,6 +36,9 @@ public class JPDFChapter extends JanitorWrapper<Chapter> {
         super(DISPATCH_TABLE, new Chapter(title.getParagraph(), number));
     }
 
+    /**
+     * @return the wrapped Chapter object
+     */
     public Chapter getChapter() {
         return wrapped;
     }

@@ -125,16 +125,16 @@ formalParameter: validIdentifier;
 // foo
 
 formalParameterList
-    // 1) nonDefault (optional) + default (mind. einer) [+ *args] [+ **kwargs]
+    // 1) nonDefault (optional) + default (at least one) [+ *args] [+ **kwargs]
     : (nonDefaultParamList COMMA)? defaultParamList (COMMA varArgList)? (COMMA kwArgList)?   # formalParameterList4
 
-    // 2) nur nonDefault [+ *args] [+ **kwargs]
+    // 2) only nonDefault [+ *args] [+ **kwargs]
     | nonDefaultParamList (COMMA varArgList)? (COMMA kwArgList)?                             # formalParameterList3
 
-    // 3) nur *args [+ **kwargs]
+    // 3) only *args [+ **kwargs]
     | varArgList (COMMA kwArgList)?                                                          # formalParameterList2
 
-    // 4) nur **kwargs
+    // 4) only **kwargs
     | kwArgList                                                                              # formalParameterList1
     ;
 /*

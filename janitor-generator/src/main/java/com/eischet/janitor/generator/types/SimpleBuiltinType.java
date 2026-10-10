@@ -3,6 +3,7 @@ package com.eischet.janitor.generator.types;
 import com.eischet.janitor.generator.JavaType;
 import org.jetbrains.annotations.NotNull;
 
+/** The basic Java types that generated fields can have. */
 public enum SimpleBuiltinType implements JavaType {
     STRING(String.class),
     LONG(Long.class),

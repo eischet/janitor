@@ -48,9 +48,9 @@ public abstract class AnyFixOperator extends Statement implements Expression, Js
             if (scoped == null) {
                 throw new JanitorArgumentException(process, "variable not bound: {}. cannot apply " + this + " to it.");
             }
-            final JanitorObject currentValue = scoped.getVariable().janitorUnpack(); // oder das?? final Variable currentValue = expr.evaluate(runningScript);
+            final JanitorObject currentValue = scoped.getVariable().janitorUnpack(); // or this?? final Variable currentValue = expr.evaluate(runningScript);
             final JanitorObject newValue = operate(process, currentValue);
-            scoped.getScope().bind(process, id, newValue);  // vorher falsch: runningScript.getCurrentScope().bind(id, newValue);
+            scoped.getScope().bind(process, id, newValue);  // previously wrong: runningScript.getCurrentScope().bind(id, newValue);
             return pick(currentValue, newValue);
         } else {
             throw new JanitorArgumentException(process, "cannot apply " + this + " to " + expr);

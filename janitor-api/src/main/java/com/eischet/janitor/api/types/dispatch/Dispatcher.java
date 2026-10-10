@@ -32,16 +32,44 @@ public interface Dispatcher<T extends JanitorObject> extends HasMetaData {
      */
     JanitorObject dispatch(final T instance, final JanitorScriptProcess process, final String name) throws JanitorRuntimeException;
 
+    /**
+     * Writes an object as JSON.
+     * @param stream the target
+     * @param instance the object
+     * @throws JsonException if the object cannot be written
+     */
     void writeToJson(JsonOutputStream stream, T instance) throws JsonException;
 
+    /**
+     * Writes the JSON schema of the objects of this dispatcher.
+     * @param stream the target
+     * @throws JsonException if the schema cannot be written
+     */
     void writeSchemaToJson(JsonOutputStream stream) throws JsonException;
 
     @Language("JSON") String writeToJson(T instance)  throws JsonException;
 
+    /**
+     * Reads an object from JSON.
+     * @param constructor creates the new object
+     * @param stream the source
+     * @return the object
+     * @throws JsonException if the JSON is invalid
+     */
     T readFromJson(Supplier<T> constructor, JsonInputStream stream) throws JsonException;
 
+    /**
+     * Reads an object from JSON.
+     * @param constructor creates the new object
+     * @param json the JSON text
+     * @return the object
+     * @throws JsonException if the JSON is invalid
+     */
     T readFromJson(Supplier<T> constructor, @Language("JSON") String json) throws JsonException;
 
+    /**
+     * @return the names of all attributes
+     */
     Stream<String> streamAttributeNames();
 
     @Nullable Supplier<T> getJavaDefaultConstructor();

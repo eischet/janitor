@@ -4,6 +4,7 @@ import com.docusign.esign.model.Recipients;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 
+/** Wrapper for the DocuSign recipients. */
 public class DocusignRecipients extends JanitorComposed<DocusignRecipients> {
 
     public static final DispatchTable<DocusignRecipients> DISPATCHER = new DispatchTable<>();
@@ -33,6 +34,9 @@ public class DocusignRecipients extends JanitorComposed<DocusignRecipients> {
         this.wrapped = wrapped;
     }
 
+    /**
+     * @return the wrapped DocuSign object
+     */
     public Recipients getWrapped() {
         return wrapped;
     }

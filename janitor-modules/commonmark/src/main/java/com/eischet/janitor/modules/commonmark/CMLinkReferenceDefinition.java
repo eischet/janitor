@@ -4,6 +4,7 @@ import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import org.commonmark.node.LinkReferenceDefinition;
 
+/** Wrapper for the CommonMark link reference definition node. */
 public class CMLinkReferenceDefinition extends CMNode {
     private static final WrapperDispatchTable<LinkReferenceDefinition> dispatch = new WrapperDispatchTable<>();
 

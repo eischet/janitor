@@ -19,6 +19,7 @@ import org.jetbrains.annotations.Nullable;
 
 import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
+/** Call of a method on an object, e.g. {@code foo.bar(1, 2)}. In the guarded form, {@code foo?.bar(1, 2)}, the result is null if {@code foo} is null. */
 public class MemberCallExpression extends Statement implements Expression {
 
     private final boolean guarded;

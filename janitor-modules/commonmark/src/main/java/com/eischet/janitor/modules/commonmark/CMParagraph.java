@@ -4,6 +4,7 @@ import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import org.commonmark.node.Paragraph;
 
+/** Wrapper for the CommonMark paragraph node. */
 public class CMParagraph extends CMNode {
     private static final WrapperDispatchTable<Paragraph> dispatch = new WrapperDispatchTable<>();
 

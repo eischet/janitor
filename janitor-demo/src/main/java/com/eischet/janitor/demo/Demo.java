@@ -17,7 +17,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Locale;
 
+/** Demonstrates how to embed Janitor in a Java application: it runs the script file that is given on the command line. */
 public class Demo {
+    /**
+     * Runs a script.
+     * @param args the command line arguments; the first one is the name of the script file
+     */
     public static void main(String[] args) {
         if (args.length < 1) {
             System.err.println("Usage: java -jar janitor-demo.jar <script.jan>");
@@ -55,6 +60,7 @@ public class Demo {
     }
 
 
+    /** An environment with a "version" string and an "exit()" function in the global scope. */
     public static class DemoEnvironment extends JanitorDefaultEnvironment {
 
         public DemoEnvironment() {
@@ -82,6 +88,7 @@ public class Demo {
         }
     }
 
+    /** A runtime that prints to the standard output. */
     public static class DemoRuntime extends BaseRuntime {
 
         public DemoRuntime(final JanitorEnvironment environment) {

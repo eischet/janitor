@@ -46,9 +46,9 @@ public class PostfixIncrement extends Statement implements Expression, JsonExpor
             if (scoped == null) {
                 throw new JanitorArgumentException(process, "variable not bound: '" + id + "'. cannot apply postfix++ to it.");
             }
-            final JanitorObject currentValue = scoped.getVariable(); // oder das?? final Variable currentValue = expr.evaluate(runningScript);
+            final JanitorObject currentValue = scoped.getVariable(); // or this?? final Variable currentValue = expr.evaluate(runningScript);
             final JanitorObject newValue = JanitorSemantics.increment(process, currentValue);
-            scoped.getScope().bind(process, id, newValue);  // vorher falsch: runningScript.getCurrentScope().bind(id, newValue);
+            scoped.getScope().bind(process, id, newValue);  // previously wrong: runningScript.getCurrentScope().bind(id, newValue);
             return currentValue;
         } else {
             throw new JanitorArgumentException(process, "cannot apply postfix++ to " + expr);

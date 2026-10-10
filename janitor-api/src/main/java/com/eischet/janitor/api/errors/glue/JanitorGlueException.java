@@ -18,6 +18,12 @@ public class JanitorGlueException extends JanitorException {
      */
     @FunctionalInterface
     public interface RuntimeExceptionConverter {
+        /**
+         * Creates a runtime exception for a glue exception.
+         * @param process the running script process
+         * @param glueException the glue exception
+         * @return the runtime exception
+         */
         JanitorRuntimeException createRuntimeException(final JanitorScriptProcess process, final JanitorGlueException glueException);
     }
 
@@ -43,6 +49,11 @@ public class JanitorGlueException extends JanitorException {
         this.runtimeExceptionConverter = runtimeExceptionConverter;
     }
 
+    /**
+     * Converts this glue exception to a proper runtime exception, now that a running script process is available.
+     * @param process the running script process
+     * @return a runtime exception carrying the script stack trace
+     */
     public JanitorRuntimeException toRuntimeException(final JanitorScriptProcess process) {
         return runtimeExceptionConverter.createRuntimeException(process, this);
     }

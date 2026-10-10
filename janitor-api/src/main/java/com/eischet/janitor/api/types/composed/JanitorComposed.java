@@ -59,11 +59,19 @@ public abstract class JanitorComposed<T extends JanitorComposed<T>> implements J
         return superValue;
     }
 
+    /**
+     * @return this object, typed as the concrete subclass
+     */
     @SuppressWarnings("unchecked")
     protected T self() {
         return (T) this;
     }
 
+    /**
+     * Serializes this object to JSON, using its dispatch table.
+     * @return the JSON text
+     * @throws JsonException if serialization fails
+     */
     public String toJson() throws JsonException {
         return dispatcher.writeToJson(self());
     }

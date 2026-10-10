@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import javax.script.Bindings;
 import java.util.*;
 
+/** JSR 223 bindings that are backed by a Janitor scope. */
 public class JanitorBindings implements Bindings {
     private final Scope scope;
     private final JanitorEnvironment environment;
@@ -108,6 +109,9 @@ public class JanitorBindings implements Bindings {
         }
     }
 
+    /**
+     * @return the scope that holds the variables
+     */
     public Scope getScope() {
         return scope;
     }

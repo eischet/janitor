@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.List;
 
+/** The sounds that a Brrr notification can play. */
 public enum BrrrSound implements StringMappedEnum {
     DEFAULT("default"),
     SYSTEM("system"),
@@ -38,6 +39,10 @@ public enum BrrrSound implements StringMappedEnum {
 
     public static @NotNull @Unmodifiable List<BrrrSound> SOUNDS = List.of(values());
 
+    /**
+     * @param stringRepresentation the name of the sound
+     * @return the matching sound, or the default sound if the name is blank or unknown
+     */
     public static @NotNull BrrrSound fromString(final @Nullable String stringRepresentation) {
         if (stringRepresentation == null || stringRepresentation.isBlank()) {
             return DEFAULT;

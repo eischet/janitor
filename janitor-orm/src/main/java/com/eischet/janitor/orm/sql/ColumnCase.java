@@ -54,6 +54,10 @@ public enum ColumnCase {
         };
     }
 
+    /**
+     * @param columnCase the column case, may be null
+     * @return true if the column case is known and uniform, i.e. not MIXED
+     */
     public static boolean isUniform(final @Nullable ColumnCase columnCase) {
         return columnCase != null && columnCase.isUniform();
     }

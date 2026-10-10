@@ -9,18 +9,18 @@ import org.jetbrains.annotations.Nullable;
  * into a {@code GenericDao} via its {@code enableCache(EntityCache)} method, which also takes care of
  * keeping the cache in sync on insert/update/delete via the DAO's existing change-listener mechanism.
  * <p>
- * This generalizes the {@code MisoEntityCache} pattern used in Cockpit's {@code miso.*}/{@code cockpit.*}
- * DAOs (two parallel Caffeine caches, TTL-only eviction, hand-rolled per DAO subclass) into janitor-orm
- * itself, so any {@code Dao} can opt into caching without reimplementing it. {@link #noop()} is the
+ * This provides a generic version of the common "two parallel caches" pattern (one cache by ID, one by key,
+ * TTL-only eviction, hand-rolled per DAO subclass) directly in janitor-orm,
+ * so any {@code Dao} can opt into caching without reimplementing it. {@link #noop()} is the
  * default — attaching no cache at all — so nothing changes for existing DAOs unless they explicitly opt
  * in.
  * <p>
  * Implementations must keep the by-id and by-key views consistent with each other purely from what's
  * passed to {@link #put}/{@link #invalidateById}/{@link #invalidateByKey} — never by re-reading
  * {@link OrmEntity#getKey()} off a live entity at invalidation time, since a caller may have already
- * mutated that entity's key in place before invalidating it (this was a real, documented bug in
- * {@code MisoEntityCache.invalidate(T)}: it removed the cache entry under the entity's *current* key
- * instead of whatever key it was originally cached under).
+ * mutated that entity's key in place before invalidating it (a naive implementation would remove the
+ * cache entry under the entity's *current* key instead of whatever key it was originally cached under,
+ * leaving a stale entry behind).
  *
  * @param <T> the cached entity type
  */

@@ -56,6 +56,9 @@ public class JPDFPhrase extends JanitorWrapper<Phrase> {
         super(DISPATCH_TABLE, new Phrase(chunk.getChunk()));
     }
 
+    /**
+     * @return the wrapped Phrase object
+     */
     public Phrase getPhrase() {
         return wrapped;
     }

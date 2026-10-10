@@ -6,6 +6,7 @@ import com.eischet.janitor.api.types.dispatch.DispatchTable;
 
 import java.util.Objects;
 
+/** Wrapper for the DocuSign template role. */
 public class DocusignTemplateRole extends JanitorComposed<DocusignTemplateRole> {
 
     public static DispatchTable<DocusignTemplateRole> DISPATCH = new DispatchTable<>();
@@ -36,6 +37,9 @@ public class DocusignTemplateRole extends JanitorComposed<DocusignTemplateRole> 
         super(DISPATCH);
     }
 
+    /**
+     * @return the wrapped DocuSign object
+     */
     public TemplateRole getWrapped() {
         return wrapped;
     }

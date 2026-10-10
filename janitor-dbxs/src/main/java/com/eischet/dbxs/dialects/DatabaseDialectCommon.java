@@ -9,6 +9,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.sql.SQLException;
 
+/** Base class for database dialects, with defaults that suit most databases. */
 public abstract class DatabaseDialectCommon implements DatabaseDialect {
 
     @Override
@@ -18,7 +19,7 @@ public abstract class DatabaseDialectCommon implements DatabaseDialect {
 
     @Override
     public boolean canLimitAndOffset(final DatabaseVersion databaseVersion) {
-        return false; // LATER: für weitere Datenbank-Typen implementieren
+        return false; // LATER: implement for other database types
     }
 
     @Override

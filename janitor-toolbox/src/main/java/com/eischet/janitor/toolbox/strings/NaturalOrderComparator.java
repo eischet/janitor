@@ -31,6 +31,7 @@ package com.eischet.janitor.toolbox.strings;
 
 import java.util.Comparator;
 
+/** Compares strings in "natural order", i.e. numbers within the strings are compared by their numeric value: "x2" comes before "x10". */
 public class NaturalOrderComparator implements Comparator<String> {
     static int compareRight(String a, String b) {
         int bias = 0, ia = 0, ib = 0;
@@ -67,6 +68,12 @@ public class NaturalOrderComparator implements Comparator<String> {
     }
 
 
+    /**
+     * Compares two strings in natural order.
+     * @param o1 the first string
+     * @param o2 the second string
+     * @return a negative number, zero or a positive number if the first string is smaller than, equal to or greater than the second
+     */
     public static int doCompare(String o1, String o2) {
         int ia = 0, ib = 0;
         int nza = 0, nzb = 0;

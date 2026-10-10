@@ -2,6 +2,7 @@ package com.eischet.janitor.generator.writing;
 
 import org.jetbrains.annotations.NotNull;
 
+/** A helper for writing source code: it collects text, and keeps track of the indentation. */
 public class CodeOutputStream {
 
     private static final String DEFAULT_INDENT = "    ";
@@ -9,6 +10,12 @@ public class CodeOutputStream {
     private final StringBuilder builder = new StringBuilder();
     private int indent = 0;
 
+    /**
+     * Runs some code only if a condition is true.
+     * @param onlyWhen the condition
+     * @param runnable the code to run
+     * @return this
+     */
     public CodeOutputStream optional(final boolean onlyWhen, final Runnable runnable) {
         if (onlyWhen) {
             runnable.run();
@@ -16,6 +23,11 @@ public class CodeOutputStream {
         return this;
     }
 
+    /**
+     * Writes a name with its first letter in upper case.
+     * @param name the name
+     * @return this
+     */
     public CodeOutputStream capitalize(final @NotNull String name) {
         if (!name.isEmpty()) {
             if (name.length() == 1) {
@@ -27,6 +39,11 @@ public class CodeOutputStream {
         return this;
     }
 
+    /**
+     * Writes text.
+     * @param s the text, ignored if null
+     * @return this
+     */
     public CodeOutputStream write(final String s) {
         if (s != null) {
             builder.append(s);
@@ -46,15 +63,28 @@ public class CodeOutputStream {
         }
     }
 
+    /**
+     * Ends the current line.
+     * @return this
+     */
     public CodeOutputStream newline() {
         return write(NEWLINE);
     }
 
+    /**
+     * Writes an empty line.
+     * @return this
+     */
     public CodeOutputStream emptyLine() {
         write(NEWLINE);
         return this;
     }
 
+    /**
+     * Writes a line of text, indented to the current level.
+     * @param s the text
+     * @return this
+     */
     public CodeOutputStream writeLine(final String s) {
         for (int i = 0; i < indent; i++) {
             write(DEFAULT_INDENT);
@@ -64,22 +94,38 @@ public class CodeOutputStream {
         return this;
     }
 
+    /**
+     * Increases the indentation by one level.
+     * @return this
+     */
     public CodeOutputStream indent() {
         indent++;
         return this;
     }
 
+    /**
+     * Decreases the indentation by one level.
+     * @return this
+     */
     public CodeOutputStream dedent() {
         indent--;
         return this;
     }
 
+    /**
+     * Writes an opening brace, and indents.
+     * @return this
+     */
     public CodeOutputStream startBlock() {
         writeLine("{");
         indent();
         return this;
     }
 
+    /**
+     * Dedents, and writes a closing brace.
+     * @return this
+     */
     public CodeOutputStream endBlock() {
         dedent();
         writeLine("}");
@@ -92,6 +138,10 @@ public class CodeOutputStream {
         return builder.toString();
     }
 
+    /**
+     * Writes the indentation for the current level.
+     * @return this
+     */
     public CodeOutputStream writeIndent() {
         for (int i = 0; i < indent; i++) {
             write(DEFAULT_INDENT);

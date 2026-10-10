@@ -3,6 +3,7 @@ package com.eischet.janitor.runtime;
 import com.eischet.janitor.env.JanitorDefaultEnvironment;
 import com.eischet.janitor.logging.JanitorLogger;
 
+/** A logging runtime with a default environment, for use in tests. */
 public class TestingRuntime extends SLFLoggingRuntime {
 
     private static final JanitorLogger LOG = JanitorLogger.getLogger(TestingRuntime.class);

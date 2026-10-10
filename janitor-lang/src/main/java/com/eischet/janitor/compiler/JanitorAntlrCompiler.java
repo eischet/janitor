@@ -71,12 +71,23 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
         this.builtinTypes = env.getBuiltinTypes();
     }
 
+    /**
+     * Converts the text of a string literal from the source code into a string value, processing escape sequences.
+     * @param env the environment
+     * @param literal the literal's text, without the quotes
+     * @return the string value
+     */
     public static JString parseLiteral(final JanitorEnvironment env, final @NotNull String literal) {
         return env.getBuiltinTypes().string(unescapeJava(literal));
     }
 
+    /**
+     * Processes the Java-style escape sequences (e.g. backslash-n) in a string.
+     * @param literal the text to process
+     * @return the text with the escape sequences replaced
+     */
     public static String unescapeJava(final String literal) {
-        // vorher: return StringEscapeUtils.unescapeJava(literal);
+        // previously: return StringEscapeUtils.unescapeJava(literal);
         return literal.translateEscapes();
     }
 
@@ -94,7 +105,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
                 }
             }
             if (construct instanceof final Expression expression) {
-                // das fängt z.b. auch function call expressions!
+                // this also catches e.g. function call expressions!
                 if (verbose) log.info("top level expression: {}", expression);
                 final ExpressionStatement expressionStatement = new ExpressionStatement(location(topLevelStatementContext.start, topLevelStatementContext.stop), expression);
                 topLevelStatements.add(expressionStatement);
@@ -201,8 +212,8 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
     public Ast visitIdentifier(final JanitorParser.IdentifierContext ctx) {
         //String text = ctx.getText();
         // System.out.println("visitIdentifier: " + text + ", TO = " + ctx.TO() + ", FROM = " + ctx.FROM());
-        // Sonderlogik für Keywords, die auch Identifier sein können, z.B. from und to: Die müssen hier separat abgearbeitet werden!
-        // Komischerweise scheint man das hier aber nicht zu brauchen, weil...?
+        // Special handling for keywords that can also be identifiers, e.g. from and to: they would have to be handled separately here.
+        // Strangely, this does not seem to be needed here, because...?
         return new Identifier(location(ctx.start, ctx.stop), builtinTypes.intern(ctx.getText()));
     }
 
@@ -499,8 +510,8 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
             }
         }
         return new ImportStatement(location(ctx.start, ctx.stop), clauses);
-        // alt: final String alias = Optional.ofNullable(ctx.importAlias()).map(RuleContext::getText).orElse(null);
-        // alt: final QualifiedName qname = visitQualifiedName(ctx.qualifiedName());
+        // old: final String alias = Optional.ofNullable(ctx.importAlias()).map(RuleContext::getText).orElse(null);
+        // old: final QualifiedName qname = visitQualifiedName(ctx.qualifiedName());
         // return new ImportStatement(location(ctx.start, ctx.stop), /* qname, alias */ clauses);
     }
 
@@ -782,6 +793,11 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
 
     }
 
+    /**
+     * Visits an expression node.
+     * @param ctx the parse tree
+     * @return the expression
+     */
     public Expression visitExpression(final JanitorParser.ExpressionContext ctx) {
         return (Expression) visit(ctx);
     }
@@ -839,7 +855,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
             identifierText = ctx.validIdentifier().getText();
         }
 
-        // ⬇️ Ergänzung: Funktionsname aus functionCall holen
+        // additionally: get the function name from the functionCall
         if (identifierText == null && ctx.functionCall() != null) {
             final JanitorParser.FunctionCallContext fc = ctx.functionCall();
             if (fc.validIdentifier() != null) {
@@ -1037,6 +1053,12 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
         }
     }
 
+    /**
+     * Creates a source code location from the start and stop tokens of a parse tree node.
+     * @param start the first token
+     * @param stop the last token, or null if the node consists of a single token
+     * @return the location
+     */
     protected Location location(final Token start, final Token stop) {
         return Location.at(module, start.getLine(), start.getCharPositionInLine(),
                 stop == null ? start.getLine() : stop.getLine(),

@@ -40,6 +40,12 @@ import static com.eischet.janitor.api.Janitor.MetaData.HOST_NULLABLE;
 import static com.eischet.janitor.api.Janitor.MetaData.TYPE_HINT;
 import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
+/**
+ * Base class for dispatch tables, which map attribute names to the code that gets or sets them, for a given host type.
+ * Dispatch tables are the bridge between Janitor scripts and Java objects: they describe which properties and methods
+ * a script can use, and how these are converted from and to JSON.
+ * @param <T> the type of object that this table dispatches for
+ */
 public abstract class GenericDispatchTable<T extends JanitorObject> implements Dispatcher<T> {
 
     private static final JanitorLogger log = JanitorLogger.getLogger(GenericDispatchTable.class);
@@ -100,6 +106,13 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
         }
     }
 
+    /**
+     * Makes an attribute available under a second name, e.g. to point {@code a.foo} to {@code a.bar} automatically.
+     * This is useful for legacy entities whose attributes have been renamed.
+     * @param alias the additional name
+     * @param attributeName the name of the existing attribute that the alias refers to
+     * @return this table
+     */
     public GenericDispatchTable<T> addAlias(String alias, String attributeName) {
         if (aliases == null) {
             aliases = new HashMap<>();
@@ -126,6 +139,13 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
      */
 
 
+    /**
+     * Creates a table that falls back to a parent table for everything it does not define itself.
+     * @param parent the parent dispatcher
+     * @param caster converts instances of this table's type to instances of the parent's type
+     * @param includeApplyMethod whether to add the "apply" method
+     * @param <P> the parent type
+     */
     public <P extends JanitorObject> GenericDispatchTable(final @NotNull Dispatcher<P> parent, final Function<T, P> caster, boolean includeApplyMethod) {
         this.parent = parent;
         parentLookupHandler = (instance, process, name) -> parent.dispatch(caster.apply(instance), process, name);
@@ -158,10 +178,22 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
         });
     }
 
+    /**
+     * @return the attributes that this table defines itself, i.e. without those of its parent
+     */
     public @NotNull @Unmodifiable List<Attribute<T>> getDirectAttributes() {
         return List.copyOf(attributes);
     }
 
+    /**
+     * Creates a JSON adapter for a property, based on a getter, a setter and a JSON delegate.
+     * @param name the name of the property
+     * @param delegate reads and writes values of the property's type
+     * @param getter reads the property from an instance
+     * @param setter writes the property to an instance
+     * @param <X> the type of the property
+     * @return the adapter
+     */
     public <X> JsonAdapter<T> adapt(final String name,
                                     final @NotNull JsonSupport<X> delegate,
                                     final @NotNull NullableGetter<T, X> getter,
@@ -207,6 +239,14 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
         };
     }
 
+    /**
+     * Creates a JSON adapter for a list property, based on a getter, a setter and a JSON delegate for the list elements.
+     * @param delegate reads and writes the list elements
+     * @param getter reads the list from an instance
+     * @param setter writes the list to an instance, or null if the list is read-only
+     * @param <X> the element type
+     * @return the adapter
+     */
     public <X> JsonAdapter<T> adaptList(final @NotNull JsonSupportDelegate<X> delegate,
                                         final @NotNull NullableGetter<T, List<X>> getter,
                                         final @Nullable NullableSetter<T, List<X>> setter) {
@@ -357,14 +397,26 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
         return builder;
     }
 
+    /**
+     * Starts to override the meta-data of an existing attribute.
+     * @param name the name of the attribute
+     * @return a builder for the attribute's meta-data
+     */
     public MetaDataBuilder<T> override(final @NotNull String name) {
         return new InternalMetaDataBuilder<>(name);
     }
 
+    /**
+     * @return the constructor that scripts can use to create instances of this type, or null if there is none
+     */
     public JConstructor<T> getConstructor() {
         return constructor;
     }
 
+    /**
+     * Sets the constructor that scripts can use to create instances of this type.
+     * @param constructor the constructor
+     */
     public void setConstructor(JConstructor<T> constructor) {
         this.constructor = constructor;
     }
@@ -809,18 +861,46 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
         ).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.LIST);
     }
 
+    /**
+     * Adds a read-write property that is a list of strings.
+     * @param name the name of the property
+     * @param getter reads the list from an instance
+     * @param setter writes the list to an instance
+     * @return a handle for adding meta-data to the property
+     */
     public PropertyHandle<T, List<String>> addListOfStringsProperty(final String name, final NullableGetter<T, List<String>> getter, final NullableSetter<T, List<String>> setter) {
         return addListProperty(name, getter, setter, StringConverter.INSTANCE, JSON_STRING).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.LIST);
     }
 
+    /**
+     * Adds a read-write property that is a list of integers.
+     * @param name the name of the property
+     * @param getter reads the list from an instance
+     * @param setter writes the list to an instance
+     * @return a handle for adding meta-data to the property
+     */
     public PropertyHandle<T, List<Integer>> addListOfIntegersProperty(final String name, final NullableGetter<T, List<Integer>> getter, final NullableSetter<T, List<Integer>> setter) {
         return addListProperty(name, getter, setter, IntegerConverter.INSTANCE, JSON_INT).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.INTEGER);
     }
 
+    /**
+     * Adds a read-write property that is a list of longs.
+     * @param name the name of the property
+     * @param getter reads the list from an instance
+     * @param setter writes the list to an instance
+     * @return a handle for adding meta-data to the property
+     */
     public PropertyHandle<T, List<Long>> addListOfLongsProperty(final String name, final NullableGetter<T, List<Long>> getter, final NullableSetter<T, List<Long>> setter) {
         return addListProperty(name, getter, setter, LongConverter.INSTANCE, JSON_LONG).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.INTEGER);
     }
 
+    /**
+     * Adds a read-write property that is a list of doubles.
+     * @param name the name of the property
+     * @param getter reads the list from an instance
+     * @param setter writes the list to an instance
+     * @return a handle for adding meta-data to the property
+     */
     public PropertyHandle<T, List<Double>> addListOfDoublesProperty(final String name, final NullableGetter<T, List<Double>> getter, final NullableSetter<T, List<Double>> setter) {
         return addListProperty(name, getter, setter, FloatConverter.INSTANCE, JSON_DOUBLE).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.FLOAT);
     }
@@ -1268,6 +1348,15 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
         return addObjectProperty(name, getter, setter, constructor, (self, v) -> (X) v);
     }
 
+    /**
+     * Adds a read-write object property whose JSON default is a shared singleton instance, e.g. a "null object".
+     * @param name the name of the property
+     * @param getter reads the object from an instance
+     * @param setter writes the object to an instance
+     * @param singletonDefault the default value
+     * @param <X> the type of the property
+     * @return a handle for adding meta-data to the property
+     */
     public <X extends JanitorObject> PropertyHandle<T, X> addObjectPropertyWithSingletonDefault(final @NotNull String name,
                                                                                               final @NotNull NullableGetter<T, X> getter,
                                                                                               final @NotNull NullableSetter<T, X> setter,
@@ -1318,6 +1407,16 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
                 adapt(name, shim(constructor), getter, setter), JsonType.OBJECT, null, getter, setter).setMetaData(HOST_NULLABLE, true);
     }
 
+    /**
+     * Adds a read-write object property whose JSON default is a shared singleton instance, e.g. a "null object".
+     * @param name the name of the property
+     * @param getter reads the object from an instance
+     * @param setter writes the object to an instance
+     * @param singletonDefault the default value
+     * @param expander converts values assigned by scripts to the property type
+     * @param <X> the type of the property
+     * @return a handle for adding meta-data to the property
+     */
     public <X extends JanitorObject> PropertyHandle<T, X> addObjectPropertyWithSingletonDefault(final @NotNull String name,
                                                                                               final @NotNull NullableGetter<T, X> getter,
                                                                                               final @NotNull NullableSetter<T, X> setter,
@@ -1435,10 +1534,20 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
         }
     }
 
+    /**
+     * Looks up the handler for an attribute.
+     * @param key the name of the attribute
+     * @return the handler, or null if there is no such attribute
+     */
     public AttributeLookupHandler<T> get(final String key) {
         return map.get(key);
     }
 
+    /**
+     * Checks whether this table directly defines an attribute.
+     * @param key the name of the attribute
+     * @return true if the attribute exists
+     */
     public boolean has(final String key) {
         return map.containsKey(key);
     }
@@ -1592,6 +1701,12 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
         }
     }
 
+    /**
+     * Reads one object of this table's type from JSON, and passes it to the consumer.
+     * @param stream the JSON stream, positioned at the start of the object
+     * @param elementConsumer receives the new object
+     * @throws JsonException if the JSON is malformed, or if this table has no Java constructor
+     */
     public void readAsListElement(final JsonInputStream stream, Consumer<JanitorObject> elementConsumer) throws JsonException {
         if (javaDefaultConstructor == null) {
             throw new JsonException("Error: you need to supply a Java constructor to read objects of this type from JSON as a list!");
@@ -1607,14 +1722,34 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
 
     @FunctionalInterface
     private interface ParentAttributeReader<T> {
+        /**
+         * Reads one attribute of an object from JSON.
+         * @param stream the source
+         * @param key the name of the attribute
+         * @param instance the object
+         * @return true if the attribute was read, false if it is unknown
+         * @throws Exception on errors
+         */
         boolean readAttribute(final JsonInputStream stream, final String key, final T instance) throws Exception;
     }
 
     @FunctionalInterface
     private interface ParentAttributeWriter<T> {
+        /**
+         * Writes the attributes of an object as JSON.
+         * @param stream the target
+         * @param instance the object
+         * @throws Exception on errors
+         */
         void writeToJson(final JsonOutputStream stream, T instance) throws Exception;
     }
 
+    /**
+     * A named attribute of a dispatch table.
+     * @param name the name of the attribute
+     * @param handler gets or sets the attribute
+     * @param jsonAdapter reads and writes the attribute from and to JSON, or null if it is not part of the JSON representation
+     */
     public record Attribute<T extends JanitorObject>(
             @NotNull String name,
             @NotNull AttributeLookupHandler<T> handler,

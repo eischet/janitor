@@ -4,6 +4,7 @@ import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import org.commonmark.node.BulletList;
 
+/** Wrapper for the CommonMark bullet list node. */
 public class CMBulletList extends CMListBlock {
     private static final WrapperDispatchTable<BulletList> dispatch = new WrapperDispatchTable<>();
 

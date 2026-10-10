@@ -42,6 +42,9 @@ public class JPDFAnnotation extends JanitorWrapper<Annotation> {
         super(DISPATCH_TABLE, new Annotation(llx, lly, urx, ury, url));
     }
 
+    /**
+     * @return the wrapped Annotation object
+     */
     public Annotation getAnnotation() {
         return wrapped;
     }

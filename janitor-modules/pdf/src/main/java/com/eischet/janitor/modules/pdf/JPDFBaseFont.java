@@ -36,6 +36,9 @@ public class JPDFBaseFont extends JanitorWrapper<BaseFont> {
         super(DISPATCH_TABLE, baseFont);
     }
 
+    /**
+     * @return the wrapped BaseFont object
+     */
     public BaseFont getBaseFont() {
         return wrapped;
     }

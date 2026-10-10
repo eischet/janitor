@@ -29,6 +29,12 @@ public class JDate extends JanitorComposed<JDate> implements JConstant {
         this.date = date;
     }
 
+    /**
+     * Creates a new date value.
+     * @param dispatcher the dispatcher for dates
+     * @param date the date, in the packed representation used by {@link JDate}
+     * @return the new value
+     */
     public static JDate newInstance(final Dispatcher<JDate> dispatcher, final long date) {
         return new JDate(dispatcher,  date);
     }
@@ -176,6 +182,11 @@ public class JDate extends JanitorComposed<JDate> implements JConstant {
         return java.sql.Date.valueOf(date.janitorGetHostValue());
     }
 
+    /**
+     * Converts a local date to a legacy {@link java.sql.Date}.
+     * @param date the date, may be null
+     * @return the legacy date, or null if the date is null
+     */
     public static @Nullable Date toLegacyJavaDate(final @Nullable LocalDate date) {
         if (date == null) {
             return null;

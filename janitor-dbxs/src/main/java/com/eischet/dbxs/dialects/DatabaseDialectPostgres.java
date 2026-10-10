@@ -18,6 +18,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+/** The dialect for PostgreSQL. */
 public class DatabaseDialectPostgres extends DatabaseDialectCommon {
 
     /** {@code LIMIT ? OFFSET ?} is supported by every version we run against. */
@@ -47,7 +48,7 @@ public class DatabaseDialectPostgres extends DatabaseDialectCommon {
 
     @Override
     public void addClobToStatement(final @NotNull PreparedStatement ps, final int i, final StringReader clob) throws SQLException {
-        ps.setCharacterStream(i, clob); // notwendige Sonderbehandlung für PostgreSQL, da setClob offenbar nicht implementiert wurde
+        ps.setCharacterStream(i, clob); // necessary special handling for PostgreSQL, since setClob is apparently not implemented
     }
 
     @Override

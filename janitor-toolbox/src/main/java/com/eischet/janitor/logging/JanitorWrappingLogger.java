@@ -60,6 +60,10 @@ public class JanitorWrappingLogger implements JanitorLogger {
         return wrapped.isTraceEnabled();
     }
 
+    /**
+     * Runs the code with the entity of this logger set as the current entity of the logging context, if it has one.
+     * @param runnable the code to run
+     */
     protected void withEntity(final Runnable runnable) {
         if (entity == null) {
             runnable.run();

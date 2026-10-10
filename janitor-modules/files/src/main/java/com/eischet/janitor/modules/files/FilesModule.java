@@ -79,11 +79,25 @@ public class FilesModule extends JanitorComposed<FilesModule> implements Janitor
         super(dispatcher);
     }
 
+    /**
+     * Script method {@code files.exists(path)}: checks whether a file or folder exists.
+     * @param runningScript the running script process
+     * @param arguments the call arguments
+     * @return true if it exists
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public JBool fileExists(final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         final File f = new File(arguments.require(1).getString(0).janitorGetHostValue());
         return Janitor.toBool(f.exists());
     }
 
+    /**
+     * Script method {@code files.write(path, text, charset)}: writes text to a file, in UTF-8 by default.
+     * @param runningScript the running script process
+     * @param arguments the call arguments
+     * @return null
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public JNull writeString(final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         try {
             Files.writeString(
@@ -97,6 +111,13 @@ public class FilesModule extends JanitorComposed<FilesModule> implements Janitor
         }
     }
 
+    /**
+     * Script method {@code files.read(path, charset)}: reads a file as text, in UTF-8 by default.
+     * @param runningScript the running script process
+     * @param arguments the call arguments
+     * @return the text
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public JanitorObject readString(final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         try {
             return runningScript.getBuiltins().nullableString(
@@ -110,6 +131,13 @@ public class FilesModule extends JanitorComposed<FilesModule> implements Janitor
         }
     }
 
+    /**
+     * Script method {@code files.readXml(path, charset)}: reads an XML file.
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return the root element
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public JElement readXml(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         try {
             final String contents = Files.readString(
@@ -122,6 +150,13 @@ public class FilesModule extends JanitorComposed<FilesModule> implements Janitor
         }
     }
 
+    /**
+     * Parses an XML text.
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return the root element
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public JElement parseXml(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         try {
             final String contents = arguments.require(1).getRequiredStringValue(0);
@@ -131,6 +166,13 @@ public class FilesModule extends JanitorComposed<FilesModule> implements Janitor
         }
     }
 
+    /**
+     * Script method {@code files.writeBinary(path, data)}: writes binary data to a file.
+     * @param runningScript the running script process
+     * @param arguments the call arguments
+     * @return null
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public JNull writeBinary(final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         try {
             Files.write(
@@ -143,6 +185,13 @@ public class FilesModule extends JanitorComposed<FilesModule> implements Janitor
         }
     }
 
+    /**
+     * Script method {@code files.readBinary(path)}: reads a file as binary data.
+     * @param runningScript the running script process
+     * @param arguments the call arguments
+     * @return the data
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public JanitorObject readBinary(final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
         try {
             return runningScript.getBuiltins().binary(
@@ -155,6 +204,13 @@ public class FilesModule extends JanitorComposed<FilesModule> implements Janitor
         }
     }
 
+    /**
+     * Script method {@code files.list(folder)}: lists the names of the files in a folder.
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return a list of the names; empty if the folder does not exist
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public JanitorObject list(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         final String folderName = arguments.require(1).getRequiredStringValue(0);
         // TODO: final String glob = arguments.getOptionalStringValue(1, ""); ...
@@ -168,6 +224,13 @@ public class FilesModule extends JanitorComposed<FilesModule> implements Janitor
         return result;
     }
 
+    /**
+     * Script method {@code files.mkdirs(folder)}: creates a folder, including any missing parent folders.
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return true if the folder was created
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public JBool mkdir(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         final String folderName = arguments.require(1).getRequiredStringValue(0);
         return Janitor.toBool(new File(folderName).mkdirs());
@@ -191,12 +254,25 @@ public class FilesModule extends JanitorComposed<FilesModule> implements Janitor
         return process.getBuiltins().string(normalized);
     }
 
+    /**
+     * Script method {@code files.delete(path)}: deletes a file or an empty folder.
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return true if it was deleted
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public JanitorObject delete(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         final String fileName = arguments.require(1).getRequiredStringValue(0);
         final boolean success = new File(fileName).delete();
         return Janitor.toBool(success);
     }
 
+    /**
+     * Script method {@code files.move(source, target)}: moves a file.
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public void move(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(2);
         final String source = arguments.getRequiredStringValue(0);
@@ -208,6 +284,12 @@ public class FilesModule extends JanitorComposed<FilesModule> implements Janitor
         }
     }
 
+    /**
+     * Script method {@code files.copy(source, target)}: copies a file.
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public void copy(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(2);
         final String source = arguments.getRequiredStringValue(0);

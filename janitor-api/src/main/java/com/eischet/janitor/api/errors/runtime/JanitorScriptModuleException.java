@@ -3,6 +3,7 @@ package com.eischet.janitor.api.errors.runtime;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import org.jetbrains.annotations.NotNull;
 
+/** Thrown when a module written in Janitor cannot be loaded, e.g. because it fails to compile. */
 public class JanitorScriptModuleException extends JanitorRuntimeException {
     public JanitorScriptModuleException(@NotNull JanitorScriptProcess process) {
         super(process, JanitorScriptModuleException.class);

@@ -19,6 +19,14 @@ import java.util.function.BiFunction;
  */
 @FunctionalInterface
 public interface BinOp<L, R, T> {
+    /**
+     * Performs the operation.
+     * @param process the running script process
+     * @param left the left operand
+     * @param right the right operand
+     * @return the result
+     * @throws JanitorRuntimeException if the operation fails
+     */
     T apply(JanitorScriptProcess process, L left, R right) throws JanitorRuntimeException;
 
     /**

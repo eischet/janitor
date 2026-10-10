@@ -92,6 +92,9 @@ public class Location implements JsonExportableObject {
         return Location.at(module, 0, 0, 0, 0);
     }
 
+    /**
+     * @return the location that is used for built-in code, which has no source
+     */
     public static @NotNull Location builtin() {
         return BUILTIN_LOCATION;
     }

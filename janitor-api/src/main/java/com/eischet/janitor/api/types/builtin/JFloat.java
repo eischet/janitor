@@ -77,6 +77,12 @@ public class JFloat extends JanitorWrapper<Double> implements JNumber {
         producer.value(wrapped);
     }
 
+    /**
+     * Creates a new float value.
+     * @param dispatcher the dispatcher for floats
+     * @param value the number to wrap
+     * @return the new value
+     */
     public static JFloat newInstance(final Dispatcher<JanitorWrapper<Double>> dispatcher, final double value) {
         return new JFloat(dispatcher, value);
     }

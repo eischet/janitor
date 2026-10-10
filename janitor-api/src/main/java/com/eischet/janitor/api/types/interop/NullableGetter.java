@@ -3,6 +3,11 @@ package com.eischet.janitor.api.types.interop;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * Reads a property that may be null from an instance.
+ * @param <INSTANCE> the type of the object that owns the property
+ * @param <PROPERTY> the type of the property
+ */
 @FunctionalInterface
 public interface NullableGetter<INSTANCE, PROPERTY> {
     @Nullable PROPERTY get(@NotNull INSTANCE instance) throws Exception;

@@ -6,6 +6,7 @@ import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.builtin.JString;
 
+/** Converts between Janitor strings and Java {@link String} values. */
 public class StringConverter implements TwoWayConverter<String> {
 
     public static final StringConverter INSTANCE = new StringConverter();

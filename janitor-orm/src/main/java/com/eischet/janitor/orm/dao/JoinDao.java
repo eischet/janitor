@@ -47,6 +47,11 @@ import java.util.stream.Stream;
 
 import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
+/**
+ * A data access object for the records of a join table, which connect two entities.
+ * Join records are identified by several primary key columns, not by a single ID.
+ * @param <T> the type of the join records
+ */
 public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinDao<?>> implements JCallable {
 
     public static final DispatchTable<JoinDao<?>> DISPATCH = new DispatchTable<>();
@@ -89,6 +94,9 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
         return collection.getDataManager();
     }
 
+    /**
+     * @return the simple name of the entity class
+     */
     public @NotNull String getEntityClassName() {
         return entityClass.getSimpleName();
     }
@@ -146,6 +154,13 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
 
     }
 
+    /**
+     * Reads all columns of the current row into a new join record.
+     * @param conn the database connection
+     * @param rs the result set, positioned at the row to read
+     * @return the new join record
+     * @throws DatabaseError if a column cannot be read
+     */
     protected T readAllProperties(final DatabaseConnection conn, final SimpleResultSet rs) throws DatabaseError {
         final T value = newValue.get();
         int columnIndex = 0;
@@ -173,11 +188,27 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
         return value;
     }
 
+    /**
+     * Finds join records using a custom query.
+     * @param conn the database connection
+     * @param query the SQL text
+     * @param statementConfigurator sets the parameters of the query
+     * @return the join records
+     * @throws DatabaseError on database errors
+     */
     public @NotNull @Unmodifiable List<T> findByQuery(@NotNull final DatabaseConnection conn, @NotNull final String query, @NotNull final StatementConfigurator statementConfigurator) throws DatabaseError {
         final SelectStatement select = SelectStatement.of(query);
         return conn.queryForList(select, statementConfigurator, rs -> readAllProperties(conn, rs));
     }
 
+    /**
+     * Finds all join records where a column has the given value.
+     * @param conn the database connection
+     * @param columnName the column
+     * @param id the value
+     * @return the join records
+     * @throws DatabaseError on database errors
+     */
     protected List<T> findByColumn(final DatabaseConnection conn, final String columnName, final long id) throws DatabaseError {
         final StatementCreator creator = new StatementCreator(getDataManager().getDialect());
         final SelectStatement select = SelectStatement.of(creator.createSelectStatement(tableName, columns, columnName));
@@ -186,6 +217,12 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
 
 
 
+    /**
+     * Inserts a join record.
+     * @param conn the database connection
+     * @param record the join record
+     * @throws DatabaseError if the insert fails, or does not affect exactly one row
+     */
     public void insert(@NotNull DatabaseConnection conn, @NotNull T record) throws DatabaseError {
         final StatementCreator creator = new StatementCreator(getDataManager().getDialect());
         final List<String> insertingColumns = columns.stream().toList();
@@ -203,6 +240,12 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
         entityChangeListeners.fire(listener -> listener.onChange(EntityChangeListener.Type.INSERT, record));
     }
 
+    /**
+     * Updates a join record, or inserts it if it does not exist yet.
+     * @param conn the database connection
+     * @param record the join record
+     * @throws DatabaseError if the update affects more than one row, or on database errors
+     */
     public void merge(@NotNull DatabaseConnection conn, @NotNull T record) throws DatabaseError {
         final StatementCreator creator = new StatementCreator(getDataManager().getDialect());
         final List<String> updatingColumns = columns.stream().filter(col -> !primaryKeyColumns.contains(col)).toList();
@@ -210,7 +253,7 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
             final List<String> countingColumns = columns.stream().toList();
             final SelectStatement countStatement = SelectStatement.of(creator.createCountStatement(tableName, countingColumns));
             final int count = conn.queryForInt(countStatement, ps -> writeAllColumns(conn, record, countingColumns, ps));
-            log.info("merge: suche via {} -> {} Zeilen", countStatement.getSql(), count);
+            log.info("merge: searching via {} -> {} rows", countStatement.getSql(), count);
             if (count == 0) {
                 insert(conn, record);
             }
@@ -232,6 +275,12 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
         }
     }
 
+    /**
+     * Updates a join record.
+     * @param conn the database connection
+     * @param record the join record
+     * @throws DatabaseError if the update does not affect exactly one row
+     */
     public void update(@NotNull DatabaseConnection conn, @NotNull T record) throws DatabaseError {
         final StatementCreator creator = new StatementCreator(getDataManager().getDialect());
         final List<String> updatingColumns = columns.stream().filter(col -> !primaryKeyColumns.contains(col)).toList();
@@ -257,6 +306,12 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
         entityChangeListeners.fire(listener -> listener.onChange(EntityChangeListener.Type.UPDATE, record));
     }
 
+    /**
+     * Deletes a join record.
+     * @param conn the database connection
+     * @param record the join record
+     * @throws DatabaseError if the delete does not affect exactly one row
+     */
     public void delete(@NotNull final DatabaseConnection conn, @NotNull final T record) throws DatabaseError {
         final StatementCreator creator = new StatementCreator(getDataManager().getDialect());
         final UpdateStatement updateStatement = UpdateStatement.of(creator.createDeleteStatement(tableName, primaryKeyColumns));
@@ -273,6 +328,15 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
         entityChangeListeners.fire(listener -> listener.onChange(EntityChangeListener.Type.DELETE, record));
     }
 
+    /**
+     * Converts a script value to a join record: a map is applied to a new record, an existing record is returned as it is,
+     * and a foreign key is combined with the parent entity.
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @param parent the parent entity
+     * @return the join record
+     * @throws JanitorRuntimeException if the argument cannot be converted
+     */
     public T convertToEntity(final @NotNull JanitorScriptProcess process, final @NotNull JCallArgs arguments, final OrmEntity parent) throws JanitorRuntimeException {
         final JanitorObject param = arguments.require(1).get(0);
         if (param instanceof JMap map) {
@@ -290,6 +354,13 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
     }
 
 
+    /**
+     * Script method {@code dao.insert(x)}: inserts a join record, given as a map or as a record.
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return the inserted record
+     * @throws JanitorRuntimeException if the argument is invalid or the insert fails
+     */
     public T insertForScript(final @NotNull JanitorScriptProcess process,
                                 final @NotNull JCallArgs arguments) throws JanitorRuntimeException {
         final JanitorObject param = arguments.require(1).get(0);
@@ -316,6 +387,13 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
         throw new JanitorArgumentException(process, "invalid argument " + param + " [" + simpleClassNameOf(param) + "]");
     }
 
+    /**
+     * Script method {@code dao.update(x)}: updates a join record, given as a map or as a record.
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return the updated record
+     * @throws JanitorRuntimeException if the argument is invalid or the update fails
+     */
     public T updateForScript(final @NotNull JanitorScriptProcess process,
                                    final @NotNull JCallArgs arguments) throws JanitorRuntimeException {
         final JanitorObject param = arguments.require(1).get(0);
@@ -342,6 +420,13 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
         throw new JanitorArgumentException(process, "invalid argument " + param + " [" + simpleClassNameOf(param) + "]");
     }
 
+    /**
+     * Script method {@code dao.merge(x)}: updates a join record, or inserts it if it does not exist yet.
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return the merged record
+     * @throws JanitorRuntimeException if the argument is invalid or the merge fails
+     */
     public T mergeForScript(final @NotNull JanitorScriptProcess process,
                                 final @NotNull JCallArgs arguments) throws JanitorRuntimeException {
         final JanitorObject param = arguments.require(1).get(0);
@@ -369,6 +454,12 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
     }
 
 
+    /**
+     * Script method {@code dao.delete(x)}: deletes a join record, given as a map or as a record.
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @throws JanitorRuntimeException if the argument is invalid or the delete fails
+     */
     public void deleteForScript(final @NotNull JanitorScriptProcess process, final @NotNull JCallArgs arguments) throws JanitorRuntimeException {
         final JanitorObject param = arguments.require(1).get(0);
         if (param instanceof JMap map) {
@@ -394,6 +485,15 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
     }
 
 
+    /**
+     * Finds the join records that refer to an entity via a column, for use in script methods.
+     * @param process the running script process
+     * @param arguments the call arguments; the first one is the entity or its ID
+     * @param columnName the column that holds the reference
+     * @param expected the expected type of the entity
+     * @return a list of the join records
+     * @throws JanitorRuntimeException if the argument is invalid or the query fails
+     */
     protected JList fetchForScript(final @NotNull JanitorScriptProcess process,
                                    final @NotNull JCallArgs arguments,
                                    final @NotNull String columnName,
@@ -407,6 +507,16 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
         }
     }
 
+    /**
+     * Finds the join records that refer to an entity via either of two columns, for use in script methods.
+     * @param process the running script process
+     * @param arguments the call arguments; the first one is the entity or its ID
+     * @param columnName1 the first column that may hold the reference
+     * @param columnName2 the second column that may hold the reference
+     * @param expected the expected type of the entity
+     * @return a list of the join records
+     * @throws JanitorRuntimeException if the argument is invalid or the query fails
+     */
     protected JList fetchForScriptDual(final @NotNull JanitorScriptProcess process,
                                    final @NotNull JCallArgs arguments,
                                    final @NotNull String columnName1,
@@ -423,6 +533,14 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
     }
 
 
+    /**
+     * Converts a script value to an ID: it can be a number, a foreign key or an entity.
+     * @param process the running script process
+     * @param janitorObject the value
+     * @param expected the expected type of the entity
+     * @return the ID
+     * @throws JanitorRuntimeException if the value is not valid
+     */
     protected long toId(final @NotNull JanitorScriptProcess process,
                         final JanitorObject janitorObject,
                         final Class<?> expected) throws JanitorRuntimeException {
@@ -461,10 +579,17 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
     }
 
 
+    /**
+     * @return true if this DAO logs what it does in detail
+     */
     public boolean isVerbose() {
         return verbose;
     }
 
+    /**
+     * Sets whether this DAO logs what it does in detail.
+     * @param verbose true to enable detailed logging
+     */
     public void setVerbose(final boolean verbose) {
         this.verbose = verbose;
     }
@@ -496,6 +621,13 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
         throw new JanitorNativeException(process, "the constructor for new objects takes no parameter, a map to apply, or a string to parse to a map and then apply", null);
     }
 
+    /**
+     * Runs a function in a transaction, for lazy loading.
+     * @param function the function to run
+     * @param <X> the type of the result
+     * @return the result of the function
+     * @throws JanitorError if the transaction fails
+     */
     public <X> X callLazyTransaction(final DatabaseFunction<DatabaseConnection, X> function) throws JanitorError {
         try {
             return getDataManager().callTransaction(function);
@@ -504,10 +636,18 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
         }
     }
 
+    /**
+     * Adds a listener that is notified about inserts, updates and deletes.
+     * @param listener the listener
+     * @return a registration that can be used to remove the listener
+     */
     public ListenerRegistration addChangeListener(final EntityChangeListener<T> listener) {
         return entityChangeListeners.add(listener);
     }
 
+    /**
+     * @return the dispatch table of the join records
+     */
     public DispatchTable<T> getEntityDispatchTable() {
         return entityDispatchTable;
     }

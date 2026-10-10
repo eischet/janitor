@@ -74,6 +74,9 @@ public class JPDFDocument extends JanitorWrapper<Document> {
         super(DISPATCH_TABLE, new Document(pageSize.getRectangle(), marginLeft, marginRight, marginTop, marginBottom));
     }
 
+    /**
+     * @return the wrapped Document object
+     */
     public Document getDocument() {
         return wrapped;
     }

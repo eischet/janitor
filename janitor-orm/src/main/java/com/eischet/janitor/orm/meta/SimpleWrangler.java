@@ -38,6 +38,17 @@ public class SimpleWrangler<T extends OrmEntity, U extends Uplink> implements En
         this.downlinkRetriever = downlinkRetriever;
     }
 
+    /**
+     * Creates a wrangler.
+     * @param wrangledClass the class of the entities
+     * @param dispatchTable the dispatch table of the entities
+     * @param nullReference the foreign key that stands for "no entity"
+     * @param constructor creates new entities
+     * @param downlinkRetriever finds the DAO of the entities
+     * @param <T> the type of the entities
+     * @param <U> the type of the uplink
+     * @return the wrangler
+     */
     public static <T extends OrmEntity, U extends Uplink> EntityWrangler<T, U> of(final Class<T> wrangledClass,
                                                                                   final DispatchTable<T> dispatchTable,
                                                                                   final ForeignKeyNull<T> nullReference,
@@ -82,6 +93,9 @@ public class SimpleWrangler<T extends OrmEntity, U extends Uplink> implements En
         return downlinkRetriever.apply(uplink);
     }
 
+    /**
+     * @return the function that creates new entities
+     */
     public Function<U, T> getConstructor() {
         return constructor;
     }

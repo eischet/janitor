@@ -54,10 +54,16 @@ public class JPDFWriter extends JanitorWrapper<PdfWriter> {
         this.buffer = buffer;
     }
 
+    /**
+     * @return the wrapped PdfWriter object
+     */
     public PdfWriter getWriter() {
         return wrapped;
     }
 
+    /**
+     * @return the bytes that the writer buffered, or null if it does not buffer
+     */
     public byte @org.jetbrains.annotations.Nullable [] getBufferedBytes() {
         return buffer == null ? null : buffer.toByteArray();
     }

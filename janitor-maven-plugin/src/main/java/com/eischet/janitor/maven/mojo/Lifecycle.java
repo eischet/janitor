@@ -12,6 +12,7 @@ import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
 
+/** A Maven lifecycle participant that runs the callbacks that scripts registered for the end of the build, depending on its success. */
 @Named
 @Singleton
 public class Lifecycle extends AbstractMavenLifecycleParticipant {

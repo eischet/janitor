@@ -38,18 +38,30 @@ public class JDuration extends JanitorComposed<JDuration> implements JConstant, 
         return unit.unit.getDuration().toSeconds() * amount;
     }
 
+    /**
+     * @return the length of this duration in whole minutes
+     */
     public long toMinutes() {
         return unit.unit.getDuration().toMinutes() * amount;
     }
 
+    /**
+     * @return the length of this duration in whole hours
+     */
     public long toHours() {
         return unit.unit.getDuration().toHours() * amount;
     }
 
+    /**
+     * @return the length of this duration in whole days
+     */
     public long toDays() {
         return unit.unit.getDuration().toDays() * amount;
     }
 
+    /**
+     * @return the length of this duration in whole weeks
+     */
     public long toWeeks() {
         return toSeconds() / 604800;
     }
@@ -187,10 +199,24 @@ public class JDuration extends JanitorComposed<JDuration> implements JConstant, 
         };
     }
 
+    /**
+     * Adds two durations.
+     * @param process the running script process
+     * @param left the first duration
+     * @param right the second duration
+     * @return the sum, expressed in seconds
+     */
     public static JDuration add(final JanitorScriptProcess process, final JDuration left, final JDuration right) {
         return process.getBuiltins().duration(left.toSeconds() + right.toSeconds(), JDurationKind.SECONDS);
     }
 
+    /**
+     * Subtracts one duration from another.
+     * @param process the running script process
+     * @param left the duration to subtract from
+     * @param right the duration to subtract
+     * @return the difference, expressed in seconds
+     */
     public static JDuration subtract(final JanitorScriptProcess process, final JDuration left, final JDuration right) {
         return process.getBuiltins().duration(left.toSeconds() - right.toSeconds(), JDurationKind.SECONDS);
     }
@@ -217,14 +243,35 @@ public class JDuration extends JanitorComposed<JDuration> implements JConstant, 
     }
 
 
+    /**
+     * Creates a new duration.
+     * @param dispatcher the dispatcher for durations
+     * @param amount the amount, in units of the given kind
+     * @param unit the kind of unit
+     * @return the new duration
+     */
     public static JDuration newInstance(final Dispatcher<JDuration> dispatcher, final long amount, final JDurationKind unit) {
         return new JDuration(dispatcher, amount, unit);
     }
 
+    /**
+     * Multiplies a duration by a factor.
+     * @param process the running script process
+     * @param duration the duration
+     * @param number the factor
+     * @return the scaled duration, expressed in seconds
+     */
     public static JDuration multiply(JanitorScriptProcess process, JDuration duration, Double number) {
         return process.getBuiltins().duration((long) (((double) duration.toSeconds()) * number), JDurationKind.SECONDS);
     }
 
+    /**
+     * Divides a duration by a divisor.
+     * @param process the running script process
+     * @param duration the duration
+     * @param number the divisor
+     * @return the scaled duration, expressed in seconds
+     */
     public static JDuration divide(JanitorScriptProcess process, JDuration duration, Double number) {
         return process.getBuiltins().duration((long) (((double) duration.toSeconds()) / number), JDurationKind.SECONDS);
     }

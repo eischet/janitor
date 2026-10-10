@@ -54,11 +54,11 @@ public class FilterExpression extends JanitorComposed<FilterExpression> {
         DISPATCH.addDateTimeProperty("valueDateTime", FilterExpression::getValueDateTime, FilterExpression::setValueDateTime);
     }
 
-    // Für logische Gruppen
+    // For logical groups
     private @Nullable FilterLogic logic; // "and" | "or"
     private @Nullable @Unmodifiable List<FilterExpression> filters;
 
-    // Für Expressions
+    // For expressions
     private @Nullable String field;
     private @Nullable FilterOperator operator;
     private @Nullable Boolean ignoreCase;
@@ -70,6 +70,11 @@ public class FilterExpression extends JanitorComposed<FilterExpression> {
     private @Nullable LocalDateTime valueDateTime;
     private @Nullable LocalDate valueDate;
 
+    /**
+     * Checks whether the expression is complete, i.e. whether it can be turned into a query: a group needs a logic and complete filters,
+     * and an expression needs a field, an operator and, depending on the operator, a value.
+     * @return true if the expression is complete
+     */
     public boolean isComplete() {
         if (filters != null && !filters.isEmpty() && logic != null) {
             return filters.stream().allMatch(FilterExpression::isComplete); // and/or with any number of filters, which are themselves complete
@@ -83,10 +88,16 @@ public class FilterExpression extends JanitorComposed<FilterExpression> {
         };
     }
 
+    /**
+     * @return true if the expression is not complete
+     */
     public boolean isIncomplete() {
         return !isComplete();
     }
 
+    /**
+     * @return true if a value of any type is set
+     */
     public boolean hasValueSet() {
         return valueString != null || valueBoolean != null || valueDouble != null || valueLong != null || valueDateTime != null || valueDate != null;
     }
@@ -105,6 +116,7 @@ public class FilterExpression extends JanitorComposed<FilterExpression> {
         return compressed;
     }
 
+    /** Resets this expression to its empty state. */
     public void clear() {
         logic = null;
         filters = null;
@@ -119,6 +131,11 @@ public class FilterExpression extends JanitorComposed<FilterExpression> {
         valueDate = null;
     }
 
+    /**
+     * Replaces the contents of this expression with the one that is parsed from JSON.
+     * @param json the JSON text
+     * @throws JsonException if the JSON is invalid
+     */
     public void clearAndSetFromJson(@Language("JSON") final String json) throws JsonException {
         clear();
         final FilterExpression temp = DISPATCH.readFromJson(FilterExpression::new, json);
@@ -136,6 +153,9 @@ public class FilterExpression extends JanitorComposed<FilterExpression> {
         log.info("parsed {} to {}", json, getValueDescription());
     }
 
+    /**
+     * @return a description of the value for diagnostics, including its type
+     */
     public String getValueDescription() {
         StringBuilder result = new StringBuilder();
         result.append("{");
@@ -170,26 +190,44 @@ public class FilterExpression extends JanitorComposed<FilterExpression> {
         valueDate = null;
     }
 
+    /**
+     * @return true if the value is a string
+     */
     public boolean isString() {
         return valueString != null;
     }
 
+    /**
+     * @return true if the value is a long
+     */
     public boolean isLong() {
         return valueLong != null;
     }
 
+    /**
+     * @return true if the value is a boolean
+     */
     public boolean isBoolean() {
         return valueBoolean != null;
     }
 
+    /**
+     * @return true if the value is a double
+     */
     public boolean isDouble() {
         return valueDouble != null;
     }
 
+    /**
+     * @return true if the value is a datetime
+     */
     public boolean isDateTime() {
         return valueDateTime != null;
     }
 
+    /**
+     * @return true if the value is a date
+     */
     public boolean isDate() {
         return valueDate != null;
     }
@@ -255,36 +293,63 @@ public class FilterExpression extends JanitorComposed<FilterExpression> {
         return sb.toString();
     }
 
+    /**
+     * @return true if this expression is a group of other expressions
+     */
     public boolean isGroup() {
         return logic != null && filters != null;
     }
 
+    /**
+     * @return true if this expression compares a field with a value
+     */
     public boolean isExpression() {
         return field != null && operator != null;
     }
 
+    /**
+     * @return the logic by which the filters of a group are combined
+     */
     public @Nullable FilterLogic getLogic() {
         return logic;
     }
 
+    /**
+     * Sets the logic by which the filters of a group are combined.
+     * @param logic the logic
+     */
     public void setLogic(final @Nullable FilterLogic logic) {
         this.logic = logic;
     }
 
 
 
+    /**
+     * @return the code of the logic, "and" or "or"
+     */
     public String getLogicString() {
         return logic == null ? null : logic.getCode();
     }
 
+    /**
+     * Sets the logic by its code.
+     * @param logic the code, "and" or "or"
+     */
     public void setLogicString(final String logic) {
         this.logic = FilterLogic.fromCode(logic);
     }
 
+    /**
+     * @return the filters of a group
+     */
     public @Unmodifiable List<FilterExpression> getFilters() {
         return filters == null ? Collections.emptyList() : List.copyOf(filters);
     }
 
+    /**
+     * Sets the filters of a group.
+     * @param filters the filters
+     */
     public void setFilters(final @NotNull @Unmodifiable List<FilterExpression> filters) {
         if (filters.isEmpty()) {
             this.filters = null;
@@ -293,6 +358,10 @@ public class FilterExpression extends JanitorComposed<FilterExpression> {
         }
     }
 
+    /**
+     * Adds a filter to a group.
+     * @param filter the filter
+     */
     public void addFilter(final FilterExpression filter) {
         if (this.filters == null) {
             this.filters = List.of(filter);
@@ -303,6 +372,10 @@ public class FilterExpression extends JanitorComposed<FilterExpression> {
 
     // TODO: we do not define equals/hashCode right now, and existing tooling uses identity (because the UI control owns the sub-expression),
     //   so figure out how this should look in the end...
+    /**
+     * Removes a filter from a group, using {@code equals} to find it.
+     * @param filter the filter
+     */
     public void removeFilterByEquals(final FilterExpression filter) {
         if (filters != null) {
             int initSize = filters.size();
@@ -315,6 +388,10 @@ public class FilterExpression extends JanitorComposed<FilterExpression> {
         }
     }
 
+    /**
+     * Removes a filter from a group, comparing by identity.
+     * @param filter the filter
+     */
     public void removeFilterByIdentity(final FilterExpression filter) {
         if (filters != null) {
             int initSize = filters.size();
@@ -328,154 +405,321 @@ public class FilterExpression extends JanitorComposed<FilterExpression> {
     }
 
 
+    /**
+     * @return the name of the field to compare
+     */
     public @Nullable String getField() {
         return field;
     }
 
+    /**
+     * Sets the name of the field to compare.
+     * @param field the name of the field
+     */
     public void setField(final @Nullable String field) {
         this.field = field;
     }
 
+    /**
+     * @return the operator
+     */
     public @Nullable FilterOperator getOperator() {
         return operator;
     }
 
+    /**
+     * Sets the operator.
+     * @param operator the operator
+     */
     public void setOperator(final @Nullable FilterOperator operator) {
         this.operator = operator;
     }
 
+    /**
+     * @return whether text comparisons ignore case, or null if unspecified
+     */
     public @Nullable Boolean getIgnoreCase() {
         return ignoreCase;
     }
 
+    /**
+     * Sets whether text comparisons ignore case.
+     * @param ignoreCase true to ignore case, or null if unspecified
+     */
     public void setIgnoreCase(final @Nullable Boolean ignoreCase) {
         this.ignoreCase = ignoreCase;
     }
 
+    /**
+     * @return the string value, if any
+     */
     public @Nullable String getValueString() {
         return valueString;
     }
 
+    /**
+     * Sets the value to a string, which clears all other values.
+     * @param valueString the value
+     */
     public void setValueString(final String valueString) {
         clearAllValues();
         this.valueString = valueString;
     }
 
+    /**
+     * Sets the value to a string, which clears all other values.
+     * @param valueString the value
+     * @return this expression
+     */
     public FilterExpression withValueString(final String valueString) {
         setValueString(valueString);
         return this;
     }
 
+    /**
+     * @return the boolean value, if any
+     */
     public @Nullable Boolean getValueBoolean() {
         return valueBoolean;
     }
 
+    /**
+     * Sets the value to a boolean, which clears all other values.
+     * @param valueBoolean the value
+     * @return this expression
+     */
     public FilterExpression withValueBoolean(final Boolean valueBoolean) {
         setValueBoolean(valueBoolean);
         return this;
     }
 
+    /**
+     * Sets the value to a boolean, which clears all other values.
+     * @param valueBoolean the value
+     */
     public void setValueBoolean(final Boolean valueBoolean) {
         clearAllValues();
         this.valueBoolean = valueBoolean;
     }
 
+    /**
+     * @return the double value, if any
+     */
     public @Nullable Double getValueDouble() {
         return valueDouble;
     }
 
+    /**
+     * Sets the value to a double, which clears all other values.
+     * @param valueNumber the value
+     */
     public void setValueDouble(final Double valueNumber) {
         clearAllValues();
         this.valueDouble = valueNumber;
     }
 
+    /**
+     * Sets the value to a double, which clears all other values.
+     * @param valueNumber the value
+     * @return this expression
+     */
     public FilterExpression withValueDouble(final Double valueNumber) {
         setValueDouble(valueNumber);
         return this;
     }
 
+    /**
+     * @return the long value, if any
+     */
     public @Nullable Long getValueLong() {
         return valueLong;
     }
 
+    /**
+     * Sets the value to a long, which clears all other values.
+     * @param valueLong the value
+     */
     public void setValueLong(final Long valueLong) {
         clearAllValues();
         this.valueLong = valueLong;
     }
 
+    /**
+     * Sets the value to a long, which clears all other values.
+     * @param valueLong the value
+     * @return this expression
+     */
     public FilterExpression withValueLong(final long valueLong) {
         setValueLong(valueLong);
         return this;
     }
 
+    /**
+     * @return the datetime value, if any
+     */
     public @Nullable LocalDateTime getValueDateTime() {
         return valueDateTime;
     }
 
+    /**
+     * Sets the value to a datetime, which clears all other values.
+     * @param valueDateTime the value
+     */
     public void setValueDateTime(final LocalDateTime valueDateTime) {
         clearAllValues();
         this.valueDateTime = valueDateTime;
     }
 
+    /**
+     * Sets the value to a datetime, which clears all other values.
+     * @param valueDateTime the value
+     * @return this expression
+     */
     public FilterExpression withValueDateTime(final LocalDateTime valueDateTime) {
         setValueDateTime(valueDateTime);
         return this;
     }
 
+    /**
+     * @return the date value, if any
+     */
     public @Nullable LocalDate getValueDate() {
         return valueDate;
     }
 
+    /**
+     * Sets the value to a date, which clears all other values.
+     * @param valueDate the value
+     */
     public void setValueDate(final LocalDate valueDate) {
         clearAllValues();
         this.valueDate = valueDate;
     }
 
+    /**
+     * Sets the value to a date, which clears all other values.
+     * @param valueDate the value
+     * @return this expression
+     */
     public FilterExpression withValueDate(final LocalDate valueDate) {
         setValueDate(valueDate);
         return this;
     }
 
+    /**
+     * @return the code of the operator, e.g. "eq"
+     * @throws MalformedExpression if the operator is invalid
+     */
     public String getOperatorString() throws MalformedExpression {
         return operator == null ? null : operator.getCode();
     }
 
+    /**
+     * Sets the operator by its code.
+     * @param operator the code, e.g. "eq"
+     * @throws MalformedExpression if the code is unknown
+     */
     public void setOperatorString(final String operator) throws MalformedExpression {
         this.operator = FilterOperator.fromCode(operator);
     }
 
+    /**
+     * Creates a group in which all filters must match.
+     * @param filters the filters
+     * @return the group
+     */
     public static FilterExpression and(final @NotNull List<FilterExpression> filters) {
         return new FilterExpression(FilterLogic.AND, filters);
     }
 
+    /**
+     * Creates a group in which at least one filter must match.
+     * @param filters the filters
+     * @return the group
+     */
     public static FilterExpression or(final @NotNull List<FilterExpression> filters) {
         return new FilterExpression(FilterLogic.OR, filters);
     }
 
+    /**
+     * Creates an expression that compares a field with a string.
+     * @param field the field
+     * @param operator the operator
+     * @param ignoreCase whether to ignore case
+     * @param valueString the value
+     * @return the expression
+     * @throws MalformedExpression if the expression is invalid
+     */
     public static FilterExpression from(@NotNull String field, @NotNull FilterOperator operator, @NotNull Boolean ignoreCase, @NotNull String valueString) throws MalformedExpression {
         return new FilterExpression(field, operator, ignoreCase).withValueString(valueString);
     }
 
+    /**
+     * Creates an expression that compares a field with a string.
+     * @param field the field
+     * @param operator the operator
+     * @param valueString the value
+     * @return the expression
+     * @throws MalformedExpression if the expression is invalid
+     */
     public static FilterExpression from(@NotNull String field, @NotNull FilterOperator operator, @NotNull String valueString) throws MalformedExpression {
         return new FilterExpression(field, operator, null).withValueString(valueString);
     }
 
+    /**
+     * Creates an expression that compares a field with a long.
+     * @param field the field
+     * @param operator the operator
+     * @param longValue the value
+     * @return the expression
+     * @throws MalformedExpression if the expression is invalid
+     */
     public static FilterExpression from(@NotNull String field, @NotNull FilterOperator operator, final long longValue) throws MalformedExpression {
         return new FilterExpression(field, operator).withValueLong(longValue);
     }
 
+    /**
+     * Creates an expression that compares a field with a date.
+     * @param field the field
+     * @param operator the operator
+     * @param dateValue the value
+     * @return the expression
+     * @throws MalformedExpression if the expression is invalid
+     */
     public static FilterExpression from(@NotNull String field, @NotNull FilterOperator operator, final LocalDate dateValue) throws MalformedExpression {
         return new FilterExpression(field, operator).withValueDate(dateValue);
     }
 
+    /**
+     * Creates an expression that compares a field with a datetime.
+     * @param field the field
+     * @param operator the operator
+     * @param dateTimeValue the value
+     * @return the expression
+     * @throws MalformedExpression if the expression is invalid
+     */
     public static FilterExpression from(@NotNull String field, @NotNull FilterOperator operator, final LocalDateTime dateTimeValue) throws MalformedExpression {
         return new FilterExpression(field, operator).withValueDateTime(dateTimeValue);
     }
 
+    /**
+     * Creates an expression that compares a field with a double.
+     * @param field the field
+     * @param operator the operator
+     * @param doubleValue the value
+     * @return the expression
+     * @throws MalformedExpression if the expression is invalid
+     */
     public static FilterExpression from(@NotNull String field, @NotNull FilterOperator operator, final double doubleValue) throws MalformedExpression {
         return new FilterExpression(field, operator).withValueDouble(doubleValue);
     }
 
+    /**
+     * Parses an expression from JSON.
+     * @param json the JSON text
+     * @return the expression
+     * @throws MalformedExpression if the JSON is invalid
+     */
     public static FilterExpression fromJson(@NotNull String json) throws MalformedExpression {
         try {
             return FilterExpression.DISPATCH.readFromJson(FilterExpression::new, json);
@@ -484,10 +728,18 @@ public class FilterExpression extends JanitorComposed<FilterExpression> {
         }
     }
 
+    /**
+     * Converts this expression to JSON.
+     * @return the JSON text
+     * @throws JsonException if the expression cannot be converted
+     */
     public @Language("JSON") String toJson() throws JsonException {
         return DISPATCH.writeToJson(this);
     }
 
+    /**
+     * @return a copy of this expression, including copies of all nested filters
+     */
     public FilterExpression deepCopy() {
         final FilterExpression copy = new FilterExpression();
         copy.logic = this.logic;

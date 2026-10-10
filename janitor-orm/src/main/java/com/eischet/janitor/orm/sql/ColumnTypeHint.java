@@ -1,5 +1,6 @@
 package com.eischet.janitor.orm.sql;
 
+/** The type of a database column, as far as it matters for reading and writing values. */
 public enum ColumnTypeHint {
     INT,
     VARCHAR,

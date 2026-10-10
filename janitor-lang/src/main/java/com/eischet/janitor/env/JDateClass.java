@@ -10,8 +10,17 @@ import com.eischet.janitor.api.types.functions.JCallArgs;
 
 import java.time.format.DateTimeFormatter;
 
+/** Operations for date objects. */
 public class JDateClass {
 
+    /**
+     * Script method {@code date.format(pattern)}: formats the date, using the default format if no pattern is given.
+     * @param date the object that the method is called on
+     * @param janitorScriptProcess the running script process
+     * @param jCallArgs the call arguments
+     * @return the formatted date
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
     public static JString __format(final JDate date, final JanitorScriptProcess janitorScriptProcess, final JCallArgs jCallArgs) throws JanitorRuntimeException {
         final String fmt = jCallArgs.getOptionalStringValue(0, null);
         if (fmt == null) {
@@ -21,6 +30,10 @@ public class JDateClass {
         }
     }
 
+    /**
+     * Registers the standard methods and properties of dates.
+     * @param dateDispatch the dispatch table to add them to
+     */
     public static void applyDefaults(DispatchTable<JDate> dateDispatch) {
         dateDispatch.addLongProperty("year", JDate::getYear);
         dateDispatch.addLongProperty("month", JDate::getMonth);

@@ -180,6 +180,11 @@ public class FilterQuery {
         return new FilterQuery(expression);
     }
 
+    /**
+     * Applies the query rewriter, if there is one, to a query.
+     * @param query the SQL text
+     * @return the rewritten SQL text
+     */
     public String rewriteQuery(String query) {
         if (queryRewriter != null) {
             query = queryRewriter.apply(query);
@@ -187,6 +192,11 @@ public class FilterQuery {
         return query;
     }
 
+    /**
+     * Applies the query rewriter, if there is one, to a query.
+     * @param query the query
+     * @return the rewritten query
+     */
     public SelectStatement rewriteQuery(SelectStatement query) {
         if (queryRewriter != null) {
             query = SelectStatement.of(queryRewriter.apply(query.getSql()));

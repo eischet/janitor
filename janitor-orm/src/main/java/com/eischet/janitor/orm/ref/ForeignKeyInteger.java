@@ -11,6 +11,10 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Objects;
 import java.util.Optional;
 
+/**
+ * A foreign key that refers to an entity by its numeric ID.
+ * @param <T> the type of the referenced entity
+ */
 public final class ForeignKeyInteger<T extends OrmEntity> implements ForeignKey<T> {
 
     private final long id;
@@ -27,6 +31,9 @@ public final class ForeignKeyInteger<T extends OrmEntity> implements ForeignKey<
         return id;
     }
 
+    /**
+     * @return true if the ID is not a valid one, i.e. zero or negative
+     */
     public boolean isEmpty() {
         return getId() <= 0;
     }
@@ -81,6 +88,13 @@ public final class ForeignKeyInteger<T extends OrmEntity> implements ForeignKey<
         producer.value(id);
     }
 
+    /**
+     * Creates a foreign key without checking that the referenced entity exists.
+     * @param id the ID of the referenced entity
+     * @param dao the DAO of the referenced entity
+     * @param <X> the type of the referenced entity
+     * @return the foreign key
+     */
     public static <X extends OrmEntity> ForeignKeyInteger<X> createWithForce(long id, final Dao<X> dao) {
         return new ForeignKeyInteger<>(id, dao);
     }

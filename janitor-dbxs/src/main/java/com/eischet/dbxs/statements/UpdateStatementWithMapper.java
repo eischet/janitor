@@ -10,6 +10,10 @@ import com.eischet.dbxs.StatementConfigurator;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * An SQL statement that changes data, which comes with the code that sets the statement's parameters from an object.
+ * @param <T> the type of the objects
+ */
 public class UpdateStatementWithMapper<T> extends UpdateStatement {
     private final @NotNull GenericStatementConfigurator<T> mapper;
 
@@ -20,6 +24,10 @@ public class UpdateStatementWithMapper<T> extends UpdateStatement {
     }
 
 
+    /**
+     * @param value the object to take the parameters from
+     * @return a configurator that sets the parameters of the statement from the object
+     */
     public @NotNull StatementConfigurator getMapper(final @NotNull T value) {
         return rs -> mapper.configure(value, rs);
     }

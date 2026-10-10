@@ -5,6 +5,7 @@ import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import org.eclipse.aether.artifact.Artifact;
 import org.jetbrains.annotations.NotNull;
 
+/** Makes a Maven Aether artifact available to scripts. */
 public class AetherArtifactWrapper extends JanitorWrapper<Artifact> {
     private static final WrapperDispatchTable<Artifact> dispatcher = new WrapperDispatchTable<>(null);
 
@@ -34,6 +35,10 @@ public class AetherArtifactWrapper extends JanitorWrapper<Artifact> {
         super(dispatcher, wrapped);
     }
 
+    /**
+     * @param wrapped the artifact
+     * @return a wrapper for scripts
+     */
     public static AetherArtifactWrapper of(final @NotNull Artifact wrapped) {
         return new AetherArtifactWrapper(wrapped);
     }

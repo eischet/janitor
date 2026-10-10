@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+/** Base class for runtimes, which are provided by the host application: it connects scripts to the environment, and decides e.g. how output and warnings are handled. */
 public abstract class BaseRuntime implements JanitorRuntime {
 
     private final JanitorEnvironment enviroment;
@@ -24,6 +25,10 @@ public abstract class BaseRuntime implements JanitorRuntime {
         this.enviroment = environment;
     }
 
+    /**
+     * Sets a listener that receives trace messages while scripts run.
+     * @param listener the listener, or null to disable tracing
+     */
     public void setTraceListener(final Consumer<String> listener) {
         this.traceListener = listener;
     }
@@ -75,6 +80,11 @@ public abstract class BaseRuntime implements JanitorRuntime {
         }
     }
 
+    /**
+     * Called when an exception occurs while running a script.
+     * @param s a message
+     * @param e the exception
+     */
     protected void exception(final String s, final JanitorRuntimeException e) {
         warn(s); // TODO: print stack trace
     }
