@@ -66,7 +66,7 @@ public class EntityDispatchTableTestCase extends JanitorTest {
         assertEquals("thing", Thing.DISPATCH.getMetaData(JanitorOrm.MetaData.TABLE_NAME));
         assertEquals("thing_id", Thing.DISPATCH.getMetaData(JanitorOrm.MetaData.ID_FIELD));
         assertEquals("label", Thing.DISPATCH.getMetaData("label", JanitorOrm.MetaData.COLUMN_NAME));
-        assertEquals(ColumnTypeHint.NVARCHAR, Thing.DISPATCH.getMetaData("label", JanitorOrm.MetaData.COLUMN_TYPE));
+        assertEquals(ColumnTypeHint.VARCHAR, Thing.DISPATCH.getMetaData("label", JanitorOrm.MetaData.COLUMN_TYPE));
         assertEquals(50, Thing.DISPATCH.getMetaData("label", JanitorOrm.MetaData.MAX_LENGTH));
     }
 

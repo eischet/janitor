@@ -79,7 +79,7 @@ public class OrmPropertyHandleTestCase extends JanitorTest {
     void stringColumn() {
         assertEquals("label", Thing.LABEL.getName());
         assertEquals("label_col", Thing.LABEL.getColumnName());
-        assertEquals(ColumnTypeHint.NVARCHAR, Thing.LABEL.getColumnType());
+        assertEquals(ColumnTypeHint.VARCHAR, Thing.LABEL.getColumnType());
         assertEquals(42, Thing.LABEL.getMaxLength());
         assertFalse(Thing.LABEL.isLazyLoaded());
         assertNull(Thing.LABEL.getReferencedClassName());
@@ -88,7 +88,7 @@ public class OrmPropertyHandleTestCase extends JanitorTest {
 
     @Test
     void textColumnHasNoMaxLength() {
-        assertEquals(ColumnTypeHint.NCLOB, Thing.NOTES.getColumnType());
+        assertEquals(ColumnTypeHint.CLOB, Thing.NOTES.getColumnType());
         assertNull(Thing.NOTES.getMaxLength());
     }
 

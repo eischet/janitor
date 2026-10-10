@@ -79,6 +79,7 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
     private final DispatchDelegate<T> parentLookupHandler;
     private final Map<String, AttributeLookupHandler<T>> map = new HashMap<>();
     private final List<String> attributeNames = new ArrayList<>();
+    private final Set<String> readOnlyProperties = new java.util.HashSet<>();
     private final List<Attribute<T>> attributes = new ArrayList<>();
     private final ParentAttributeReader<T> parentAttributeReader;
     private final ParentAttributeWriter<T> parentAttributeWriter;
@@ -340,6 +341,11 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
                                                           final @NotNull NullableGetter<T, V> getter,
                                                           final @Nullable NullableSetter<T, V> setter) {
         registerAttribute(name, handler, jsonSupport);
+        if (setter == null) {
+            readOnlyProperties.add(name);
+        } else {
+            readOnlyProperties.remove(name);
+        }
         final InternalPropertyHandle<V> builder = new InternalPropertyHandle<>(name, getter, setter);
         builder.setMetaData(Janitor.MetaData.NAME, name);
         if (jsonType != null) {
@@ -1567,6 +1573,14 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
     @Override
     public T readFromJson(final Supplier<T> constructor, @Language("JSON") final String json) throws JsonException {
         return readFromJson(constructor, Janitor.current().getLenientJsonConsumer(json));
+    }
+
+    /**
+     * Whether the attribute is a property registered without a setter. Such a value is derived (or loaded lazily) and cannot be assigned, so
+     * code that copies assignable values can skip it without evaluating its getter.
+     */
+    public boolean isReadOnlyProperty(final @NotNull String name) {
+        return readOnlyProperties.contains(name);
     }
 
     @Override

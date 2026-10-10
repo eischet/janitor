@@ -5,6 +5,7 @@ import com.eischet.janitor.api.types.JAssignable;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.TemporaryAssignable;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
+import com.eischet.janitor.api.types.dispatch.GenericDispatchTable;
 import com.eischet.janitor.api.types.interop.NotNullGetter;
 import com.eischet.janitor.api.types.interop.NotNullSetter;
 import com.eischet.janitor.logging.JanitorLogger;
@@ -131,6 +132,11 @@ public class EntityDispatchTable<T extends OrmEntity, U extends Uplink> extends 
      */
     static <T extends OrmEntity> void copyAttributes(final DispatchTable<T> dispatchTable, final T original, final T copy) {
         dispatchTable.streamAttributeNames().forEach(attr -> {
+            if (dispatchTable instanceof GenericDispatchTable<?> generic && generic.isReadOnlyProperty(attr)) {
+                // never evaluate these on the copy: they may load themselves from the database (join tables), and a copy that does not
+                // have its id yet would load "the content of id 0" and then count as loaded
+                return;
+            }
             try {
                 final JanitorObject target = dispatchTable.get(attr).lookupAttribute(copy);
                 if (target instanceof JAssignable assignableTarget) {
