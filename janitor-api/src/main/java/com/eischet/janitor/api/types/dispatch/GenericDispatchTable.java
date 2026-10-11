@@ -721,7 +721,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
         return internalAddProperty(name, (instance) -> TemporaryAssignable.of(
                         name,
                         Janitor.nullableFloatingPoint(getter.get(instance)),
-                        value -> setter.set(instance, Conversions.requireFloat(value).janitorGetHostValue())), adapt(name, JSON_DOUBLE, getter, setter),
+                        value -> setter.set(instance, Conversions.toNullableJavaDouble(value))), adapt(name, JSON_DOUBLE, getter, setter),
                 JsonType.NUMBER,
                 null,
                 getter,

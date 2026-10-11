@@ -137,7 +137,23 @@ public class Conversions {
         throw new JanitorGlueException(JanitorArgumentException::fromGlue, "Expected a long value or null but got " + value.janitorClassName() + " [" + simpleClassNameOf(value)+ "].");
     }
 
-
-
+    /**
+     * Converts a Janitor value to a Java Double.
+     * @param value a Janitor number, or null
+     * @return the double value, or null if the value is the Janitor null value
+     * @throws JanitorGlueException if the value is not a number
+     */
+    public static Double toNullableJavaDouble(final @NotNull JanitorObject value) throws JanitorGlueException {
+        if (value == Janitor.NULL) {
+            return null;
+        }
+        if (value instanceof TemporaryAssignable ta) {
+            return toNullableJavaDouble(ta.getValue());
+        }
+        if (value instanceof JNumber number) {
+            return number.toDouble();
+        }
+        throw new JanitorGlueException(JanitorArgumentException::fromGlue, "Expected a floating point value or null but got " + value.janitorClassName() + " [" + simpleClassNameOf(value)+ "].");
+    }
 
 }
