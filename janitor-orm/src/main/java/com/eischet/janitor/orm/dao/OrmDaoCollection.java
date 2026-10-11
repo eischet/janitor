@@ -4,6 +4,8 @@
 package com.eischet.janitor.orm.dao;
 
 import com.eischet.dbxs.DataManager;
+import com.eischet.dbxs.dialects.DatabaseDialect;
+import com.eischet.dbxs.metadata.DatabaseVersion;
 import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
@@ -40,11 +42,41 @@ public abstract class OrmDaoCollection<S extends OrmDaoCollection<S>> extends Ja
     private final Map<String, DispatchTable<?>> entities = new LinkedHashMap<>();
     private final Map<String, Dao<? extends OrmEntity>> daos = new LinkedHashMap<>();
     private final Map<String, JoinDao<? extends OrmJoined>> joinDaos = new LinkedHashMap<>();
-    private final @Nullable Version schemaVersion;
+    /** Stands in for "no version given": newer than any real one, so that only dialects that cannot limit rows at all say no. */
+    private static final DatabaseVersion MODERN_DATABASE = new DatabaseVersion();
 
-    public OrmDaoCollection(final @NotNull Dispatcher<S> dispatcher, final @Nullable Version version) {
+    static {
+        MODERN_DATABASE.setProductName("unspecified, assumed modern");
+        MODERN_DATABASE.setMajorVersion(Integer.MAX_VALUE);
+        MODERN_DATABASE.setMinorVersion(Integer.MAX_VALUE);
+    }
+
+    private final @NotNull DatabaseDialect dialect;
+    private final @Nullable Version schemaVersion;
+    private final @Nullable DatabaseVersion databaseVersion;
+    private final boolean canLimitAndOffset;
+
+    /**
+     * Creates a collection that is bound to one database for its whole life; a different database gets a new collection (and new DAOs).
+     *
+     * @param dispatcher      the dispatcher for scripts
+     * @param dialect         the dialect of the database; all DAOs of this collection generate their SQL with it
+     * @param schemaVersion   the version of the schema that the entities map to, used to skip fields that do not exist in that version;
+     *                        {@code null} if there is no versioning
+     * @param databaseVersion the product version of the database, which only matters for old versions of some databases (e.g. Oracle before 12
+     *                        or SQL Server before 2012 cannot limit rows in SQL). {@code null} means "a modern database", which is what most
+     *                        callers want. Callers that do have to support legacy databases are responsible for passing the real version, e.g. via
+     *                        {@link DatabaseVersion#getDatabaseVersion(DataManager)}; a wrong {@code null} leads to SQL errors on old databases.
+     */
+    public OrmDaoCollection(final @NotNull Dispatcher<S> dispatcher,
+                            final @NotNull DatabaseDialect dialect,
+                            final @Nullable Version schemaVersion,
+                            final @Nullable DatabaseVersion databaseVersion) {
         super(dispatcher);
-        this.schemaVersion = version;
+        this.dialect = Objects.requireNonNull(dialect, "dialect");
+        this.schemaVersion = schemaVersion;
+        this.databaseVersion = databaseVersion;
+        this.canLimitAndOffset = dialect.canLimitAndOffset(databaseVersion == null ? MODERN_DATABASE : databaseVersion);
     }
 
     /**
@@ -62,6 +94,36 @@ public abstract class OrmDaoCollection<S extends OrmDaoCollection<S>> extends Ja
      * @return the data manager
      */
     public abstract DataManager getDataManager();
+
+    /**
+     * The dialect of the database that this collection, and therefore all of its DAOs, work against. DAOs take the dialect from here and
+     * nowhere else.
+     *
+     * @return the dialect
+     */
+    public @NotNull DatabaseDialect getDialect() {
+        return dialect;
+    }
+
+    /**
+     * The version of the database, as given to the constructor. Not to be confused with {@link #getSchemaVersion()}, which is the version of
+     * the schema that the entities are mapped to.
+     *
+     * @return the database version, or {@code null} if none was given, which means that the database is assumed to be modern
+     */
+    public @Nullable DatabaseVersion getDatabaseVersion() {
+        return databaseVersion;
+    }
+
+    /**
+     * Whether DAOs may let the database limit the number of returned rows ({@code LIMIT}/{@code OFFSET} or the equivalent).
+     * Decided once, in the constructor, from the dialect and the database version.
+     *
+     * @return true if rows can be limited in SQL
+     */
+    public boolean canLimitAndOffset() {
+        return canLimitAndOffset;
+    }
 
     /**
      * Adds the scripting properties "entities" and "joins", which list all DAOs, to a dispatch table for this collection.

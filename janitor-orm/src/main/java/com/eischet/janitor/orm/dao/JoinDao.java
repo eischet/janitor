@@ -4,6 +4,7 @@
 package com.eischet.janitor.orm.dao;
 
 import com.eischet.dbxs.*;
+import com.eischet.dbxs.dialects.DatabaseDialect;
 import com.eischet.dbxs.exceptions.DatabaseError;
 import com.eischet.dbxs.results.SimpleResultSet;
 import com.eischet.dbxs.statements.SelectStatement;
@@ -45,6 +46,7 @@ import org.jetbrains.annotations.Unmodifiable;
 
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -86,6 +88,26 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
     protected final Class<T> entityClass;
     protected boolean verbose = false;
     protected @Nullable DaoLogging logging;
+
+    // The SQL that only depends on the table, the columns and the dialect is built once, in the constructor, so that a DAO that cannot work fails
+    // early instead of on first use. Statement objects are immutable and can be shared between threads.
+    private final @NotNull @Unmodifiable List<String> updateColumns;
+    private final @NotNull UpdateStatement insertStatement;
+    /** Null if the table consists only of primary key columns, i.e. there is nothing to update; {@link #merge} and {@link #update} handle that case. */
+    private final @Nullable UpdateStatement updateStatement;
+    private final @NotNull UpdateStatement deleteStatement;
+    private final @NotNull SelectStatement countStatement;
+    private final Map<String, SelectStatement> selectByColumn = new ConcurrentHashMap<>();
+    private final @NotNull @Unmodifiable Map<String, ColumnMapping<T>> mappingForColumn;
+    /** The mappings of {@link #columns}, in that order. */
+    private final @NotNull ColumnMapping<T>[] columnMappings;
+
+    /**
+     * @return the dialect of the database, as defined by the collection that this DAO belongs to
+     */
+    protected final @NotNull DatabaseDialect getDialect() {
+        return collection.getDialect();
+    }
 
     /**
      * Mainly for scripts, which cannot get this for themselves, we need a method to acquire a data manager when needed.
@@ -153,6 +175,25 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
             }
         }
         this.columns = List.copyOf(databaseBackedFields);
+
+        final Map<String, ColumnMapping<T>> mappings = new HashMap<>();
+        for (final String column : columns) {
+            mappings.put(column, ColumnMapping.of(entityDispatchTable, fieldForColumn.get(column), column));
+        }
+        this.mappingForColumn = Map.copyOf(mappings);
+        @SuppressWarnings("unchecked") final ColumnMapping<T>[] mapped = new ColumnMapping[columns.size()];
+        for (int i = 0; i < mapped.length; i++) {
+            mapped[i] = mappings.get(columns.get(i));
+        }
+        this.columnMappings = mapped;
+
+        final StatementCreator creator = new StatementCreator(getDialect());
+        this.updateColumns = columns.stream().filter(col -> !primaryKeyColumns.contains(col)).toList();
+        this.insertStatement = UpdateStatement.of(creator.createInsertStatement(tableName, columns));
+        this.updateStatement = updateColumns.isEmpty() ? null : UpdateStatement.of(creator.createUpdateStatement(tableName, updateColumns, primaryKeyColumns));
+        this.deleteStatement = UpdateStatement.of(creator.createDeleteStatement(tableName, primaryKeyColumns));
+        this.countStatement = SelectStatement.of(creator.createCountStatement(tableName, columns));
+
         collection.registerJoinDao(this);
 
     }
@@ -166,26 +207,21 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
      */
     protected T readAllProperties(final DatabaseConnection conn, final SimpleResultSet rs) throws DatabaseError {
         final T value = newValue.get();
-        int columnIndex = 0;
-        for (final String column : columns) {
-            ++columnIndex;
-            String field = Objects.requireNonNull(fieldForColumn.get(column));
-            final @NotNull ColumnTypeHint columnTypeHint = Objects.requireNonNull(entityDispatchTable.getMetaData(field, JanitorOrm.MetaData.COLUMN_TYPE));
-            final @Nullable String lookupType = entityDispatchTable.getMetaData(field, Janitor.MetaData.REF);
-            final @Nullable Boolean hostNullable = entityDispatchTable.getMetaData(field, Janitor.MetaData.HOST_NULLABLE);
+        for (int i = 0; i < columnMappings.length; i++) {
+            final ColumnMapping<T> mapping = columnMappings[i];
             try {
-                final JanitorObject propertyValue = Objects.requireNonNull(entityDispatchTable.get(field).lookupAttribute(value));
+                final JanitorObject propertyValue = Objects.requireNonNull(mapping.handler().lookupAttribute(value));
                 if (propertyValue instanceof JAssignable assignableProperty) {
-                    CommonDao.readProperty(collection, column, conn, assignableProperty, rs, columnTypeHint, lookupType, hostNullable);
+                    CommonDao.readProperty(collection, mapping.column(), conn, assignableProperty, rs, mapping.type(), mapping.referenceType(), mapping.hostNullable());
                 } else {
-                    throw new DatabaseError("invalid field '" + field + "' / column '" + column + "' is not assignable");
+                    throw new DatabaseError("invalid field '" + mapping.field() + "' / column '" + mapping.column() + "' is not assignable");
                 }
             } catch (SQLException e) {
-                log.warn("SQL exception on class '{}', column #{} = '{}', field '{}', type hint '{}', column order: {}", className, columnIndex, column, field, columnTypeHint, columns, e);
-                final String message = String.format("SQL exception on class '%s', column '%s', field '%s', type hint '%s'", className, column, field, columnTypeHint);
+                log.warn("SQL exception on class '{}', column #{} = '{}', field '{}', type hint '{}', column order: {}", className, i + 1, mapping.column(), mapping.field(), mapping.type(), columns, e);
+                final String message = String.format("SQL exception on class '%s', column '%s', field '%s', type hint '%s'", className, mapping.column(), mapping.field(), mapping.type());
                 throw new DatabaseError(message, e);
             } catch (Exception e) {
-                throw new DatabaseError("invalid field '" + field + "' caused an exception", e);
+                throw new DatabaseError("invalid field '" + mapping.field() + "' caused an exception", e);
             }
         }
         return value;
@@ -213,8 +249,7 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
      * @throws DatabaseError on database errors
      */
     protected List<T> findByColumn(final DatabaseConnection conn, final String columnName, final long id) throws DatabaseError {
-        final StatementCreator creator = new StatementCreator(getDataManager().getDialect());
-        final SelectStatement select = SelectStatement.of(creator.createSelectStatement(tableName, columns, columnName));
+        final SelectStatement select = selectByColumn.computeIfAbsent(columnName, c -> SelectStatement.of(new StatementCreator(getDialect()).createSelectStatement(tableName, columns, c)));
         return conn.queryForList(select, stmt -> stmt.addLong(id), rs -> readAllProperties(conn, rs));
     }
 
@@ -227,9 +262,7 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
      * @throws DatabaseError if the insert fails, or does not affect exactly one row
      */
     public void insert(@NotNull DatabaseConnection conn, @NotNull T record) throws DatabaseError {
-        final StatementCreator creator = new StatementCreator(getDataManager().getDialect());
-        final List<String> insertingColumns = columns.stream().toList();
-        final UpdateStatement insertStatement = UpdateStatement.of(creator.createInsertStatement(tableName, insertingColumns));
+        final List<String> insertingColumns = columns;
         final int changedRows = conn.update(insertStatement, ps -> writeAllColumns(conn, record, insertingColumns, ps));
         if (verbose) {
             log.info("inserted {} rows", changedRows);
@@ -250,18 +283,16 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
      * @throws DatabaseError if the update affects more than one row, or on database errors
      */
     public void merge(@NotNull DatabaseConnection conn, @NotNull T record) throws DatabaseError {
-        final StatementCreator creator = new StatementCreator(getDataManager().getDialect());
-        final List<String> updatingColumns = columns.stream().filter(col -> !primaryKeyColumns.contains(col)).toList();
+        final List<String> updatingColumns = updateColumns;
         if (updatingColumns.isEmpty()) {
-            final List<String> countingColumns = columns.stream().toList();
-            final SelectStatement countStatement = SelectStatement.of(creator.createCountStatement(tableName, countingColumns));
+            final List<String> countingColumns = columns;
             final int count = conn.queryForInt(countStatement, ps -> writeAllColumns(conn, record, countingColumns, ps));
             log.info("merge: searching via {} -> {} rows", countStatement.getSql(), count);
             if (count == 0) {
                 insert(conn, record);
             }
         } else {
-            final UpdateStatement updateStatement = UpdateStatement.of(creator.createUpdateStatement(tableName, updatingColumns, primaryKeyColumns));
+            final UpdateStatement updateStatement = Objects.requireNonNull(this.updateStatement);
             final int changedRows = conn.update(updateStatement, ps -> {
                 writeAllColumns(conn, record, updatingColumns, ps);
                 writeAllColumns(conn, record, primaryKeyColumns, ps);
@@ -285,14 +316,13 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
      * @throws DatabaseError if the update does not affect exactly one row
      */
     public void update(@NotNull DatabaseConnection conn, @NotNull T record) throws DatabaseError {
-        final StatementCreator creator = new StatementCreator(getDataManager().getDialect());
-        final List<String> updatingColumns = columns.stream().filter(col -> !primaryKeyColumns.contains(col)).toList();
+        final List<String> updatingColumns = updateColumns;
         if (updatingColumns.isEmpty()) {
             log.warn("update is meaningless on a collection that consists only of its primary key columns - you probably want to call merge directly, and I'm calling it for you");
             merge(conn, record);
             return;
         }
-        final UpdateStatement updateStatement = UpdateStatement.of(creator.createUpdateStatement(tableName, updatingColumns, primaryKeyColumns));
+        final UpdateStatement updateStatement = Objects.requireNonNull(this.updateStatement);
         final int changedRows = conn.update(updateStatement, ps -> {
             writeAllColumns(conn, record, updatingColumns, ps);
             writeAllColumns(conn, record, primaryKeyColumns, ps);
@@ -316,8 +346,7 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
      * @throws DatabaseError if the delete does not affect exactly one row
      */
     public void delete(@NotNull final DatabaseConnection conn, @NotNull final T record) throws DatabaseError {
-        final StatementCreator creator = new StatementCreator(getDataManager().getDialect());
-        final UpdateStatement updateStatement = UpdateStatement.of(creator.createDeleteStatement(tableName, primaryKeyColumns));
+        final UpdateStatement updateStatement = deleteStatement;
         final int changedRows = conn.update(updateStatement, ps -> writeAllColumns(conn, record, primaryKeyColumns, ps));
         if (verbose) {
             log.info("deleted {} rows", changedRows);
@@ -570,13 +599,12 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
             log.info("writeAllColumns({})", updatingColumns);
         }
         for (final String column : updatingColumns) {
-            String field = Objects.requireNonNull(fieldForColumn.get(column));
+            final ColumnMapping<T> mapping = Objects.requireNonNull(mappingForColumn.get(column), "no mapping for column '" + column + "'");
             try {
-                final JanitorObject propertyValue = Objects.requireNonNull(entityDispatchTable.get(field).lookupAttribute(record), "no value for field '" + field + "' in record " + record + " / column '" + column + "'");
-                final @NotNull ColumnTypeHint columnTypeHint = Objects.requireNonNull(entityDispatchTable.getMetaData(field, JanitorOrm.MetaData.COLUMN_TYPE), "no column type hint for field '" + field + "' in record " + record + " / column '" + column + "'");
-                CommonDao.writeProperty(conn, className, column, field, propertyValue.janitorUnpack(), ps, columnTypeHint);
+                final JanitorObject propertyValue = Objects.requireNonNull(mapping.handler().lookupAttribute(record), "no value for field '" + mapping.field() + "' in record " + record + " / column '" + column + "'");
+                CommonDao.writeProperty(conn, className, column, mapping.field(), propertyValue.janitorUnpack(), ps, mapping.type());
             } catch (Exception e) {
-                throw new SQLException("error writing column '" + column + "' / field '" + field + "' into the database", e);
+                throw new SQLException("error writing column '" + column + "' / field '" + mapping.field() + "' into the database", e);
             }
         }
     }

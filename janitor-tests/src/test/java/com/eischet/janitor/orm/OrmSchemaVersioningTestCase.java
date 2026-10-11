@@ -4,6 +4,7 @@
 package com.eischet.janitor.orm;
 
 import com.eischet.dbxs.DataManager;
+import com.eischet.dbxs.dialects.DatabaseDialectH2;
 import com.eischet.dbxs.exceptions.DatabaseError;
 import com.eischet.janitor.JanitorTest;
 import com.eischet.janitor.api.JanitorScriptProcess;
@@ -162,7 +163,7 @@ public class OrmSchemaVersioningTestCase extends JanitorTest {
         private final VersionedJoinDao joinDao;
 
         VersionedTestCollection(final Version version) {
-            super(DISPATCH, version);
+            super(DISPATCH, new DatabaseDialectH2(), version, null);
             this.entityDao = new VersionedEntityDao(this);
             this.joinDao = new VersionedJoinDao(this);
         }

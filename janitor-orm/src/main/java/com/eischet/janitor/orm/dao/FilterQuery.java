@@ -10,6 +10,9 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Function;
 
 /**
@@ -22,6 +25,8 @@ public class FilterQuery {
     final FilterExpression filterExpression;
     protected @Nullable Integer queryTimeout;
     protected @Nullable Integer maxRows;
+    protected @Nullable Integer offset;
+    protected final @NotNull List<SortKey> sortKeys = new ArrayList<>();
     protected @Nullable String orderByClause;
     protected @Nullable Function<String, String> queryRewriter;
 
@@ -108,6 +113,94 @@ public class FilterQuery {
     }
 
     /**
+     * Get the number of rows to skip, for paging.
+     *
+     * @return the number of rows to skip, or null if rows are not skipped
+     */
+    @Contract(pure = true)
+    public @Nullable Integer getOffset() {
+        return offset;
+    }
+
+    /**
+     * Set the number of rows to skip, for paging. This requires {@link #setMaxRows max rows}: it is the size of the page, the offset is where it starts.
+     * Setting an offset (even 0) also tells the DAO that this query is paged, so it makes the sort order unambiguous by appending the ID column
+     * as the last sort criterion; without that, rows with equal sort values could move between pages.
+     *
+     * @param offset the number of rows to skip, or null for none; must not be negative
+     */
+    @Contract(mutates = "this")
+    public void setOffset(@Nullable final Integer offset) {
+        if (offset != null && offset < 0) {
+            throw new IllegalArgumentException("the offset must not be negative");
+        }
+        this.offset = offset;
+    }
+
+    /**
+     * Set the number of rows to skip, for paging; see {@link #setOffset(Integer)}.
+     *
+     * @param offset the number of rows to skip, or null for none
+     * @return this
+     */
+    @Contract(mutates = "this", value = "_ -> this")
+    public FilterQuery withOffset(@Nullable final Integer offset) {
+        setOffset(offset);
+        return this;
+    }
+
+    /**
+     * Selects one page: sets {@link #setMaxRows max rows} to the page size and the {@link #setOffset offset} to the start of the page.
+     *
+     * @param pageIndex the number of the page, starting at 0
+     * @param pageSize  the number of rows per page, at least 1
+     * @return this
+     */
+    @Contract(mutates = "this", value = "_, _ -> this")
+    public FilterQuery withPage(final int pageIndex, final int pageSize) {
+        if (pageIndex < 0 || pageSize < 1) {
+            throw new IllegalArgumentException("the page index must not be negative and the page size must be at least 1");
+        }
+        setMaxRows(pageSize);
+        setOffset(Math.multiplyExact(pageIndex, pageSize));
+        return this;
+    }
+
+    /**
+     * Sorts by a field, ascending, after the criteria added before. The field is the name of the entity's field; the DAO maps it to the column
+     * and rejects unknown names, so (unlike {@link #setOrderByClause}) no SQL from outside can get into the query this way.
+     * Cannot be combined with {@link #setOrderByClause}.
+     *
+     * @param field the name of the field
+     * @return this
+     */
+    @Contract(mutates = "this", value = "_ -> this")
+    public FilterQuery orderBy(final @NotNull String field) {
+        sortKeys.add(new SortKey(field, false));
+        return this;
+    }
+
+    /**
+     * Like {@link #orderBy(String)}, but descending.
+     *
+     * @param field the name of the field
+     * @return this
+     */
+    @Contract(mutates = "this", value = "_ -> this")
+    public FilterQuery orderByDescending(final @NotNull String field) {
+        sortKeys.add(new SortKey(field, true));
+        return this;
+    }
+
+    /**
+     * @return the sort criteria added with {@link #orderBy(String)} and {@link #orderByDescending(String)}, in order
+     */
+    @Contract(pure = true)
+    public @NotNull List<SortKey> getSortKeys() {
+        return Collections.unmodifiableList(sortKeys);
+    }
+
+    /**
      * Get the optional ORDER BY clause.
      *
      * @return the ORDER BY clause, or null if no ORDER BY clause is set
@@ -119,7 +212,8 @@ public class FilterQuery {
     /**
      * Set the optional ORDER BY clause.
      *
-     * @param orderByClause the ORDER BY clause, or null to to use Dao's default
+     * @param orderByClause the ORDER BY clause, or null to to use Dao's default. This text goes into the SQL as it is: never pass anything
+     *                      that comes from a user or a script; use {@link #orderBy(String)} for that.
      */
     @Contract(mutates = "this")
     public void setOrderByClause(@Nullable final String orderByClause) {

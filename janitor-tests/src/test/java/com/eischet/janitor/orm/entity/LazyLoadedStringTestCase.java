@@ -4,6 +4,7 @@
 package com.eischet.janitor.orm.entity;
 
 import com.eischet.dbxs.DataManager;
+import com.eischet.dbxs.dialects.DatabaseDialectH2;
 import com.eischet.dbxs.exceptions.DatabaseError;
 import com.eischet.janitor.JanitorTest;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
@@ -160,7 +161,7 @@ public class LazyLoadedStringTestCase extends JanitorTest {
         private final LazyThingDao lazyThingDao;
 
         TestCollection() {
-            super(DISPATCH, null);
+            super(DISPATCH, new DatabaseDialectH2(), null, null);
             lazyThingDao = new LazyThingDao(this, LazyThing.DISPATCH);
         }
 

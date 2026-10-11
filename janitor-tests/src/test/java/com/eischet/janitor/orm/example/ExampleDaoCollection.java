@@ -24,7 +24,12 @@ public class ExampleDaoCollection extends OrmDaoCollection<ExampleDaoCollection>
     private final ArticleDao articleDao;
 
     public ExampleDaoCollection(final DataManager dataManager) {
-        super(DISPATCH, null);
+        this(dataManager, dataManager.getDialect());
+    }
+
+    /** For tests that need another dialect than the one of the data manager, e.g. one that cannot limit rows in SQL. */
+    public ExampleDaoCollection(final DataManager dataManager, final com.eischet.dbxs.dialects.DatabaseDialect dialect) {
+        super(DISPATCH, dialect, null, null);
         this.dataManager = dataManager;
         this.articleDao = new ArticleDao(this);
     }

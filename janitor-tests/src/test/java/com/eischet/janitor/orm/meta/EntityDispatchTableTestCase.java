@@ -8,6 +8,7 @@ import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import com.eischet.janitor.orm.JanitorOrm;
 import com.eischet.dbxs.DataManager;
+import com.eischet.dbxs.dialects.DatabaseDialectH2;
 import com.eischet.janitor.orm.dao.GenericDao;
 import com.eischet.janitor.orm.dao.OrmDaoCollection;
 import com.eischet.janitor.orm.dao.Uplink;
@@ -129,7 +130,7 @@ public class EntityDispatchTableTestCase extends JanitorTest {
         private final ThingDao thingDao;
 
         TestCollection() {
-            super(DISPATCH, null);
+            super(DISPATCH, new DatabaseDialectH2(), null, null);
             thingDao = new ThingDao(this, Thing.DISPATCH);
         }
 

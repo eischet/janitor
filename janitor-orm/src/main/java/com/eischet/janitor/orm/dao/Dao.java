@@ -18,7 +18,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * A data access object: it finds, inserts, updates and deletes the entities of one type in a database table.
@@ -36,6 +41,30 @@ public interface Dao<T extends OrmEntity> extends JanitorObject {
 
     @Nullable T findById(@NotNull DatabaseConnection conn,
                          long id) throws DatabaseError;
+
+    /**
+     * Finds the entities with the given IDs. IDs without an entity are skipped, duplicate IDs yield one entity, and null IDs are ignored.
+     * The default implementation loads one by one; {@link GenericDao} loads them with few queries.
+     * @param conn the database connection
+     * @param ids the IDs
+     * @return the entities that exist, in the order of the first occurrence of their IDs
+     * @throws DatabaseError on database errors
+     */
+    @NotNull
+    @Unmodifiable
+    default List<T> findByIds(@NotNull DatabaseConnection conn, @NotNull Collection<Long> ids) throws DatabaseError {
+        final List<T> result = new ArrayList<>(ids.size());
+        final Set<Long> seen = new HashSet<>();
+        for (final Long id : ids) {
+            if (id != null && seen.add(id)) {
+                final T entity = findById(conn, id);
+                if (entity != null) {
+                    result.add(entity);
+                }
+            }
+        }
+        return Collections.unmodifiableList(result);
+    }
 
     /**
      * Finds all entities.

@@ -7,7 +7,6 @@ package com.eischet.janitor.orm.dao;
 import com.eischet.dbxs.*;
 import com.eischet.dbxs.dialects.DatabaseDialect;
 import com.eischet.dbxs.exceptions.DatabaseError;
-import com.eischet.dbxs.metadata.DatabaseVersion;
 import com.eischet.dbxs.results.SimpleResultSet;
 import com.eischet.dbxs.statements.SelectStatement;
 import com.eischet.dbxs.statements.UpdateStatement;
@@ -18,8 +17,10 @@ import com.eischet.janitor.api.errors.runtime.JanitorError;
 import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.JAssignable;
+import com.eischet.janitor.api.types.JIterable;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.JMap;
+import com.eischet.janitor.api.types.builtin.JNumber;
 import com.eischet.janitor.api.types.builtin.JString;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
@@ -52,7 +53,9 @@ import org.jetbrains.annotations.Unmodifiable;
 
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
@@ -66,8 +69,6 @@ import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
  * @param <U> the type of the DAO collection that this DAO belongs to
  */
 public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection<U>> extends JanitorComposed<GenericDao<?, ?>> implements Dao<T>, JCallable {
-
-    // TOOD: cache the database version after first retrieving it
 
     public static final DispatchTable<GenericDao<?, ?>> DISPATCH = new DispatchTable<>();
     private static final Predicate<String> INVALID_FIELD = Pattern.compile("[a-zA-Z0-9_@-]+").asMatchPredicate().negate();
@@ -89,10 +90,20 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
         DISPATCH.addMethod("getAll", GenericDao::scriptFindAll);
         DISPATCH.addMethod("findById", GenericDao::scriptFindById);
         DISPATCH.addMethod("findByKey", GenericDao::scriptFindByKey);
+        DISPATCH.addMethod("findByIds", GenericDao::scriptFindByIds);
         DISPATCH.addMethod("queryForEach", GenericDao::scriptQueryForEach);
 
         DISPATCH.addStringProperty("jsonSchema", self -> Janitor.current().writeJson(self.entityDispatchTable::writeSchemaToJson));
     }
+
+    /** How many entities {@link #scriptQueryForEach} loads in one transaction before it runs the callbacks for them. */
+    protected static final int QUERY_FOR_EACH_CHUNK_SIZE = 100;
+
+    /**
+     * How many IDs {@link #findByIds} puts into one {@code IN (...)} list. Databases limit this (Oracle: 1000 elements; SQL Server: 2100
+     * parameters per statement), so longer lists are split into several queries.
+     */
+    protected static final int FIND_BY_IDS_CHUNK_SIZE = 500;
 
     protected final JanitorLogger log = JanitorLogger.getLogger(getClass());
     protected final ListenerSet<EntityChangeListener<T>> entityChangeListeners= new ListenerSetStandard<>();
@@ -120,6 +131,24 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
     protected boolean verbose = false;
     protected @Nullable DaoLogging logging;
     protected @NotNull EntityCache<T> cache = EntityCache.noop();
+
+    // The SQL that only depends on the table, the mapped columns and the dialect is built once, in the constructor, so that a DAO that cannot
+    // work (e.g. no columns) fails early instead of on first use. Statement objects are immutable and can be shared between threads.
+    private final @NotNull SelectStatement selectByIdStatement;
+    private final @Nullable SelectStatement selectByKeyStatement;
+    /** Select of all selectable columns without a where clause; the base for queries that append their own conditions. */
+    private final @NotNull String selectAllSql;
+    private final @NotNull String countAllSql;
+    private final @NotNull UpdateStatement insertStatement;
+    private final @NotNull UpdateStatement updateStatement;
+    private final @NotNull UpdateStatement deleteStatement;
+    private final @NotNull @Unmodifiable List<String> updateColumns;
+    private final Map<String, SelectStatement> lazyColumnSelects = new ConcurrentHashMap<>();
+    /** The {@code IN (...)} queries of {@link #findByIds}, by the number of IDs in the list; there are at most {@link #FIND_BY_IDS_CHUNK_SIZE}. */
+    private final Map<Integer, SelectStatement> selectByIdsStatements = new ConcurrentHashMap<>();
+    private final @NotNull @Unmodifiable Map<String, ColumnMapping<T>> mappingForColumn;
+    /** The mappings of {@link #selectColumns}, in that order. */
+    private final @NotNull ColumnMapping<T>[] selectMappings;
 
     public GenericDao(
             final @NotNull DispatchTable<? extends GenericDao<T, U>> childDispatch,
@@ -167,7 +196,45 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
         this.columns = List.copyOf(databaseBackedFields);
         this.selectColumns = List.copyOf(selectableFields);
 
+        final Map<String, ColumnMapping<T>> mappings = new HashMap<>();
+        for (final String column : columns) {
+            mappings.put(column, ColumnMapping.of(entityDispatchTable, fieldForColumn.get(column), column));
+        }
+        this.mappingForColumn = Map.copyOf(mappings);
+        @SuppressWarnings("unchecked") final ColumnMapping<T>[] selected = new ColumnMapping[selectColumns.size()];
+        for (int i = 0; i < selected.length; i++) {
+            selected[i] = mappings.get(selectColumns.get(i));
+        }
+        this.selectMappings = selected;
+
+        final StatementCreator creator = new StatementCreator(getDialect());
+        this.selectByIdStatement = SelectStatement.of(creator.createSelectStatement(tableName, selectColumns, idColumn));
+        this.selectByKeyStatement = keyColumn == null ? null : SelectStatement.of(creator.createSelectStatement(tableName, selectColumns, keyColumn));
+        this.selectAllSql = creator.createSelectAllStatement(tableName, selectColumns);
+        this.countAllSql = creator.createCountStatement(tableName);
+        this.updateColumns = columns.stream().filter(column -> !Objects.equals(column, idColumn)).toList();
+        this.insertStatement = UpdateStatement.of(creator.createInsertStatement(tableName, columns));
+        this.updateStatement = UpdateStatement.of(creator.createUpdateStatement(tableName, updateColumns, idColumn));
+        this.deleteStatement = UpdateStatement.of(creator.createDeleteStatement(tableName, idColumn));
+
         collection.registerDao(this);
+    }
+
+    /**
+     * Returns how a mapped column is read and written. This is what {@link #readAllProperties} and {@link #writeAllColumns} use, and what
+     * subclasses that override them should use, too, instead of looking up the meta-data again for every column of every row.
+     * @param column the name of the column
+     * @return the mapping, or null if the column is not mapped (also: not in the schema version of the collection)
+     */
+    protected final @Nullable ColumnMapping<T> getColumnMapping(final @NotNull String column) {
+        return mappingForColumn.get(column);
+    }
+
+    /**
+     * @return the dialect of the database, as defined by the collection that this DAO belongs to
+     */
+    protected final @NotNull DatabaseDialect getDialect() {
+        return collection.getDialect();
     }
 
     /**
@@ -303,8 +370,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
             }
             return null;
         }
-        final StatementCreator creator = new StatementCreator(getDataManager().getDialect());
-        final SelectStatement select = SelectStatement.of(creator.createSelectStatement(tableName, selectColumns, keyColumn));
+        final SelectStatement select = Objects.requireNonNull(selectByKeyStatement);
         if (verbose) {
             log.info("{}::findByKey(key='{}'): running {}", className, key, select);
         }
@@ -322,14 +388,61 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
         return findByIdIgnoringCache(conn, id);
     }
 
+    @Override
+    public @NotNull @Unmodifiable List<T> findByIds(final @NotNull DatabaseConnection conn, final @NotNull Collection<Long> ids) throws DatabaseError {
+        final Set<Long> distinct = new LinkedHashSet<>();
+        for (final Long id : ids) {
+            if (id != null) {
+                distinct.add(id);
+            }
+        }
+        final Map<Long, T> found = new HashMap<>();
+        final List<Long> missing = new ArrayList<>();
+        for (final Long id : distinct) {
+            final T cached = cache.findById(id);
+            if (cached != null) {
+                found.put(id, cached);
+            } else {
+                missing.add(id);
+            }
+        }
+        for (int from = 0; from < missing.size(); from += FIND_BY_IDS_CHUNK_SIZE) {
+            final List<Long> chunk = missing.subList(from, Math.min(from + FIND_BY_IDS_CHUNK_SIZE, missing.size()));
+            final SelectStatement select = selectByIdsStatements.computeIfAbsent(chunk.size(), this::createSelectByIdsStatement);
+            if (verbose) {
+                log.info("{}::findByIds({} ids): running {}", className, chunk.size(), select);
+            }
+            final List<T> loaded = conn.queryForList(select, stmt -> {
+                for (final Long id : chunk) {
+                    stmt.addLong(id);
+                }
+            }, rs -> readAllProperties(conn, rs));
+            for (final T entity : loaded) {
+                found.put(entity.getId(), entity);
+                cache.put(entity);
+            }
+        }
+        final List<T> result = new ArrayList<>(found.size());
+        for (final Long id : distinct) {
+            final T entity = found.get(id);
+            if (entity != null) {
+                result.add(entity);
+            }
+        }
+        return Collections.unmodifiableList(result);
+    }
+
+    private @NotNull SelectStatement createSelectByIdsStatement(final int idCount) {
+        return SelectStatement.of(selectAllSql + "\nWHERE\n  " + getDialect().quoteColumn(idColumn) + " in (" + "?, ".repeat(idCount - 1) + "?)");
+    }
+
     /**
      * Like {@link #findById}, but always queries the database, bypassing any cache attached via
      * {@link #enableCache}. The result is still stored into the cache (if any), same as a normal cache
      * miss would.
      */
     public @Nullable T findByIdIgnoringCache(final @NotNull DatabaseConnection conn, final long id) throws DatabaseError {
-        final StatementCreator creator = new StatementCreator(getDataManager().getDialect());
-        final SelectStatement select = SelectStatement.of(creator.createSelectStatement(tableName, selectColumns, idColumn));
+        final SelectStatement select = selectByIdStatement;
         if (verbose) {
             log.info("{}::findById(id={}): running {}", className, id, select);
         }
@@ -353,8 +466,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
         if (!columns.contains(column)) {
             return null;
         }
-        final StatementCreator creator = new StatementCreator(getDataManager().getDialect());
-        final SelectStatement select = SelectStatement.of(creator.createSelectStatement(tableName, List.of(column), idColumn));
+        final SelectStatement select = lazyColumnSelects.computeIfAbsent(column, c -> SelectStatement.of(new StatementCreator(getDialect()).createSelectStatement(tableName, List.of(c), idColumn)));
         if (verbose) {
             log.info("{}::fetchLazyColumn(id={}, column='{}'): running {}", className, id, column, select);
         }
@@ -368,22 +480,89 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
 
     @Override
     public @NotNull List<T> findAll(final @NotNull DatabaseConnection conn, final @Nullable Integer limit) throws DatabaseError {
-        final StatementCreator creator = new StatementCreator(getDataManager().getDialect());
-        final SelectStatement select = SelectStatement.of(creator.createSelectAllStatement(tableName, selectColumns));
+        return findAll(conn, limit, null);
+    }
+
+    /**
+     * Like {@link #findAll(DatabaseConnection, Integer)}, but skips the first rows, for paging. The offset needs a limit, which is the page size.
+     * Without an offset the result is not sorted (unless limited, see below); with a limit the rows are sorted by the second selected column
+     * (as before), and if there is an offset, by the ID column after that, so that pages do not overlap. To page through sorted rows, use
+     * {@link #findByFilter} with {@link FilterQuery#orderBy(String)}.
+     * <p>
+     * On databases that cannot limit rows in SQL, the limit and offset are applied while reading, so rows before the end of the page are
+     * still transferred, but not turned into entities.
+     * </p>
+     *
+     * @param conn the database connection
+     * @param limit the maximum number of entities, or null for no limit
+     * @param offset the number of entities to skip, or null for none; requires a limit if above 0
+     * @return the entities
+     * @throws DatabaseError on database errors
+     */
+    public @NotNull List<T> findAll(final @NotNull DatabaseConnection conn, final @Nullable Integer limit, final @Nullable Integer offset) throws DatabaseError {
+        final boolean limited = limit != null && limit > 0;
+        final int skip = checkOffset(offset, limited);
+        final String sql = limited ? selectAllSql + " " + defaultOrderBy(offset != null) : selectAllSql;
         if (verbose) {
-            log.info("{}::findAll(): running {}, limit={}", className, select, limit);
+            log.info("{}::findAll(): running {}, limit={}, offset={}", className, sql, limit, offset);
         }
-        @NotNull final DatabaseVersion databaseVersion = DatabaseVersion.getDatabaseVersion(getDataManager());
-        if (limit != null && limit > 0 && getDataManager().getDialect().canLimitAndOffset(databaseVersion)) {
-            final SelectStatement limited = getDataManager().getDialect().addLimitAndOffset(SelectStatement.of(select.getSql() + " order by 2"));
-            return conn.queryForList(
-                    limited,
-                    ps -> getDataManager().getDialect().addLimitAndOffset(ps, limit, 0),
-                    rs -> readAllProperties(conn, rs)
-            );
-        } else {
-            return conn.queryForList(select, rs -> readAllProperties(conn, rs));
+        return queryForEntities(conn, sql, limited ? limit : null, skip, ps -> {});
+    }
+
+    /** Validates an offset; returns it as a number of rows to skip. */
+    private static int checkOffset(final @Nullable Integer offset, final boolean limited) {
+        if (offset == null) {
+            return 0;
         }
+        if (offset < 0) {
+            throw new IllegalArgumentException("the offset must not be negative");
+        }
+        if (offset > 0 && !limited) {
+            throw new IllegalArgumentException("an offset needs a limit (the page size)");
+        }
+        return offset;
+    }
+
+    /** The sort order of queries that did not ask for one. Paged queries get the ID as the last criterion, to make the order unambiguous. */
+    private @NotNull String defaultOrderBy(final boolean paged) {
+        return paged ? "order by 2, " + getDialect().quoteColumn(idColumn) : "order by 2";
+    }
+
+    /**
+     * Runs a query for entities, applying a limit and an offset in SQL if the database can do that, and while reading otherwise.
+     * @param sql the query, including the sort order, without limit and offset
+     * @param limit the maximum number of rows, or null for no limit
+     * @param offset the number of rows to skip
+     * @param configurator binds the parameters of the query, except for the limit and offset
+     */
+    private @NotNull List<T> queryForEntities(final DatabaseConnection conn, final String sql,
+                                              final @Nullable Integer limit, final int offset, final StatementConfigurator configurator) throws DatabaseError {
+        if (limit == null) {
+            return conn.queryForList(SelectStatement.of(sql), configurator, rs -> readAllProperties(conn, rs));
+        }
+        if (collection.canLimitAndOffset()) {
+            final SelectStatement limited = getDialect().addLimitAndOffset(SelectStatement.of(sql));
+            return conn.queryForList(limited, ps -> {
+                configurator.configure(ps);
+                getDialect().addLimitAndOffset(ps, limit, offset);
+            }, rs -> readAllProperties(conn, rs));
+        }
+        return readLimitedWhileReading(conn, SelectStatement.of(sql), configurator, limit, offset);
+    }
+
+    /** For databases that cannot limit in SQL: stops reading after the page, and skips the rows before it without turning them into entities. */
+    private @NotNull List<T> readLimitedWhileReading(final DatabaseConnection conn, final SelectStatement select, final StatementConfigurator configurator,
+                                                     final int limit, final int offset) throws DatabaseError {
+        final List<T> result = new ArrayList<>(Math.min(limit, 1000));
+        final int[] skipped = {0};
+        conn.queryForEach(select, configurator, rs -> {
+            if (skipped[0] < offset) {
+                skipped[0]++;
+            } else {
+                result.add(readAllProperties(conn, rs));
+            }
+        }, (long) offset + limit, null);
+        return Collections.unmodifiableList(result);
     }
 
     @Override
@@ -485,7 +664,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
      * @throws MalformedExpression if the expression is invalid
      */
     protected String expressionToSql(final FilterExpression filterExpression, final Consumer<Prepper> prepperConsumer) throws MalformedExpression {
-        @NotNull final DatabaseDialect dialect = getDataManager().getDialect();
+        @NotNull final DatabaseDialect dialect = getDialect();
         if (filterExpression.getField() != null && INVALID_FIELD.test(filterExpression.getField())) {
             throw new MalformedExpression("invalid field '" + filterExpression.getField() + "'");
         }
@@ -557,7 +736,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
      */
     protected String applyExpressionToColumn(final FilterExpression original, final String quotedColumn, final @Nullable ColumnTypeHint columnTypeHint, final @Nullable ColumnCase columnCase, final Consumer<Prepper> prepperConsumer) throws MalformedExpression {
         @Nullable final FilterOperator op = original.getOperator();
-        final DatabaseDialect dialect = getDataManager().getDialect();
+        final DatabaseDialect dialect = getDialect();
         final boolean textMatch = switch (op) {
             case STARTSWITH, ENDSWITH, CONTAINS, DOESNOTCONTAIN -> true;
             default -> false;
@@ -632,11 +811,10 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
 
     @Override
     public int countByFilter(@NotNull final DatabaseConnection conn, @Nullable final FilterExpression filterExpression) throws DatabaseError {
-        final StatementCreator creator = new StatementCreator(getDataManager().getDialect());
-        final List<Prepper> preppers = new LinkedList<>();
+                final List<Prepper> preppers = new LinkedList<>();
         @Language("SQL") final String sql =
-                filterExpression == null ? creator.createCountStatement(tableName) :
-                        creator.createCountStatement(tableName) + "\nWHERE\n  " + expressionToSql(filterExpression, preppers::add);
+                filterExpression == null ? countAllSql :
+                        countAllSql + "\nWHERE\n  " + expressionToSql(filterExpression, preppers::add);
         if (verbose) {
             log.info("countByFilter, sql: {}, preppers: {}", sql, preppers);
         }
@@ -652,8 +830,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
 
     @Override
     public @NotNull List<T> findByAssociation(final @NotNull DatabaseConnection conn, final String foreignKeyColumn, final long foreignKeyValue) throws DatabaseError {
-        final StatementCreator creator = new StatementCreator(getDataManager().getDialect());
-        @Language("SQL") final String sql = creator.createSelectAllStatement(tableName, selectColumns) + "\nWHERE\n  " + getDataManager().getDialect().quoteColumn(foreignKeyColumn) + " = ?";
+        @Language("SQL") final String sql = selectAllSql + "\nWHERE\n  " + getDialect().quoteColumn(foreignKeyColumn) + " = ?";
         if (verbose) {
             log.info("findByAssociation, sql: {}, fk = {}", sql, foreignKeyValue);
         }
@@ -663,21 +840,36 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
 
     // TODO: what I actually want to have is a class that contains the SQL and all information to fully prepare the stmt.
     //   The whole query side, really. A calles can then look at them and e.g. report on them when needed.
-    /** A query for a filter, together with its row limit and the preppers that bind its parameters. */
+    /** A query for a filter, together with its row limit and offset and the preppers that bind its parameters. */
     public static class LimitedSelectStatement extends SelectStatement {
 
         protected final @Nullable Integer rowLimit;
+        protected final int offset;
+        protected final boolean limitedInSql;
         @NotNull @Unmodifiable protected final List<Prepper> preppers;
 
+        /** A query whose SQL limits the rows if there is a row limit. */
         public LimitedSelectStatement(final @NotNull SelectStatement wrapped, final @Nullable Integer rowLimit, final List<Prepper> preppers) {
-            super(wrapped.getSql());
-            this.rowLimit = rowLimit;
-            this.preppers = List.copyOf(preppers);
+            this(wrapped.getSql(), rowLimit, 0, rowLimit != null, preppers);
         }
 
+        /** A query whose SQL limits the rows if there is a row limit. */
         public LimitedSelectStatement(@NotNull @Language("SQL") final String sql, final @Nullable Integer rowLimit, final List<Prepper> preppers) {
+            this(sql, rowLimit, 0, rowLimit != null, preppers);
+        }
+
+        /**
+         * @param sql          the query
+         * @param rowLimit     the maximum number of rows, or null for no limit
+         * @param offset       the number of rows to skip
+         * @param limitedInSql true if the SQL contains the placeholders for limit and offset, false if the limit and offset must be applied while reading
+         * @param preppers     the preppers that bind the parameters of the query, in order
+         */
+        public LimitedSelectStatement(@NotNull @Language("SQL") final String sql, final @Nullable Integer rowLimit, final int offset, final boolean limitedInSql, final List<Prepper> preppers) {
             super(sql);
             this.rowLimit = rowLimit;
+            this.offset = offset;
+            this.limitedInSql = limitedInSql;
             this.preppers = List.copyOf(preppers);
         }
 
@@ -689,10 +881,25 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
         }
 
         /**
+         * @return the number of rows to skip
+         */
+        public int getOffset() {
+            return offset;
+        }
+
+        /**
          * @return true if the query has a row limit
          */
         public boolean isLimited() {
             return rowLimit != null;
+        }
+
+        /**
+         * @return true if the limit and offset are part of the SQL, and have to be bound as parameters after the preppers; false if they have to be
+         * applied while reading, because the database cannot limit rows in SQL
+         */
+        public boolean isLimitedInSql() {
+            return limitedInSql;
         }
 
         /**
@@ -704,43 +911,79 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
     }
 
     /**
-     * Creates the query for finding entities by a filter, including the ordering and the row limit.
+     * Creates the sort order of a filter query: the raw clause if there is one, or the {@link FilterQuery#orderBy(String) sort keys} mapped to
+     * columns, or the default. A paged query (with an offset) gets the ID column as the last criterion, unless it is already sorted by it,
+     * so that pages cannot overlap.
+     * @throws MalformedExpression if a sort key names an unknown field, or both a raw clause and sort keys are set
+     */
+    protected @NotNull String orderByFor(final @NotNull FilterQuery filterQuery) {
+        final boolean paged = filterQuery.getOffset() != null;
+        final @Nullable String raw = filterQuery.getOrderByClause();
+        final List<SortKey> keys = filterQuery.getSortKeys();
+        if (raw != null) {
+            if (!keys.isEmpty()) {
+                throw new MalformedExpression("use either an order by clause or sort keys, not both");
+            }
+            return raw;
+        }
+        if (keys.isEmpty()) {
+            return defaultOrderBy(paged);
+        }
+        final DatabaseDialect dialect = getDialect();
+        final List<String> parts = new ArrayList<>();
+        boolean sortsById = false;
+        for (final SortKey key : keys) {
+            final String column = columnForField.get(key.field());
+            if (column == null) {
+                throw new MalformedExpression("cannot sort by unknown field '" + key.field() + "'");
+            }
+            sortsById |= column.equals(idColumn);
+            parts.add(dialect.quoteColumn(column) + (key.descending() ? " desc" : " asc"));
+        }
+        if (paged && !sortsById) {
+            parts.add(dialect.quoteColumn(idColumn) + " asc");
+        }
+        return "order by " + String.join(", ", parts);
+    }
+
+    /**
+     * Creates the query for finding entities by a filter, including the ordering, the row limit and the offset.
      * @param filterQuery the filter query
      * @return the query
      */
     protected LimitedSelectStatement createFindByFilterQuery(@NotNull final FilterQuery filterQuery) {
         final List<Prepper> preppers = new LinkedList<>();
-        final @Nullable String orderBy = filterQuery.getOrderByClause();
         final @Nullable Integer limit = filterQuery.getMaxRows();
-        final @NotNull String finalOrderBy = orderBy == null ? "order by 2" : orderBy;
-        final StatementCreator creator = new StatementCreator(getDataManager().getDialect());
-        @Language("SQL") final String sql = creator.createSelectAllStatement(tableName, selectColumns) + "\nWHERE\n  " + expressionToSql(filterQuery.filterExpression, preppers::add);
-        @NotNull final DatabaseVersion databaseVersion = DatabaseVersion.getDatabaseVersion(getDataManager());
-        if (limit != null && limit > 0 && getDataManager().getDialect().canLimitAndOffset(databaseVersion)) {
-            SelectStatement limited = filterQuery.rewriteQuery(getDataManager().getDialect().addLimitAndOffset(SelectStatement.of(sql + " " + finalOrderBy)));
-            return new LimitedSelectStatement(limited, limit, preppers);
+        final boolean limited = limit != null && limit > 0;
+        final int offset = checkOffset(filterQuery.getOffset(), limited);
+        final @NotNull String finalOrderBy = orderByFor(filterQuery);
+        @Language("SQL") final String sql = selectAllSql + "\nWHERE\n  " + expressionToSql(filterQuery.filterExpression, preppers::add);
+        if (limited && collection.canLimitAndOffset()) {
+            SelectStatement limitedSelect = filterQuery.rewriteQuery(getDialect().addLimitAndOffset(SelectStatement.of(sql + " " + finalOrderBy)));
+            return new LimitedSelectStatement(limitedSelect.getSql(), limit, offset, true, preppers);
         } else {
-            return new LimitedSelectStatement(filterQuery.rewriteQuery(sql + " " + finalOrderBy), null, preppers);
+            return new LimitedSelectStatement(filterQuery.rewriteQuery(sql + " " + finalOrderBy), limited ? limit : null, offset, false, preppers);
         }
     }
 
     @Override
     public @NotNull @Unmodifiable List<T> findByFilter(@NotNull final DatabaseConnection conn, @NotNull final FilterQuery filterQuery) throws DatabaseError {
         final LimitedSelectStatement q = createFindByFilterQuery(filterQuery);
-        return conn.queryForList(
-            q,
-            stmt -> {
-                if (filterQuery.getQueryTimeout() != null) {
-                    stmt.setQueryTimeout(filterQuery.getQueryTimeout());
-                }
-                for (final Prepper prepper : q.getPreppers()) {
-                    prepper.prepare(conn, stmt);
-                }
-                if (q.getRowLimit() != null) {
-                    getDataManager().getDialect().addLimitAndOffset(stmt, q.getRowLimit(), 0);
-                }
-            },
-            rs -> readAllProperties(conn, rs));
+        final StatementConfigurator prepare = stmt -> {
+            if (filterQuery.getQueryTimeout() != null) {
+                stmt.setQueryTimeout(filterQuery.getQueryTimeout());
+            }
+            for (final Prepper prepper : q.getPreppers()) {
+                prepper.prepare(conn, stmt);
+            }
+            if (q.isLimitedInSql() && q.getRowLimit() != null) {
+                getDialect().addLimitAndOffset(stmt, q.getRowLimit(), q.getOffset());
+            }
+        };
+        if (q.isLimited() && !q.isLimitedInSql()) {
+            return readLimitedWhileReading(conn, q, prepare, q.getRowLimit(), q.getOffset());
+        }
+        return conn.queryForList(q, prepare, rs -> readAllProperties(conn, rs));
     }
 
     /**
@@ -752,26 +995,21 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
      */
     protected T readAllProperties(final DatabaseConnection conn, final SimpleResultSet rs) throws DatabaseError {
         final T value = newValue.get();
-        int columnIndex = 0;
-        for (final String column : selectColumns) {
-            ++columnIndex;
-            String field = Objects.requireNonNull(fieldForColumn.get(column));
-            final @NotNull ColumnTypeHint columnTypeHint = Objects.requireNonNull(entityDispatchTable.getMetaData(field, JanitorOrm.MetaData.COLUMN_TYPE));
-            final @Nullable String lookupType = entityDispatchTable.getMetaData(field, Janitor.MetaData.REF);
-            final @Nullable Boolean hostNullable = entityDispatchTable.getMetaData(field, Janitor.MetaData.HOST_NULLABLE);
+        for (int i = 0; i < selectMappings.length; i++) {
+            final ColumnMapping<T> mapping = selectMappings[i];
             try {
-                final JanitorObject propertyValue = Objects.requireNonNull(entityDispatchTable.get(field).lookupAttribute(value));
+                final JanitorObject propertyValue = Objects.requireNonNull(mapping.handler().lookupAttribute(value));
                 if (propertyValue instanceof JAssignable assignableProperty) {
-                    CommonDao.readProperty(collection, column, conn, assignableProperty, rs, columnTypeHint, lookupType, hostNullable);
+                    CommonDao.readProperty(collection, mapping.column(), conn, assignableProperty, rs, mapping.type(), mapping.referenceType(), mapping.hostNullable());
                 } else {
-                    throw new DatabaseError("invalid field '" + field + "' / column '" + column + "' is not assignable");
+                    throw new DatabaseError("invalid field '" + mapping.field() + "' / column '" + mapping.column() + "' is not assignable");
                 }
             } catch (SQLException e) {
-                log.warn("SQL exception on class '{}', column #{} = '{}', field '{}', type hint '{}', column order: {}", className, columnIndex, column, field, columnTypeHint, selectColumns, e);
-                final String message = String.format("SQL exception on class '%s', column '%s', field '%s', type hint '%s'", className, column, field, columnTypeHint);
+                log.warn("SQL exception on class '{}', column #{} = '{}', field '{}', type hint '{}', column order: {}", className, i + 1, mapping.column(), mapping.field(), mapping.type(), selectColumns, e);
+                final String message = String.format("SQL exception on class '%s', column '%s', field '%s', type hint '%s'", className, mapping.column(), mapping.field(), mapping.type());
                 throw new DatabaseError(message, e);
             } catch (Exception e) {
-                throw new DatabaseError("invalid field '" + field + "' caused an exception", e);
+                throw new DatabaseError("invalid field '" + mapping.field() + "' caused an exception", e);
             }
         }
         return value;
@@ -780,11 +1018,9 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
 
     @Override
     public void insert(@NotNull DatabaseConnection conn, @NotNull T record) throws DatabaseError {
-        final StatementCreator creator = new StatementCreator(getDataManager().getDialect());
-        final List<String> insertingColumns = columns.stream().toList();
-        final UpdateStatement insertStatement = UpdateStatement.of(creator.createInsertStatement(tableName, insertingColumns));
+        final List<String> insertingColumns = columns;
         final String sequence = Objects.requireNonNull(entityDispatchTable.getMetaData(JanitorOrm.MetaData.ID_SEQUENCE));
-        final SelectStatement nextIdQuery = Objects.requireNonNull(conn.getDialect().getNextValueQuery(sequence));
+        final SelectStatement nextIdQuery = Objects.requireNonNull(getDialect().getNextValueQuery(sequence));
         final long generatedId = conn.queryForLong(nextIdQuery);
         record.setId(generatedId);
         if (verbose) {
@@ -800,9 +1036,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
 
     @Override
     public void update(@NotNull DatabaseConnection conn, @NotNull T record) throws DatabaseError {
-        final StatementCreator creator = new StatementCreator(getDataManager().getDialect());
-        final List<String> updatingColumns = columns.stream().filter(field -> !Objects.equals(field, idColumn)).toList();
-        final UpdateStatement updateStatement = UpdateStatement.of(creator.createUpdateStatement(tableName, updatingColumns, idColumn));
+        final List<String> updatingColumns = updateColumns;
         record.beforeUpdate();
         conn.update(updateStatement, ps -> {
             writeAllColumns(conn, record, updatingColumns, ps);
@@ -813,9 +1047,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
 
     @Override
     public void delete(@NotNull final DatabaseConnection conn, @NotNull final T record) throws DatabaseError {
-        final StatementCreator creator = new StatementCreator(getDataManager().getDialect());
-        final UpdateStatement updateStatement = UpdateStatement.of(creator.createDeleteStatement(tableName, idColumn));
-        conn.update(updateStatement, ps -> ps.addLong(record.getId()));
+        conn.update(deleteStatement, ps -> ps.addLong(record.getId()));
         entityChangeListeners.fire(listener -> listener.onChange(EntityChangeListener.Type.DELETE, record));
     }
 
@@ -832,13 +1064,12 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
             log.info("writeAllColumns({})", updatingColumns);
         }
         for (final String column : updatingColumns) {
-            String field = Objects.requireNonNull(fieldForColumn.get(column));
+            final ColumnMapping<T> mapping = Objects.requireNonNull(mappingForColumn.get(column), "no mapping for column '" + column + "'");
             try {
-                final JanitorObject propertyValue = Objects.requireNonNull(entityDispatchTable.get(field).lookupAttribute(record), "no value for field '" + field + "' in record " + record + " / column '" + column + "'");
-                final @NotNull ColumnTypeHint columnTypeHint = Objects.requireNonNull(entityDispatchTable.getMetaData(field, JanitorOrm.MetaData.COLUMN_TYPE), "no column type hint for field '" + field + "' in record " + record + " / column '" + column + "'");
-                CommonDao.writeProperty(conn, className, column, field, propertyValue.janitorUnpack(), ps, columnTypeHint);
+                final JanitorObject propertyValue = Objects.requireNonNull(mapping.handler().lookupAttribute(record), "no value for field '" + mapping.field() + "' in record " + record + " / column '" + column + "'");
+                CommonDao.writeProperty(conn, className, column, mapping.field(), propertyValue.janitorUnpack(), ps, mapping.type());
             } catch (Exception e) {
-                throw new SQLException("error writing column '" + column + "' / field '" + field + "' into the database", e);
+                throw new SQLException("error writing column '" + column + "' / field '" + mapping.field() + "' into the database", e);
             }
         }
     }
@@ -864,7 +1095,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
      * @return the column names
      */
     protected @NotNull @Unmodifiable List<String> getAllMappedColumns(boolean qualifyWithTableName) {
-        final var dialect = getDataManager().getDialect();
+        final var dialect = getDialect();
         if (qualifyWithTableName) {
             return columns.stream().map(col -> tableName + "." + dialect.quoteColumn(col)).collect(Collectors.toList());
         } else {
@@ -1005,6 +1236,28 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
     }
 
     /**
+     * Script method {@code dao.findByIds(ids)}: finds the entities for a list (or set) of IDs with few queries.
+     * IDs without an entity, duplicates and nulls are skipped; the entities come in the order of their IDs.
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return a list of the entities
+     * @throws JanitorRuntimeException if the argument is not a collection of numbers or the query fails
+     */
+    public JanitorObject scriptFindByIds(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+        final JIterable source = arguments.require(1).getRequired(0, JIterable.class);
+        final List<Long> ids = new ArrayList<>();
+        for (final Iterator<? extends JanitorObject> it = source.getIterator(); it.hasNext(); ) {
+            final JanitorObject element = it.next();
+            if (element instanceof JNumber number) {
+                ids.add(number.toLong());
+            } else if (element != Janitor.NULL) {
+                throw new JanitorArgumentException(process, "findByIds: expecting a collection of numbers, but found " + simpleClassNameOf(element));
+            }
+        }
+        return callScriptTransaction(process, conn -> Janitor.list(findByIds(conn, ids).stream().map(this::forScript)));
+    }
+
+    /**
      * Script method {@code dao.findByKey(key)}: finds an entity by its key.
      * @param process the running script process
      * @param arguments the call arguments
@@ -1050,13 +1303,23 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
             final JCallable callback = (JCallable) arguments.get(1);
             final List<Long> identifiers = getDataManager().callTransaction(conn -> conn.queryForList(new SelectStatement(sql), SimpleResultSet::getLong));
             long count = 0;
-            for (final Long identifier : identifiers) {
-                final T obj = identifier == null ? null : getDataManager().callTransaction(conn -> findById(conn, identifier));
-                if (obj != null) {
-                    ++count;
-                    callback.call(process, new JCallArgs("callback", process, List.of(forScript(obj), Janitor.nullableInteger(identifier))));
-                } else {
-                    log.warn("queryForEach: object not found for identifier {}", identifier);
+            // Load the entities chunk-wise: one transaction (one connection checkout and commit) and one query per chunk instead of per entity. The callbacks
+            // run outside of these transactions, as they always did, so whatever a script writes from within its callback is committed on its own,
+            // and entities that a callback changes are seen as changed by the chunks that are loaded after it.
+            for (int from = 0; from < identifiers.size(); from += QUERY_FOR_EACH_CHUNK_SIZE) {
+                final List<Long> chunk = identifiers.subList(from, Math.min(from + QUERY_FOR_EACH_CHUNK_SIZE, identifiers.size()));
+                final Map<Long, T> loaded = new HashMap<>();
+                for (final T entity : getDataManager().callTransaction(conn -> findByIds(conn, chunk))) {
+                    loaded.put(entity.getId(), entity);
+                }
+                for (final Long identifier : chunk) {
+                    final T obj = identifier == null ? null : loaded.get(identifier);
+                    if (obj != null) {
+                        ++count;
+                        callback.call(process, new JCallArgs("callback", process, List.of(forScript(obj), Janitor.nullableInteger(identifier))));
+                    } else {
+                        log.warn("queryForEach: object not found for identifier {}", identifier);
+                    }
                 }
             }
             return Janitor.integer(count);
