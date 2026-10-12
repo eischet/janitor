@@ -41,6 +41,10 @@
         </dependency>
         <dependency>
             <groupId>com.eischet.janitor</groupId>
+            <artifactId>janitor-orm-rest</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.eischet.janitor</groupId>
             <artifactId>janitor-generator</artifactId>
         </dependency>
         <dependency>

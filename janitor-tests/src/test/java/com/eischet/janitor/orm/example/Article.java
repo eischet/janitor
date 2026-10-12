@@ -6,6 +6,7 @@ package com.eischet.janitor.orm.example;
 import com.eischet.janitor.orm.entity.OrmEntity;
 import com.eischet.janitor.orm.meta.EntityDispatchTable;
 import com.eischet.janitor.orm.ref.ForeignKeyNull;
+import com.eischet.janitor.orm.rest.RestOrm;
 
 /**
  * Example entity: a catalog article, stored in the table {@code demo_article}.
@@ -37,6 +38,7 @@ public class Article implements OrmEntity {
         DISPATCH.addTextColumn("description", "description", Article::getDescription, Article::setDescription);
         DISPATCH.addIntegerColumn("stock", "stock", Article::getStock, Article::setStock);
         DISPATCH.addBooleanColumn("active", "active", Article::isActive, Article::setActive);
+        RestOrm.expose(DISPATCH, "articles");
     }
 
     private final ExampleDaoCollection source;

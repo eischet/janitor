@@ -69,6 +69,7 @@
         <module>janitor-logging</module>
         <module>janitor-dbxs</module>
         <module>janitor-orm</module>
+        <module>janitor-orm-rest</module>
         <module>janitor-generator</module>
         <module>janitor-modules</module>
         <module>janitor-modules-common</module>
@@ -231,6 +232,11 @@
             <dependency>
                 <groupId>com.eischet.janitor</groupId>
                 <artifactId>janitor-orm</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eischet.janitor</groupId>
+                <artifactId>janitor-orm-rest</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
