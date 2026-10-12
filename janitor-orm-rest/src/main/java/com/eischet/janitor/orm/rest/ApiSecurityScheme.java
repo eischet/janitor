@@ -14,7 +14,7 @@ import java.util.Map;
  * itself (the host's resolver does that); this only describes it, so that tools such as Swagger UI and client generators know how to
  * authenticate, and so that a {@code 401} can tell callers what is expected ({@code WWW-Authenticate}, see {@link #challenge()}).
  * <p>
- * Create schemes with the factory methods, e.g. {@link #bearer(String, String)}, and name them in {@link OpenApiOptions#withSecurityScheme}.
+ * Create schemes with the factory methods, e.g. {@link #bearer(String)}, and name them in {@link OpenApiOptions#withSecurityScheme}.
  * </p>
  *
  * @param type             what kind of scheme this is
