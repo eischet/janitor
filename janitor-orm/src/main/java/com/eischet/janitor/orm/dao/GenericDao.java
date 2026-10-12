@@ -33,7 +33,9 @@ import com.eischet.janitor.orm.JanitorOrm;
 import com.eischet.janitor.orm.cache.EntityCache;
 import com.eischet.janitor.orm.cache.SimpleEntityCache;
 import com.eischet.janitor.orm.filter.FilterExpression;
+import com.eischet.janitor.orm.entity.HasModifiedDate;
 import com.eischet.janitor.orm.entity.OrmEntity;
+import com.eischet.janitor.orm.entity.Versioned;
 import com.eischet.janitor.orm.filter.FilterOperator;
 import com.eischet.janitor.orm.filter.MalformedExpression;
 import com.eischet.janitor.orm.meta.EntityDispatchTable;
@@ -52,6 +54,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
@@ -121,6 +124,8 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
      */
     protected final @NotNull @Unmodifiable List<String> selectColumns;
     protected final String keyColumn;
+    /** True if the entity declares a modification date column, see {@link JanitorOrm.MetaData#MODIFIED_FIELD}. */
+    private final boolean hasModifiedColumn;
     protected final EntityDispatchTable<T, U> entityDispatchTable;
     protected final Supplier<T> newValue;
     protected final Map<String, String> columnForField = new HashMap<>();
@@ -142,6 +147,12 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
     private final @NotNull UpdateStatement insertStatement;
     private final @NotNull UpdateStatement updateStatement;
     private final @NotNull UpdateStatement deleteStatement;
+    /** The version column if the entity is versioned (see {@link JanitorOrm.MetaData#VERSION_FIELD}) and the column is mapped, otherwise null. */
+    private final @Nullable String versionColumn;
+    /** Like {@link #updateStatement}, but only for the row that still has the expected version; null if there is no version column. */
+    private final @Nullable UpdateStatement versionedUpdateStatement;
+    /** Like {@link #deleteStatement}, but only for the row that still has the expected version; null if there is no version column. */
+    private final @Nullable UpdateStatement versionedDeleteStatement;
     private final @NotNull @Unmodifiable List<String> updateColumns;
     private final Map<String, SelectStatement> lazyColumnSelects = new ConcurrentHashMap<>();
     /** The {@code IN (...)} queries of {@link #findByIds}, by the number of IDs in the list; there are at most {@link #FIND_BY_IDS_CHUNK_SIZE}. */
@@ -165,6 +176,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
         this.tableName = Objects.requireNonNull(entityDispatchTable.getMetaData(JanitorOrm.MetaData.TABLE_NAME), "missing required TABLE_NAME");
         this.idColumn = Objects.requireNonNull(entityDispatchTable.getMetaData(JanitorOrm.MetaData.ID_FIELD), "missing required ID_FIELD");
         this.keyColumn = entityDispatchTable.getMetaData(JanitorOrm.MetaData.KEY_FIELD); // made optional because it's not in every table (upstream)
+        this.hasModifiedColumn = entityDispatchTable.getMetaData(JanitorOrm.MetaData.MODIFIED_FIELD) != null;
 
         if (log.isDebugEnabled()) {
             log.debug("initializing dao for entity {} in table {}", className, tableName);
@@ -216,6 +228,16 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
         this.insertStatement = UpdateStatement.of(creator.createInsertStatement(tableName, columns));
         this.updateStatement = UpdateStatement.of(creator.createUpdateStatement(tableName, updateColumns, idColumn));
         this.deleteStatement = UpdateStatement.of(creator.createDeleteStatement(tableName, idColumn));
+        final @Nullable String declaredVersionColumn = entityDispatchTable.getMetaData(JanitorOrm.MetaData.VERSION_FIELD);
+        this.versionColumn = declaredVersionColumn != null && mappingForColumn.containsKey(declaredVersionColumn) && !declaredVersionColumn.equals(idColumn) ? declaredVersionColumn : null;
+        if (versionColumn == null) {
+            this.versionedUpdateStatement = null;
+            this.versionedDeleteStatement = null;
+        } else {
+            final String versionCondition = " and " + getDialect().quoteColumn(versionColumn) + " = ?";
+            this.versionedUpdateStatement = UpdateStatement.of(creator.createUpdateStatement(tableName, updateColumns, idColumn) + versionCondition);
+            this.versionedDeleteStatement = UpdateStatement.of(creator.createDeleteStatement(tableName, idColumn) + versionCondition);
+        }
 
         collection.registerDao(this);
     }
@@ -1026,6 +1048,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
         if (verbose) {
             log.info("{}::insert() with new id {}, running {} on columns {}", className, generatedId, insertStatement, insertingColumns);
         }
+        touchModifiedDate(record);
         record.beforeInsert();
         conn.update(insertStatement, ps -> {
             // pointless / harmful: ps.addLong(generatedId);
@@ -1037,17 +1060,54 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
     @Override
     public void update(@NotNull DatabaseConnection conn, @NotNull T record) throws DatabaseError {
         final List<String> updatingColumns = updateColumns;
+        touchModifiedDate(record);
         record.beforeUpdate();
-        conn.update(updateStatement, ps -> {
-            writeAllColumns(conn, record, updatingColumns, ps);
-            ps.addLong(record.getId());
-        });
+        if (versionedUpdateStatement != null && record instanceof Versioned versioned) {
+            // optimistic locking: write only if the row still has the version that this entity was loaded with, and count up
+            final long expected = versioned.getVersion();
+            versioned.setVersion(expected + 1);
+            final int rows = conn.update(versionedUpdateStatement, ps -> {
+                writeAllColumns(conn, record, updatingColumns, ps);
+                ps.addLong(record.getId());
+                ps.addLong(expected);
+            });
+            if (rows == 0) {
+                versioned.setVersion(expected);
+                throw new OptimisticLockError(className, record.getId(), expected);
+            }
+        } else {
+            conn.update(updateStatement, ps -> {
+                writeAllColumns(conn, record, updatingColumns, ps);
+                ps.addLong(record.getId());
+            });
+        }
         entityChangeListeners.fire(listener -> listener.onChange(EntityChangeListener.Type.UPDATE, record));
+    }
+
+    /**
+     * Sets the modification date of the record to now, if the entity declares one (see {@link JanitorOrm.MetaData#MODIFIED_FIELD}) and
+     * implements {@link HasModifiedDate}. Runs before the {@code before...} hooks of the entity, so that they can still override the value.
+     */
+    private void touchModifiedDate(final @NotNull T record) {
+        if (hasModifiedColumn && record instanceof HasModifiedDate modifiable) {
+            modifiable.setModifiedDate(LocalDateTime.now(collection.getClock()));
+        }
     }
 
     @Override
     public void delete(@NotNull final DatabaseConnection conn, @NotNull final T record) throws DatabaseError {
-        conn.update(deleteStatement, ps -> ps.addLong(record.getId()));
+        if (versionedDeleteStatement != null && record instanceof Versioned versioned) {
+            final long expected = versioned.getVersion();
+            final int rows = conn.update(versionedDeleteStatement, ps -> {
+                ps.addLong(record.getId());
+                ps.addLong(expected);
+            });
+            if (rows == 0) {
+                throw new OptimisticLockError(className, record.getId(), expected);
+            }
+        } else {
+            conn.update(deleteStatement, ps -> ps.addLong(record.getId()));
+        }
         entityChangeListeners.fire(listener -> listener.onChange(EntityChangeListener.Type.DELETE, record));
     }
 

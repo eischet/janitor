@@ -89,6 +89,26 @@ public class EntityDispatchTable<T extends OrmEntity, U extends Uplink> extends 
     }
 
     /**
+     * Declares the optional version column of the entity, see {@link JanitorOrm.MetaData#VERSION_FIELD}.
+     * @param column the name of the column
+     * @return this table
+     */
+    public EntityDispatchTable<T, U> versionColumn(final @NotNull String column) {
+        setMetaData(JanitorOrm.MetaData.VERSION_FIELD, column);
+        return this;
+    }
+
+    /**
+     * Declares the optional modification timestamp column of the entity, see {@link JanitorOrm.MetaData#MODIFIED_FIELD}.
+     * @param column the name of the column
+     * @return this table
+     */
+    public EntityDispatchTable<T, U> modifiedColumn(final @NotNull String column) {
+        setMetaData(JanitorOrm.MetaData.MODIFIED_FIELD, column);
+        return this;
+    }
+
+    /**
      * Lets a consumer configure this table, which is convenient for keeping the setup code together.
      * @param consumer the configuration code
      * @return this table

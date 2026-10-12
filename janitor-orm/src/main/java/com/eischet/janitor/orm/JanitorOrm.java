@@ -78,6 +78,29 @@ public final class JanitorOrm {
         public static MetaDataKey<StringList> JOIN_TABLE_PK = new MetaDataKey<>("join_table_pk", StringList.class);
 
         /**
+         * The column name of an optional version counter of an entity, for optimistic locking, e.g. "version".
+         * The entity should implement {@link com.eischet.janitor.orm.entity.Versioned}. Absent means that the entity is not versioned.
+         */
+        public static MetaDataKey<String> VERSION_FIELD = new MetaDataKey<>("version_field", String.class);
+
+        /**
+         * The column name of an optional modification timestamp of an entity, e.g. "modified_at". The entity should implement
+         * {@link com.eischet.janitor.orm.entity.HasModifiedDate}; the DAO then sets the timestamp on insert and update.
+         * Absent means that the entity has no modification date.
+         */
+        public static MetaDataKey<String> MODIFIED_FIELD = new MetaDataKey<>("modified_field", String.class);
+
+        /**
+         * The total number of significant digits of a {@link ColumnTypeHint#DECIMAL} column.
+         */
+        public static MetaDataKey<Integer> DECIMAL_PRECISION = new MetaDataKey<>("decimal_precision", Integer.class);
+
+        /**
+         * The number of digits after the decimal point of a {@link ColumnTypeHint#DECIMAL} column.
+         */
+        public static MetaDataKey<Integer> DECIMAL_SCALE = new MetaDataKey<>("decimal_scale", Integer.class);
+
+        /**
          * The version range of the object.
          *
          * This can be used to adjust to schema differences automatically, most useful when you do not have control over a schema, e.g.

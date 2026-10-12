@@ -120,6 +120,27 @@ public interface OrmPropertyHandle<T, V> extends PropertyHandle<T, V> {
     }
 
     /**
+     * The total number of digits of a decimal column, or {@code null} if unknown.
+     */
+    default @Nullable Integer getDecimalPrecision() {
+        return getMetaData(JanitorOrm.MetaData.DECIMAL_PRECISION);
+    }
+
+    /**
+     * The number of digits after the decimal point of a decimal column, or {@code null} if unknown.
+     */
+    default @Nullable Integer getDecimalScale() {
+        return getMetaData(JanitorOrm.MetaData.DECIMAL_SCALE);
+    }
+
+    /**
+     * Declares precision and scale of a decimal column, e.g. {@code decimal(10, 2)}.
+     */
+    default OrmPropertyHandle<T, V> decimal(final int precision, final int scale) {
+        return setMetaData(JanitorOrm.MetaData.DECIMAL_PRECISION, precision).setMetaData(JanitorOrm.MetaData.DECIMAL_SCALE, scale);
+    }
+
+    /**
      * Declares the letter case of the values in this (text) column, see {@link ColumnCase}.
      */
     default OrmPropertyHandle<T, V> columnCase(final @NotNull ColumnCase columnCase) {

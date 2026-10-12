@@ -12,8 +12,9 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Helpers that work on any kind of {@link ForeignKey}, regardless of how it was loaded.
  * <p>
- * In JSON, a reference is always written as the short code of what it points to, never as a database id: ids differ
- * between installations, short codes are what ties exports and imports together.
+ * In JSON, a reference is written as the short code of what it points to, not as a database id: ids differ
+ * between installations, short codes are what ties exports and imports together. Only a target that has no short code at
+ * all (tables without a key column) is written as its id, see {@link #keyOrIdOf(ForeignKey)}.
  * </p>
  */
 public final class ForeignKeys {
@@ -44,15 +45,39 @@ public final class ForeignKeys {
         return resolveKey(reference, connection);
     }
 
+    /**
+     * What to write for a reference where the target may or may not have a short code: the short code if there is one, otherwise the
+     * database id. Used for the JSON of references, where the key is preferred wherever it exists, see {@link #keyOf(ForeignKey)}.
+     *
+     * @return a {@link String} (the short code), a {@link Long} (the id of a target without short code), or {@code null} for a null
+     * reference or an id that points to nothing (any more)
+     */
+    public static @Nullable Object keyOrIdOf(final @Nullable ForeignKey<?> reference) {
+        try {
+            return resolveReference(reference, null, true);
+        } catch (DatabaseError e) {
+            throw new IllegalStateException("cannot determine the short code or id of " + reference, e); // cannot happen without a connection
+        }
+    }
+
     private static @Nullable String resolveKey(final @Nullable ForeignKey<?> reference, final @Nullable DatabaseConnection connection) throws DatabaseError {
+        return (String) resolveReference(reference, connection, false);
+    }
+
+    private static @Nullable Object resolveReference(final @Nullable ForeignKey<?> reference, final @Nullable DatabaseConnection connection, final boolean idFallback) throws DatabaseError {
         if (reference == null || reference.isNull()) {
             return null;
         }
         if (reference instanceof ForeignKeyString<?> byKey) {
             return byKey.getKey();
         }
-        if (reference instanceof ForeignKeySearchResult<?> found && found.getKey() != null && !found.getKey().isBlank()) {
-            return found.getKey();
+        if (reference instanceof ForeignKeySearchResult<?> found) {
+            if (found.getKey() != null && !found.getKey().isBlank()) {
+                return found.getKey();
+            }
+            if (idFallback) {
+                return found.getId();
+            }
         }
         final OrmEntity target;
         if (reference instanceof ForeignKeyIdentity<?> identity) {
@@ -65,6 +90,9 @@ public final class ForeignKeys {
         }
         final String key = target.getKey();
         if (key == null || key.isBlank()) {
+            if (idFallback) {
+                return target.getId();
+            }
             throw new IllegalStateException("the referenced " + reference.getReferencedEntityClassName() + " with id " + target.getId() + " has no short code");
         }
         return key;

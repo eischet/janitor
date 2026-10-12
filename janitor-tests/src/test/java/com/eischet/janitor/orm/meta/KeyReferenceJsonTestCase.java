@@ -193,10 +193,30 @@ public class KeyReferenceJsonTestCase extends JanitorTest {
     }
 
     @Test
-    public void aTargetWithoutShortCodeCannotBeWritten() {
+    public void aTargetWithoutShortCodeIsWrittenAsItsId() throws Exception {
         final Holder holder = new Holder();
         holder.setTarget(new ForeignKeyInteger<>(7, new StubDao(null)));
-        assertThrows(Exception.class, holder::toJson);
+        assertTrue(holder.toJson().replaceAll("\\s", "").contains("\"target\":7"), holder.toJson());
+    }
+
+    @Test
+    public void aNumberIsReadAsAReferenceById() throws Exception {
+        final Holder holder = Holder.DISPATCH.readFromJson(Holder::new, "{\"target\": 7}");
+        assertInstanceOf(ForeignKeyInteger.class, holder.getTarget());
+        assertEquals(7, holder.getTarget().getId());
+    }
+
+    @Test
+    public void aListWithTargetsWithoutShortCodeIsWrittenAsIdsAndReadBack() throws Exception {
+        final Holder holder = new Holder();
+        holder.getTargets().add(new ForeignKeyInteger<>(7, new StubDao(null)));
+        holder.getTargets().add(new ForeignKeyString<>("A", Holder.UPLINK.dao));
+        final String json = holder.toJson();
+        assertTrue(json.replaceAll("\\s", "").contains("\"targets\":[7,\"A\"]"), json);
+        final Holder copy = Holder.DISPATCH.readFromJson(Holder::new, json);
+        assertEquals(2, copy.getTargets().size());
+        assertInstanceOf(ForeignKeyInteger.class, copy.getTargets().get(0));
+        assertInstanceOf(ForeignKeyString.class, copy.getTargets().get(1));
     }
 
 
@@ -235,8 +255,8 @@ public class KeyReferenceJsonTestCase extends JanitorTest {
     }
 
     @Test
-    public void aListThatIsNotAnArrayOfShortCodesIsRejected() {
-        assertThrows(Exception.class, () -> Holder.DISPATCH.readFromJson(Holder::new, "{\"targets\": [1, 2]}"));
+    public void aListThatContainsOtherThanShortCodesOrIdsIsRejected() {
+        assertThrows(Exception.class, () -> Holder.DISPATCH.readFromJson(Holder::new, "{\"targets\": [true, {\"a\": 1}]}"));
     }
 
     @Test

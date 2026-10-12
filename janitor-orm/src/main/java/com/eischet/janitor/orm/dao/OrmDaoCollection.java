@@ -20,6 +20,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
+import java.time.Clock;
 import java.util.*;
 import java.util.function.BiConsumer;
 
@@ -39,11 +40,11 @@ import java.util.function.BiConsumer;
  */
 public abstract class OrmDaoCollection<S extends OrmDaoCollection<S>> extends JanitorComposed<S> implements Uplink {
 
-    private final Map<String, DispatchTable<?>> entities = new LinkedHashMap<>();
-    private final Map<String, Dao<? extends OrmEntity>> daos = new LinkedHashMap<>();
-    private final Map<String, JoinDao<? extends OrmJoined>> joinDaos = new LinkedHashMap<>();
+    protected final Map<String, DispatchTable<?>> entities = new LinkedHashMap<>();
+    protected final Map<String, Dao<? extends OrmEntity>> daos = new LinkedHashMap<>();
+    protected final Map<String, JoinDao<? extends OrmJoined>> joinDaos = new LinkedHashMap<>();
     /** Stands in for "no version given": newer than any real one, so that only dialects that cannot limit rows at all say no. */
-    private static final DatabaseVersion MODERN_DATABASE = new DatabaseVersion();
+    protected static final DatabaseVersion MODERN_DATABASE = new DatabaseVersion();
 
     static {
         MODERN_DATABASE.setProductName("unspecified, assumed modern");
@@ -51,10 +52,10 @@ public abstract class OrmDaoCollection<S extends OrmDaoCollection<S>> extends Ja
         MODERN_DATABASE.setMinorVersion(Integer.MAX_VALUE);
     }
 
-    private final @NotNull DatabaseDialect dialect;
-    private final @Nullable Version schemaVersion;
-    private final @Nullable DatabaseVersion databaseVersion;
-    private final boolean canLimitAndOffset;
+    protected final @NotNull DatabaseDialect dialect;
+    protected final @Nullable Version schemaVersion;
+    protected final @Nullable DatabaseVersion databaseVersion;
+    protected final boolean canLimitAndOffset;
 
     /**
      * Creates a collection that is bound to one database for its whole life; a different database gets a new collection (and new DAOs).
@@ -123,6 +124,16 @@ public abstract class OrmDaoCollection<S extends OrmDaoCollection<S>> extends Ja
      */
     public boolean canLimitAndOffset() {
         return canLimitAndOffset;
+    }
+
+    /**
+     * The clock that DAOs use for timestamps they maintain themselves, e.g. the modification date, see
+     * {@link com.eischet.janitor.orm.JanitorOrm.MetaData#MODIFIED_FIELD}. Override this in tests to get reproducible values.
+     *
+     * @return the clock, by default the system clock in the default time zone
+     */
+    public @NotNull Clock getClock() {
+        return Clock.systemDefaultZone();
     }
 
     /**

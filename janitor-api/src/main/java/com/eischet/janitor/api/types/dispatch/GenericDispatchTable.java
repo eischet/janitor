@@ -591,7 +591,8 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
                 JsonType.NUMBER, null,
                 NullableGetter.of(getter),
                 null)
-                .setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.INTEGER);
+                .setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.INTEGER)
+                .setMetaData(HOST_NULLABLE, false);
     }
 
     /**
@@ -634,7 +635,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
                 null,
                 NullableGetter.of(getter),
                 NullableSetter.guard(setter)
-        ).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.INTEGER);
+        ).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.INTEGER).setMetaData(HOST_NULLABLE, false);
     }
 
     /**
@@ -949,7 +950,8 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
                 null,
                 NullableGetter.of(getter),
                 null)
-                .setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.BOOLEAN);
+                .setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.BOOLEAN)
+                .setMetaData(HOST_NULLABLE, false);
     }
 
     /**
@@ -994,7 +996,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
                 NullableSetter.guard(setter)
         )
                 .setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.BOOLEAN)
-                .setMetaData(Janitor.MetaData.HOST_NULLABLE, true)
+                .setMetaData(HOST_NULLABLE, false)
                 ;
     }
 

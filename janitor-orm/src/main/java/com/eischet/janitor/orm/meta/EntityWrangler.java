@@ -128,11 +128,11 @@ public interface EntityWrangler<T extends OrmEntity, U extends Uplink> extends W
     }
 
     /**
-     * JSON handling for a reference: always the short code of the target, or {@code null} for no reference. Reading goes
-     * through the {@code expander}, i.e. it is the same as a script assigning that short code.
+     * JSON handling for a reference: the short code of the target, or {@code null} for no reference. Reading goes
+     * through the {@code expander}, i.e. it is the same as a script assigning that short code (or, for a number, that id).
      * <p>
-     * Writing a reference to something without a short code is an error. A reference to an id that points to nothing (any
-     * more) is written as {@code null}.
+     * A target without a short code (e.g. a table without a key column) is written as its id, see {@link ForeignKeys#keyOrIdOf}.
+     * A reference to an id that points to nothing (any more) is written as {@code null}.
      * </p>
      */
     default <V extends JanitorObject> @NotNull JsonAdapter<V> keyJsonAdapter(final @NotNull String propertyName,
@@ -142,11 +142,13 @@ public interface EntityWrangler<T extends OrmEntity, U extends Uplink> extends W
         return new JsonAdapter<>() {
             @Override
             public void write(final JsonOutputStream stream, final V instance) throws Exception {
-                final String key = ForeignKeys.keyOf(getter.get(instance));
-                if (key == null) {
+                final Object reference = ForeignKeys.keyOrIdOf(getter.get(instance));
+                if (reference == null) {
                     stream.nullValue();
+                } else if (reference instanceof Long id) {
+                    stream.value(id.longValue());
                 } else {
-                    stream.value(key);
+                    stream.value((String) reference);
                 }
             }
 
@@ -159,8 +161,10 @@ public interface EntityWrangler<T extends OrmEntity, U extends Uplink> extends W
                     value = Janitor.NULL;
                 } else if (token == JsonTokenType.STRING) {
                     value = Janitor.getBuiltins().nullableString(stream.nextString());
+                } else if (token == JsonTokenType.NUMBER) {
+                    value = Janitor.integer(stream.nextLong());
                 } else {
-                    throw new JsonException("the reference '" + propertyName + "' must be a short code or null, at " + stream.getPath());
+                    throw new JsonException("the reference '" + propertyName + "' must be a short code, an id or null, at " + stream.getPath());
                 }
                 setter.set(instance, expander.expandValue(instance, value));
             }
@@ -198,7 +202,7 @@ public interface EntityWrangler<T extends OrmEntity, U extends Uplink> extends W
      * JSON handling for a list of references: an array of the targets' short codes. Reading goes through the {@code expander}
      * for each code; {@code null} and blank entries are dropped, and {@code null} for the whole array means an empty list.
      * <p>
-     * As with {@link #keyJsonAdapter}, writing a reference to something without a short code is an error; a reference to an
+     * As with {@link #keyJsonAdapter}, a target without a short code is written as its id; a reference to an
      * id that points to nothing (any more) is left out.
      * </p>
      */
@@ -211,9 +215,11 @@ public interface EntityWrangler<T extends OrmEntity, U extends Uplink> extends W
             public void write(final JsonOutputStream stream, final V instance) throws Exception {
                 stream.beginArray();
                 for (final ForeignKey<T> reference : getter.get(instance)) {
-                    final String key = ForeignKeys.keyOf(reference);
-                    if (key != null) {
-                        stream.value(key);
+                    final Object target = ForeignKeys.keyOrIdOf(reference);
+                    if (target instanceof Long id) {
+                        stream.value(id.longValue());
+                    } else if (target != null) {
+                        stream.value((String) target);
                     }
                 }
                 stream.endArray();
@@ -235,8 +241,10 @@ public interface EntityWrangler<T extends OrmEntity, U extends Uplink> extends W
                             if (!reference.isNull()) {
                                 references.add(reference);
                             }
+                        } else if (token == JsonTokenType.NUMBER) {
+                            references.add(expander.expandValue(instance, Janitor.integer(stream.nextLong())));
                         } else {
-                            throw new JsonException("the references in '" + propertyName + "' must be short codes, at " + stream.getPath());
+                            throw new JsonException("the references in '" + propertyName + "' must be short codes or ids, at " + stream.getPath());
                         }
                     }
                     stream.endArray();

@@ -256,6 +256,33 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
 
 
     /**
+     * Finds all join records where a column has the given value, e.g. all memberships of one user.
+     * @param conn the database connection
+     * @param columnName the column
+     * @param id the value
+     * @return the join records
+     * @throws DatabaseError on database errors
+     */
+    public @NotNull @Unmodifiable List<T> findByColumnValue(final @NotNull DatabaseConnection conn, final @NotNull String columnName, final long id) throws DatabaseError {
+        return List.copyOf(findByColumn(conn, columnName, id));
+    }
+
+    /**
+     * @return the columns that make up the primary key of the join table
+     */
+    public @NotNull @Unmodifiable List<String> getPrimaryKeyColumns() {
+        return primaryKeyColumns;
+    }
+
+    /**
+     * @param field the name of a field of the join records
+     * @return the column that the field is mapped to, or null if there is none (also: not in the schema version of the collection)
+     */
+    public @Nullable String getColumnForField(final @NotNull String field) {
+        return columnForField.get(field);
+    }
+
+    /**
      * Inserts a join record.
      * @param conn the database connection
      * @param record the join record
