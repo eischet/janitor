@@ -70,6 +70,7 @@
         <module>janitor-dbxs</module>
         <module>janitor-orm</module>
         <module>janitor-orm-rest</module>
+        <module>janitor-orm-rest-servlet</module>
         <module>janitor-generator</module>
         <module>janitor-modules</module>
         <module>janitor-modules-common</module>
@@ -238,6 +239,16 @@
                 <groupId>com.eischet.janitor</groupId>
                 <artifactId>janitor-orm-rest</artifactId>
                 <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eischet.janitor</groupId>
+                <artifactId>janitor-orm-rest-servlet</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.servlet</groupId>
+                <artifactId>jakarta.servlet-api</artifactId>
+                <version>6.1.0</version>
             </dependency>
             <dependency>
                 <groupId>com.eischet.janitor</groupId>

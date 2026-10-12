@@ -45,6 +45,15 @@
         </dependency>
         <dependency>
             <groupId>com.eischet.janitor</groupId>
+            <artifactId>janitor-orm-rest-servlet</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.eischet.janitor</groupId>
             <artifactId>janitor-generator</artifactId>
         </dependency>
         <dependency>
