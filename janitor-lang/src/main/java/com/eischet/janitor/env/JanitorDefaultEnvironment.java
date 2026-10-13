@@ -26,15 +26,15 @@ import com.eischet.janitor.api.types.builtin.JList;
 import com.eischet.janitor.api.types.builtin.JMap;
 import com.eischet.janitor.api.types.builtin.JNull;
 import com.eischet.janitor.api.util.ObjectUtilities;
-import com.eischet.janitor.json.impl.GsonInputStream;
-import com.eischet.janitor.json.impl.GsonOutputStream;
-import com.eischet.janitor.json.impl.JsonExportControls;
 import com.eischet.janitor.logging.JanitorLogger;
 import com.eischet.janitor.runtime.DateTimeUtilities;
 import com.eischet.janitor.runtime.JanitorSemantics;
 import com.eischet.janitor.api.modules.ModuleResolver;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonInputStream;
+import com.eischet.janitor.toolbox.json.api.JsonReadMode;
+import com.eischet.janitor.toolbox.json.api.JsonStreamFactory;
+import com.eischet.janitor.toolbox.json.api.JsonWriteOptions;
 import com.eischet.janitor.toolbox.json.api.JsonWriter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -60,6 +60,7 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
     private final List<JanitorModuleRegistration> moduleRegistrations = new ArrayList<>();
     private final List<ModuleResolver> resolvers = new ArrayList<>();
     protected @Nullable Scope.ImplicitObjectProvider implicitTemplateObjectProvider = null;
+    private volatile @Nullable JsonStreamFactory jsonStreams = null;
 
     private final Scope builtinScope = Scope.createBuiltinScope(this, Location.virtual(ScriptSource.builtin()));
 
@@ -205,14 +206,32 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
 
     @Override
     public String writeJson(final JsonWriter writer) throws JsonException {
-        final GsonOutputStream.GsonStringOut out = new GsonOutputStream.GsonStringOut(JsonExportControls.standard());
-        writer.writeJson(out);
-        return out.getString();
+        return getJsonStreams().write(JsonWriteOptions.COMPACT, writer);
     }
 
     @Override
     public @NotNull JsonInputStream getLenientJsonConsumer(final String json) {
-        return GsonInputStream.lenient(json);
+        return getJsonStreams().reader(json, JsonReadMode.LENIENT);
+    }
+
+    @Override
+    public @NotNull JsonStreamFactory getJsonStreams() {
+        JsonStreamFactory factory = jsonStreams;
+        if (factory == null) {
+            // a benign race: factories are stateless, so creating one twice does no harm
+            factory = createJsonStreamFactory();
+            jsonStreams = factory;
+        }
+        return factory;
+    }
+
+    /**
+     * Creates the factory for all JSON streams of this environment; called once, on first use.
+     * Override this to choose an implementation, e.g. {@code return JsonStreamFactory.named("jackson");}.
+     * @return the factory; by default, {@link JsonStreamFactory#defaultFactory()}
+     */
+    protected @NotNull JsonStreamFactory createJsonStreamFactory() {
+        return JsonStreamFactory.defaultFactory();
     }
 
 

@@ -4,7 +4,6 @@
 package com.eischet.janitor.modules.httpclient;
 
 import com.eischet.janitor.api.Janitor;
-import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.JanitorException;
 import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
@@ -17,12 +16,9 @@ import com.eischet.janitor.api.types.builtin.JMap;
 import com.eischet.janitor.api.types.builtin.JString;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
-import com.eischet.janitor.json.impl.GsonOutputStream;
-import com.eischet.janitor.json.impl.JsonExportControls;
 import com.eischet.janitor.logging.JanitorLogger;
 import com.eischet.janitor.toolbox.json.api.JsonException;
-import com.eischet.janitor.toolbox.json.api.JsonExportable;
-import com.eischet.janitor.toolbox.json.api.JsonOutputSupport;
+import com.eischet.janitor.toolbox.json.api.JsonWriteOptions;
 import com.eischet.janitor.toolbox.json.api.JsonWriter;
 import com.eischet.janitor.toolbox.memory.RefCounter;
 import com.eischet.janitor.toolbox.strings.StringHelpers;
@@ -717,28 +713,10 @@ public class JanitorHttpClient extends JanitorComposed<JanitorHttpClient> implem
         if (arg instanceof JString str) {
             return str.janitorGetHostValue();
         }
-        if (arg instanceof JsonExportable exportable) {
+        if (arg instanceof JsonWriter jw) { // includes every JsonExportable
             try {
-                if (prettyJson) {
-                    return exportable.exportToJson(new PrettyEnvWrapper(proc.getRuntime().getEnvironment()));
-                } else {
-                    return exportable.exportToJson(proc.getRuntime().getEnvironment());
-                }
-            } catch (JsonException e) {
-                throw new JanitorArgumentException(proc, "failed to convert to JSON: " + arg + " [" + simpleClassNameOf(arg) + "]", e);
-            }
-        }
-        if (arg instanceof JsonWriter jw) {
-            try {
-                if (prettyJson) {
-                    final GsonOutputStream.GsonStringOut out = new GsonOutputStream.GsonStringOut(JsonExportControls.pretty());
-                    jw.writeJson(out);
-                    return out.getString();
-                } else {
-                    final GsonOutputStream.GsonStringOut out = new GsonOutputStream.GsonStringOut(JsonExportControls.standard());
-                    jw.writeJson(out);
-                    return out.getString();
-                }
+                final JsonWriteOptions options = prettyJson ? JsonWriteOptions.PRETTY : JsonWriteOptions.COMPACT;
+                return proc.getRuntime().getEnvironment().getJsonStreams().write(options, jw);
             } catch (JsonException e) {
                 throw new JanitorArgumentException(proc, "failed to convert to JSON: " + arg + " [" + simpleClassNameOf(arg) + "]", e);
             }
@@ -829,19 +807,6 @@ public class JanitorHttpClient extends JanitorComposed<JanitorHttpClient> implem
             log.info("auto-closing HTTP client (janitorCleanup)");
         }
         close();
-    }
-
-    private static class PrettyEnvWrapper implements JsonOutputSupport {
-        public PrettyEnvWrapper(final JanitorEnvironment environment) {
-        }
-
-        @Override
-        public String writeJson(final JsonWriter writer) throws JsonException {
-            final GsonOutputStream.GsonStringOut out = new GsonOutputStream.GsonStringOut(JsonExportControls.pretty());
-            writer.writeJson(out);
-            return out.getString();
-        }
-
     }
 
     /** The response to a request, from which errors can be derived. */

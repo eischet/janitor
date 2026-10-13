@@ -15,11 +15,9 @@ import java.util.List;
 public interface JsonOutputStream {
 
     /**
-     * Checks whether an object is configured to be left out of the output.
-     * @param object the object, e.g. a field
-     * @return true if the object is omitted
+     * @return the options that control how JSON is written
      */
-    boolean isOmitting(final Object object);
+    @NotNull JsonWriteOptions options();
 
     /**
      * Closes the writer.
@@ -123,13 +121,19 @@ public interface JsonOutputStream {
      */
     JsonOutputStream value(Date value) throws JsonException;
     /**
-     * Writes a property with a string value.
+     * Writes a property with a string value, unless the options say that the value is left out.
      * @param name the name of the property
-     * @param value the value
+     * @param value the value, may be null
      * @return this
      * @throws JsonException on errors
      */
-    JsonOutputStream pair(final String name, String value) throws JsonException;
+    default JsonOutputStream pair(final String name, final @Nullable String value) throws JsonException {
+        if (options().omits(value)) {
+            return this;
+        }
+        key(name);
+        return value == null ? nullValue() : value(value);
+    }
 
 
     /**
@@ -147,14 +151,14 @@ public interface JsonOutputStream {
     }
 
     /**
-     * Writes a property, unless the value is null.
+     * Writes a property, unless the value is null, or empty and the options leave out empty values.
      * @param key the name of the property
      * @param value the value, may be null
      * @return this
      * @throws JsonException on errors
      */
     default JsonOutputStream optional(final @NotNull String key, final @Nullable String value) throws JsonException {
-        if (value != null) {
+        if (value != null && !options().omits(value)) {
             this.key(key).value(value);
         }
         return this;

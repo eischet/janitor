@@ -17,6 +17,7 @@ import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonInputStream;
 import com.eischet.janitor.toolbox.json.api.JsonOutputSupport;
+import com.eischet.janitor.toolbox.json.api.JsonStreamFactory;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -76,6 +77,14 @@ public interface JanitorEnvironment extends JsonOutputSupport {
      * @return a JSON input stream
      */
     @NotNull JsonInputStream getLenientJsonConsumer(final @Language("JSON") String json);
+
+    /**
+     * Returns the factory that creates all JSON streams for this environment.
+     * @return the JSON stream factory; by default, {@link JsonStreamFactory#defaultFactory()}
+     */
+    default @NotNull JsonStreamFactory getJsonStreams() {
+        return JsonStreamFactory.defaultFactory();
+    }
 
 
     /**

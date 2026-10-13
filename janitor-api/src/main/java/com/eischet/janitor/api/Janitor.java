@@ -13,12 +13,19 @@ import com.eischet.janitor.api.types.builtin.*;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.toolbox.json.api.JsonException;
+import com.eischet.janitor.toolbox.json.api.JsonReadMode;
+import com.eischet.janitor.toolbox.json.api.JsonReader;
+import com.eischet.janitor.toolbox.json.api.JsonStreamFactory;
 import com.eischet.janitor.toolbox.json.api.JsonType;
+import com.eischet.janitor.toolbox.json.api.JsonWriteOptions;
+import com.eischet.janitor.toolbox.json.api.JsonWriter;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
+import java.io.Reader;
+import java.io.Writer;
 import java.math.BigDecimal;
 import java.time.DateTimeException;
 import java.time.LocalDate;
@@ -203,13 +210,96 @@ public final class Janitor {
         return getBuiltins().list();
     }
 
+    /**
+     * @return the current environment's JSON stream factory
+     */
+    public static @NotNull JsonStreamFactory getJsonStreams() {
+        return current().getJsonStreams();
+    }
+
+    /**
+     * Writes compact JSON to a string.
+     * @param writer writes the content, e.g. any {@link com.eischet.janitor.toolbox.json.api.JsonExportable} or {@code obj::writeJson}
+     * @return the JSON text
+     * @throws JsonException on errors
+     */
+    public static @NotNull @Language("JSON") String writeJson(final @NotNull JsonWriter writer) throws JsonException {
+        return writeJson(JsonWriteOptions.COMPACT, writer);
+    }
+
+    /**
+     * Writes JSON to a string.
+     * @param options controls how JSON is written, e.g. {@link JsonWriteOptions#PRETTY}
+     * @param writer writes the content, e.g. any {@link com.eischet.janitor.toolbox.json.api.JsonExportable} or {@code obj::writeJson}
+     * @return the JSON text
+     * @throws JsonException on errors
+     */
+    public static @NotNull @Language("JSON") String writeJson(final @NotNull JsonWriteOptions options, final @NotNull JsonWriter writer) throws JsonException {
+        return getJsonStreams().write(options, writer);
+    }
+
+    /**
+     * Writes JSON to a writer, which is flushed, but not closed.
+     * @param options controls how JSON is written, e.g. {@link JsonWriteOptions#PRETTY}
+     * @param target the target, e.g. an entry in a zip file
+     * @param writer writes the content
+     * @throws JsonException on errors
+     */
+    public static void writeJson(final @NotNull JsonWriteOptions options, final @NotNull Writer target, final @NotNull JsonWriter writer) throws JsonException {
+        getJsonStreams().write(options, target, writer);
+    }
+
+    /**
+     * Reads JSON text leniently.
+     * @param json the JSON text
+     * @param reader reads the content, e.g. {@code map::readJson}
+     * @throws JsonException on errors
+     */
+    public static void readJson(final @NotNull @Language("JSON") String json, final @NotNull JsonReader reader) throws JsonException {
+        readJson(JsonReadMode.LENIENT, json, reader);
+    }
+
+    /**
+     * Reads JSON text.
+     * @param mode how strictly to parse
+     * @param json the JSON text
+     * @param reader reads the content, e.g. {@code map::readJson}
+     * @throws JsonException on errors
+     */
+    public static void readJson(final @NotNull JsonReadMode mode, final @NotNull @Language("JSON") String json, final @NotNull JsonReader reader) throws JsonException {
+        getJsonStreams().read(mode, json, reader);
+    }
+
+    /**
+     * Reads JSON from a reader, which is not closed.
+     * @param mode how strictly to parse
+     * @param source the source
+     * @param reader reads the content, e.g. {@code map::readJson}
+     * @throws JsonException on errors
+     */
+    public static void readJson(final @NotNull JsonReadMode mode, final @NotNull Reader source, final @NotNull JsonReader reader) throws JsonException {
+        getJsonStreams().read(mode, source, reader);
+    }
+
+    /**
+     * Parses JSON text to a map, using the current environment.
+     * @param json the JSON text
+     * @return the map
+     * @throws JsonException if the JSON is invalid
+     */
     @NotNull
-    JMap parseJsonToMap(@Language("JSON") final String json) throws JsonException {
+    public static JMap parseJsonToMap(@Language("JSON") final String json) throws JsonException {
         return current().parseJsonToMap(json);
     }
 
+    /**
+     * Parses JSON text to a list, using the current environment.
+     * @param json the JSON text
+     * @return the list
+     * @throws JsonException if the JSON is invalid
+     */
     @NotNull
-    JList parseJsonToList(@Language("JSON") final String json) throws JsonException {
+    public static JList parseJsonToList(@Language("JSON") final String json) throws JsonException {
         return current().parseJsonToList(json);
     }
 

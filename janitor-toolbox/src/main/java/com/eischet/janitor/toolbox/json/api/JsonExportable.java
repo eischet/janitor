@@ -7,8 +7,11 @@ package com.eischet.janitor.toolbox.json.api;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 
-/** Implemented by objects that can write themselves as JSON, as a list, an object or a single value. */
-public interface JsonExportable {
+/**
+ * Implemented by objects that can write themselves as JSON, as a list, an object or a single value.
+ * Being a {@link JsonWriter}, an exportable can be passed directly wherever a writer is expected.
+ */
+public interface JsonExportable extends JsonWriter {
 
     /**
      * @return true if this is written as a JSON array
@@ -23,6 +26,8 @@ public interface JsonExportable {
      */
     boolean isValue();
     /**
+     * Only the {@code optional(key, ...)} helpers of {@link JsonOutputStream} use this to leave out a property;
+     * when written directly, an exportable always produces JSON, even if it is empty.
      * @return true if this has its default value or is empty, so that it may be left out
      */
     boolean isDefaultOrEmpty();
@@ -32,6 +37,7 @@ public interface JsonExportable {
      * @param producer the target
      * @throws JsonException if this cannot be written
      */
+    @Override
     void writeJson(JsonOutputStream producer) throws JsonException;
 
     /**

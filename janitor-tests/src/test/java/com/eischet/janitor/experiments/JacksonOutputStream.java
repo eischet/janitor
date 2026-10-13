@@ -4,9 +4,9 @@
 package com.eischet.janitor.experiments;
 
 import com.eischet.janitor.json.impl.DateTimeUtils;
-import com.eischet.janitor.json.impl.JsonExportControls;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
+import com.eischet.janitor.toolbox.json.api.JsonWriteOptions;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import org.jetbrains.annotations.NotNull;
@@ -22,38 +22,34 @@ public class JacksonOutputStream implements JsonOutputStream {
 
     /*
     public static JacksonOutputStream prettyWriter(final OutputStreamWriter outputStreamWriter) {
-        return new GsonOutputStream.GsonStreamOut(JsonExportControls.pretty(), outputStreamWriter);
+        return new GsonOutputStream.GsonStreamOut(JsonWriteOptions.PRETTY, outputStreamWriter);
     }
 
-    public static GsonOutputStream.GsonStringOut stringWriter(final JsonExportControls jsonExportControls) {
-        return new GsonOutputStream.GsonStringOut(jsonExportControls);
+    public static GsonOutputStream.GsonStringOut stringWriter(final JsonWriteOptions options) {
+        return new GsonOutputStream.GsonStringOut(options);
     }
 
      */
 
-    protected final JsonExportControls jsonExportControls;
+    protected final JsonWriteOptions options;
     protected final Writer sw;
     private final JsonFactory factory;
     private final JsonGenerator generator;
     protected int level = 0;
 
-    protected JacksonOutputStream(final JsonExportControls jsonExportControls, final Writer sw) throws IOException {
+    protected JacksonOutputStream(final JsonWriteOptions options, final Writer sw) throws IOException {
         this.factory = JsonFactory.builder().build(); // LATER: options...
-        this.jsonExportControls = jsonExportControls != null ? jsonExportControls : JsonExportControls.standard();
+        this.options = options != null ? options : JsonWriteOptions.COMPACT;
         this.sw = sw;
-        // if (jsonExportControls != null && jsonExportControls.isPretty()) {
+        // if (options != null && options.isPretty()) {
             // jw.setIndent("  ");
         //}
         this.generator = factory.createGenerator(sw);
     }
 
     @Override
-    public boolean isOmitting(final Object object) {
-        return jsonExportControls.isOmitting(object);
-    }
-
-    public @NotNull JsonExportControls exportControls() {
-        return jsonExportControls;
+    public @NotNull JsonWriteOptions options() {
+        return options;
     }
 
     @Override
@@ -64,12 +60,6 @@ public class JacksonOutputStream implements JsonOutputStream {
     @Override
     public JsonOutputStream value(Date value) throws JsonException {
         return value(DateTimeUtils.toJsonZulu(DateTimeUtils.convert(value)));
-    }
-
-    @Override
-    public JsonOutputStream pair(final String name, String value) throws JsonException {
-        // LATER: if the export controls say that empty objects should not be emitted, suppress both!
-        return key(name).value(value);
     }
 
     @Override
@@ -217,8 +207,8 @@ public class JacksonOutputStream implements JsonOutputStream {
 
     public static class JacksonStringOut extends JacksonOutputStream {
 
-        public JacksonStringOut(final JsonExportControls jsonExportControls) throws IOException {
-            super(jsonExportControls, new StringWriter());
+        public JacksonStringOut(final JsonWriteOptions options) throws IOException {
+            super(options, new StringWriter());
         }
 
         public String getString() {
@@ -228,7 +218,7 @@ public class JacksonOutputStream implements JsonOutputStream {
     }
 
     public static class JacksonStreamOut extends JacksonOutputStream {
-        public JacksonStreamOut(final JsonExportControls pretty, final OutputStreamWriter outputStreamWriter) throws IOException {
+        public JacksonStreamOut(final JsonWriteOptions pretty, final OutputStreamWriter outputStreamWriter) throws IOException {
             super(pretty, outputStreamWriter);
         }
     }

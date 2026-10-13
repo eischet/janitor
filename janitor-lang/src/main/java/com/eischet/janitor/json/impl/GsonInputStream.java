@@ -5,6 +5,7 @@ package com.eischet.janitor.json.impl;
 
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonInputStream;
+import com.eischet.janitor.toolbox.json.api.JsonReadMode;
 import com.eischet.janitor.toolbox.json.api.JsonTokenType;
 import com.google.gson.Strictness;
 import com.google.gson.stream.JsonReader;
@@ -38,10 +39,7 @@ public class GsonInputStream implements JsonInputStream {
      * @return a new JsonInputStream
      */
     public static GsonInputStream lenient(final String source) {
-        final StringReader sr = new StringReader(source);
-        final JsonReader reader = new JsonReader(sr);
-        reader.setStrictness(Strictness.LENIENT); // old: reader.setLenient(true);
-        return new GsonInputStream(reader, source);
+        return of(source, JsonReadMode.LENIENT);
     }
 
     /**
@@ -50,9 +48,32 @@ public class GsonInputStream implements JsonInputStream {
      * @return a new JsonInputStream
      */
     public static JsonInputStream lenient(final Reader sr) {
-        final JsonReader reader = new JsonReader(sr);
-        reader.setStrictness(Strictness.LENIENT); // old: reader.setLenient(true);
-        return new GsonInputStream(reader, null);
+        return of(sr, JsonReadMode.LENIENT);
+    }
+
+    /**
+     * Create a new JsonInputStream from a JSON string.
+     * @param source JSON text
+     * @param mode how strictly to parse
+     * @return a new JsonInputStream
+     */
+    public static GsonInputStream of(final String source, final JsonReadMode mode) {
+        return new GsonInputStream(configure(new JsonReader(new StringReader(source)), mode), source);
+    }
+
+    /**
+     * Create a new JsonInputStream from a Reader that reads JSON.
+     * @param sr a reader
+     * @param mode how strictly to parse
+     * @return a new JsonInputStream
+     */
+    public static GsonInputStream of(final Reader sr, final JsonReadMode mode) {
+        return new GsonInputStream(configure(new JsonReader(sr), mode), null);
+    }
+
+    private static JsonReader configure(final JsonReader reader, final JsonReadMode mode) {
+        reader.setStrictness(mode == JsonReadMode.STRICT ? Strictness.STRICT : Strictness.LENIENT);
+        return reader;
     }
 
     /**

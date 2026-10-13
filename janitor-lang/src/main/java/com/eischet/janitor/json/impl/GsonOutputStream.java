@@ -5,6 +5,7 @@ package com.eischet.janitor.json.impl;
 
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
+import com.eischet.janitor.toolbox.json.api.JsonWriteOptions;
 import com.google.gson.stream.JsonWriter;
 import org.jetbrains.annotations.NotNull;
 
@@ -26,43 +27,51 @@ public abstract class GsonOutputStream implements JsonOutputStream {
      * @return the writer
      */
     public static GsonOutputStream prettyWriter(final OutputStreamWriter outputStreamWriter) {
-        return new GsonStreamOut(JsonExportControls.pretty(), outputStreamWriter);
+        return new GsonStreamOut(JsonWriteOptions.PRETTY, outputStreamWriter);
     }
 
     /**
      * Creates a writer that produces JSON in memory.
-     * @param jsonExportControls controls how the JSON is produced
+     * @param options controls how the JSON is produced
      * @return the writer
      */
-    public static GsonStringOut stringWriter(final JsonExportControls jsonExportControls) {
-        return new GsonStringOut(jsonExportControls);
+    public static GsonStringOut stringWriter(final JsonWriteOptions options) {
+        return new GsonStringOut(options);
     }
 
-    protected final JsonExportControls jsonExportControls;
+    protected final JsonWriteOptions options;
     protected final Writer sw;
     protected final JsonWriter jw;
     protected int level = 0;
 
-    protected GsonOutputStream(final JsonExportControls jsonExportControls, final Writer sw) {
-        this.jsonExportControls = jsonExportControls != null ? jsonExportControls : JsonExportControls.standard();
+    protected GsonOutputStream(final JsonWriteOptions options, final Writer sw) {
+        this.options = options != null ? options : JsonWriteOptions.COMPACT;
         this.sw = sw;
         this.jw = new JsonWriter(sw);
-
-        if (jsonExportControls != null && jsonExportControls.isPretty()) {
-            jw.setIndent("  ");
-        }
+        jw.setIndent(this.options.indent());
     }
 
     @Override
-    public boolean isOmitting(final Object object) {
-        return jsonExportControls.isOmitting(object);
+    public @NotNull JsonWriteOptions options() {
+        return options;
     }
 
     /**
-     * @return the controls that govern the export
+     * Writes a NaN or infinite number as the options say.
+     * @param value the number
+     * @return this
+     * @throws JsonException if the options say that such numbers are not allowed
      */
-    public @NotNull JsonExportControls exportControls() {
-        return jsonExportControls;
+    private JsonOutputStream nonFinite(final Number value) throws JsonException {
+        return switch (options.nonFinite()) {
+            case FAIL -> throw new JsonException("JSON cannot represent the number " + value);
+            case NULL -> nullValue();
+            case STRING -> value(value.toString());
+        };
+    }
+
+    private static boolean isNonFinite(final Number value) {
+        return (value instanceof Double d && !Double.isFinite(d)) || (value instanceof Float f && !Float.isFinite(f));
     }
 
     @Override
@@ -73,12 +82,6 @@ public abstract class GsonOutputStream implements JsonOutputStream {
     @Override
     public JsonOutputStream value(Date value) throws JsonException {
         return value(DateTimeUtils.toJsonZulu(DateTimeUtils.convert(value)));
-    }
-
-    @Override
-    public JsonOutputStream pair(final String name, String value) throws JsonException {
-        // LATER: if the export controls say that empty objects should not be emitted, suppress both!
-        return key(name).value(value);
     }
 
     @Override
@@ -156,6 +159,9 @@ public abstract class GsonOutputStream implements JsonOutputStream {
 
     @Override
     public JsonOutputStream value(final double value) throws JsonException {
+        if (!Double.isFinite(value)) {
+            return nonFinite(value);
+        }
         try {
             jw.value(value);
             return this;
@@ -166,6 +172,9 @@ public abstract class GsonOutputStream implements JsonOutputStream {
 
     @Override
     public JsonOutputStream value(final Number value) throws JsonException {
+        if (isNonFinite(value)) {
+            return nonFinite(value);
+        }
         try {
             jw.value(value);
             return this;
@@ -217,8 +226,8 @@ public abstract class GsonOutputStream implements JsonOutputStream {
     /** A JSON output stream that writes to a string. */
     public static class GsonStringOut extends GsonOutputStream {
 
-        public GsonStringOut(final JsonExportControls jsonExportControls) {
-            super(jsonExportControls, new StringWriter());
+        public GsonStringOut(final JsonWriteOptions options) {
+            super(options, new StringWriter());
         }
 
         /**
@@ -230,10 +239,10 @@ public abstract class GsonOutputStream implements JsonOutputStream {
 
     }
 
-    /** A JSON output stream that writes to an {@link OutputStreamWriter}. */
+    /** A JSON output stream that writes to a {@link Writer}. */
     public static class GsonStreamOut extends GsonOutputStream {
-        public GsonStreamOut(final JsonExportControls pretty, final OutputStreamWriter outputStreamWriter) {
-            super(pretty, outputStreamWriter);
+        public GsonStreamOut(final JsonWriteOptions options, final Writer target) {
+            super(options, target);
         }
     }
 
