@@ -1168,13 +1168,33 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
         this.logging = logging;
     }
 
+    private final java.util.concurrent.atomic.LongAdder lazyLoadHits = new java.util.concurrent.atomic.LongAdder();
+    private final java.util.concurrent.atomic.LongAdder lazyLoadDbLoads = new java.util.concurrent.atomic.LongAdder();
+
+    /** Counts a reference that was resolved from a cache; for subclasses with a cache of their own that answer {@link #lazyLoadById} themselves. */
+    protected final void countLazyLoadHit() {
+        lazyLoadHits.increment();
+    }
+
+    /** How many references to this entity were resolved from a cache, without opening a transaction. */
+    public long getLazyLoadHits() {
+        return lazyLoadHits.sum();
+    }
+
+    /** How many references to this entity needed a transaction (and usually a query) to be resolved. */
+    public long getLazyLoadDbLoads() {
+        return lazyLoadDbLoads.sum();
+    }
+
     @Override
     public @Nullable T lazyLoadById(final long id) {
         // A cache hit must not cost a connection: ask the cache before opening a transaction.
         final T cached = cache.findById(id);
         if (cached != null) {
+            countLazyLoadHit();
             return cached;
         }
+        lazyLoadDbLoads.increment();
         try {
             final @Nullable T result = getDataManager().callTransaction(conn -> findById(conn, id));
             if (logging != null) {
@@ -1191,8 +1211,10 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
         // A cache hit must not cost a connection: ask the cache before opening a transaction.
         final T cached = cache.findByKey(key);
         if (cached != null) {
+            countLazyLoadHit();
             return cached;
         }
+        lazyLoadDbLoads.increment();
         try {
             final @Nullable T result = getDataManager().callTransaction(conn -> findByKey(conn, key));
             if (logging != null) {
