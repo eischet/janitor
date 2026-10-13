@@ -24,7 +24,8 @@ public final class ForeignKeyString<T extends OrmEntity> implements ForeignKey<T
 
     private final @NotNull String key;
     private final @NotNull Dao<T> dao;
-    private T resolved;
+    /** volatile: resolving can happen on any thread, and the entity must be safely visible to all others. */
+    private volatile T resolved;
 
     public ForeignKeyString(final @NotNull String key, final @NotNull Dao<T> dao) {
         this.key = key;

@@ -1170,6 +1170,11 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
 
     @Override
     public @Nullable T lazyLoadById(final long id) {
+        // A cache hit must not cost a connection: ask the cache before opening a transaction.
+        final T cached = cache.findById(id);
+        if (cached != null) {
+            return cached;
+        }
         try {
             final @Nullable T result = getDataManager().callTransaction(conn -> findById(conn, id));
             if (logging != null) {
@@ -1183,6 +1188,11 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
 
     @Override
     public @Nullable T lazyLoadByKey(final String key) {
+        // A cache hit must not cost a connection: ask the cache before opening a transaction.
+        final T cached = cache.findByKey(key);
+        if (cached != null) {
+            return cached;
+        }
         try {
             final @Nullable T result = getDataManager().callTransaction(conn -> findByKey(conn, key));
             if (logging != null) {

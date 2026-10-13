@@ -22,7 +22,8 @@ public final class ForeignKeyInteger<T extends OrmEntity> implements ForeignKey<
 
     private final long id;
     private final Dao<T> dao;
-    private T resolved;
+    /** volatile: resolving can happen on any thread, and the entity must be safely visible to all others. */
+    private volatile T resolved;
 
     public ForeignKeyInteger(final long id, final Dao<T> dao) {
         this.id = id;

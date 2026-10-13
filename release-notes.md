@@ -6,6 +6,7 @@
 - orm: Extend PropertyHandle to OrmPropertyHandle for type-safe Java access to ORM-specific properties; improve filter
   searching by handling UPPER and lower case searches better.
 - dbxs: dialects support paging/limiting for H2, MySQL, Postgres now, too.
+- janitor-orm-rest: experimental support for RESTful access to ORM objects, auto-generated from your entity mappings.
 - deps: h2 2.5.252, install4j 13.1.1, templating-maven-plugin 3.1.1, jansi/jline 4.4.6, jersey (via docusign) 4.0.3,
   maven-resolver 2.0.24
 
