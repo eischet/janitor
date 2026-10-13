@@ -140,8 +140,8 @@ public class ArticlePagingTestCase extends JanitorTest {
     void paginationAddsTheIdAsLastSortCriterionOnlyWhenPaging() {
         assertEquals("order by article_name asc, article_id asc LIMIT ? OFFSET ?", orderByPart(sqlLimit.sqlFor(FilterQuery.from(all()).orderBy("name").withPage(1, 10))));
         assertEquals("order by article_name asc LIMIT ? OFFSET ?", orderByPart(sqlLimit.sqlFor(FilterQuery.from(all()).orderBy("name").withMaxRows(10))));
-        assertEquals("order by 2 LIMIT ? OFFSET ?", orderByPart(sqlLimit.sqlFor(FilterQuery.from(all()).withMaxRows(10))));
-        assertEquals("order by 2, article_id LIMIT ? OFFSET ?", orderByPart(sqlLimit.sqlFor(FilterQuery.from(all()).withPage(0, 10))));
+        assertEquals("order by article_key LIMIT ? OFFSET ?", orderByPart(sqlLimit.sqlFor(FilterQuery.from(all()).withMaxRows(10))));
+        assertEquals("order by article_key, article_id LIMIT ? OFFSET ?", orderByPart(sqlLimit.sqlFor(FilterQuery.from(all()).withPage(0, 10))));
     }
 
     @Test

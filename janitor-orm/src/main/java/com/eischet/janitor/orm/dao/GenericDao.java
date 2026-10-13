@@ -507,8 +507,8 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
 
     /**
      * Like {@link #findAll(DatabaseConnection, Integer)}, but skips the first rows, for paging. The offset needs a limit, which is the page size.
-     * Without an offset the result is not sorted (unless limited, see below); with a limit the rows are sorted by the second selected column
-     * (as before), and if there is an offset, by the ID column after that, so that pages do not overlap. To page through sorted rows, use
+     * Without a limit the result is not sorted; with a limit the rows are sorted by the key column, or by the ID if the table has no key,
+     * and if there is an offset, by the ID column after the key, so that pages do not overlap. To page through rows sorted otherwise, use
      * {@link #findByFilter} with {@link FilterQuery#orderBy(String)}.
      * <p>
      * On databases that cannot limit rows in SQL, the limit and offset are applied while reading, so rows before the end of the page are
@@ -545,9 +545,19 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
         return offset;
     }
 
-    /** The sort order of queries that did not ask for one. Paged queries get the ID as the last criterion, to make the order unambiguous. */
+    /**
+     * The sort order of queries that did not ask for one: by the key column if the table has one, by the ID otherwise. Paged queries
+     * sorted by the key get the ID as the last criterion, to make the order unambiguous (a key need not be unique on its own).
+     * The position of a column is never used: the second column may be a LOB, which some databases (Oracle) cannot sort by.
+     */
     private @NotNull String defaultOrderBy(final boolean paged) {
-        return paged ? "order by 2, " + getDialect().quoteColumn(idColumn) : "order by 2";
+        final DatabaseDialect dialect = getDialect();
+        if (keyColumn == null) {
+            return "order by " + dialect.quoteColumn(idColumn);
+        }
+        return paged
+                ? "order by " + dialect.quoteColumn(keyColumn) + ", " + dialect.quoteColumn(idColumn)
+                : "order by " + dialect.quoteColumn(keyColumn);
     }
 
     /**
