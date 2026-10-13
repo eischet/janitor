@@ -1,4 +1,4 @@
-# 0.9.66-SNAPSHOT
+# 0.9.66, 2026-10-13 (internal release only)
 
 - make JanitorEnvironment::adModule and addModuleResolver fluent, add some missing nullability annotations
 - make handling List<Long> properties more convenient
