@@ -1,4 +1,4 @@
-# 0.9.67, 2026-10-13 (internal release only)
+# 0.9.67, 2026-10-15 (internal release only)
 
 - json: new JsonWriteOptions (indent, NaN/Infinity handling, leaving out null/empty values) replace JsonExportControls,
   which is deprecated; JsonOutputStream.isOmitting has been removed.
@@ -6,6 +6,8 @@
   or by overriding JanitorDefaultEnvironment.createJsonStreamFactory()); new helpers Janitor.writeJson/readJson;
   JsonExportable now extends JsonWriter. Gson is still the only implementation.
 - Janitor.parseJsonToMap/parseJsonToList are now public static; they were package-private instance methods before.
+- improve handling of nullable object properties
+
 
 # 0.9.66, 2026-10-13 (internal release only)
 
