@@ -761,7 +761,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
      * @return a meta-data builder for further configuration
      */
     public PropertyHandle<T, JList> addListProperty(final @NotNull String name, final NullableGetter<T, @Nullable JList> getter) {
-        return internalAddProperty(name, instance -> getter.get(instance), new JsonAdapter<>() {
+        return internalAddProperty(name, instance -> Janitor.nullableObject(getter.get(instance)), new JsonAdapter<>() {
                     @Override
                     public void write(final JsonOutputStream stream, final T instance) throws Exception {
                         final JList list = getter.get(instance);
@@ -1293,7 +1293,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
      * @return a meta-data builder
      */
     public <X extends JanitorObject> PropertyHandle<T, X> addObjectProperty(final String name, final NullableGetter<T, @Nullable X> getter) {
-        return internalAddProperty(name, getter::get, adaptGetterOnly(name, getter), JsonType.OBJECT, null, getter, null).setMetaData(HOST_NULLABLE, true);
+        return internalAddProperty(name, instance -> Janitor.nullableObject(getter.get(instance)), adaptGetterOnly(name, getter), JsonType.OBJECT, null, getter, null).setMetaData(HOST_NULLABLE, true);
         // no jsonSupport when there's no setter!
     }
 
@@ -1307,7 +1307,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
      * @return a meta-data builder
      */
     public <X extends JanitorObject> PropertyHandle<T, X> addObjectProperty(final String name, final NullableGetter<T, @Nullable X> getter, final Dispatcher<X> dispatcher) {
-        return internalAddProperty(name, getter::get, adaptGetterOnly(name, getter), JsonType.OBJECT, dispatcher, getter, null).setMetaData(HOST_NULLABLE, true);
+        return internalAddProperty(name, instance -> Janitor.nullableObject(getter.get(instance)), adaptGetterOnly(name, getter), JsonType.OBJECT, dispatcher, getter, null).setMetaData(HOST_NULLABLE, true);
         // no jsonSupport when there's no setter!
     }
 
