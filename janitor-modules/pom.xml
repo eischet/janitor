@@ -22,6 +22,7 @@
         <module>files</module>
         <module>os</module>
         <module>mustang</module>
+        <module>msgraph</module>
         <module>commonmark</module>
         <module>docusign</module>
         <module>pdf</module>
