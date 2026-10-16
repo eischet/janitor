@@ -64,6 +64,7 @@
         <module>janitor-toolbox</module>
         <module>janitor-api</module>
         <module>janitor-lang</module>
+        <module>janitor-json-jackson</module>
         <module>janitor-demo</module>
         <module>janitor-jsr223</module>
         <module>janitor-maven-plugin</module>
@@ -207,6 +208,11 @@
             <dependency>
                 <groupId>com.eischet.janitor</groupId>
                 <artifactId>janitor-toolbox</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eischet.janitor</groupId>
+                <artifactId>janitor-json-jackson</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>

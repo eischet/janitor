@@ -101,8 +101,8 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
+            <groupId>com.eischet.janitor</groupId>
+            <artifactId>janitor-json-jackson</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

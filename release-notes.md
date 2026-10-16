@@ -4,6 +4,10 @@
   messages (application permissions via azure-identity), built on java.net.http instead of the Microsoft Graph SDK;
   results are Janitor objects (MailFolder, MailMessage, ...), usable from Java and scripts. Included in the REPL.
 - json: removed the deprecated JsonExportControls; use JsonWriteOptions.COMPACT / PRETTY instead.
+- json: new module janitor-json-jackson, a second JsonStreamFactory built on jackson-core only; put it on the class path
+  and select it with -Djanitor.json=jackson. It writes the same JSON as Gson; when reading, LENIENT follows the
+  JsonReadMode Javadoc exactly (unlike Gson). Gson remains the default. Size limits are each library's own defaults,
+  e.g. a nesting depth of 255 for Gson and 1000 for Jackson.
 - orm: new JanitorOrm.MetaData.NULL_REFERENCE_ID (per column) and OrmDaoCollection.getNullReferenceId() (default for all
   DAOs) for schemas that point "nowhere" to a system row instead of NULL, e.g. Assyst's id 0: references to nothing are
   written as that id, the id is read back as a null reference, and ISNULL/ISNOTNULL filters include it.
