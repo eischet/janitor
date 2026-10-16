@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.eischet.janitor.modules</groupId>
+        <artifactId>janitor-modules</artifactId>
+        <version>${revision}</version>
+    </parent>
+
+    <packaging>jar</packaging>
+    <artifactId>msgraph</artifactId>
+    <name>${project.groupId}:${project.artifactId}</name>
+    <description>Janitor module: Microsoft Graph mail client (mail folders and messages), built on java.net.http</description>
+
+    <dependencies>
+        <!-- authentication against Entra ID; the default netty HTTP client is replaced by the JDK one below -->
+        <dependency>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-identity</artifactId>
+            <version>${deps.azure-identity}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.azure</groupId>
+                    <artifactId>azure-core-http-netty</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!-- must use the same azure-core version as azure-identity (both 1.60.0 at the time of writing) -->
+        <dependency>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-core-http-jdk-httpclient</artifactId>
+            <version>${deps.azure-core-http-jdk-httpclient}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+    </dependencies>
+
+</project>
