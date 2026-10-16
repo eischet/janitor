@@ -74,7 +74,6 @@ public class DocusignEnvelope extends JanitorComposed<DocusignEnvelope> {
         DISPATCH.addStringProperty("signingLocation", self -> self.wrapped.getSigningLocation(), (self, value) -> self.wrapped.setSigningLocation(value));
         DISPATCH.addStringProperty("status", self -> self.wrapped.getStatus(), (self, value) -> self.wrapped.setStatus(value));
         DISPATCH.addStringProperty("statusChangedDateTime", self -> self.wrapped.getStatusChangedDateTime(), (self, value) -> self.wrapped.setStatusChangedDateTime(value));
-        DISPATCH.addStringProperty("statusDateTime", self -> self.wrapped.getStatusDateTime(), (self, value) -> self.wrapped.setStatusDateTime(value));
         DISPATCH.addStringProperty("templatesUri", self -> self.wrapped.getTemplatesUri(), (self, value) -> self.wrapped.setTemplatesUri(value));
         DISPATCH.addStringProperty("transactionId", self -> self.wrapped.getTransactionId(), (self, value) -> self.wrapped.setTransactionId(value));
         DISPATCH.addStringProperty("useDisclosure", self -> self.wrapped.getUseDisclosure(), (self, value) -> self.wrapped.setUseDisclosure(value));

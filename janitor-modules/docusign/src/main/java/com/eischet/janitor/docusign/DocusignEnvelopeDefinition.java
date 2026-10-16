@@ -81,7 +81,6 @@ public class DocusignEnvelopeDefinition extends JanitorComposed<DocusignEnvelope
         DISPATCHER.addStringProperty("signerCanSignOnMobile", self -> self.wrapped.getSignerCanSignOnMobile(), (self, value) -> self.wrapped.setSignerCanSignOnMobile(value));
         DISPATCHER.addStringProperty("signingLocation", self -> self.wrapped.getSigningLocation(), (self, value) -> self.wrapped.setSigningLocation(value));
         DISPATCHER.addStringProperty("statusChangedDateTime", self -> self.wrapped.getStatusChangedDateTime(), (self, value) -> self.wrapped.setStatusChangedDateTime(value));
-        DISPATCHER.addStringProperty("statusDateTime", self -> self.wrapped.getStatusDateTime(), (self, value) -> self.wrapped.setStatusDateTime(value));
         DISPATCHER.addStringProperty("templatesUri", self -> self.wrapped.getTemplatesUri(), (self, value) -> self.wrapped.setTemplatesUri(value));
         DISPATCHER.addStringProperty("transactionId", self -> self.wrapped.getTransactionId(), (self, value) -> self.wrapped.setTransactionId(value));
         DISPATCHER.addStringProperty("useDisclosure", self -> self.wrapped.getUseDisclosure(), (self, value) -> self.wrapped.setUseDisclosure(value));
