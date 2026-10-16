@@ -1,4 +1,4 @@
-# 0.9.68 (in progress)
+# 0.9.68, 2026-10-16 (internal release only)
 
 - experimental new module "msgraph" (com.eischet.janitor.modules:msgraph): a small Microsoft Graph client for mail folders and
   messages (application permissions via azure-identity), built on java.net.http instead of the Microsoft Graph SDK;
