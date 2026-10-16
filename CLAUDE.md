@@ -24,7 +24,13 @@ mvn -pl janitor-tests test -Dtest=JStringTestCase#basics
 
 # Build without running tests
 mvn -DskipTests package
+
+# Also run the integration tests (*IT.java, via failsafe); does not install anything
+mvn verify
+mvn -pl janitor-tests -am verify -Dit.test=MsGraphModuleIT
 ```
+
+`mvn package` is the normal build; it runs the unit tests but not the integration tests. Integration tests run from `verify` on, so before every install and deploy.
 
 No linter or auto-formatter is enforced. Follow 4-space indentation, braces on the same line, packages under `com.eischet.janitor.*`.
 
@@ -64,7 +70,7 @@ The grammar lives at `janitor-lang/src/main/antlr4/com/eischet/janitor/lang/Jani
 
 ## Testing Infrastructure
 
-Tests extend `JanitorTest` (abstract base in `janitor-tests`) which wires up `OutputCatchingTestRuntime` and `TestEnv`. Test classes use `*TestCase` or `*Test` suffixes. Use JUnit Jupiter for all new tests except in `janitor-maven-plugin` (JUnit 4).
+Tests extend `JanitorTest` (abstract base in `janitor-tests`) which wires up `OutputCatchingTestRuntime` and `TestEnv`. Test classes use `*TestCase` or `*Test` suffixes. Slow tests, and tests that need more than the JVM (e.g. a local HTTP server, which sandboxes may block), are integration tests named `*IT` and run by failsafe. Use JUnit Jupiter for all new tests except in `janitor-maven-plugin` (JUnit 4).
 
 `sample-scripts/` contains example Janitor scripts used by tests and documentation.
 
