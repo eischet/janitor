@@ -6,7 +6,7 @@ package com.eischet.janitor.modules.mustang;
 import com.eischet.janitor.api.types.builtin.JDate;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
-import com.eischet.janitor.json.impl.DateTimeUtils;
+import com.eischet.janitor.toolbox.time.DateTimeUtils;
 import org.mustangproject.Charge;
 
 /**

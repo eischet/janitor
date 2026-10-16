@@ -21,7 +21,7 @@ import java.util.List;
  */
 public interface JsonStreamFactory {
 
-    /** The system property that selects the default implementation by its {@link #name()}, e.g. "gson". */
+    /** The system property that selects the default implementation by its {@link #name()}, e.g. "native". */
     String SYSTEM_PROPERTY = "janitor.json";
 
     /**
@@ -34,7 +34,7 @@ public interface JsonStreamFactory {
 
     /**
      * Looks up an implementation by its name.
-     * @param name the name, e.g. "gson"
+     * @param name the name, e.g. "native"
      * @return the implementation
      * @throws IllegalArgumentException if there is no such implementation; the message lists the available ones
      */
@@ -50,7 +50,7 @@ public interface JsonStreamFactory {
     }
 
     /**
-     * @return a short, unique name, e.g. "gson"
+     * @return a short, unique name, e.g. "native"
      */
     @NotNull String name();
 

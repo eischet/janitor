@@ -19,8 +19,7 @@ public enum JsonReadMode {
      *     <li>{@code NaN}, {@code Infinity} and {@code -Infinity}</li>
      *     <li>a leading byte order mark</li>
      * </ul>
-     * Nothing beyond this list should be relied upon. The Gson implementation deviates for now: it rejects trailing
-     * commas in objects, reads a trailing comma in an array as an extra null, and accepts a few more oddities.
+     * Nothing beyond this list should be relied upon.
      */
     LENIENT
 

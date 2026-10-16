@@ -17,6 +17,9 @@
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip> <!-- this module contains unit tests only -->
         <maven.install.skip>true</maven.install.skip>
+        <jmh.version>1.37</jmh.version>
+        <!-- what the "bench" profile passes to JMH: a benchmark name pattern, optionally followed by JMH options -->
+        <jmh.args>Benchmark</jmh.args>
     </properties>
 
     <dependencies>
@@ -100,15 +103,23 @@
             <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- Gson is the reference implementation that the JSON stream tests compare against -->
         <dependency>
-            <groupId>com.eischet.janitor</groupId>
-            <artifactId>janitor-json-jackson</artifactId>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <version>2.5.252</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- benchmarks (*Benchmark.java), see the "bench" profile below -->
+        <dependency>
+            <groupId>org.openjdk.jmh</groupId>
+            <artifactId>jmh-core</artifactId>
+            <version>${jmh.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -118,6 +129,24 @@
     <!-- this module only contains tests: there is no JAR to build (and none to sign, install or deploy) -->
     <build>
         <plugins>
+            <!-- the JMH annotation processor generates the benchmark code; since JDK 23, processors must be named explicitly -->
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default-testCompile</id>
+                        <configuration>
+                            <annotationProcessorPaths>
+                                <path>
+                                    <groupId>org.openjdk.jmh</groupId>
+                                    <artifactId>jmh-generator-annprocess</artifactId>
+                                    <version>${jmh.version}</version>
+                                </path>
+                            </annotationProcessorPaths>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
                 <configuration>
@@ -168,5 +197,39 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <!--
+            Runs the JMH benchmarks instead of the tests, e.g.
+            mvn -pl janitor-tests -am -Pbench -DskipTests test
+            mvn -pl janitor-tests -am -Pbench -DskipTests test "-Djmh.args=JsonStreamsBenchmark.read -p impl=native"
+        -->
+        <profile>
+            <id>bench</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>3.6.3</version>
+                        <executions>
+                            <execution>
+                                <id>jmh</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>java</executable>
+                                    <classpathScope>test</classpathScope>
+                                    <commandlineArgs>-cp %classpath org.openjdk.jmh.Main ${jmh.args}</commandlineArgs>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>

@@ -4,8 +4,9 @@
 package com.eischet.janitor.internals;
 
 import com.eischet.janitor.JanitorTest;
-import com.eischet.janitor.json.impl.GsonJsonStreams;
-import com.eischet.janitor.json.jackson.JacksonJsonStreams;
+import com.eischet.janitor.json.gson.GsonJsonStreams;
+import com.eischet.janitor.toolbox.json.impl.NativeInputStream;
+import com.eischet.janitor.toolbox.json.impl.NativeJsonStreams;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonInputStream;
 import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
@@ -17,28 +18,38 @@ import com.eischet.janitor.toolbox.json.api.JsonWriteOptions.NonFinitePolicy;
 import com.eischet.janitor.toolbox.json.api.JsonWriter;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAdder;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Feeds the same input through the Gson and the Jackson JSON streams and compares the results.
- * Where Jackson deliberately differs from Gson, namely where Gson's LENIENT mode does not follow {@link JsonReadMode#LENIENT},
- * the expected Jackson result is given explicitly.
+ * Feeds the same input through every available JSON stream implementation and compares the results with Gson's,
+ * the implementation Janitor has always used.
+ * Where the others deliberately differ from Gson, namely where Gson's LENIENT mode does not follow {@link JsonReadMode#LENIENT},
+ * the expected result is given explicitly.
  */
 public class JsonStreamsComparisonTestCase extends JanitorTest {
 
+    /** The reference implementation. */
     private static final JsonStreamFactory GSON = JsonStreamFactory.named(GsonJsonStreams.NAME);
-    private static final JsonStreamFactory JACKSON = JsonStreamFactory.named(JacksonJsonStreams.NAME);
+    /** All implementations, including Gson. */
+    private static final List<JsonStreamFactory> ALL = JsonStreamFactory.available();
+    /** All implementations except Gson; these must follow {@link JsonReadMode} exactly. */
+    private static final List<JsonStreamFactory> OTHERS = ALL.stream().filter(json -> !json.name().equals(GsonJsonStreams.NAME)).toList();
 
     private static final String ERROR = "ERROR";
     private static final String BOM = String.valueOf((char) 0xFEFF);
@@ -68,10 +79,10 @@ public class JsonStreamsComparisonTestCase extends JanitorTest {
             BOM + "{\"a\":1}", "[1e400]"
     );
 
-    private record Difference(String json, JsonReadMode mode, String jackson) {
+    private record Difference(String json, JsonReadMode mode, String expected) {
     }
 
-    /** Where Jackson deliberately reads something other than Gson. */
+    /** Where the other implementations deliberately read something other than Gson. */
     private static final List<Difference> DIFFERENCES = List.of(
             // LENIENT accepts these as numbers; Gson reads them as unquoted strings
             new Difference("[NaN,Infinity,-Infinity]", JsonReadMode.LENIENT, "[n(NaN),n(Infinity),n(-Infinity),]"),
@@ -144,22 +155,37 @@ public class JsonStreamsComparisonTestCase extends JanitorTest {
         }
     }
 
+    /** Asserts that every implementation reads the text in the same way as Gson. */
     private static void assertSameResult(final String text, final JsonReadMode mode) {
-        assertEquals(dump(GSON, mode, text), dump(JACKSON, mode, text), () -> mode + ": " + text);
+        final String expected = dump(GSON, mode, text);
+        for (final JsonStreamFactory json : OTHERS) {
+            assertEquals(expected, dump(json, mode, text), () -> json.name() + ", " + mode + ": " + text);
+        }
+    }
+
+    /** Asserts that every implementation, including Gson, can or cannot read the text. */
+    private static void assertReadable(final String text, final JsonReadMode mode, final boolean readable) {
+        for (final JsonStreamFactory json : ALL) {
+            assertEquals(readable, !ERROR.equals(dump(json, mode, text)), () -> json.name() + ", " + mode + ": " + text);
+        }
     }
 
     @Test
     public void discovery() {
-        final List<String> names = JsonStreamFactory.available().stream().map(JsonStreamFactory::name).toList();
-        assertEquals(List.of(GsonJsonStreams.NAME, JacksonJsonStreams.NAME), names); // sorted by priority
-        assertInstanceOf(JacksonJsonStreams.class, JACKSON);
+        final List<String> names = ALL.stream().map(JsonStreamFactory::name).toList();
+        assertTrue(names.containsAll(List.of(GsonJsonStreams.NAME, NativeJsonStreams.NAME)), names::toString);
+        final List<JsonStreamFactory> sorted = ALL.stream()
+                .sorted(Comparator.comparingInt(JsonStreamFactory::priority).reversed().thenComparing(JsonStreamFactory::name))
+                .toList();
+        assertEquals(sorted, ALL);
+        assertInstanceOf(NativeJsonStreams.class, JsonStreamFactory.named(NativeJsonStreams.NAME));
     }
 
     @Test
     public void validDocuments() {
         for (final String text : VALID) {
             for (final JsonReadMode mode : JsonReadMode.values()) {
-                assertNotEquals(ERROR, dump(JACKSON, mode, text), () -> mode + ": " + text);
+                assertReadable(text, mode, true);
                 assertSameResult(text, mode);
             }
         }
@@ -168,15 +194,14 @@ public class JsonStreamsComparisonTestCase extends JanitorTest {
     @Test
     public void strictErrors() {
         for (final String text : STRICT_ERRORS) {
-            assertEquals(ERROR, dump(JACKSON, JsonReadMode.STRICT, text), text);
-            assertSameResult(text, JsonReadMode.STRICT);
+            assertReadable(text, JsonReadMode.STRICT, false);
         }
     }
 
     @Test
     public void lenientAdditions() {
         for (final String text : LENIENT_SAME) {
-            assertNotEquals(ERROR, dump(JACKSON, JsonReadMode.LENIENT, text), text);
+            assertReadable(text, JsonReadMode.LENIENT, true);
             assertSameResult(text, JsonReadMode.LENIENT);
         }
     }
@@ -184,9 +209,11 @@ public class JsonStreamsComparisonTestCase extends JanitorTest {
     @Test
     public void expectedDifferences() {
         for (final Difference difference : DIFFERENCES) {
-            final String jackson = dump(JACKSON, difference.mode(), difference.json());
-            assertEquals(difference.jackson(), jackson, () -> difference.mode() + ": " + difference.json());
-            assertNotEquals(dump(GSON, difference.mode(), difference.json()), jackson,
+            for (final JsonStreamFactory json : OTHERS) {
+                assertEquals(difference.expected(), dump(json, difference.mode(), difference.json()),
+                        () -> json.name() + ", " + difference.mode() + ": " + difference.json());
+            }
+            assertNotEquals(difference.expected(), dump(GSON, difference.mode(), difference.json()),
                     () -> "Gson no longer differs, so move this case: " + difference.mode() + ": " + difference.json());
         }
     }
@@ -194,7 +221,7 @@ public class JsonStreamsComparisonTestCase extends JanitorTest {
     @Test
     public void readingFromReader() throws JsonException {
         final String text = "{\"a\":[1,2,3],\"b\":\"x\"}";
-        for (final JsonStreamFactory json : List.of(GSON, JACKSON)) {
+        for (final JsonStreamFactory json : ALL) {
             final StringBuilder sb = new StringBuilder();
             final JsonInputStream in = json.reader(new StringReader(text), JsonReadMode.STRICT);
             dumpValue(in, sb);
@@ -203,24 +230,82 @@ public class JsonStreamsComparisonTestCase extends JanitorTest {
         }
     }
 
+    /** A reader that returns one character at a time, so that every token crosses buffer boundaries. */
+    private static final class TrickleReader extends StringReader {
+        TrickleReader(final String s) {
+            super(s);
+        }
+
+        @Override
+        public int read(final char[] buffer, final int offset, final int length) throws IOException {
+            return super.read(buffer, offset, Math.min(length, 1));
+        }
+    }
+
+    private static String dumpTrickling(final JsonStreamFactory json, final JsonReadMode mode, final String text) {
+        try {
+            final JsonInputStream in = json.reader(new TrickleReader(text), mode);
+            final StringBuilder sb = new StringBuilder();
+            dumpValue(in, sb);
+            if (in.peek() != JsonTokenType.END_DOCUMENT) {
+                sb.append(" +more");
+            }
+            in.close();
+            return sb.toString();
+        } catch (JsonException e) {
+            return ERROR;
+        }
+    }
+
+    @Test
+    public void readingInSmallChunks() throws JsonException {
+        final List<String> texts = new ArrayList<>(VALID);
+        texts.addAll(STRICT_ERRORS);
+        texts.addAll(LENIENT_SAME);
+        DIFFERENCES.forEach(difference -> texts.add(difference.json()));
+        texts.add(GSON.write(JsonWriteOptions.PRETTY, DOCUMENT));
+        texts.add("/* a\n * b */ {'a' : // c\n [1, 'x' , ] , }");
+        for (final String text : texts) {
+            for (final JsonReadMode mode : JsonReadMode.values()) {
+                for (final JsonStreamFactory json : ALL) {
+                    assertEquals(dump(json, mode, text), dumpTrickling(json, mode, text), () -> json.name() + ", " + mode + ": " + text);
+                }
+            }
+        }
+    }
+
+    @Test
+    public void nativeLimits() {
+        final JsonStreamFactory json = JsonStreamFactory.named(NativeJsonStreams.NAME);
+        final String deep = "[".repeat(NativeInputStream.MAX_DEPTH) + "]".repeat(NativeInputStream.MAX_DEPTH);
+        assertNotEquals(ERROR, dump(json, JsonReadMode.STRICT, deep));
+        assertEquals(ERROR, dump(json, JsonReadMode.STRICT, "[" + deep + "]"));
+        final String digits = "0." + "1".repeat(NativeInputStream.MAX_NUMBER_LENGTH - 2); // a finite double, as dump() reads doubles
+        assertNotEquals(ERROR, dump(json, JsonReadMode.STRICT, "[" + digits + "]"));
+        assertEquals(ERROR, dump(json, JsonReadMode.STRICT, "[" + digits + "1]"));
+    }
+
     /** Reads something from a stream; may throw a JsonException. */
     @FunctionalInterface
     private interface Conversion {
         Object apply(JsonInputStream in) throws JsonException;
     }
 
-    /** Applies the same conversion with both implementations, writing errors as {@link #ERROR}. */
-    private static void assertConversion(final String text, final Conversion conversion) {
-        final List<String> results = new ArrayList<>();
-        for (final JsonStreamFactory json : List.of(GSON, JACKSON)) {
-            try {
-                final JsonInputStream in = json.reader(text, JsonReadMode.STRICT);
-                results.add(String.valueOf(conversion.apply(in)));
-            } catch (JsonException e) {
-                results.add(ERROR);
-            }
+    /** Applies the conversion, writing errors as {@link #ERROR}. */
+    private static String convert(final JsonStreamFactory json, final String text, final Conversion conversion) {
+        try {
+            return String.valueOf(conversion.apply(json.reader(text, JsonReadMode.STRICT)));
+        } catch (JsonException e) {
+            return ERROR;
         }
-        assertEquals(results.get(0), results.get(1), text);
+    }
+
+    /** Applies the same conversion with every implementation and compares the results with Gson's. */
+    private static void assertConversion(final String text, final Conversion conversion) {
+        final String expected = convert(GSON, text, conversion);
+        for (final JsonStreamFactory json : OTHERS) {
+            assertEquals(expected, convert(json, text, conversion), () -> json.name() + ": " + text);
+        }
     }
 
     @Test
@@ -283,15 +368,17 @@ public class JsonStreamsComparisonTestCase extends JanitorTest {
 
     @Test
     public void paths() throws JsonException {
-        final JsonInputStream in = JACKSON.reader("{\"a\":[1,{\"b\":2}]}", JsonReadMode.STRICT);
-        assertEquals("$", in.getPath());
-        in.beginObject();
-        in.nextKey();
-        in.beginArray();
-        in.nextLong();
-        in.beginObject();
-        in.nextKey();
-        assertEquals("$.a[1].b", in.getPath());
+        for (final JsonStreamFactory json : ALL) {
+            final JsonInputStream in = json.reader("{\"a\":[1,{\"b\":2}]}", JsonReadMode.STRICT);
+            assertEquals("$", in.getPath(), json.name());
+            in.beginObject();
+            in.nextKey();
+            in.beginArray();
+            in.nextLong();
+            in.beginObject();
+            in.nextKey();
+            assertEquals("$.a[1].b", in.getPath(), json.name());
+        }
     }
 
     /** A number type that Gson does not know, so its toString() is checked. */
@@ -337,6 +424,14 @@ public class JsonStreamsComparisonTestCase extends JanitorTest {
         return sb.toString();
     }
 
+    /** Asserts that every implementation writes the same text as Gson. */
+    private static void assertSameOutput(final JsonWriteOptions options, final JsonWriter writer) throws JsonException {
+        final String expected = GSON.write(options, writer);
+        for (final JsonStreamFactory json : OTHERS) {
+            assertEquals(expected, json.write(options, writer), () -> json.name() + ", " + options);
+        }
+    }
+
     private static final JsonWriter DOCUMENT = out -> {
         out.beginObject();
         out.key("chars").value(allCharacters());
@@ -365,10 +460,10 @@ public class JsonStreamsComparisonTestCase extends JanitorTest {
     public void writing() throws JsonException {
         for (final JsonWriteOptions options : List.of(JsonWriteOptions.COMPACT, JsonWriteOptions.PRETTY, JsonWriteOptions.COMPACT.withIndent("\t"),
                 JsonWriteOptions.PRETTY.withEmpty(JsonWriteOptions.EmptyPolicy.OMIT_EMPTY))) {
+            assertSameOutput(options, DOCUMENT);
+            // and all of them read it back in the same way
             final String gson = GSON.write(options, DOCUMENT);
-            assertEquals(gson, JACKSON.write(options, DOCUMENT), options::toString);
-            // and both read it back in the same way
-            assertNotEquals(ERROR, dump(JACKSON, JsonReadMode.STRICT, gson));
+            assertReadable(gson, JsonReadMode.STRICT, true);
             assertSameResult(gson, JsonReadMode.STRICT);
         }
     }
@@ -381,7 +476,7 @@ public class JsonStreamsComparisonTestCase extends JanitorTest {
                 out -> out.beginArray().value(1L).beginArray().endArray().endArray());
         for (final JsonWriteOptions options : List.of(JsonWriteOptions.COMPACT, JsonWriteOptions.PRETTY)) {
             for (final JsonWriter writer : writers) {
-                assertEquals(GSON.write(options, writer), JACKSON.write(options, writer));
+                assertSameOutput(options, writer);
             }
         }
     }
@@ -392,9 +487,11 @@ public class JsonStreamsComparisonTestCase extends JanitorTest {
                 .value((Number) Float.POSITIVE_INFINITY).value((Number) Double.NaN).endArray();
         for (final NonFinitePolicy policy : List.of(NonFinitePolicy.NULL, NonFinitePolicy.STRING)) {
             final JsonWriteOptions options = JsonWriteOptions.COMPACT.withNonFinite(policy);
-            assertEquals(GSON.write(options, writer), JACKSON.write(options, writer));
+            assertSameOutput(options, writer);
         }
-        assertThrows(JsonException.class, () -> JACKSON.write(JsonWriteOptions.COMPACT, writer));
+        for (final JsonStreamFactory json : ALL) {
+            assertThrows(JsonException.class, () -> json.write(JsonWriteOptions.COMPACT, writer), json.name());
+        }
     }
 
     @Test
@@ -406,31 +503,189 @@ public class JsonStreamsComparisonTestCase extends JanitorTest {
                 out -> out.beginObject().value(1L),
                 out -> out.beginArray().endObject());
         for (final JsonWriter writer : bad) {
-            // Gson throws IllegalStateException or IllegalArgumentException for some of these, Jackson always JsonException
+            // Gson throws IllegalStateException or IllegalArgumentException for some of these, the others always JsonException
             assertThrows(RuntimeException.class, () -> GSON.write(JsonWriteOptions.COMPACT, writer));
-            assertThrows(JsonException.class, () -> JACKSON.write(JsonWriteOptions.COMPACT, writer));
+            for (final JsonStreamFactory json : OTHERS) {
+                assertThrows(JsonException.class, () -> json.write(JsonWriteOptions.COMPACT, writer), json.name());
+            }
         }
-        for (final JsonStreamFactory json : List.of(GSON, JACKSON)) {
+        for (final JsonStreamFactory json : ALL) {
             final JsonOutputStream incomplete = json.writer(JsonWriteOptions.COMPACT, new StringWriter());
             incomplete.beginArray();
             assertThrows(JsonException.class, incomplete::close, json.name());
         }
     }
 
-    @Test
-    public void closingClosesTarget() throws JsonException {
-        final int[] closed = {0};
-        final StringWriter target = new StringWriter() {
-            @Override
-            public void close() {
-                closed[0]++;
+    /**
+     * Reads a value into lists, maps, strings, booleans, nulls and numbers; numbers keep their literal text,
+     * so that writing them again gives the same text.
+     */
+    private static Object readValue(final JsonInputStream in) throws JsonException {
+        return switch (in.peek()) {
+            case BEGIN_ARRAY -> {
+                final List<Object> list = new ArrayList<>();
+                in.beginArray();
+                while (in.hasNext()) {
+                    list.add(readValue(in));
+                }
+                in.endArray();
+                yield list;
+            }
+            case BEGIN_OBJECT -> {
+                final Map<String, Object> map = new LinkedHashMap<>();
+                in.beginObject();
+                while (in.hasNext()) {
+                    final String key = in.nextKey();
+                    map.put(key, readValue(in));
+                }
+                in.endObject();
+                yield map;
+            }
+            case STRING -> in.nextString();
+            case NUMBER -> new OddNumber(in.nextString());
+            case BOOLEAN -> in.nextBoolean();
+            case NULL -> in.nextNullObject();
+            default -> throw new AssertionError("unexpected token " + in.peek() + " at " + in.getPath());
+        };
+    }
+
+    /** Writes a value as built by {@link #readValue} or {@link #randomValue}. */
+    private static void writeValue(final JsonOutputStream out, final Object value) throws JsonException {
+        switch (value) {
+            case null -> out.nullValue();
+            case String string -> out.value(string);
+            case Boolean bool -> out.value(bool.booleanValue());
+            case Number number -> out.value(number);
+            case List<?> list -> {
+                out.beginArray();
+                for (final Object item : list) {
+                    writeValue(out, item);
+                }
+                out.endArray();
+            }
+            case Map<?, ?> map -> {
+                out.beginObject();
+                for (final Map.Entry<?, ?> entry : map.entrySet()) {
+                    out.key((String) entry.getKey());
+                    writeValue(out, entry.getValue());
+                }
+                out.endObject();
+            }
+            default -> throw new AssertionError("cannot write " + value.getClass());
+        }
+    }
+
+    /** Characters that are likely to cause trouble, besides plain ASCII. */
+    private static final String ODD_CHARACTERS = "\"\\/'<>&=\u007fé€  ﻿";
+
+    private static String randomString(final Random random) {
+        final StringBuilder sb = new StringBuilder();
+        final int length = random.nextInt(12);
+        for (int i = 0; i < length; i++) {
+            switch (random.nextInt(5)) {
+                case 0 -> sb.append((char) random.nextInt(0x20)); // control characters
+                case 1 -> sb.append(ODD_CHARACTERS.charAt(random.nextInt(ODD_CHARACTERS.length())));
+                case 2 -> sb.appendCodePoint(0x1F600 + random.nextInt(0x50)); // surrogate pairs
+                default -> sb.append((char) (0x20 + random.nextInt(0x5F)));
+            }
+        }
+        return sb.toString();
+    }
+
+    private static Number randomNumber(final Random random) {
+        return switch (random.nextInt(6)) {
+            case 0 -> random.nextInt(2000) - 1000;
+            case 1 -> random.nextLong();
+            case 2 -> random.nextFloat() * 1e10f;
+            case 3 -> new BigDecimal(BigInteger.valueOf(random.nextLong()), random.nextInt(40) - 10);
+            case 4 -> new BigInteger(100, random);
+            default -> {
+                double d;
+                do {
+                    d = Double.longBitsToDouble(random.nextLong());
+                } while (!Double.isFinite(d));
+                yield d;
             }
         };
-        final JsonOutputStream out = JACKSON.writer(JsonWriteOptions.COMPACT, target);
-        out.beginArray().endArray();
-        out.close();
-        assertEquals(1, closed[0]);
-        assertEquals("[]", target.toString());
+    }
+
+    /** Builds a random value; containers become rarer the deeper they are nested. */
+    private static Object randomValue(final Random random, final int depth) {
+        return switch (random.nextInt(depth > 4 ? 4 : 6)) {
+            case 0 -> random.nextInt(4) == 0 ? null : random.nextBoolean();
+            case 1 -> randomString(random);
+            case 2, 3 -> randomNumber(random);
+            case 4 -> {
+                final List<Object> list = new ArrayList<>();
+                for (int i = random.nextInt(5); i > 0; i--) {
+                    list.add(randomValue(random, depth + 1));
+                }
+                yield list;
+            }
+            default -> {
+                final Map<String, Object> map = new LinkedHashMap<>();
+                for (int i = random.nextInt(5); i > 0; i--) {
+                    map.put(randomString(random), randomValue(random, depth + 1));
+                }
+                yield map;
+            }
+        };
+    }
+
+    /**
+     * Writes documents with every implementation, reads them back with every implementation in both modes, and writes what was
+     * read with every implementation again; all of these must give the same text.
+     */
+    @Test
+    public void roundTrips() throws JsonException {
+        final Random random = new Random(20261016);
+        final List<JsonWriter> documents = new ArrayList<>();
+        documents.add(DOCUMENT);
+        for (int i = 0; i < 300; i++) {
+            final Object value = randomValue(random, 0);
+            documents.add(out -> writeValue(out, value));
+        }
+        for (final JsonWriter document : documents) {
+            for (final JsonWriteOptions options : List.of(JsonWriteOptions.COMPACT, JsonWriteOptions.PRETTY)) {
+                assertSameOutput(options, document);
+                final String text = GSON.write(options, document);
+                for (final JsonStreamFactory reader : ALL) {
+                    for (final JsonReadMode mode : JsonReadMode.values()) {
+                        final Object value;
+                        try {
+                            final JsonInputStream in = reader.reader(text, mode);
+                            value = readValue(in);
+                            assertEquals(JsonTokenType.END_DOCUMENT, in.peek());
+                            in.close();
+                        } catch (JsonException e) {
+                            throw new AssertionError(reader.name() + ", " + mode + " cannot read: " + text, e);
+                        }
+                        for (final JsonStreamFactory writer : ALL) {
+                            assertEquals(text, writer.write(options, out -> writeValue(out, value)),
+                                    () -> "read by " + reader.name() + " in " + mode + ", written by " + writer.name());
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
+    public void closingClosesTarget() throws JsonException {
+        for (final JsonStreamFactory json : ALL) {
+            final int[] closed = {0};
+            final StringWriter target = new StringWriter() {
+                @Override
+                public void close() {
+                    closed[0]++;
+                }
+            };
+            final JsonOutputStream out = json.writer(JsonWriteOptions.COMPACT, target);
+            out.beginArray().endArray();
+            out.close();
+            assertEquals(1, closed[0], json.name());
+            assertEquals("[]", target.toString(), json.name());
+        }
     }
 
 }

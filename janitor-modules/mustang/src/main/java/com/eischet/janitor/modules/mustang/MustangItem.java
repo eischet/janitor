@@ -8,7 +8,7 @@ import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.JDate;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
-import com.eischet.janitor.json.impl.DateTimeUtils;
+import com.eischet.janitor.toolbox.time.DateTimeUtils;
 import org.mustangproject.Allowance;
 import org.mustangproject.Charge;
 import org.mustangproject.IncludedNote;

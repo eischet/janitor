@@ -40,12 +40,6 @@
             <artifactId>slf4j-api</artifactId>
         </dependency>
 
-        <!-- JSON parsing and generation -->
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-        </dependency>
-
     </dependencies>
 
     <build>

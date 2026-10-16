@@ -13,7 +13,7 @@ import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import com.eischet.janitor.compiler.JanitorAntlrCompiler;
-import com.eischet.janitor.runtime.DateTimeUtilities;
+import com.eischet.janitor.toolbox.time.DateTimeUtils;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -77,8 +77,8 @@ public class DefaultBuiltinTypes implements BuiltinTypes {
         JBinaryClass.applyDefaults(binaryDispatcher);
 
         intDispatcher.addLongProperty("int", JanitorWrapper::janitorGetHostValue);
-        // intDispatcher.addDateTimeProperty("epoch", wrapper -> DateTimeUtilities.localFromEpochSeconds(wrapper.janitorGetHostValue()));
-        intDispatcher.addObjectProperty("epoch", wrapper -> dateTime(DateTimeUtilities.localFromEpochSeconds(wrapper.janitorGetHostValue())));
+        // intDispatcher.addDateTimeProperty("epoch", wrapper -> DateTimeUtils.fromEpochSeconds(wrapper.janitorGetHostValue()));
+        intDispatcher.addObjectProperty("epoch", wrapper -> dateTime(DateTimeUtils.fromEpochSeconds(wrapper.janitorGetHostValue())));
 
         floatDispatcher.addLongProperty("int", doubleJanitorWrapper -> doubleJanitorWrapper.janitorGetHostValue().longValue());
 
@@ -481,12 +481,12 @@ public class DefaultBuiltinTypes implements BuiltinTypes {
 
     @Override
     public @NotNull JanitorObject nullableLegacyDate(@Nullable final Date legacyDate) {
-        return legacyDate == null ? Janitor.NULL : date(DateTimeUtilities.convert(legacyDate).toLocalDate());
+        return legacyDate == null ? Janitor.NULL : date(DateTimeUtils.convert(legacyDate).toLocalDate());
     }
 
     @Override
     public @NotNull JanitorObject nullableLegacyDateTime(@Nullable final Date legacyDateTime) {
-        return legacyDateTime == null ? Janitor.NULL : dateTime(DateTimeUtilities.convert(legacyDateTime));
+        return legacyDateTime == null ? Janitor.NULL : dateTime(DateTimeUtils.convert(legacyDateTime));
     }
 
 }

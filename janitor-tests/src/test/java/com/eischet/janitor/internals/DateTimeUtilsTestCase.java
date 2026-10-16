@@ -4,7 +4,7 @@
 package com.eischet.janitor.internals;
 
 import com.eischet.janitor.JanitorTest;
-import com.eischet.janitor.json.impl.DateTimeUtils;
+import com.eischet.janitor.toolbox.time.DateTimeUtils;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;

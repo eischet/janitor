@@ -6,7 +6,7 @@ package com.eischet.janitor.internals;
 import com.eischet.janitor.JanitorTest;
 import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.env.JanitorDefaultEnvironment;
-import com.eischet.janitor.json.impl.GsonJsonStreams;
+import com.eischet.janitor.toolbox.json.impl.NativeJsonStreams;
 import com.eischet.janitor.runtime.JanitorFormattingGerman;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonExportableObject;
@@ -44,9 +44,9 @@ public class JsonStreamFactoryTestCase extends JanitorTest {
         }
     }
 
-    /** Delegates to Gson and counts the streams it creates. */
+    /** Delegates to the native implementation and counts the streams it creates. */
     private static final class CountingStreams implements JsonStreamFactory {
-        private final JsonStreamFactory delegate = new GsonJsonStreams();
+        private final JsonStreamFactory delegate = new NativeJsonStreams();
         private final AtomicInteger streams = new AtomicInteger();
 
         @Override
@@ -75,11 +75,11 @@ public class JsonStreamFactoryTestCase extends JanitorTest {
 
     @Test
     public void discovery() {
-        assertEquals(GsonJsonStreams.NAME, JsonStreamFactory.defaultFactory().name());
-        assertTrue(JsonStreamFactory.available().stream().anyMatch(f -> f.name().equals(GsonJsonStreams.NAME)));
-        assertSame(JsonStreamFactory.defaultFactory(), JsonStreamFactory.named(GsonJsonStreams.NAME));
+        assertEquals(NativeJsonStreams.NAME, JsonStreamFactory.defaultFactory().name());
+        assertTrue(JsonStreamFactory.available().stream().anyMatch(f -> f.name().equals(NativeJsonStreams.NAME)));
+        assertSame(JsonStreamFactory.defaultFactory(), JsonStreamFactory.named(NativeJsonStreams.NAME));
         final IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> JsonStreamFactory.named("nope"));
-        assertTrue(e.getMessage().contains(GsonJsonStreams.NAME), e.getMessage());
+        assertTrue(e.getMessage().contains(NativeJsonStreams.NAME), e.getMessage());
     }
 
     @Test
@@ -117,7 +117,7 @@ public class JsonStreamFactoryTestCase extends JanitorTest {
     @Test
     public void readModes() throws JsonException {
         final long[] result = {0};
-        Janitor.readJson("{'a': 17 /* comment */}", in -> result[0] = readA(in)); // no trailing comma: Gson rejects it
+        Janitor.readJson("{'a': 17, /* comment */}", in -> result[0] = readA(in));
         assertEquals(17, result[0]);
         Janitor.readJson(JsonReadMode.STRICT, new StringReader("{\"a\": 18}"), in -> result[0] = readA(in));
         assertEquals(18, result[0]);

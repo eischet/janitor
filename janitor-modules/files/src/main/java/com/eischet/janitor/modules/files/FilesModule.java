@@ -20,7 +20,7 @@ import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.env.JElement;
 import com.eischet.janitor.env.JanitorXmlParser;
-import com.eischet.janitor.runtime.DateTimeUtilities;
+import com.eischet.janitor.toolbox.time.DateTimeUtils;
 
 import javax.xml.stream.XMLStreamException;
 import java.io.File;
@@ -242,7 +242,7 @@ public class FilesModule extends JanitorComposed<FilesModule> implements Janitor
     private JanitorObject lastMod(JanitorScriptProcess process, JCallArgs arguments) throws JanitorRuntimeException {
         final String fileName = arguments.require(1).getRequiredStringValue(0);
         final long lastModified = new File(fileName).lastModified();
-        final LocalDateTime date = DateTimeUtilities.localFromEpochSeconds(lastModified);
+        final LocalDateTime date = DateTimeUtils.fromEpochSeconds(lastModified);
         return process.getBuiltins().dateTime(date);
     }
 

@@ -27,7 +27,7 @@ import com.eischet.janitor.api.types.builtin.JMap;
 import com.eischet.janitor.api.types.builtin.JNull;
 import com.eischet.janitor.api.util.ObjectUtilities;
 import com.eischet.janitor.logging.JanitorLogger;
-import com.eischet.janitor.runtime.DateTimeUtilities;
+import com.eischet.janitor.toolbox.time.DateTimeUtils;
 import com.eischet.janitor.runtime.JanitorSemantics;
 import com.eischet.janitor.api.modules.ModuleResolver;
 import com.eischet.janitor.toolbox.json.api.JsonException;
@@ -187,10 +187,10 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
             return builtins.nullableDateTime(localDate.atStartOfDay());
         }
         if (o instanceof Timestamp timestamp) {
-            return builtins.nullableDateTime(DateTimeUtilities.convert(timestamp));
+            return builtins.nullableDateTime(DateTimeUtils.convert(timestamp));
         }
         if (o instanceof Date date) {
-            return builtins.nullableDateTime(DateTimeUtilities.convert(date));
+            return builtins.nullableDateTime(DateTimeUtils.convert(date));
         }
         if (o instanceof BigDecimal bigDecimal) {
             return builtins.floatingPoint(bigDecimal.doubleValue());
@@ -227,7 +227,8 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
 
     /**
      * Creates the factory for all JSON streams of this environment; called once, on first use.
-     * Override this to choose an implementation, e.g. {@code return JsonStreamFactory.named("jackson");}.
+     * Override this to choose an implementation, e.g. {@code return JsonStreamFactory.named("native");}
+     * or an implementation of your own.
      * @return the factory; by default, {@link JsonStreamFactory#defaultFactory()}
      */
     protected @NotNull JsonStreamFactory createJsonStreamFactory() {

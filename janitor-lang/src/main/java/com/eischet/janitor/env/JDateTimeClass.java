@@ -12,7 +12,7 @@ import com.eischet.janitor.api.types.builtin.JInt;
 import com.eischet.janitor.api.types.builtin.JString;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import com.eischet.janitor.api.types.functions.JCallArgs;
-import com.eischet.janitor.json.impl.DateTimeUtils;
+import com.eischet.janitor.toolbox.time.DateTimeUtils;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;

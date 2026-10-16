@@ -4,10 +4,27 @@
   messages (application permissions via azure-identity), built on java.net.http instead of the Microsoft Graph SDK;
   results are Janitor objects (MailFolder, MailMessage, ...), usable from Java and scripts. Included in the REPL.
 - json: removed the deprecated JsonExportControls; use JsonWriteOptions.COMPACT / PRETTY instead.
-- json: new module janitor-json-jackson, a second JsonStreamFactory built on jackson-core only; put it on the class path
-  and select it with -Djanitor.json=jackson. It writes the same JSON as Gson; when reading, LENIENT follows the
-  JsonReadMode Javadoc exactly (unlike Gson). Gson remains the default. Size limits are each library's own defaults,
-  e.g. a nesting depth of 255 for Gson and 1000 for Jackson.
+- json: Janitor no longer depends on Gson. JSON is read and written by "native", a hand-written parser and writer in
+  janitor-toolbox (com.eischet.janitor.toolbox.json.impl) without any library; it writes the same JSON as Gson did, and is faster at writing. When reading, LENIENT
+  now follows the JsonReadMode Javadoc exactly: trailing commas are accepted in objects, too, and no longer read as an
+  extra null in arrays; Gson's other oddities ("=" or "=>" between names and values, ";" between values, unquoted
+  values, "#" comments, several top-level values, the ")]}'" prefix) are errors. A leading byte order mark is only
+  accepted in LENIENT. Nesting is limited to 1000 levels (Gson: 255), numbers to 1000 and strings to 20 million characters.
+  The Gson classes (GsonInputStream, GsonOutputStream, GsonJsonStreams) and FlexiDateParser have been removed; use
+  Janitor.readJson / Janitor.writeJson or JsonStreamFactory instead, and add Gson to your own project if you use it directly.
+  Other implementations can still be plugged in with the ServiceLoader and selected with -Djanitor.json=NAME.
+- time: DateTimeUtils moved from com.eischet.janitor.json.impl (janitor-lang) to com.eischet.janitor.toolbox.time
+  (janitor-toolbox). DateTimeUtilities has been removed; use DateTimeUtils.convert(...) and the new
+  DateTimeUtils.fromEpochSeconds(...) instead. These always use the configured TimeZoneSource, where DateTimeUtilities used
+  the JVM's default time zone; this affects dates converted from java.util.Date and java.sql.Timestamp, int.epoch in
+  scripts and file modification times in the files module.
+- maps: new script method map.remove(key), returning the removed value or null; map.clear() did not actually clear the map.
+  Map methods now check their argument count, e.g. map.size(1) or map.put(key) is an error instead of being accepted.
+- JMap: janitorGetHostValue() returns the wrapped map itself instead of a copy; values() returns an unmodifiable copy;
+  new containsKey/containsValue/remove.
+- json: map and list parsing has a single implementation, JMap/JList.readJson and the new Janitor.readJsonValue, each with
+  an optional JanitorEnvironment; JSON null values no longer break JMap.readJson. The scripts' parseJson methods create
+  all values in the script's environment. JCollection has been removed; use Janitor.readJsonValue instead.
 - orm: new JanitorOrm.MetaData.NULL_REFERENCE_ID (per column) and OrmDaoCollection.getNullReferenceId() (default for all
   DAOs) for schemas that point "nowhere" to a system row instead of NULL, e.g. Assyst's id 0: references to nothing are
   written as that id, the id is read back as a null reference, and ISNULL/ISNOTNULL filters include it.
