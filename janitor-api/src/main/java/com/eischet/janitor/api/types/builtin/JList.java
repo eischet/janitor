@@ -4,6 +4,7 @@
 package com.eischet.janitor.api.types.builtin;
 
 import com.eischet.janitor.api.Janitor;
+import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.types.JIterable;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.TemporaryAssignable;
@@ -476,6 +477,39 @@ public class JList extends JanitorComposed<JList> implements JIterable, Iterable
     @Override
     public boolean isDefaultOrEmpty() {
         return isEmpty();
+    }
+
+    /**
+     * Reads the elements of a JSON array from the stream, appending them to this list, using the current environment.
+     *
+     * @param stream the JSON stream, positioned at the start of an array
+     * @throws JsonException if the JSON is malformed, e.g. it's not an array
+     * @see #readJson(JanitorEnvironment, JsonInputStream)
+     */
+    @Override
+    public void readJson(final JsonInputStream stream) throws JsonException {
+        readJson(Janitor.current(), stream);
+    }
+
+    /**
+     * Reads the elements of a JSON array from the stream, appending them to this list.
+     * If the list has an {@link #getElementDispatchTable() element dispatch table}, that table reads each element;
+     * otherwise elements are created by the given environment, using {@link Janitor#readJsonValue(JanitorEnvironment, JsonInputStream)}.
+     *
+     * @param environment the environment that creates the elements, e.g. the one of the running script
+     * @param stream the JSON stream, positioned at the start of an array
+     * @throws JsonException if the JSON is malformed, e.g. it's not an array
+     */
+    public void readJson(final @NotNull JanitorEnvironment environment, final JsonInputStream stream) throws JsonException {
+        stream.beginArray();
+        while (stream.hasNext()) {
+            if (elementDispatchTable != null) {
+                elementDispatchTable.readAsListElement(stream, this::add);
+            } else {
+                add(Janitor.readJsonValue(environment, stream));
+            }
+        }
+        stream.endArray();
     }
 
     @Override

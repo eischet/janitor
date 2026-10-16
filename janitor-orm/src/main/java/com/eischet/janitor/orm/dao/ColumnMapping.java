@@ -24,6 +24,8 @@ import java.util.Objects;
  * @param referenceType the class name of the referenced entity if the column holds a foreign key, otherwise null
  * @param hostNullable  whether the field accepts null values, if specified
  * @param handler       looks up the field's property on an entity
+ * @param nullReferenceId for a reference column: the id that stands for "no reference" in the database, or null if that is NULL,
+ *                      see {@link JanitorOrm.MetaData#NULL_REFERENCE_ID}; always null for other columns
  * @param <T>           the type of the entity
  */
 public record ColumnMapping<T extends JanitorObject>(
@@ -32,7 +34,27 @@ public record ColumnMapping<T extends JanitorObject>(
         @NotNull ColumnTypeHint type,
         @Nullable String referenceType,
         @Nullable Boolean hostNullable,
-        @NotNull AttributeLookupHandler<T> handler) {
+        @NotNull AttributeLookupHandler<T> handler,
+        @Nullable Long nullReferenceId) {
+
+    /**
+     * Creates a mapping that writes NULL for a reference to nothing.
+     */
+    public ColumnMapping(final @NotNull String column,
+                         final @NotNull String field,
+                         final @NotNull ColumnTypeHint type,
+                         final @Nullable String referenceType,
+                         final @Nullable Boolean hostNullable,
+                         final @NotNull AttributeLookupHandler<T> handler) {
+        this(column, field, type, referenceType, hostNullable, handler, null);
+    }
+
+    /**
+     * @return true if the column holds the id of another entity
+     */
+    public boolean isReference() {
+        return referenceType != null && type == ColumnTypeHint.INT;
+    }
 
     /**
      * Collects the mapping of a column from the meta-data of the dispatch table.
@@ -43,12 +65,27 @@ public record ColumnMapping<T extends JanitorObject>(
      * @throws NullPointerException if the field has no property, or no column type, which is a configuration error that is better reported early
      */
     public static <T extends JanitorObject> @NotNull ColumnMapping<T> of(final @NotNull DispatchTable<T> table, final @NotNull String field, final @NotNull String column) {
+        return of(table, field, column, null);
+    }
+
+    /**
+     * Like {@link #of(DispatchTable, String, String)}, with a default for the id that stands for "no reference".
+     * @param defaultNullReferenceId used for reference columns that do not declare {@link JanitorOrm.MetaData#NULL_REFERENCE_ID}
+     *                               themselves, usually {@link OrmDaoCollection#getNullReferenceId()}; null means NULL
+     */
+    public static <T extends JanitorObject> @NotNull ColumnMapping<T> of(final @NotNull DispatchTable<T> table,
+                                                                         final @NotNull String field,
+                                                                         final @NotNull String column,
+                                                                         final @Nullable Long defaultNullReferenceId) {
+        final @Nullable String referenceType = table.getMetaData(field, Janitor.MetaData.REF);
+        final @Nullable Long declared = table.getMetaData(field, JanitorOrm.MetaData.NULL_REFERENCE_ID);
         return new ColumnMapping<>(
                 column,
                 field,
                 Objects.requireNonNull(table.getMetaData(field, JanitorOrm.MetaData.COLUMN_TYPE), "no column type hint for field '" + field + "' / column '" + column + "'"),
-                table.getMetaData(field, Janitor.MetaData.REF),
+                referenceType,
                 table.getMetaData(field, Janitor.MetaData.HOST_NULLABLE),
-                Objects.requireNonNull(table.get(field), "no property for field '" + field + "' / column '" + column + "'"));
+                Objects.requireNonNull(table.get(field), "no property for field '" + field + "' / column '" + column + "'"),
+                referenceType == null ? null : declared != null ? declared : defaultNullReferenceId);
     }
 }

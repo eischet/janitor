@@ -1,3 +1,26 @@
+# 0.9.68 (in progress)
+
+- experimental new module "msgraph" (com.eischet.janitor.modules:msgraph): a small Microsoft Graph client for mail folders and
+  messages (application permissions via azure-identity), built on java.net.http instead of the Microsoft Graph SDK;
+  results are Janitor objects (MailFolder, MailMessage, ...), usable from Java and scripts. Included in the REPL.
+- json: removed the deprecated JsonExportControls; use JsonWriteOptions.COMPACT / PRETTY instead.
+- orm: new JanitorOrm.MetaData.NULL_REFERENCE_ID (per column) and OrmDaoCollection.getNullReferenceId() (default for all
+  DAOs) for schemas that point "nowhere" to a system row instead of NULL, e.g. Assyst's id 0: references to nothing are
+  written as that id, the id is read back as a null reference, and ISNULL/ISNOTNULL filters include it.
+- orm: references are written as their id without being resolved first. Before, a reference that could not be resolved
+  (e.g. an unknown short code, or one inserted in the same transaction) was silently written as NULL; an unknown short
+  code is now an error. ColumnMapping has a new component nullReferenceId; CommonDao.readColumn/writeColumn work on mappings.
+- dbxs: shorter messages for failed statements: what the database said comes first, then the statement in a shortened form
+  (inserts/updates as table and number of columns), then the arguments in one line, labeled with their columns where the
+  statement tells them, with NULLs listed apart and long values cut off. The full statement and the arguments are available
+  from the new DatabaseError.getSql() / getArguments().
+- script errors: "caused by" no longer repeats a cause's message when its first line has been said already (only its class
+  is listed), e.g. the driver's exceptions below a database error.
+- docusign module: remove statusDateTime field because it disappeared in the new version of the library
+- build: parent POM lib-public 1.0.14; GPG signing can now be skipped for local installs with -Dgpg.skip
+- deps: slf4j 2.0.19 (via parent); azure-identity 1.18.7 and azure-core-http-jdk-httpclient 1.2.0 (msgraph),
+  java-jwt 4.6.2, docusign-esign-java 6.9.0, commonmark 0.30.1, jansi/jline 4.4.8
+
 # 0.9.67, 2026-10-15 (internal release only)
 
 - json: new JsonWriteOptions (indent, NaN/Infinity handling, leaving out null/empty values) replace JsonExportControls,

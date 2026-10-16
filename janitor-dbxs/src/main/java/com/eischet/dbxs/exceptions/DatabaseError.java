@@ -5,50 +5,70 @@ package com.eischet.dbxs.exceptions;
 
 import com.eischet.dbxs.SimplePreparedStatement;
 import com.eischet.dbxs.statements.GenericStatement;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
 
-import java.util.stream.Collectors;
+import java.util.List;
 
-/** Checked exception for all errors that occur while working with a database. */
+/**
+ * Checked exception for all errors that occur while working with a database.
+ * <p>
+ * For a failed statement, the message is kept short enough for a log: what the database said, the statement in a shortened form, and its
+ * arguments, labeled with their columns where possible. The full statement and the arguments are available from {@link #getSql()} and
+ * {@link #getArguments()}.
+ * </p>
+ */
 public class DatabaseError extends Exception {
+
+    private final @Nullable String sql;
+    private final @NotNull @Unmodifiable List<SimplePreparedStatement.Arg> arguments;
 
     public DatabaseError(final String message) {
         super(message);
+        this.sql = null;
+        this.arguments = List.of();
     }
 
     public DatabaseError(final String message, final Throwable cause) {
         super(message, cause);
+        this.sql = null;
+        this.arguments = List.of();
     }
 
     public DatabaseError(@Nullable String connectionName, final SimplePreparedStatement sps, final Throwable cause) {
-        super(formatError(connectionName, sps), cause);
+        this(connectionName, sps.getStatement().getSql(), sps.getArgs(), cause);
     }
 
     public DatabaseError(final GenericStatement stmt, final Throwable cause) {
-        super("error in statement " + stmt, cause);
+        this(null, stmt.getSql(), List.of(), cause);
     }
 
     public DatabaseError(final Throwable cause) {
         super(cause);
+        this.sql = null;
+        this.arguments = List.of();
     }
 
-    private static String formatError(@Nullable String connectionName, final SimplePreparedStatement sps) {
-        if (connectionName != null) {
-            if (sps.getArgs() == null || sps.getArgs().isEmpty()) {
-                return String.format("%s: error in statement %s", connectionName, sps.getStatement());
-            } else {
-                return String.format("%s: error in statement %s with arguments %s", connectionName, sps.getStatement(),
-                        sps.getArgs().stream().map(Object::toString).collect(Collectors.joining("\n")));
-            }
+    private DatabaseError(final @Nullable String connectionName, final @NotNull String sql, final @NotNull List<SimplePreparedStatement.Arg> arguments, final Throwable cause) {
+        super(StatementErrorFormat.format(connectionName, sql, arguments, cause), cause);
+        this.sql = sql;
+        this.arguments = List.copyOf(arguments);
+    }
 
-        } else {
-            if (sps.getArgs() == null || sps.getArgs().isEmpty()) {
-                return String.format("error in statement %s", sps.getStatement());
-            } else {
-                return String.format("error in statement %s with arguments %s", sps.getStatement(),
-                        sps.getArgs().stream().map(Object::toString).collect(Collectors.joining("\n")));
-            }
-        }
+    /**
+     * @return the full text of the statement that failed, or null if the error is not about a statement
+     */
+    public @Nullable String getSql() {
+        return sql;
+    }
+
+    /**
+     * @return the arguments that were bound to the statement that failed, up to the failure; empty if there were none, or if the error is
+     * not about a statement
+     */
+    public @NotNull @Unmodifiable List<SimplePreparedStatement.Arg> getArguments() {
+        return arguments;
     }
 
     /**

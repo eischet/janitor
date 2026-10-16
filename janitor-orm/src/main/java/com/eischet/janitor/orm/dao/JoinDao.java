@@ -178,7 +178,7 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
 
         final Map<String, ColumnMapping<T>> mappings = new HashMap<>();
         for (final String column : columns) {
-            mappings.put(column, ColumnMapping.of(entityDispatchTable, fieldForColumn.get(column), column));
+            mappings.put(column, ColumnMapping.of(entityDispatchTable, fieldForColumn.get(column), column, collection.getNullReferenceId()));
         }
         this.mappingForColumn = Map.copyOf(mappings);
         @SuppressWarnings("unchecked") final ColumnMapping<T>[] mapped = new ColumnMapping[columns.size()];
@@ -212,7 +212,7 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
             try {
                 final JanitorObject propertyValue = Objects.requireNonNull(mapping.handler().lookupAttribute(value));
                 if (propertyValue instanceof JAssignable assignableProperty) {
-                    CommonDao.readProperty(collection, mapping.column(), conn, assignableProperty, rs, mapping.type(), mapping.referenceType(), mapping.hostNullable());
+                    CommonDao.readColumn(collection, conn, mapping, assignableProperty, rs);
                 } else {
                     throw new DatabaseError("invalid field '" + mapping.field() + "' / column '" + mapping.column() + "' is not assignable");
                 }
@@ -629,7 +629,7 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
             final ColumnMapping<T> mapping = Objects.requireNonNull(mappingForColumn.get(column), "no mapping for column '" + column + "'");
             try {
                 final JanitorObject propertyValue = Objects.requireNonNull(mapping.handler().lookupAttribute(record), "no value for field '" + mapping.field() + "' in record " + record + " / column '" + column + "'");
-                CommonDao.writeProperty(conn, className, column, mapping.field(), propertyValue.janitorUnpack(), ps, mapping.type());
+                CommonDao.writeColumn(conn, className, mapping, propertyValue, ps);
             } catch (Exception e) {
                 throw new SQLException("error writing column '" + column + "' / field '" + mapping.field() + "' into the database", e);
             }

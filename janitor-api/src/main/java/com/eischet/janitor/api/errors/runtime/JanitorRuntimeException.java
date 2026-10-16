@@ -129,14 +129,29 @@ public abstract class JanitorRuntimeException extends JanitorException implement
             Throwable i = cause;
             while (i != null) {
                 out.append("\n caused by ").append(i.getClass().getSimpleName());
-                if (i.getMessage() != null) {
+                if (i.getMessage() != null && !isAlreadyTold(out, i.getMessage())) {
                     out.append(": ").append(i.getMessage());
                 }
-                i = i.getCause();
+                i = i.getCause() == i ? null : i.getCause();
             }
 
         }
         return out.toString();
+    }
+
+    /**
+     * Whether the first line of a cause's message is already part of the text, as it often is: wrappers tend to repeat the message of what
+     * they wrap (e.g. a database error and the driver's exceptions below it). The class name of the cause is listed anyway.
+     */
+    private static boolean isAlreadyTold(final CharSequence text, final String message) {
+        final String trimmed = message.strip();
+        if (trimmed.isEmpty()) {
+            return true;
+        }
+        final int newline = trimmed.indexOf('\n');
+        final String firstLine = newline < 0 ? trimmed : trimmed.substring(0, newline).strip();
+        // very short messages ("1", "null") would be found by chance
+        return firstLine.length() >= 12 && text.toString().contains(firstLine);
     }
 
     @Override

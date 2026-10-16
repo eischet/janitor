@@ -210,7 +210,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
 
         final Map<String, ColumnMapping<T>> mappings = new HashMap<>();
         for (final String column : columns) {
-            mappings.put(column, ColumnMapping.of(entityDispatchTable, fieldForColumn.get(column), column));
+            mappings.put(column, ColumnMapping.of(entityDispatchTable, fieldForColumn.get(column), column, collection.getNullReferenceId()));
         }
         this.mappingForColumn = Map.copyOf(mappings);
         @SuppressWarnings("unchecked") final ColumnMapping<T>[] selected = new ColumnMapping[selectColumns.size()];
@@ -727,6 +727,21 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
                     throw new MalformedExpression("missing operator in expression " + filterExpression);
                 }
                 final String quotedColumn = dialect.quoteColumn(column);
+                final @Nullable ColumnMapping<T> mapping = mappingForColumn.get(column);
+                final @Nullable Long nullReferenceId = mapping == null ? null : mapping.nullReferenceId();
+                if (nullReferenceId != null) {
+                    // a reference to nothing can be NULL or the configured id, see JanitorOrm.MetaData.NULL_REFERENCE_ID
+                    switch (filterExpression.getOperator()) {
+                        case ISNULL -> {
+                            return "(" + quotedColumn + " is null or " + quotedColumn + " = " + nullReferenceId + ")";
+                        }
+                        case ISNOTNULL -> {
+                            return "(" + quotedColumn + " is not null and " + quotedColumn + " <> " + nullReferenceId + ")";
+                        }
+                        default -> {
+                        }
+                    }
+                }
                 return applyExpressionToColumn(filterExpression, quotedColumn, columnTypeHint, columnCase, prepperConsumer);
             }
         } else {
@@ -1032,7 +1047,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
             try {
                 final JanitorObject propertyValue = Objects.requireNonNull(mapping.handler().lookupAttribute(value));
                 if (propertyValue instanceof JAssignable assignableProperty) {
-                    CommonDao.readProperty(collection, mapping.column(), conn, assignableProperty, rs, mapping.type(), mapping.referenceType(), mapping.hostNullable());
+                    CommonDao.readColumn(collection, conn, mapping, assignableProperty, rs);
                 } else {
                     throw new DatabaseError("invalid field '" + mapping.field() + "' / column '" + mapping.column() + "' is not assignable");
                 }
@@ -1137,7 +1152,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
             final ColumnMapping<T> mapping = Objects.requireNonNull(mappingForColumn.get(column), "no mapping for column '" + column + "'");
             try {
                 final JanitorObject propertyValue = Objects.requireNonNull(mapping.handler().lookupAttribute(record), "no value for field '" + mapping.field() + "' in record " + record + " / column '" + column + "'");
-                CommonDao.writeProperty(conn, className, column, mapping.field(), propertyValue.janitorUnpack(), ps, mapping.type());
+                CommonDao.writeColumn(conn, className, mapping, propertyValue, ps);
             } catch (Exception e) {
                 throw new SQLException("error writing column '" + column + "' / field '" + mapping.field() + "' into the database", e);
             }

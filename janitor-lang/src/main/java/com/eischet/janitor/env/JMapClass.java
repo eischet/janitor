@@ -4,6 +4,7 @@
 package com.eischet.janitor.env;
 
 import com.eischet.janitor.api.Janitor;
+import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
@@ -17,7 +18,6 @@ import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import com.eischet.janitor.compiler.JanitorAntlrCompiler;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonInputStream;
-import com.eischet.janitor.toolbox.json.api.JsonTokenType;
 import org.intellij.lang.annotations.Language;
 
 import java.util.Map;
@@ -54,7 +54,14 @@ public class JMapClass {
      */
     public static JMap __parseJson(final JanitorWrapper<Map<JanitorObject, JanitorObject>> self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         try {
-            return parseJson((JMap) self, arguments.require(1).getString(0).janitorGetHostValue());
+            final String json = arguments.require(1).getString(0).janitorGetHostValue();
+            if (json == null || json.isBlank()) {
+                return (JMap) self;
+            }
+            // use the script's own environment, not Janitor.current(): hosts may run several differently configured sandboxes
+            final JanitorEnvironment environment = process.getEnvironment();
+            ((JMap) self).readJson(environment, environment.getLenientJsonConsumer(json));
+            return (JMap) self;
         } catch (JsonException e) {
             throw new JanitorNativeException(process, "error parsing json", e);
         }
@@ -91,10 +98,24 @@ public class JMapClass {
      * @param process the running script process
      * @param jCallArgs the call arguments
      * @return null
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
      */
-    public static JanitorObject __put(JanitorWrapper<Map<JanitorObject, JanitorObject>> mapJanitorWrapper, JanitorScriptProcess process, JCallArgs jCallArgs) {
+    public static JanitorObject __put(JanitorWrapper<Map<JanitorObject, JanitorObject>> mapJanitorWrapper, JanitorScriptProcess process, JCallArgs jCallArgs) throws JanitorRuntimeException {
+        jCallArgs.require(2);
         ((JMap) mapJanitorWrapper).put(jCallArgs.get(0), jCallArgs.get(1));
         return JNull.NULL;
+    }
+
+    /**
+     * Script method {@code map.remove(key)}: removes the entry for a key, if there is one.
+     * @param mapJanitorWrapper the object that the method is called on
+     * @param process the running script process
+     * @param jCallArgs the call arguments
+     * @return the value that was stored under the key, or null if there was none
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
+    public static JanitorObject __remove(JanitorWrapper<Map<JanitorObject, JanitorObject>> mapJanitorWrapper, JanitorScriptProcess process, JCallArgs jCallArgs) throws JanitorRuntimeException {
+        return ((JMap) mapJanitorWrapper).remove(jCallArgs.require(1).get(0));
     }
 
     /**
@@ -103,9 +124,11 @@ public class JMapClass {
      * @param process the running script process
      * @param jCallArgs the call arguments
      * @return the number of entries
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
      */
-    public static JanitorObject __size(JanitorWrapper<Map<JanitorObject, JanitorObject>> mapJanitorWrapper, JanitorScriptProcess process, JCallArgs jCallArgs) {
-        return Janitor.integer(mapJanitorWrapper.janitorGetHostValue().size());
+    public static JanitorObject __size(JanitorWrapper<Map<JanitorObject, JanitorObject>> mapJanitorWrapper, JanitorScriptProcess process, JCallArgs jCallArgs) throws JanitorRuntimeException {
+        jCallArgs.require(0);
+        return Janitor.integer(((JMap) mapJanitorWrapper).size());
     }
 
     /**
@@ -114,9 +137,11 @@ public class JMapClass {
      * @param process the running script process
      * @param jCallArgs the call arguments
      * @return true if the map is empty
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
      */
-    public static JanitorObject __isEmpty(JanitorWrapper<Map<JanitorObject, JanitorObject>> mapJanitorWrapper, JanitorScriptProcess process, JCallArgs jCallArgs) {
-        return Janitor.toBool(mapJanitorWrapper.janitorGetHostValue().isEmpty());
+    public static JanitorObject __isEmpty(JanitorWrapper<Map<JanitorObject, JanitorObject>> mapJanitorWrapper, JanitorScriptProcess process, JCallArgs jCallArgs) throws JanitorRuntimeException {
+        jCallArgs.require(0);
+        return Janitor.toBool(((JMap) mapJanitorWrapper).isEmpty());
     }
 
     /**
@@ -125,9 +150,11 @@ public class JMapClass {
      * @param process the running script process
      * @param jCallArgs the call arguments
      * @return a list of the keys
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
      */
-    public static JanitorObject __keys(JanitorWrapper<Map<JanitorObject, JanitorObject>> mapJanitorWrapper, JanitorScriptProcess process, JCallArgs jCallArgs) {
-        return Janitor.list(mapJanitorWrapper.janitorGetHostValue().keySet().stream());
+    public static JanitorObject __keys(JanitorWrapper<Map<JanitorObject, JanitorObject>> mapJanitorWrapper, JanitorScriptProcess process, JCallArgs jCallArgs) throws JanitorRuntimeException {
+        jCallArgs.require(0);
+        return Janitor.list(((JMap) mapJanitorWrapper).keySet().stream());
     }
 
     /**
@@ -136,9 +163,11 @@ public class JMapClass {
      * @param process the running script process
      * @param jCallArgs the call arguments
      * @return a list of the values
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
      */
-    public static JanitorObject __values(JanitorWrapper<Map<JanitorObject, JanitorObject>> mapJanitorWrapper, JanitorScriptProcess process, JCallArgs jCallArgs) {
-        return Janitor.list(mapJanitorWrapper.janitorGetHostValue().values().stream());
+    public static JanitorObject __values(JanitorWrapper<Map<JanitorObject, JanitorObject>> mapJanitorWrapper, JanitorScriptProcess process, JCallArgs jCallArgs) throws JanitorRuntimeException {
+        jCallArgs.require(0);
+        return Janitor.list(((JMap) mapJanitorWrapper).values().stream());
     }
 
     /**
@@ -150,7 +179,7 @@ public class JMapClass {
      * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
      */
     public static JanitorObject __containsKey(JanitorWrapper<Map<JanitorObject, JanitorObject>> mapJanitorWrapper, JanitorScriptProcess process, JCallArgs jCallArgs) throws JanitorRuntimeException {
-        return Janitor.toBool(mapJanitorWrapper.janitorGetHostValue().containsKey(jCallArgs.require(1).get(0)));
+        return Janitor.toBool(((JMap) mapJanitorWrapper).containsKey(jCallArgs.require(1).get(0)));
     }
 
     /**
@@ -162,7 +191,7 @@ public class JMapClass {
      * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
      */
     public static JanitorObject __containsValue(JanitorWrapper<Map<JanitorObject, JanitorObject>> mapJanitorWrapper, JanitorScriptProcess process, JCallArgs jCallArgs) throws JanitorRuntimeException {
-        return Janitor.toBool(mapJanitorWrapper.janitorGetHostValue().containsValue(jCallArgs.require(1).get(0)));
+        return Janitor.toBool(((JMap) mapJanitorWrapper).containsValue(jCallArgs.require(1).get(0)));
     }
 
     /**
@@ -177,14 +206,15 @@ public class JMapClass {
     public static JanitorObject __copy(JanitorWrapper<Map<JanitorObject, JanitorObject>> self, JanitorScriptProcess process, JCallArgs args) throws JanitorRuntimeException {
         args.notAllowed();
         final var copy = Janitor.map();
-        self.janitorGetHostValue().forEach(copy::put);
+        copy.putAll((JMap) self);
         return copy;
     }
 
     /**
-     * Parse a JSON string into a map.
+     * Parse a JSON string into an existing map, adding to or replacing its entries.
      *
-     * @param json the JSON string
+     * @param self the map to parse into
+     * @param json the JSON string; null or blank strings leave the map unchanged
      * @return the map
      * @throws JsonException on JSON errors
      */
@@ -193,26 +223,20 @@ public class JMapClass {
             return self;
         }
         final JsonInputStream reader = Janitor.current().getLenientJsonConsumer(json);
-        // final JsonInputStream reader = GsonInputStream.lenient(json);
         return parseJson(self, reader);
     }
 
     /**
-     * Parse a JSON string into a map.
+     * Parse a JSON object from a stream into an existing map, adding to or replacing its entries.
+     * This delegates to {@link JMap#readJson(JsonInputStream)}.
      *
-     * @param reader the JSON reader
+     * @param self the map to parse into
+     * @param reader the JSON reader, positioned at the start of an object
      * @return the map
      * @throws JsonException if the JSON is invalid, e.g. it's not really a map
      */
     public static JMap parseJson(final JMap self, final JsonInputStream reader) throws JsonException {
-        reader.beginObject();
-        while (reader.hasNext()) {
-            if (reader.peek() == JsonTokenType.END_OBJECT) {
-                break;
-            }
-            self.put(Janitor.nullableString(reader.nextKey()), JCollection.parseJsonValue(reader));
-        }
-        reader.endObject();
+        self.readJson(reader);
         return self;
     }
 
@@ -226,7 +250,7 @@ public class JMapClass {
      */
     public static JNull __clear(JanitorWrapper<Map<JanitorObject, JanitorObject>> mapJanitorWrapper, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         arguments.require(0);
-        mapJanitorWrapper.janitorGetHostValue().clear();
+        ((JMap) mapJanitorWrapper).clear();
         return JNull.NULL;
     }
 
@@ -248,5 +272,6 @@ public class JMapClass {
         mapDispatcher.addMethod("containsValue", JMapClass::__containsValue);
         mapDispatcher.addMethod("clear", JMapClass::__clear);
         mapDispatcher.addMethod("copy", JMapClass::__copy);
+        mapDispatcher.addMethod("remove", JMapClass::__remove);
     }
 }

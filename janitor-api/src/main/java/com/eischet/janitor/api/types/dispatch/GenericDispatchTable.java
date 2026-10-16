@@ -1618,36 +1618,8 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
     @Override
     public T readFromJson(final Supplier<T> constructor, final JsonInputStream stream) throws JsonException {
         final T instance = constructor.get();
-        if (instance instanceof JList list && list.getElementDispatchTable() != null) {
-            stream.beginArray();
-            while (stream.hasNext()) {
-                list.getElementDispatchTable().readAsListElement(stream, list::add);
-            }
-            stream.endArray();
-        } else if (instance instanceof JList list) {
-            stream.beginArray();
-            while (stream.hasNext()) {
-                final JsonTokenType token = stream.peek();
-                switch (token) {
-                    case BEGIN_ARRAY -> {
-                        final JList subList = Janitor.list();
-                        subList.readJson(stream);
-                        list.add(subList);
-                    }
-                    case BEGIN_OBJECT -> {
-                        final JMap object = Janitor.map();
-                        object.readJson(stream);
-                        list.add(object);
-                    }
-                    case STRING -> list.add(Janitor.string(stream.nextString()));
-                    case NUMBER -> list.add(Janitor.numeric(stream.nextDouble()));
-                    case BOOLEAN -> list.add(stream.nextBoolean() ? Janitor.TRUE : Janitor.FALSE);
-                    case NULL -> list.add(Janitor.NULL);
-                    case END_ARRAY, END_OBJECT, NAME, END_DOCUMENT ->
-                            throw new JsonException("Unexpected token while reading list: " + token);
-                }
-            }
-            stream.endArray();
+        if (instance instanceof JList list) {
+            list.readJson(stream);
         } else {
             stream.beginObject();
             while (stream.hasNext()) {

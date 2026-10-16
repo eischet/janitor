@@ -137,6 +137,21 @@ public abstract class OrmDaoCollection<S extends OrmDaoCollection<S>> extends Ja
     }
 
     /**
+     * The id that reference columns of all DAOs in this collection hold when they refer to nothing, unless a column says otherwise with
+     * {@link com.eischet.janitor.orm.JanitorOrm.MetaData#NULL_REFERENCE_ID}. Override this for schemas whose reference columns are
+     * {@code NOT NULL} and point to a system row instead, e.g. {@code return 0L;} for Assyst.
+     * <p>
+     * The DAOs ask for this while they are constructed, which usually happens in the constructor of the collection, so an override
+     * must not depend on fields of the subclass: return a constant.
+     * </p>
+     *
+     * @return the id, or {@code null} (the default) to write NULL
+     */
+    public @Nullable Long getNullReferenceId() {
+        return null;
+    }
+
+    /**
      * Adds the scripting properties "entities" and "joins", which list all DAOs, to a dispatch table for this collection.
      * Call this once, e.g. in the static initializer that sets up your dispatch table.
      *

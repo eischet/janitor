@@ -14,6 +14,7 @@ import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.*;
 import com.eischet.janitor.logging.JanitorLogger;
 import com.eischet.janitor.api.types.StringMappedEnum;
+import com.eischet.janitor.orm.entity.OrmEntity;
 import com.eischet.janitor.orm.ref.*;
 import com.eischet.janitor.orm.sql.ColumnTypeHint;
 import org.jetbrains.annotations.NotNull;
@@ -94,6 +95,104 @@ public class CommonDao {
                     throw e;
                 }
             }
+        }
+    }
+
+    /**
+     * Reads a column of the current row into the property of an entity, according to its mapping. Like
+     * {@link #readProperty}, but a reference column that holds the mapping's {@link ColumnMapping#nullReferenceId()} is read as
+     * a reference to nothing, just like NULL.
+     * @param collection the DAO collection, used to resolve the DAO of a referenced entity
+     * @param conn the database connection
+     * @param mapping how the column is mapped
+     * @param assignableProperty the property to assign the value to
+     * @param rs the result set, positioned at the row to read
+     * @throws SQLException on database errors
+     * @throws JanitorGlueException if the value cannot be assigned
+     */
+    public static void readColumn(final OrmDaoCollection<?> collection,
+                                  final DatabaseConnection conn,
+                                  final ColumnMapping<?> mapping,
+                                  final JAssignable assignableProperty,
+                                  final SimpleResultSet rs) throws SQLException, JanitorGlueException {
+        if (mapping.referenceType() != null && mapping.nullReferenceId() != null) {
+            final @Nullable Long longValue = rs.getLongInstance();
+            if (longValue == null || longValue.equals(mapping.nullReferenceId())) {
+                assignableProperty.assign(Janitor.NULL);
+            } else {
+                assignableProperty.assign(ForeignKeyInteger.createWithForce(longValue, collection.getDao(mapping.referenceType())));
+            }
+            return;
+        }
+        readProperty(collection, mapping.column(), conn, assignableProperty, rs, mapping.type(), mapping.referenceType(), mapping.hostNullable());
+    }
+
+    /**
+     * Binds the value of an entity's property to the next parameter of a prepared statement, according to its mapping.
+     * <p>
+     * References are written as the id they point to, without loading the entity. A reference to nothing is written as the mapping's
+     * {@link ColumnMapping#nullReferenceId()}, or as NULL if there is none. A reference by short code is looked up on the given
+     * connection, so it also finds entities that were inserted in the same transaction; if there is no such entity, this fails instead
+     * of writing NULL. Other columns are written by {@link #writeProperty}.
+     * </p>
+     * @param conn the database connection
+     * @param className the name of the entity class, for error messages
+     * @param mapping how the column is mapped
+     * @param property what the mapping's handler returned for the entity
+     * @param ps the statement to bind the value to
+     * @throws SQLException if the value cannot be bound
+     */
+    public static void writeColumn(final DatabaseConnection conn,
+                                   final String className,
+                                   final ColumnMapping<?> mapping,
+                                   final JanitorObject property,
+                                   final SimplePreparedStatement ps) throws SQLException {
+        // The handler returns the property wrapped for assignment; unpacking the wrapper yields the value. Unpacking a reference itself
+        // would resolve it, which costs a query and turns a reference that cannot be resolved into NULL.
+        if (!mapping.isReference()) {
+            writeProperty(conn, className, mapping.column(), mapping.field(), property.janitorUnpack(), ps, mapping.type());
+            return;
+        }
+        final JanitorObject value = property instanceof ForeignKey<?> ? property : property.janitorUnpack();
+        if (value == Janitor.NULL || value instanceof ForeignKey<?> reference && isNothing(reference, mapping)) {
+            writeNullReference(mapping, ps);
+        } else if (value instanceof ForeignKeyString<?> byKey) {
+            if (byKey.getKey().isBlank()) {
+                writeNullReference(mapping, ps);
+                return;
+            }
+            final OrmEntity target;
+            try {
+                target = byKey.resolve(conn).orElse(null);
+            } catch (DatabaseError e) {
+                throw new SQLException("foreign key resolution failed for '" + byKey.getKey() + "' of field '" + mapping.field() + "' / column '" + mapping.column() + "' in class '" + className + "'", e);
+            }
+            if (target == null) {
+                throw new SQLException("there is no " + byKey.getReferencedEntityClassName() + " '" + byKey.getKey() + "' for field '" + mapping.field() + "' / column '" + mapping.column() + "' in class '" + className + "'");
+            }
+            ps.addLong(target.getId());
+        } else if (value instanceof ForeignKey<?> reference) {
+            ps.addLong(reference.getId()); // by id, search result or the entity itself: all know the id without a lookup
+        } else if (value instanceof JNumber number) {
+            ps.addLong(number.toLong());
+        } else {
+            throw new SQLException("cannot write " + value + " as a reference for field '" + mapping.field() + "' / column '" + mapping.column() + "' in class '" + className + "'");
+        }
+    }
+
+    /**
+     * Whether a reference is written as "no reference". Without a configured null reference id, only the null reference itself is: a
+     * reference to the id 0 is written as 0, as it always was.
+     */
+    private static boolean isNothing(final ForeignKey<?> reference, final ColumnMapping<?> mapping) {
+        return reference instanceof ForeignKeyNull<?> || mapping.nullReferenceId() != null && reference.isNull();
+    }
+
+    private static void writeNullReference(final ColumnMapping<?> mapping, final SimplePreparedStatement ps) throws SQLException {
+        if (mapping.nullReferenceId() != null) {
+            ps.addLong(mapping.nullReferenceId());
+        } else {
+            ps.addNullInteger();
         }
     }
 

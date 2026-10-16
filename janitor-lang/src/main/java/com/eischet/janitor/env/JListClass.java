@@ -4,6 +4,7 @@
 package com.eischet.janitor.env;
 
 import com.eischet.janitor.api.Janitor;
+import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import com.eischet.janitor.api.types.functions.JCallArgs;
@@ -37,16 +38,24 @@ public class JListClass {
      */
     public static JList __parseJson(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         try {
-            return parseJson(self, arguments.require(1).getString(0).janitorGetHostValue());
+            final String json = arguments.require(1).getString(0).janitorGetHostValue();
+            if (json == null || json.isBlank()) {
+                return self;
+            }
+            // use the script's own environment, not Janitor.current(): hosts may run several differently configured sandboxes
+            final JanitorEnvironment environment = process.getEnvironment();
+            self.readJson(environment, environment.getLenientJsonConsumer(json));
+            return self;
         } catch (JsonException e) {
             throw new JanitorNativeException(process, "error parsing json", e);
         }
     }
 
     /**
-     * Read a JSON string, representing a list, into this list.
+     * Read a JSON string, representing a list, appending its elements to this list.
      *
-     * @param json the JSON string
+     * @param self the list to read into
+     * @param json the JSON string; null or blank strings leave the list unchanged
      * @return this list
      * @throws JsonException if the JSON is invalid, e.g. it's not really a list
      */
@@ -60,18 +69,16 @@ public class JListClass {
 
 
     /**
-     * Read a JSON string, representing a list, into this list.
+     * Read a JSON array from a stream, appending its elements to this list.
+     * This delegates to {@link JList#readJson(JsonInputStream)}.
      *
-     * @param reader the JSON reader
+     * @param self the list to read into
+     * @param reader the JSON reader, positioned at the start of an array
      * @return this list
      * @throws JsonException if the JSON is invalid, e.g. it's not really a list
      */
     public static JList parseJson(final JList self, final JsonInputStream reader) throws JsonException {
-        reader.beginArray();
-        while (reader.hasNext()) {
-            self.add(JCollection.parseJsonValue(reader));
-        }
-        reader.endArray();
+        self.readJson(reader);
         return self;
     }
 

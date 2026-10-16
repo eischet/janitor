@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.eischet.root</groupId>
         <artifactId>lib-public</artifactId>
-        <version>1.0.13</version>
+        <version>1.0.15</version>
     </parent>
 
     <groupId>com.eischet.janitor</groupId>
@@ -19,20 +19,22 @@
 
     <properties>
         <!-- project revision -->
-        <revision>0.9.67</revision>
+        <revision>0.9.68-SNAPSHOT</revision>
 
         <!-- project settings -->
         <maven.plugin.validation>VERBOSE</maven.plugin.validation>
 
         <!-- dependency versions -->
         <deps.autoservice>1.1.1</deps.autoservice>
-        <deps.jansi-and-jline>4.4.6</deps.jansi-and-jline>
+        <deps.jansi-and-jline>4.4.8</deps.jansi-and-jline>
 
         <maven.compiler.release>21</maven.compiler.release>
 
         <!-- assorted external dependencies -->
         <deps.bouncycastle>1.86</deps.bouncycastle>
-        <deps.docusign>6.8.0</deps.docusign>
+        <deps.docusign>6.9.0</deps.docusign>
+        <deps.azure-identity>1.18.7</deps.azure-identity>
+        <deps.azure-core-http-jdk-httpclient>1.2.0</deps.azure-core-http-jdk-httpclient>
 
     </properties>
 
@@ -104,6 +106,10 @@
                     <version>3.6.0</version>
                 </plugin>
                 <plugin>
+                    <artifactId>maven-failsafe-plugin</artifactId>
+                    <version>3.6.0</version>
+                </plugin>
+                <plugin>
                     <artifactId>maven-jar-plugin</artifactId>
                     <version>3.5.1</version>
                 </plugin>
@@ -158,33 +164,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-gpg-plugin</artifactId>
-                <version>3.2.8</version>
-                <executions>
-                    <execution>
-                        <id>sign-artifacts</id>
-                        <phase>verify</phase>
-                        <configuration>
-                            <skip>false</skip>
-                            <bestPractices>true</bestPractices>
-                        </configuration>
-                        <goals>
-                            <goal>sign</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <dependencies>
-                    <!-- the maven-gpg-plugin specifies a version range of [1.81,1.82), which breaks the build whenever I'm in a VPN, for example... pinning it down to avoid -->
-                    <dependency>
-                        <groupId>org.bouncycastle</groupId>
-                        <artifactId>bcprov-jdk18on</artifactId>
-                        <version>1.86</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
-
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.6.0</version>
@@ -273,6 +252,11 @@
             <dependency>
                 <groupId>com.eischet.janitor.modules</groupId>
                 <artifactId>mustang</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eischet.janitor.modules</groupId>
+                <artifactId>msgraph</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>

@@ -13,6 +13,7 @@ import com.eischet.janitor.api.types.builtin.*;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.toolbox.json.api.JsonException;
+import com.eischet.janitor.toolbox.json.api.JsonInputStream;
 import com.eischet.janitor.toolbox.json.api.JsonReadMode;
 import com.eischet.janitor.toolbox.json.api.JsonReader;
 import com.eischet.janitor.toolbox.json.api.JsonStreamFactory;
@@ -279,6 +280,53 @@ public final class Janitor {
      */
     public static void readJson(final @NotNull JsonReadMode mode, final @NotNull Reader source, final @NotNull JsonReader reader) throws JsonException {
         getJsonStreams().read(mode, source, reader);
+    }
+
+    /**
+     * Reads the next value from a JSON stream as an untyped Janitor object, using the current environment.
+     *
+     * @param stream the JSON stream, positioned at the start of a value
+     * @return the value, or {@link JNull#NULL} for a JSON null
+     * @throws JsonException if the JSON is malformed or the stream is not positioned at a value
+     * @see #readJsonValue(JanitorEnvironment, JsonInputStream)
+     */
+    public static @NotNull JanitorObject readJsonValue(final @NotNull JsonInputStream stream) throws JsonException {
+        return readJsonValue(current(), stream);
+    }
+
+    /**
+     * Reads the next value from a JSON stream as an untyped Janitor object.
+     * Arrays become lists and objects become maps; numbers are read as floating point.
+     * All values, including nested lists and maps, are created by the given environment's builtin types.
+     * This is the single implementation behind {@link JMap#readJson} and {@link JList#readJson} (for lists without an element type).
+     *
+     * @param environment the environment that creates the values, e.g. the one of the running script
+     * @param stream the JSON stream, positioned at the start of a value
+     * @return the value, or {@link JNull#NULL} for a JSON null
+     * @throws JsonException if the JSON is malformed or the stream is not positioned at a value
+     */
+    public static @NotNull JanitorObject readJsonValue(final @NotNull JanitorEnvironment environment, final @NotNull JsonInputStream stream) throws JsonException {
+        final BuiltinTypes builtins = environment.getBuiltinTypes();
+        return switch (stream.peek()) {
+            case BEGIN_ARRAY -> {
+                final JList list = builtins.list();
+                list.readJson(environment, stream);
+                yield list;
+            }
+            case BEGIN_OBJECT -> {
+                final JMap map = builtins.map();
+                map.readJson(environment, stream);
+                yield map;
+            }
+            case STRING -> builtins.nullableString(stream.nextString());
+            case NUMBER -> builtins.numeric(stream.nextDouble());
+            case BOOLEAN -> toBool(stream.nextBoolean());
+            case NULL -> {
+                stream.nextNull();
+                yield NULL;
+            }
+            case END_ARRAY, END_OBJECT, NAME, END_DOCUMENT -> throw new JsonException("Unexpected token " + stream.peek() + " at " + stream.getPath());
+        };
     }
 
     /**

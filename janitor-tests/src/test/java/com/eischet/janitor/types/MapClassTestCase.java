@@ -6,9 +6,11 @@ package com.eischet.janitor.types;
 import com.eischet.janitor.JanitorTest;
 import com.eischet.janitor.TestEnv;
 import com.eischet.janitor.api.Janitor;
+import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.RunnableScript;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
+import com.eischet.janitor.api.types.builtin.JList;
 import com.eischet.janitor.api.types.builtin.JMap;
 import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.types.functions.JCallable;
@@ -143,6 +145,125 @@ public class MapClassTestCase extends JanitorTest {
                 """);
 
 
+    }
+
+    @Test void removeEntries() throws Exception {
+        assertEquals("1\n{b=2}\n", getOutput("""
+                m = {a: 1, b: 2};
+                print(m.remove("a"));
+                print(m);
+                """));
+        // removing a missing key returns null and leaves the map unchanged:
+        assertEquals("null\n1\n", getOutput("""
+                m = {a: 1};
+                print(m.remove("x"));
+                print(m.size());
+                """));
+        // the host map is modified, too:
+        final JMap data = Janitor.map();
+        data.put("foo", "bar");
+        data.put("baz", 17);
+        evaluate("assert(data.remove('foo') == 'bar')", g -> g.bind("data", data));
+        assertEquals(1, data.size());
+        assertFalse(data.janitorGetHostValue().containsKey(Janitor.string("foo")));
+        // exactly one argument is required:
+        assertThrows(JanitorRuntimeException.class, () -> evaluate("{a: 1}.remove()"));
+        assertThrows(JanitorRuntimeException.class, () -> evaluate("{a: 1}.remove('a', 'b')"));
+    }
+
+    @Test void clearEntries() throws Exception {
+        assertEquals("{}\n", getOutput("""
+                m = {a: 1, b: 2};
+                m.clear();
+                print(m);
+                """));
+        final JMap data = Janitor.map();
+        data.put("foo", "bar");
+        evaluate("data.clear()", g -> g.bind("data", data));
+        assertTrue(data.isEmpty());
+    }
+
+    @Test void containsKeyAndValue() throws Exception {
+        evaluate("""
+                m = {a: 1, b: null};
+                assert(m.containsKey("a"));
+                assert(m.containsKey("b")); // present, even though the value is null
+                assert(not m.containsKey("c"));
+                assert(m.containsValue(1));
+                assert(not m.containsValue(2));
+                """);
+    }
+
+    @Test void argumentCountsAreChecked() {
+        assertThrows(JanitorRuntimeException.class, () -> evaluate("{}.put('a')"));
+        assertThrows(JanitorRuntimeException.class, () -> evaluate("{}.put('a', 1, 2)"));
+        assertThrows(JanitorRuntimeException.class, () -> evaluate("{}.size(1)"));
+        assertThrows(JanitorRuntimeException.class, () -> evaluate("{}.isEmpty(1)"));
+        assertThrows(JanitorRuntimeException.class, () -> evaluate("{}.keys(1)"));
+        assertThrows(JanitorRuntimeException.class, () -> evaluate("{}.values(1)"));
+        assertThrows(JanitorRuntimeException.class, () -> evaluate("{}.containsKey()"));
+        assertThrows(JanitorRuntimeException.class, () -> evaluate("{}.containsValue()"));
+        assertThrows(JanitorRuntimeException.class, () -> evaluate("{}.copy(1)"));
+        assertThrows(JanitorRuntimeException.class, () -> evaluate("{}.clear(1)"));
+    }
+
+    @Test void hostValueIsTheWrappedMap() {
+        final JMap data = Janitor.map();
+        assertSame(data.janitorGetHostValue(), data.janitorGetHostValue(), "the wrapped map, not a copy");
+        data.janitorGetHostValue().put(Janitor.string("foo"), Janitor.string("bar"));
+        assertEquals(Janitor.string("bar"), data.get(Janitor.string("foo")));
+    }
+
+    @Test void valuesIsAnUnmodifiableCopy() {
+        final JMap data = Janitor.map();
+        data.put("foo", "bar");
+        final var values = data.values();
+        assertThrows(UnsupportedOperationException.class, values::clear);
+        data.put("baz", 17);
+        assertEquals(1, values.size(), "later changes to the map do not show up in the copy");
+    }
+
+    @Test void readJsonWithNullsAndNesting() throws Exception {
+        @Language("JSON") final String json = "{\"a\": null, \"b\": 1, \"c\": [null, \"x\", {\"d\": true}], \"e\": {}}";
+        final JMap map = Janitor.map();
+        map.readJson(Janitor.current().getLenientJsonConsumer(json));
+        assertEquals(4, map.size());
+        assertTrue(map.containsKey(Janitor.string("a")));
+        assertSame(Janitor.NULL, map.get(Janitor.string("a")));
+        assertEquals(Janitor.numeric(1), map.get(Janitor.string("b")));
+        final JList c = (JList) map.get(Janitor.string("c"));
+        assertEquals(3, c.size());
+        assertSame(Janitor.NULL, c.get(0));
+        assertEquals(Janitor.string("x"), c.get(1));
+        assertEquals(Janitor.TRUE, ((JMap) c.get(2)).get(Janitor.string("d")));
+        assertTrue(((JMap) map.get(Janitor.string("e"))).isEmpty());
+
+        // the Java and script entry points share the same implementation:
+        assertEquals(map.exportToJson(), Janitor.parseJsonToMap(json).exportToJson()); // JList has no value equality, so compare the JSON
+        evaluate("""
+                m = {}.parseJson('{"a": null, "b": [1, null]}');
+                assert(m.containsKey("a"));
+                assert(m.a == null);
+                assert(m.b.size() == 2);
+                l = [].parseJson('[null, {"x": null}]');
+                assert(l.size() == 2);
+                assert(l[1].containsKey("x"));
+                """);
+    }
+
+    @Test void readJsonCreatesNestedValuesInTheGivenEnvironment() throws Exception {
+        final JanitorEnvironment envA = OutputCatchingTestRuntime.fresh().getEnvironment();
+        final JanitorEnvironment envB = OutputCatchingTestRuntime.fresh().getEnvironment();
+        final var mapDispatcherB = envB.getBuiltinTypes().map().getDispatcher();
+        final var listDispatcherB = envB.getBuiltinTypes().list().getDispatcher();
+        assertNotSame(envA.getBuiltinTypes().map().getDispatcher(), mapDispatcherB, "precondition: environments have their own builtin types");
+
+        final JMap map = envB.getBuiltinTypes().map();
+        map.readJson(envB, envB.getLenientJsonConsumer("{\"m\": {}, \"l\": [{}]}"));
+        assertSame(mapDispatcherB, ((JMap) map.get(Janitor.string("m"))).getDispatcher());
+        final JList list = (JList) map.get(Janitor.string("l"));
+        assertSame(listDispatcherB, list.getDispatcher());
+        assertSame(mapDispatcherB, ((JMap) list.get(0)).getDispatcher());
     }
 
     @Test void serializeTheEmptyMap() throws Exception {

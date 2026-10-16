@@ -101,6 +101,19 @@ public final class JanitorOrm {
         public static MetaDataKey<Integer> DECIMAL_SCALE = new MetaDataKey<>("decimal_scale", Integer.class);
 
         /**
+         * The id that a reference column holds when it refers to nothing, for schemas that do not use NULL for that. Some
+         * databases (e.g. Assyst) declare their reference columns {@code NOT NULL} and point "nowhere" to a system row with
+         * the id 0 instead. A reference that {@link com.eischet.janitor.orm.ref.ForeignKey#isNull() is null} is written as
+         * this id, and this id is read back as a null reference; filters for {@code ISNULL} / {@code ISNOTNULL} take it into
+         * account, too.
+         * <p>
+         * Set it on a reference property to configure a single column; a whole collection of DAOs can provide a default
+         * with {@link com.eischet.janitor.orm.dao.OrmDaoCollection#getNullReferenceId()}. Absent means NULL.
+         * </p>
+         */
+        public static MetaDataKey<Long> NULL_REFERENCE_ID = new MetaDataKey<>("null_reference_id", Long.class);
+
+        /**
          * The version range of the object.
          *
          * This can be used to adjust to schema differences automatically, most useful when you do not have control over a schema, e.g.

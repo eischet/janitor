@@ -75,6 +75,10 @@
         </dependency>
         <dependency>
             <groupId>com.eischet.janitor.modules</groupId>
+            <artifactId>msgraph</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.eischet.janitor.modules</groupId>
             <artifactId>pdf</artifactId>
         </dependency>
         <dependency>
@@ -144,6 +148,21 @@
                     <execution>
                         <id>sign-artifacts</id>
                         <phase>none</phase>
+                    </execution>
+                </executions>
+            </plugin>
+            <!--
+                Integration tests (*IT.java): slow ones, and ones that need more than the JVM, e.g. a local HTTP server. They do not run with
+                "mvn test" or "mvn package", only from "mvn verify" on, so also before every install and deploy.
+            -->
+            <plugin>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>

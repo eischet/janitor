@@ -54,11 +54,11 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
     /**
      * Get the values of the map.
      *
-     * @return the values
+     * @return an unmodifiable copy of the values
      */
     @Contract(pure = true)
     public @NotNull @Unmodifiable Collection<JanitorObject> values() {
-        return wrapped.values();
+        return Collections.unmodifiableList(new ArrayList<>(wrapped.values()));
     }
 
     /**
@@ -76,10 +76,15 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
         return wrapped.keySet().iterator();
     }
 
+    /**
+     * Returns the wrapped map itself, not a copy, so changes made through it are visible to scripts and vice versa.
+     *
+     * @return the wrapped map
+     */
     @Contract(pure = true)
     @Override
     public @NotNull Map<JanitorObject, JanitorObject> janitorGetHostValue() {
-        return new HashMap<>(wrapped);
+        return wrapped;
     }
 
     @Contract(pure = true)
@@ -218,6 +223,39 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
     @Contract(pure = true)
     public JanitorObject get(final JanitorObject key) {
         return JanitorEnvironment.orNull(wrapped.get(key));
+    }
+
+    /**
+     * Check whether the map has an entry for a key.
+     *
+     * @param key the key
+     * @return true if the key is present, even when the associated value IS NULL
+     */
+    @Contract(pure = true)
+    public boolean containsKey(final JanitorObject key) {
+        return wrapped.containsKey(key);
+    }
+
+    /**
+     * Check whether the map has an entry with a value.
+     *
+     * @param value the value
+     * @return true if the value is present
+     */
+    @Contract(pure = true)
+    public boolean containsValue(final JanitorObject value) {
+        return wrapped.containsValue(value);
+    }
+
+    /**
+     * Remove a key and its value from the map.
+     *
+     * @param key the key
+     * @return the value previously stored under the key, or NULL if the key was not present.
+     */
+    @Contract(mutates = "this")
+    public @NotNull JanitorObject remove(final JanitorObject key) {
+        return Janitor.nullableObject(wrapped.remove(key));
     }
 
     /**
@@ -388,32 +426,30 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
     }
 
     /**
-     * Reads the entries of a JSON object from the stream into this map.
+     * Reads the entries of a JSON object from the stream into this map, adding to or replacing existing entries,
+     * using the current environment.
+     *
      * @param stream the JSON stream, positioned at the start of an object
-     * @throws JsonException if the JSON is malformed
+     * @throws JsonException if the JSON is malformed, e.g. it's not an object
+     * @see #readJson(JanitorEnvironment, JsonInputStream)
      */
     public void readJson(final JsonInputStream stream) throws JsonException {
+        readJson(Janitor.current(), stream);
+    }
+
+    /**
+     * Reads the entries of a JSON object from the stream into this map, adding to or replacing existing entries.
+     * Keys and values are created by the given environment, using {@link Janitor#readJsonValue(JanitorEnvironment, JsonInputStream)}.
+     *
+     * @param environment the environment that creates keys and values, e.g. the one of the running script
+     * @param stream the JSON stream, positioned at the start of an object
+     * @throws JsonException if the JSON is malformed, e.g. it's not an object
+     */
+    public void readJson(final @NotNull JanitorEnvironment environment, final JsonInputStream stream) throws JsonException {
         stream.beginObject();
         while (stream.hasNext()) {
             final String key = stream.nextKey();
-            final JsonTokenType token = stream.peek();
-            switch (token) {
-                case BEGIN_ARRAY -> {
-                    final JList subList = Janitor.list();
-                    subList.readJson(stream);
-                    put(key, subList);
-                }
-                case BEGIN_OBJECT -> {
-                    final JMap object = Janitor.map();
-                    object.readJson(stream);
-                    put(key, object);
-                }
-                case STRING -> put(key, Janitor.string(stream.nextString()));
-                case NUMBER -> put(key, Janitor.numeric(stream.nextDouble()));
-                case BOOLEAN -> put(key, stream.nextBoolean() ? Janitor.TRUE : Janitor.FALSE);
-                case NULL -> put(key, Janitor.NULL);
-                case END_ARRAY, END_OBJECT, NAME, END_DOCUMENT -> throw new JsonException("Unexpected token while reading map: " + token);
-            }
+            put(environment.getBuiltinTypes().nullableString(key), Janitor.readJsonValue(environment, stream));
         }
         stream.endObject();
     }
