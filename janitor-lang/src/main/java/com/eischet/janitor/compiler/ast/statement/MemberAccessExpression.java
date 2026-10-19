@@ -35,12 +35,28 @@ public class MemberAccessExpression extends AstNode implements Expression {
 
     @Override
     public @NotNull JanitorObject evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException {
+        return evaluate(process, false);
+    }
+
+    /**
+     * Looks up the member without reading its current value, so that "foo.bar = baz" does not call the getter of "bar".
+     */
+    @Override
+    public @NotNull JanitorObject evaluateForAssignment(final JanitorScriptProcess process) throws JanitorRuntimeException {
+        return evaluate(process, true);
+    }
+
+    private static @Nullable JanitorObject lookup(final JanitorScriptProcess process, final JanitorObject object, final String identifier, final boolean forAssignment) throws JanitorRuntimeException {
+        return forAssignment ? object.janitorGetAttributeForAssignment(process, identifier) : object.janitorGetAttribute(process, identifier, false);
+    }
+
+    private @NotNull JanitorObject evaluate(final JanitorScriptProcess process, final boolean forAssignment) throws JanitorRuntimeException {
         final JanitorObject object = expression.evaluate(process);
         // "null?.anything" must return null
         if (guarded && Janitor.NULL == object) {
             return Janitor.NULL;
         }
-        @Nullable final JanitorObject attribute = object.janitorGetAttribute(process, identifier, false);
+        @Nullable final JanitorObject attribute = lookup(process, object, identifier, forAssignment);
         if (attribute != null) {
             return attribute;
         }
@@ -53,7 +69,7 @@ public class MemberAccessExpression extends AstNode implements Expression {
             if (guarded && Janitor.NULL == unpacked) {
                 return Janitor.NULL;
             }
-            @Nullable final JanitorObject unpackedAttribute = unpacked.janitorGetAttribute(process, identifier, false);
+            @Nullable final JanitorObject unpackedAttribute = lookup(process, unpacked, identifier, forAssignment);
             if (unpackedAttribute != null) {
                 return unpackedAttribute;
             }

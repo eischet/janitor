@@ -44,6 +44,15 @@ public class DispatcherChain<T extends JanitorObject> implements Dispatcher<T> {
     }
 
     @Override
+    public JanitorObject dispatchForAssignment(T instance, JanitorScriptProcess process, String name) throws JanitorRuntimeException {
+        for (Dispatcher<? super T> dispatcher : chain) {
+            JanitorObject result = dispatcher.dispatchForAssignment(instance, process, name);
+            if (result != null) return result;
+        }
+        return null;
+    }
+
+    @Override
     public void writeToJson(final JsonOutputStream stream, final T instance) throws JsonException {
         for (Dispatcher<? super T> dispatcher : chain) {
             dispatcher.writeToJson(stream, instance);

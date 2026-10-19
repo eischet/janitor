@@ -62,6 +62,16 @@ public abstract class JanitorComposed<T extends JanitorComposed<T>> implements J
         return superValue;
     }
 
+    @Override
+    public @Nullable JanitorObject janitorGetAttributeForAssignment(final @NotNull JanitorScriptProcess process, final @NotNull String name) throws JanitorRuntimeException {
+        final JanitorObject attribute = dispatcher.dispatchForAssignment(self(), process, name);
+        if (attribute != null) {
+            return attribute;
+        }
+        // nothing in the dispatcher: let subclasses (e.g. maps) look up the attribute their own way
+        return janitorGetAttribute(process, name, false);
+    }
+
     /**
      * @return this object, typed as the concrete subclass
      */

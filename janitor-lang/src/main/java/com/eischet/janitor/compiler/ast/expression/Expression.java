@@ -18,4 +18,16 @@ import org.jetbrains.annotations.NotNull;
  */
 public interface Expression extends Ast, JsonExportableObject {
     @NotNull JanitorObject evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException, JanitorError;
+
+    /**
+     * Evaluates this expression as the target of an assignment, e.g. the left side of "foo.bar = baz".
+     * Expressions that look up properties return them without reading their current values.
+     * @param process the running script
+     * @return the result, which should usually be assignable
+     * @throws JanitorRuntimeException on errors
+     * @throws JanitorError on errors
+     */
+    default @NotNull JanitorObject evaluateForAssignment(final JanitorScriptProcess process) throws JanitorRuntimeException, JanitorError {
+        return evaluate(process);
+    }
 }

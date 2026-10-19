@@ -36,6 +36,22 @@ public interface Dispatcher<T extends JanitorObject> extends HasMetaData {
     JanitorObject dispatch(final T instance, final JanitorScriptProcess process, final String name) throws JanitorRuntimeException;
 
     /**
+     * Looks up an attribute that is about to be assigned to, e.g. for "foo.bar = baz" or apply().
+     * Unlike {@link #dispatch}, this does not need to read the attribute's current value: a property may be returned as a
+     * lazy {@link com.eischet.janitor.api.types.TemporaryAssignable} whose getter has not been called.
+     * The default implementation simply calls {@link #dispatch}.
+     *
+     * @param instance the JanitorObject to look up the attribute on
+     * @param process  the running script
+     * @param name     the name of the attribute
+     * @return the attribute, or null if there is none
+     * @throws JanitorRuntimeException if the lookup fails
+     */
+    default JanitorObject dispatchForAssignment(final T instance, final JanitorScriptProcess process, final String name) throws JanitorRuntimeException {
+        return dispatch(instance, process, name);
+    }
+
+    /**
      * Writes an object as JSON.
      * @param stream the target
      * @param instance the object
@@ -115,6 +131,17 @@ public interface Dispatcher<T extends JanitorObject> extends HasMetaData {
                     return result;
                 } else {
                     return parent.dispatch(instance, process, name);
+                }
+            }
+
+            @SuppressWarnings("unchecked")
+            @Override
+            public JanitorObject dispatchForAssignment(final P instance, final JanitorScriptProcess process, final String name) throws JanitorRuntimeException {
+                final JanitorObject result = child.dispatchForAssignment((C) instance, process, name);
+                if (result != null) {
+                    return result;
+                } else {
+                    return parent.dispatchForAssignment(instance, process, name);
                 }
             }
 

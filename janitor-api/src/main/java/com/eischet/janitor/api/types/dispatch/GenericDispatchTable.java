@@ -86,6 +86,7 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
     private @Nullable
     final Dispatcher<?> parent;
     private final DispatchDelegate<T> parentLookupHandler;
+    private final DispatchDelegate<T> parentAssignmentLookupHandler;
     private final Map<String, AttributeLookupHandler<T>> map = new HashMap<>();
     private final List<String> attributeNames = new ArrayList<>();
     private final Set<String> readOnlyProperties = new java.util.HashSet<>();
@@ -101,6 +102,7 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
     public GenericDispatchTable(final @Nullable Supplier<T> javaDefaultConstructor, boolean includeApplyMethod) {
         parent = null;
         parentLookupHandler = null;
+        parentAssignmentLookupHandler = null;
         parentAttributeReader = null;
         parentAttributeWriter = null;
         this.javaDefaultConstructor = javaDefaultConstructor;
@@ -152,6 +154,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
     public <P extends JanitorObject> GenericDispatchTable(final @NotNull Dispatcher<P> parent, final Function<T, P> caster, boolean includeApplyMethod) {
         this.parent = parent;
         parentLookupHandler = (instance, process, name) -> parent.dispatch(caster.apply(instance), process, name);
+        parentAssignmentLookupHandler = (instance, process, name) -> parent.dispatchForAssignment(caster.apply(instance), process, name);
         // not tested yet: can we use this to delegate
         parentAttributeReader = (stream, key, instance) -> {
             if (parent instanceof GenericDispatchTable<P> parentDispatch) {
@@ -542,9 +545,9 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
                                                  final @NotNull PrimitiveIntSetter<T> setter) {
         return internalAddProperty(
                 name,
-                instance -> TemporaryAssignable.of(
+                instance -> TemporaryAssignable.lazy(
                         name,
-                        Janitor.integer(getter.get(instance)),
+                        () -> Janitor.integer(getter.get(instance)),
                         value -> setter.set(instance, Janitor.requireInt(value).janitorGetHostValue().intValue())
                 ),
                 adapt(name, JSON_INT, getter::get, NullableSetter.guard(setter)),
@@ -568,9 +571,9 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
                                                          final NullableSetter<T, Integer> setter) {
         return internalAddProperty(
                 name,
-                instance -> TemporaryAssignable.of(
+                instance -> TemporaryAssignable.lazy(
                         name,
-                        Janitor.nullableInteger(getter.get(instance)),
+                        () -> Janitor.nullableInteger(getter.get(instance)),
                         value -> setter.set(instance, Conversions.toNullableJavaInteger(value))
                 ),
                 adapt(name, JSON_INT, getter, setter),
@@ -632,9 +635,9 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
     public PropertyHandle<T, Long> addLongProperty(final @NotNull String name,
                                               final @NotNull PrimitiveLongGetter<T> getter,
                                               final @NotNull PrimitiveLongSetter<T> setter) {
-        return internalAddProperty(name, instance -> TemporaryAssignable.of(
+        return internalAddProperty(name, instance -> TemporaryAssignable.lazy(
                         name,
-                        Janitor.getBuiltins().integer(getter.get(instance)),
+                        () -> Janitor.getBuiltins().integer(getter.get(instance)),
                         value -> setter.set(instance, Janitor.requireInt(value).janitorGetHostValue())
                 ),
                 adapt(name, JSON_LONG, getter::get, NullableSetter.guard(setter)),
@@ -651,9 +654,9 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
     public PropertyHandle<T, BigDecimal> addBigDecimalProperty(final @NotNull String name,
                                                     final @NotNull NullableGetter<T, BigDecimal> getter,
                                                     final @NotNull NullableSetter<T, BigDecimal> setter) {
-        return internalAddProperty(name, instance -> TemporaryAssignable.of(
+        return internalAddProperty(name, instance -> TemporaryAssignable.lazy(
                         name,
-                        Janitor.nullableInteger(getter.get(instance)),
+                        () -> Janitor.nullableInteger(getter.get(instance)),
                         value -> {
                             if (value == Janitor.NULL) {
                                 setter.set(instance, null);
@@ -682,7 +685,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
     public PropertyHandle<T, Long> addNullableLongProperty(final @NotNull String name,
                                                       final @NotNull NullableGetter<T, Long> getter,
                                                       final @NotNull NullableSetter<T, Long> setter) {
-        return internalAddProperty(name, instance -> TemporaryAssignable.of(name, Janitor.getBuiltins().nullableInteger(getter.get(instance)),
+        return internalAddProperty(name, instance -> TemporaryAssignable.lazy(name, () -> Janitor.getBuiltins().nullableInteger(getter.get(instance)),
                         value -> setter.set(instance, Conversions.toNullableJavaLong(value))),
                 adapt(name, JSON_LONG, getter, setter),
                 JsonType.NUMBER, null,
@@ -726,9 +729,9 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
     public PropertyHandle<T, Double> addNullableDoubleProperty(final @NotNull String name,
                                                         final NullableGetter<T, Double> getter,
                                                         final NullableSetter<T, Double> setter) {
-        return internalAddProperty(name, (instance) -> TemporaryAssignable.of(
+        return internalAddProperty(name, (instance) -> TemporaryAssignable.lazy(
                         name,
-                        Janitor.nullableFloatingPoint(getter.get(instance)),
+                        () -> Janitor.nullableFloatingPoint(getter.get(instance)),
                         value -> setter.set(instance, Conversions.toNullableJavaDouble(value))), adapt(name, JSON_DOUBLE, getter, setter),
                 JsonType.NUMBER,
                 null,
@@ -751,7 +754,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
                                                 final PrimitiveDoubleGetter<T> getter,
                                                 final PrimitiveDoubleSetter<T> setter) {
         return internalAddProperty(name,
-                (instance) -> TemporaryAssignable.of(name, Janitor.getBuiltins().floatingPoint(getter.get(instance)), value -> setter.set(instance, Conversions.requireFloat(value).janitorGetHostValue())),
+                (instance) -> TemporaryAssignable.lazy(name, () -> Janitor.getBuiltins().floatingPoint(getter.get(instance)), value -> setter.set(instance, Conversions.requireFloat(value).janitorGetHostValue())),
                 adapt(name, JSON_DOUBLE, getter::get, NullableSetter.guard(setter)),
                 JsonType.NUMBER, null,
                 NullableGetter.of(getter),
@@ -820,7 +823,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
                                                   final NullableSetter<T, List<E>> setter,
                                                   final TwoWayConverter<E> converter,
                                                   final @Nullable JsonSupportDelegate<E> jsonSupportDelegate) {
-        return internalAddProperty(name, instance -> TemporaryAssignable.of(name, Conversions.toJanitorList(getter.get(instance), converter), value -> {
+        return internalAddProperty(name, instance -> TemporaryAssignable.lazy(name, () -> Conversions.toJanitorList(getter.get(instance), converter), value -> {
                     if (!(value instanceof JList argList)) {
                         throw new IllegalArgumentException("Expected a list");
                     }
@@ -854,7 +857,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
                                                                                              final @NotNull NullableSetter<T, List<E>> setter,
                                                                                              final @NotNull ValueExpander<T, E> elementExpander,
                                                                                              final @NotNull JsonAdapter<T> jsonAdapter) {
-        return internalAddProperty(name, instance -> TemporaryAssignable.of(name, Conversions.toJanitorList(getter.get(instance), element -> element), value -> {
+        return internalAddProperty(name, instance -> TemporaryAssignable.lazy(name, () -> Conversions.toJanitorList(getter.get(instance), element -> element), value -> {
                     if (!(value instanceof JList argList)) {
                         throw new IllegalArgumentException("Expected a list");
                     }
@@ -995,7 +998,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
                                                  final @NotNull PrimitiveBooleanGetter<T> getter,
                                                  final @NotNull PrimitiveBooleanSetter<T> setter) {
         return internalAddProperty(name,
-                instance -> TemporaryAssignable.of(name, Janitor.toBool(getter.get(instance)),
+                instance -> TemporaryAssignable.lazy(name, () -> Janitor.toBool(getter.get(instance)),
                         value -> setter.set(instance, Janitor.requireBool(value).janitorIsTrue())),
                 adapt(name, JSON_BOOL, getter::get, NullableSetter.guard(setter)),
                 JsonType.BOOLEAN, null,
@@ -1020,7 +1023,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
     public PropertyHandle<T, Boolean> addNullableBooleanProperty(final @NotNull String name,
                                                          final @NotNull NullableGetter<T, Boolean> getter,
                                                          final @NotNull NullableSetter<T, Boolean> setter) {
-        return internalAddProperty(name, instance -> TemporaryAssignable.of(name, Janitor.nullableBooleanOf(getter.get(instance)), value -> {
+        return internalAddProperty(name, instance -> TemporaryAssignable.lazy(name, () -> Janitor.nullableBooleanOf(getter.get(instance)), value -> {
                     setter.set(instance, toNullableBoolean(value));
                 }), adapt(name, JSON_BOOL_NULLABLE, getter, setter),
                 JsonType.BOOLEAN, null,
@@ -1077,7 +1080,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
                                                 final @NotNull NullableGetter<T, String> getter,
                                                 final @NotNull NullableSetter<T, String> setter) {
         return internalAddProperty(name,
-                instance -> TemporaryAssignable.of(name, Janitor.getBuiltins().nullableString(getter.get(instance)),
+                instance -> TemporaryAssignable.lazy(name, () -> Janitor.getBuiltins().nullableString(getter.get(instance)),
                         value -> setter.set(instance, stringOrNull(value))),
                 adapt(name, JSON_STRING, getter, setter),
                 JsonType.STRING, null,
@@ -1130,7 +1133,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
      * @return a meta-data builder
      */
     public PropertyHandle<T, LocalDate> addDateProperty(final @NotNull String name, final @NotNull NullableGetter<T, LocalDate> getter, final @NotNull NullableSetter<T, LocalDate> setter) {
-        return internalAddProperty(name, instance -> TemporaryAssignable.of(name, Janitor.getBuiltins().nullableDate(getter.get(instance)), value -> setter.set(instance, dateOrNull(value))), new JsonAdapter<>() {
+        return internalAddProperty(name, instance -> TemporaryAssignable.lazy(name, () -> Janitor.getBuiltins().nullableDate(getter.get(instance)), value -> setter.set(instance, dateOrNull(value))), new JsonAdapter<>() {
             @Override
             public void write(final JsonOutputStream stream, final T instance) throws Exception {
                 @Nullable final LocalDate value = getter.get(instance);
@@ -1262,7 +1265,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
      * @return a meta-data builder
      */
     public PropertyHandle<T, LocalDateTime> addDateTimeProperty(final String name, final @NotNull NullableGetter<T, LocalDateTime> getter, final @NotNull NullableSetter<T, LocalDateTime> setter) {
-        return internalAddProperty(name, instance -> TemporaryAssignable.of(name, Janitor.getBuiltins().nullableDateTime(getter.get(instance)),
+        return internalAddProperty(name, instance -> TemporaryAssignable.lazy(name, () -> Janitor.getBuiltins().nullableDateTime(getter.get(instance)),
                 value -> setter.set(instance, dateTimeOrNull(value))), new JsonAdapter<>() {
             @Override
             public void write(final JsonOutputStream stream, final T instance) throws Exception {
@@ -1415,7 +1418,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
         // because we'll turn a class cast exception into a script runtime error:
         // noinspection unchecked
         return internalAddProperty(name,
-                instance -> TemporaryAssignable.of(name, Janitor.nullableObject(getter.get(instance)), value -> setter.set(instance, expander.expandValue(instance, value))),
+                instance -> TemporaryAssignable.lazy(name, () -> Janitor.nullableObject(getter.get(instance)), value -> setter.set(instance, expander.expandValue(instance, value))),
                 adapt(name, shim(constructor), getter, setter), JsonType.OBJECT, null, getter, setter).setMetaData(HOST_NULLABLE, true);
     }
 
@@ -1458,7 +1461,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
         // because we'll turn a class cast exception into a script runtime error:
         // noinspection unchecked
         return internalAddProperty(name,
-                instance -> TemporaryAssignable.of(name, Janitor.nullableObject(getter.get(instance)), value -> setter.set(instance, expander.expandValue(instance, value))),
+                instance -> TemporaryAssignable.lazy(name, () -> Janitor.nullableObject(getter.get(instance)), value -> setter.set(instance, expander.expandValue(instance, value))),
                 jsonAdapter, JsonType.OBJECT, null, getter, setter).setMetaData(HOST_NULLABLE, true);
     }
 
@@ -1505,7 +1508,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
         final AttributeLookupHandler<T> handler = map.get(name);
         if (handler != null) {
             //noinspection unchecked
-            return handler.lookupAttribute((T) instance);
+            return resolved(handler.lookupAttribute((T) instance));
         }
         return null;
     }
@@ -1521,17 +1524,48 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
      */
     @Override
     public JanitorObject dispatch(final T instance, final JanitorScriptProcess process, final String name) throws JanitorRuntimeException {
+        return lookup(instance, process, name, false);
+    }
+
+    /**
+     * Looks up an attribute that is about to be assigned to, without reading the current value of a property.
+     *
+     * @param instance the JanitorObject to look up the attribute on
+     * @param process  the running script
+     * @param name     the name of the attribute
+     * @return the attribute, or null if there is none
+     */
+    @Override
+    public JanitorObject dispatchForAssignment(final T instance, final JanitorScriptProcess process, final String name) throws JanitorRuntimeException {
+        return lookup(instance, process, name, true);
+    }
+
+    /**
+     * Reads the value of a lazy property now, so that a failing getter is reported where the property is read.
+     */
+    private static JanitorObject resolved(final JanitorObject attribute) throws Exception {
+        if (attribute instanceof TemporaryAssignable assignable) {
+            assignable.resolve();
+        }
+        return attribute;
+    }
+
+    private JanitorObject lookup(final T instance, final JanitorScriptProcess process, final String name, final boolean forAssignment) throws JanitorRuntimeException {
         try {
             final AttributeLookupHandler<T> handler = map.get(name);
             if (handler != null) {
                 // TODO: this is, I think, the right place to mix in available metadata for "name" into the resulting attribute!?
-                return handler.lookupAttribute(instance);
+                final JanitorObject attribute = handler.lookupAttribute(instance);
+                return forAssignment ? attribute : resolved(attribute);
             }
             if (aliases != null) {
                 final String target = aliases.get(name);
                 if (target != null && map.get(target) != null) {
-                    return dispatch(instance, process, target);
+                    return lookup(instance, process, target, forAssignment);
                 }
+            }
+            if (forAssignment && parentAssignmentLookupHandler != null) {
+                return parentAssignmentLookupHandler.delegate(instance, process, name);
             }
             if (parentLookupHandler != null) {
                 return parentLookupHandler.delegate(instance, process, name);

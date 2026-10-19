@@ -316,7 +316,14 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
     public void applyTo(final JanitorScriptProcess process, final JanitorObject target) throws JanitorNameException {
         final Set<String> notAssignable = new HashSet<>();
         wrapped.forEach((key, value) -> {
-            @Nullable final JanitorObject prop = Scope.getOptionalMethod(target, process, key.janitorToString());
+            // Look up the property without reading its current value: the getter might be expensive or fail, e.g. for lazily loaded data.
+            @Nullable final JanitorObject prop;
+            try {
+                prop = target.janitorGetAttributeForAssignment(process, key.janitorToString());
+            } catch (JanitorRuntimeException lookupError) {
+                notAssignable.add("error looking up %s.%s: %s '%s'".formatted(simpleClassNameOf(target), key, simpleClassNameOf(lookupError), lookupError.getMessage()));
+                return;
+            }
             if (prop instanceof JAssignable assignableProperty) {
                 try {
                     if (!assignableProperty.assign(value)) {

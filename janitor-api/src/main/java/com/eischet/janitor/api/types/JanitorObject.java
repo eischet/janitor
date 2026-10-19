@@ -247,6 +247,22 @@ public interface JanitorObject {
     }
 
     /**
+     * Looks up an attribute that is about to be assigned to, e.g. for "foo.bar = baz" or apply().
+     * Objects backed by a dispatch table return their properties without reading their current values, so that
+     * assigning to a property never calls its getter.
+     * The default implementation calls {@link #janitorGetAttribute} for an optional attribute.
+     *
+     * @param process a running script processed
+     * @param name the name of the attribute
+     * @return the attribute, or null if it does not exist
+     * @throws JanitorRuntimeException if any runtime errors occur when looking up the attribute
+     */
+    @Nullable
+    default JanitorObject janitorGetAttributeForAssignment(final @NotNull JanitorScriptProcess process, final @NotNull String name) throws JanitorRuntimeException {
+        return janitorGetAttribute(process, name, false);
+    }
+
+    /**
      * Display a warning message.
      * To be used by the runtime and/or addons.
      * Main use case: DispatchTables use this when a read-only field is written to.

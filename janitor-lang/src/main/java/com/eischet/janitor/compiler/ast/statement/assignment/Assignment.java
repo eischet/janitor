@@ -82,7 +82,7 @@ public abstract class Assignment extends Statement implements JsonExportableObje
             }
         }
 
-        final JanitorObject evalLeft = left.evaluate(process); // do NOT unpack here, or we would no longer know where to assign to!
+        final JanitorObject evalLeft = left.evaluateForAssignment(process); // do NOT unpack here, or we would no longer know where to assign to!
         final JanitorObject evalRight = right.evaluate(process).janitorUnpack();
 
         process.trace(() -> "assigning " + evalRight + " to " + evalLeft);

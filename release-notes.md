@@ -22,6 +22,13 @@
 - json: reading JSON into objects with dispatch tables, a field that is null is now read like a missing field: the property keeps
   its value. Before, null failed for string, integer, long, double and boolean properties ("expected a string but was NULL"),
   including the nullable variants, and set BigDecimal properties to 0.
+- language: assigning to a property of a host object, with `obj.prop = value` or `obj.apply({prop: value})`, no longer
+  reads the property first. Before, the getter always ran, so an assignment failed when the getter could not work yet,
+  e.g. one that lazily loads binary data from the database for an object that has not been stored. Properties from dispatch
+  tables now come as lazy TemporaryAssignables (`TemporaryAssignable.lazy`), which read their value only when needed; reading
+  a property still calls the getter right away and reports its errors as before. New for hosts: `Dispatcher.dispatchForAssignment`
+  and `JanitorObject.janitorGetAttributeForAssignment` (both default to the old lookup). apply() no longer hides errors from
+  looking up a property behind "property value ... [JNull] cannot be assigned to", but names the actual error.
 - deps: commonmark 0.30.1, jansi/jline 4.4.8 (both documented in 0.9.68, but forgotten?), maven-exec-plugin 3.6.4
 - orm: cache metrics. A host can install a DaoMetricsProvider with OrmMetrics.install(...); every GenericDao with a cache then reports
   hits, misses, the load time after a miss and evictions (EvictionReason LRU or TTL) to the DaoMetrics it gets for itself. Without a
