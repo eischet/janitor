@@ -4,13 +4,16 @@
 package com.eischet.janitor.compiler.ast.statement.assignment;
 
 import com.eischet.janitor.api.JanitorScriptProcess;
+import com.eischet.janitor.api.errors.glue.JanitorGlueException;
 import com.eischet.janitor.api.errors.runtime.JanitorNameException;
+import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.api.scopes.ResultAndScope;
 import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.types.JAssignable;
 import com.eischet.janitor.api.types.JanitorObject;
+import com.eischet.janitor.api.types.TemporaryAssignable;
 import com.eischet.janitor.runtime.JanitorSemantics;
 import com.eischet.janitor.compiler.ast.expression.Expression;
 import com.eischet.janitor.compiler.ast.expression.Identifier;
@@ -66,7 +69,7 @@ public abstract class Assignment extends Statement implements JsonExportableObje
             // This probably does not work if a function from a module tries to assign to one of its own
             // variables (defined in the module). That is not a good idea anyway, because modules
             // may be in use by several scripts in parallel.
-            final JanitorObject valueToAssign = produce(left, right, process).janitorUnpack();
+            final JanitorObject valueToAssign = produce(() -> left.evaluate(process), right, process).janitorUnpack();
             if (scoped == null) {
                 process.trace(() -> "  will assign " + id + " = " + valueToAssign + " in current scope of script = " + process.getCurrentScope());
                 process.getCurrentScope().bind(process, id, valueToAssign);
@@ -83,7 +86,8 @@ public abstract class Assignment extends Statement implements JsonExportableObje
         }
 
         final JanitorObject evalLeft = left.evaluateForAssignment(process); // do NOT unpack here, or we would no longer know where to assign to!
-        final JanitorObject evalRight = right.evaluate(process).janitorUnpack();
+        // compound assignments like "foo.bar += 1" read the current value from the target we already have, so "foo" is evaluated only once
+        final JanitorObject evalRight = produce(() -> currentValue(process, evalLeft), right, process).janitorUnpack();
 
         process.trace(() -> "assigning " + evalRight + " to " + evalLeft);
         if (evalLeft instanceof JAssignable assignable) {
@@ -104,14 +108,44 @@ public abstract class Assignment extends Statement implements JsonExportableObje
     }
 
     /**
+     * Reads the current value of the left-hand side, for compound assignments like "foo += 1".
+     */
+    @FunctionalInterface
+    protected interface LeftValue {
+        /**
+         * @return the current value of the left-hand side
+         * @throws JanitorRuntimeException if it cannot be read
+         */
+        JanitorObject get() throws JanitorRuntimeException;
+    }
+
+    /**
+     * Reads the current value of an assignment target, reporting a failing getter like a normal property read would.
+     */
+    private static JanitorObject currentValue(final JanitorScriptProcess process, final JanitorObject target) throws JanitorRuntimeException {
+        if (target instanceof TemporaryAssignable assignable) {
+            try {
+                return assignable.resolve();
+            } catch (JanitorRuntimeException e) {
+                throw e;
+            } catch (JanitorGlueException e) {
+                throw e.toRuntimeException(process);
+            } catch (Exception e) {
+                throw new JanitorNativeException(process, "unhandled exception in native code", e);
+            }
+        }
+        return target.janitorUnpack();
+    }
+
+    /**
      * Produces the value to assign to the left-hand side.
-     * @param left the expression on the left-hand side
+     * @param left reads the current value of the left-hand side; a plain assignment must not call it
      * @param right the expression on the right-hand side
      * @param process the running script process
      * @return the value to assign
      * @throws JanitorRuntimeException if the value cannot be produced
      */
-    protected abstract JanitorObject produce(final Expression left, final Expression right, final JanitorScriptProcess process) throws JanitorRuntimeException;
+    protected abstract JanitorObject produce(final LeftValue left, final Expression right, final JanitorScriptProcess process) throws JanitorRuntimeException;
 
     @Override
     public void writeJson(JsonOutputStream producer) throws JsonException {

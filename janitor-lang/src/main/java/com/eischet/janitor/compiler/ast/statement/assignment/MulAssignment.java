@@ -25,7 +25,7 @@ public class MulAssignment extends Assignment {
     }
 
     @Override
-    protected JanitorObject produce(final Expression left, final Expression right, final JanitorScriptProcess process) throws JanitorRuntimeException {
-        return JanitorSemantics.multiply(process, left.evaluate(process), right.evaluate(process).janitorUnpack());
+    protected JanitorObject produce(final LeftValue left, final Expression right, final JanitorScriptProcess process) throws JanitorRuntimeException {
+        return JanitorSemantics.multiply(process, left.get(), right.evaluate(process).janitorUnpack());
     }
 }
