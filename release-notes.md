@@ -1,11 +1,5 @@
 # 0.9.69 (in progress)
 
-- orm: cache metrics. A host can install a DaoMetricsProvider with OrmMetrics.install(...); every GenericDao with a cache then reports
-  hits, misses, the load time after a miss and evictions (EvictionReason LRU or TTL) to the DaoMetrics it gets for itself. Without a
-  provider nothing is reported, and DAOs without a cache never ask. EntityCache has new default methods setEvictionListener, size, maxSize
-  and ttl; SimpleEntityCache implements them (TTL is reported when a lookup finds an expired entry). New: GenericDao.getCacheState() and
-  GenericDao.getDaoCollection().
-
 - new module "mcp" (com.eischet.janitor.modules:mcp): a client for MCP (Model Context Protocol) servers, so that scripts can
   list and call the tools of any MCP server: `srv = mcp.connect(url, {"headers": {"Authorization": "Bearer ..."}});`,
   `srv.tools()`, `res = srv.call("name", {...})` with `res.isError`, `res.text`, `res.content` and `res.structured`.
@@ -14,13 +8,11 @@
   official MCP Java SDK (mcp-core and mcp-json-jackson2 2.1.0, which bring reactor-core and jackson-databind); these
   dependencies stay in the module. Like all modules with network access, only available where the host registers it.
   Included in the REPL.
-
 - language: new operators "in" and "not in", like in Python: `17 in [16, 17, 18] == true`. They bind tighter than `==`
   and looser than `<`. "in" calls the method `__in__` of the right operand with the left one, and that method must return
   true or false; other results and values without `__in__` are errors. Lists and sets check for an equal element, maps
   check the keys, strings look for a substring (`"bar" in "foobar"`). Host types support "in" by adding `__in__`
   (`Janitor.IN_OPERATOR_METHOD`) to their dispatch table. "in" can still be used as a name.
-
 - logging: BasicFormatter (console and file log) prints each exception message only once. Wrapping exceptions usually repeat
   the messages of their causes, e.g. new RuntimeException(e) or a script error listing all of its causes; such a message is
   now left out, only the class name and the stack frames of that cause are printed. The new BasicFormatter.formatStackTrace
@@ -30,6 +22,12 @@
 - json: reading JSON into objects with dispatch tables, a field that is null is now read like a missing field: the property keeps
   its value. Before, null failed for string, integer, long, double and boolean properties ("expected a string but was NULL"),
   including the nullable variants, and set BigDecimal properties to 0.
+- deps: commonmark 0.30.1, jansi/jline 4.4.8 (both documented in 0.9.68, but forgotten?), maven-exec-plugin 3.6.4
+- orm: cache metrics. A host can install a DaoMetricsProvider with OrmMetrics.install(...); every GenericDao with a cache then reports
+  hits, misses, the load time after a miss and evictions (EvictionReason LRU or TTL) to the DaoMetrics it gets for itself. Without a
+  provider nothing is reported, and DAOs without a cache never ask. EntityCache has new default methods setEvictionListener, size, maxSize
+  and ttl; SimpleEntityCache implements them (TTL is reported when a lookup finds an expired entry). New: GenericDao.getCacheState() and
+  GenericDao.getDaoCollection().
 
 # 0.9.68, 2026-10-16 (internal release only)
 
