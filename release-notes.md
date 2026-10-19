@@ -22,6 +22,9 @@
 - json: reading JSON into objects with dispatch tables, a field that is null is now read like a missing field: the property keeps
   its value. Before, null failed for string, integer, long, double and boolean properties ("expected a string but was NULL"),
   including the nullable variants, and set BigDecimal properties to 0.
+- orm: ForeignKey.matches/matchesWithUnknownType/isPointingTo compare a ForeignKeySearchResult (e.g. a combo value) by its ID, like
+  a ForeignKeyInteger; before, it matched nothing but itself, not even the entity it points to. An empty search result matches
+  nothing, like ForeignKeyNull. ForeignKeySearchResult.hashCode is now the same as ForeignKeyInteger's.
 - language: assigning to a property of a host object, with `obj.prop = value` or `obj.apply({prop: value})`, no longer
   reads the property first. Before, the getter always ran, so an assignment failed when the getter could not work yet,
   e.g. one that lazily loads binary data from the database for an object that has not been stored. Properties from dispatch

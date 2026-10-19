@@ -150,8 +150,8 @@ public sealed interface ForeignKey<T extends OrmEntity> extends JanitorObject, J
         if (!Objects.equals(a.getReferencedEntityClass(), b.getReferencedEntityClass())) {
             return false;
         }
-        if (a instanceof ForeignKeyInteger<?> aa && b instanceof ForeignKeyInteger<?> bb) {
-            return aa.getId() == bb.getId();
+        if (isIdBased(a) && isIdBased(b)) {
+            return a.getId() == b.getId();
         }
         if (a instanceof ForeignKeyString<?> aa && b instanceof ForeignKeyString<?> bb) {
             return aa.getKey().equals(bb.getKey());
@@ -187,8 +187,8 @@ public sealed interface ForeignKey<T extends OrmEntity> extends JanitorObject, J
         if (!Objects.equals(a.getReferencedEntityClass(), b.getReferencedEntityClass())) {
             return false;
         }
-        if (a instanceof ForeignKeyInteger<?> aa && b instanceof ForeignKeyInteger<?> bb) {
-            return aa.getId() == bb.getId();
+        if (isIdBased(a) && isIdBased(b)) {
+            return a.getId() == b.getId();
         }
         if (a instanceof ForeignKeyString<?> aa && b instanceof ForeignKeyString<?> bb) {
             return aa.getKey().equals(bb.getKey());
@@ -220,7 +220,7 @@ public sealed interface ForeignKey<T extends OrmEntity> extends JanitorObject, J
      * @param <U> the type of the referenced entity
      */
     static <U extends OrmEntity> boolean isPointingTo(@NotNull ForeignKey<U> pointer, @NotNull ForeignKeyIdentity<U> target) {
-        return (pointer instanceof ForeignKeyInteger<U> idPointer && target.getIdentity().getId() == idPointer.getId() ||
+        return (isIdBased(pointer) && target.getIdentity().getId() == pointer.getId() ||
                 pointer instanceof ForeignKeyString<U> keyPointer && keyPointer.getKey().equalsIgnoreCase(target.getIdentity().getKey()));
     }
 
@@ -235,8 +235,18 @@ public sealed interface ForeignKey<T extends OrmEntity> extends JanitorObject, J
         if (!Objects.equals(pointer.getReferencedEntityClass(), target.getReferencedEntityClass())) {
             return false;
         }
-        return (pointer instanceof ForeignKeyInteger<?> idPointer && target.getIdentity().getId() == idPointer.getId() ||
+        return (isIdBased(pointer) && target.getIdentity().getId() == pointer.getId() ||
                 pointer instanceof ForeignKeyString<?> keyPointer && keyPointer.getKey().equalsIgnoreCase(target.getIdentity().getKey()));
+    }
+
+    /**
+     * Whether a foreign key is compared by its ID: a ForeignKeyInteger, or a non-empty ForeignKeySearchResult.
+     * An empty search result ("nothing selected") matches nothing, just like ForeignKeyNull.
+     * @param fk a foreign key
+     * @return true if matching should compare the ID of fk
+     */
+    private static boolean isIdBased(@NotNull ForeignKey<?> fk) {
+        return fk instanceof ForeignKeyInteger<?> || fk instanceof ForeignKeySearchResult<?> sr && !sr.isEmpty();
     }
 
 

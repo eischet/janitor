@@ -162,6 +162,7 @@ public non-sealed class ForeignKeySearchResult<T extends OrmEntity> implements F
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, dao);
+        // Same as ForeignKeyInteger.hashCode(), because a search result equals() a ForeignKeyInteger with the same id.
+        return Objects.hash(getReferencedEntityClass(), getId());
     }
 }
