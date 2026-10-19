@@ -14,6 +14,8 @@ import com.eischet.janitor.api.types.JAssignable;
 import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.*;
+import com.eischet.janitor.api.types.functions.JCallArgs;
+import com.eischet.janitor.api.types.functions.JCallable;
 import com.eischet.janitor.api.util.ObjectUtilities;
 import com.eischet.janitor.runtime.wildcard.SingleWildCardMatcher;
 import org.jetbrains.annotations.NotNull;
@@ -339,6 +341,44 @@ public class JanitorSemantics {
             return Janitor.toBool(!regex.janitorGetHostValue().matcher(str.janitorGetHostValue()).matches());
         }
         throw new JanitorTypeException(process, "matches not (!~): invalid left " + leftValue + " / right " + rightValue + ", both should be strings");
+    }
+
+    /**
+     * Perform the 'in' operation: {@code element in container}.
+     * <p>
+     * The container decides by providing a method named {@link Janitor#IN_OPERATOR_METHOD}, which is called with the element
+     * and must return TRUE or FALSE. Containers without that method, and methods returning anything else, are errors.
+     * </p>
+     *
+     * @param process   the running script
+     * @param element   the element to look for (left operand)
+     * @param container the container to look in (right operand)
+     * @return TRUE or FALSE
+     * @throws JanitorRuntimeException on errors
+     */
+    public static @NotNull JanitorObject isIn(JanitorScriptProcess process, final JanitorObject element, final JanitorObject container) throws JanitorRuntimeException {
+        final JanitorObject method = container.janitorGetAttribute(process, Janitor.IN_OPERATOR_METHOD, false);
+        if (!(method instanceof JCallable callable)) {
+            throw new JanitorTypeException(process, "in: values of type " + container.janitorClassName() + " do not support the 'in' operator: " + element + " in " + container);
+        }
+        final JanitorObject result = callable.call(process, JCallArgs.ofSingleArgument(process, element)).janitorUnpack();
+        if (result instanceof JBool) {
+            return result;
+        }
+        throw new JanitorTypeException(process, "in: " + Janitor.IN_OPERATOR_METHOD + " of type " + container.janitorClassName() + " must return true or false, but returned " + result + " (" + result.janitorClassName() + ")");
+    }
+
+    /**
+     * Perform the 'not in' operation: {@code element not in container}, the negation of {@link #isIn}.
+     *
+     * @param process   the running script
+     * @param element   the element to look for (left operand)
+     * @param container the container to look in (right operand)
+     * @return TRUE or FALSE
+     * @throws JanitorRuntimeException on errors
+     */
+    public static @NotNull JanitorObject isNotIn(JanitorScriptProcess process, final JanitorObject element, final JanitorObject container) throws JanitorRuntimeException {
+        return isIn(process, element, container) == JBool.TRUE ? JBool.FALSE : JBool.TRUE;
     }
 
     /**

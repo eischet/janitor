@@ -269,6 +269,7 @@ public class JMapClass {
         mapDispatcher.addMethod("keys", JMapClass::__keys);
         mapDispatcher.addMethod("values", JMapClass::__values);
         mapDispatcher.addMethod("containsKey", JMapClass::__containsKey);
+        mapDispatcher.addMethod(Janitor.IN_OPERATOR_METHOD, JMapClass::__containsKey); // like Python, "in" looks at the keys
         mapDispatcher.addMethod("containsValue", JMapClass::__containsValue);
         mapDispatcher.addMethod("clear", JMapClass::__clear);
         mapDispatcher.addMethod("copy", JMapClass::__copy);

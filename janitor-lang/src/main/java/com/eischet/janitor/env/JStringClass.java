@@ -729,6 +729,7 @@ public class JStringClass {
         stringDispatcher.addMethod("trim", JStringClass::trim)
                 .setMetaData(Janitor.MetaData.HELP, JStringClass.STRING_TRIM); // "  foo  ".trim() == "foo"
         stringDispatcher.addMethod("contains", JStringClass::contains); // "foobar".contains("bar") == true, "barbaz".contains("foo") == false
+        stringDispatcher.addMethod(Janitor.IN_OPERATOR_METHOD, JStringClass::contains); // "bar" in "foobar" == true
         stringDispatcher.addMethod("containsIgnoreCase", JStringClass::containsIgnoreCase); // "foobar".containsIgnoreCase("BAR") == true
         stringDispatcher.addMethod("splitLines", JStringClass::splitLines); // "foo\nbar\nbaz".splitLines() == ["foo", "bar", "baz"]
         stringDispatcher.addMethod("indexOf", JStringClass::indexOf); // "foobar".indexOf("bar") == 3, "foobar".indexOf("x") == -1

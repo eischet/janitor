@@ -66,6 +66,13 @@ public final class Janitor {
     public static final JBool FALSE = JBool.FALSE;
 
     /**
+     * Name of the method that implements the 'in' operator: {@code element in container} looks up this method
+     * on the container and calls it with the element. The method must return {@code true} or {@code false}.
+     * Register it in a dispatch table to make your own types support 'in'.
+     */
+    public static final String IN_OPERATOR_METHOD = "__in__";
+
+    /**
      * Customisation of the scripting environment is mostly done in an Environment, and these can be
      * discovered using the ServiceLoader mechanism. The idea here is that you either implement
      * an environment provider yourself or choose an existing library that comes with one.

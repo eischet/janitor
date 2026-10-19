@@ -96,6 +96,7 @@ expression
     | expression bop=(MUL | DIV | MOD) expression                                                                                   # binaryExpression
     | expression bop=(ADD | SUB) expression                                                                                         # binaryExpression
     | expression bop=(LE | GE | GT | LT) expression                                                                                 # binaryExpression
+    | expression negation=NOT? IN expression                                                                                        # inExpression
     | expression bop=(EQUAL | NOTEQUAL | ALT_NOTEQUAL | CI_EQUAL | MATCH | MATCH_NOT ) expression                                   # binaryExpression
     | prefix=( NOT | ALT_NOT ) expression                                                                                           # notExpression
     | expression bop=(AND | CAND) expression                                                                                        # binaryExpression

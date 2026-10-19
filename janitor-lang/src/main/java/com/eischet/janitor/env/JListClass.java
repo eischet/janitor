@@ -477,6 +477,7 @@ public class JListClass {
         listDispatcher.addMethod("size", JListClass::__size);
         listDispatcher.addMethod("isEmpty", JListClass::__isEmpty);
         listDispatcher.addMethod("contains", JListClass::__contains);
+        listDispatcher.addMethod(Janitor.IN_OPERATOR_METHOD, JListClass::__contains); // 17 in [16, 17, 18] == true
         listDispatcher.addMethod("randomSublist", JListClass::__randomSublist);
         listDispatcher.addMethod("addAll", JListClass::__addAll);
         listDispatcher.addMethod("put", JListClass::__put);

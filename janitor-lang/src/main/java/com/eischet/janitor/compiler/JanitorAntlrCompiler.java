@@ -408,6 +408,16 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
     }
 
     @Override
+    public Expression visitInExpression(final JanitorParser.InExpressionContext ctx) {
+        final Expression left = (Expression) visit(ctx.expression(0));
+        final Expression right = (Expression) visit(ctx.expression(1));
+        if (ctx.negation != null) {
+            return new NotIn(location(ctx.start, ctx.stop), left, right);
+        }
+        return new In(location(ctx.start, ctx.stop), left, right);
+    }
+
+    @Override
     public Expression visitBinaryExpression(final JanitorParser.BinaryExpressionContext ctx) {
         if (verbose) log.info("visitBinaryExpression");
         final Expression left = (Expression) visit(ctx.expression(0));

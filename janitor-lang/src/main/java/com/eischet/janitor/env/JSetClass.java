@@ -125,6 +125,7 @@ public class JSetClass {
         setDispatcher.addMethod("add", JSetClass::__add);
         setDispatcher.addMethod("remove", JSetClass::__remove);
         setDispatcher.addMethod("contains", JSetClass::__contains);
+        setDispatcher.addMethod(Janitor.IN_OPERATOR_METHOD, JSetClass::__contains);
         setDispatcher.addMethod("toList", JSetClass::__toList);
         setDispatcher.addMethod("toSet", JSetClass::__toSet); // copies the set
         setDispatcher.addMethod("size", JSetClass::__size);

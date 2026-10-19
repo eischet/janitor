@@ -1,5 +1,11 @@
 # 0.9.69 (in progress)
 
+- language: new operators "in" and "not in", like in Python: `17 in [16, 17, 18] == true`. They bind tighter than `==`
+  and looser than `<`. "in" calls the method `__in__` of the right operand with the left one, and that method must return
+  true or false; other results and values without `__in__` are errors. Lists and sets check for an equal element, maps
+  check the keys, strings look for a substring (`"bar" in "foobar"`). Host types support "in" by adding `__in__`
+  (`Janitor.IN_OPERATOR_METHOD`) to their dispatch table. "in" can still be used as a name.
+
 - logging: BasicFormatter (console and file log) prints each exception message only once. Wrapping exceptions usually repeat
   the messages of their causes, e.g. new RuntimeException(e) or a script error listing all of its causes; such a message is
   now left out, only the class name and the stack frames of that cause are printed. The new BasicFormatter.formatStackTrace
