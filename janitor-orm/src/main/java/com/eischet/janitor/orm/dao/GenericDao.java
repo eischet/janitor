@@ -32,6 +32,9 @@ import com.eischet.janitor.orm.meta.OrmPropertyHandle;
 import com.eischet.janitor.orm.JanitorOrm;
 import com.eischet.janitor.orm.cache.EntityCache;
 import com.eischet.janitor.orm.cache.SimpleEntityCache;
+import com.eischet.janitor.orm.metrics.CacheState;
+import com.eischet.janitor.orm.metrics.DaoMetrics;
+import com.eischet.janitor.orm.metrics.OrmMetrics;
 import com.eischet.janitor.orm.filter.FilterExpression;
 import com.eischet.janitor.orm.entity.HasModifiedDate;
 import com.eischet.janitor.orm.entity.OrmEntity;
@@ -136,6 +139,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
     protected boolean verbose = false;
     protected @Nullable DaoLogging logging;
     protected @NotNull EntityCache<T> cache = EntityCache.noop();
+    private volatile @Nullable DaoMetrics metrics;
 
     // The SQL that only depends on the table, the mapped columns and the dialect is built once, in the constructor, so that a DAO that cannot
     // work (e.g. no columns) fails early instead of on first use. Statement objects are immutable and can be shared between threads.
@@ -253,6 +257,14 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
     }
 
     /**
+     * The collection this DAO belongs to; e.g. for a {@link com.eischet.janitor.orm.metrics.DaoMetricsProvider} that labels its metrics by
+     * collection.
+     */
+    public @NotNull OrmDaoCollection<?> getDaoCollection() {
+        return collection;
+    }
+
+    /**
      * @return the dialect of the database, as defined by the collection that this DAO belongs to
      */
     protected final @NotNull DatabaseDialect getDialect() {
@@ -273,6 +285,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
      */
     protected final void enableCache(final @NotNull EntityCache<T> cache) {
         this.cache = cache;
+        cache.setEvictionListener(reason -> metrics().evicted(reason));
         addChangeListener((type, entity) -> {
             switch (type) {
                 case INSERT, UPDATE -> cache.put(copyForCache(entity));
@@ -303,6 +316,25 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
     /** True if a cache was attached with {@link #enableCache}. */
     protected final boolean isCachingEnabled() {
         return (Object) cache != EntityCache.noop();
+    }
+
+    /**
+     * The state of the attached cache (size, maximum, time to live), for monitoring; null if this DAO has no cache.
+     */
+    public @Nullable CacheState getCacheState() {
+        return isCachingEnabled() ? new CacheState(cache.size(), cache.maxSize(), cache.ttl()) : null;
+    }
+
+    /**
+     * Where this DAO reports cache hits, misses, load times and evictions; asked for once, see {@link OrmMetrics}.
+     */
+    private @NotNull DaoMetrics metrics() {
+        DaoMetrics current = metrics;
+        if (current == null) {
+            current = OrmMetrics.forDao(this);
+            metrics = current;
+        }
+        return current;
     }
 
     private @NotNull JanitorObject scriptResult(final @Nullable T entity) {
@@ -372,9 +404,19 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
     public @Nullable T findByKey(final @NotNull DatabaseConnection conn, final @Nullable String key) throws DatabaseError {
         final T cached = cache.findByKey(key);
         if (cached != null) {
+            metrics().cacheHit();
             return cached;
         }
-        return findByKeyIgnoringCache(conn, key);
+        if (!isCachingEnabled()) {
+            return findByKeyIgnoringCache(conn, key);
+        }
+        metrics().cacheMiss();
+        final long start = System.nanoTime();
+        try {
+            return findByKeyIgnoringCache(conn, key);
+        } finally {
+            metrics().loaded(System.nanoTime() - start);
+        }
     }
 
     /**
@@ -405,9 +447,19 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
     public @Nullable T findById(final @NotNull DatabaseConnection conn, final long id) throws DatabaseError {
         final T cached = cache.findById(id);
         if (cached != null) {
+            metrics().cacheHit();
             return cached;
         }
-        return findByIdIgnoringCache(conn, id);
+        if (!isCachingEnabled()) {
+            return findByIdIgnoringCache(conn, id);
+        }
+        metrics().cacheMiss();
+        final long start = System.nanoTime();
+        try {
+            return findByIdIgnoringCache(conn, id);
+        } finally {
+            metrics().loaded(System.nanoTime() - start);
+        }
     }
 
     @Override
@@ -423,8 +475,12 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
         for (final Long id : distinct) {
             final T cached = cache.findById(id);
             if (cached != null) {
+                metrics().cacheHit();
                 found.put(id, cached);
             } else {
+                if (isCachingEnabled()) {
+                    metrics().cacheMiss();
+                }
                 missing.add(id);
             }
         }
@@ -434,11 +490,15 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
             if (verbose) {
                 log.info("{}::findByIds({} ids): running {}", className, chunk.size(), select);
             }
+            final long start = System.nanoTime();
             final List<T> loaded = conn.queryForList(select, stmt -> {
                 for (final Long id : chunk) {
                     stmt.addLong(id);
                 }
             }, rs -> readAllProperties(conn, rs));
+            if (isCachingEnabled()) {
+                metrics().loaded(System.nanoTime() - start);
+            }
             for (final T entity : loaded) {
                 found.put(entity.getId(), entity);
                 cache.put(entity);
@@ -1213,10 +1273,11 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
 
     @Override
     public @Nullable T lazyLoadById(final long id) {
-        // A cache hit must not cost a connection: ask the cache before opening a transaction.
+        // A cache hit must not cost a connection: ask the cache before opening a transaction. A miss is counted by findById.
         final T cached = cache.findById(id);
         if (cached != null) {
             countLazyLoadHit();
+            metrics().cacheHit();
             return cached;
         }
         lazyLoadDbLoads.increment();
@@ -1233,10 +1294,11 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
 
     @Override
     public @Nullable T lazyLoadByKey(final String key) {
-        // A cache hit must not cost a connection: ask the cache before opening a transaction.
+        // A cache hit must not cost a connection: ask the cache before opening a transaction. A miss is counted by findByKey.
         final T cached = cache.findByKey(key);
         if (cached != null) {
             countLazyLoadHit();
+            metrics().cacheHit();
             return cached;
         }
         lazyLoadDbLoads.increment();

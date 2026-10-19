@@ -4,6 +4,7 @@
 package com.eischet.janitor.orm.cache;
 
 import com.eischet.janitor.orm.entity.OrmEntity;
+import com.eischet.janitor.orm.metrics.EvictionReason;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -11,6 +12,7 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * A small, JDK-only, size- and TTL-bounded {@link EntityCache}. It has no dependencies beyond the JDK,
@@ -33,6 +35,8 @@ public final class SimpleEntityCache<T extends OrmEntity> implements EntityCache
     private final Object lock = new Object();
     private final LinkedHashMap<Long, CacheEntry<T>> byId;
     private final Map<String, Long> keyToId = new HashMap<>();
+    private volatile Consumer<EvictionReason> evictionListener = reason -> {
+    };
 
     /**
      * @param ttl     how long an entry stays valid after being cached
@@ -52,6 +56,7 @@ public final class SimpleEntityCache<T extends OrmEntity> implements EntityCache
                 if (evictedKey != null) {
                     keyToId.remove(evictedKey);
                 }
+                evictionListener.accept(EvictionReason.LRU);
                 return true;
             }
         };
@@ -66,6 +71,7 @@ public final class SimpleEntityCache<T extends OrmEntity> implements EntityCache
             }
             if (entry.isExpired()) {
                 removeLocked(id);
+                evictionListener.accept(EvictionReason.TTL);
                 return null;
             }
             return entry.value;
@@ -128,6 +134,28 @@ public final class SimpleEntityCache<T extends OrmEntity> implements EntityCache
             byId.clear();
             keyToId.clear();
         }
+    }
+
+    @Override
+    public void setEvictionListener(final @NotNull Consumer<EvictionReason> listener) {
+        this.evictionListener = listener;
+    }
+
+    @Override
+    public int size() {
+        synchronized (lock) {
+            return byId.size();
+        }
+    }
+
+    @Override
+    public int maxSize() {
+        return maxSize;
+    }
+
+    @Override
+    public @NotNull Duration ttl() {
+        return Duration.ofNanos(ttlNanos);
     }
 
     private void removeLocked(final long id) {

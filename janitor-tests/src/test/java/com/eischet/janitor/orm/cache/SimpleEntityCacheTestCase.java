@@ -5,10 +5,13 @@ package com.eischet.janitor.orm.cache;
 
 import com.eischet.janitor.JanitorTest;
 import com.eischet.janitor.orm.entity.OrmEntity;
+import com.eischet.janitor.orm.metrics.EvictionReason;
 import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -192,6 +195,41 @@ public class SimpleEntityCacheTestCase extends JanitorTest {
         final SimpleEntityCache<TestEntity> cache = new SimpleEntityCache<>(Duration.ofMinutes(5), 100);
         cache.put(null);
         assertNull(cache.findById(0));
+    }
+
+    @Test
+    public void evictionsAreReportedWithTheirReason() throws InterruptedException {
+        final List<EvictionReason> reasons = new ArrayList<>();
+        final SimpleEntityCache<TestEntity> full = new SimpleEntityCache<>(Duration.ofMinutes(5), 2);
+        full.setEvictionListener(reasons::add);
+        full.put(entity(1, "A"));
+        full.put(entity(2, "B"));
+        full.put(entity(3, "C"));
+        assertEquals(List.of(EvictionReason.LRU), reasons, "the third entry pushes out the least recently used one");
+        assertEquals(2, full.size());
+        assertEquals(2, full.maxSize());
+        assertEquals(Duration.ofMinutes(5), full.ttl());
+
+        reasons.clear();
+        final SimpleEntityCache<TestEntity> expiring = new SimpleEntityCache<>(Duration.ofMillis(1), 100);
+        expiring.setEvictionListener(reasons::add);
+        expiring.put(entity(1, "A"));
+        Thread.sleep(20);
+        assertNull(expiring.findByKey("A"));
+        assertEquals(List.of(EvictionReason.TTL), reasons, "an expired entry is reported when a lookup finds it");
+        assertNull(expiring.findById(1));
+        assertEquals(List.of(EvictionReason.TTL), reasons, "and only once");
+    }
+
+    @Test
+    public void cachesThatCannotTellReportDefaults() {
+        final EntityCache<TestEntity> noop = EntityCache.noop();
+        noop.setEvictionListener(reason -> {
+            throw new AssertionError("a no-op cache evicts nothing");
+        });
+        assertEquals(-1, noop.size());
+        assertEquals(-1, noop.maxSize());
+        assertNull(noop.ttl());
     }
 
 }

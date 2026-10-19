@@ -4,7 +4,12 @@
 package com.eischet.janitor.orm.cache;
 
 import com.eischet.janitor.orm.entity.OrmEntity;
+import com.eischet.janitor.orm.metrics.EvictionReason;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.time.Duration;
+import java.util.function.Consumer;
 
 /**
  * A small, pluggable read-through cache for single entities, addressable by numeric ID and by the
@@ -72,6 +77,36 @@ public interface EntityCache<T extends OrmEntity> {
      * Removes every entry from this cache.
      */
     void clear();
+
+    /**
+     * Sets who is told when an entry leaves the cache because it was full ({@link EvictionReason#LRU}) or because it expired
+     * ({@link EvictionReason#TTL}); {@code GenericDao.enableCache} wires this to the DAO's metrics. Caches that cannot tell ignore it.
+     *
+     * @param listener the listener, replacing an earlier one
+     */
+    default void setEvictionListener(final @NotNull Consumer<EvictionReason> listener) {
+    }
+
+    /**
+     * The number of entries held now, expired ones included until they are noticed; -1 if the cache cannot tell.
+     */
+    default int size() {
+        return -1;
+    }
+
+    /**
+     * The maximum number of entries; -1 if the cache has no such limit or cannot tell.
+     */
+    default int maxSize() {
+        return -1;
+    }
+
+    /**
+     * How long an entry stays valid after being cached; {@code null} if entries do not expire or the cache cannot tell.
+     */
+    default @Nullable Duration ttl() {
+        return null;
+    }
 
     /**
      * Returns a cache that never stores anything and always misses. This is the default for every DAO

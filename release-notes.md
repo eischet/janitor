@@ -1,5 +1,11 @@
 # 0.9.69 (in progress)
 
+- orm: cache metrics. A host can install a DaoMetricsProvider with OrmMetrics.install(...); every GenericDao with a cache then reports
+  hits, misses, the load time after a miss and evictions (EvictionReason LRU or TTL) to the DaoMetrics it gets for itself. Without a
+  provider nothing is reported, and DAOs without a cache never ask. EntityCache has new default methods setEvictionListener, size, maxSize
+  and ttl; SimpleEntityCache implements them (TTL is reported when a lookup finds an expired entry). New: GenericDao.getCacheState() and
+  GenericDao.getDaoCollection().
+
 - new module "mcp" (com.eischet.janitor.modules:mcp): a client for MCP (Model Context Protocol) servers, so that scripts can
   list and call the tools of any MCP server: `srv = mcp.connect(url, {"headers": {"Authorization": "Bearer ..."}});`,
   `srv.tools()`, `res = srv.call("name", {...})` with `res.isError`, `res.text`, `res.content` and `res.structured`.
