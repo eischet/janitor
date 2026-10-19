@@ -19,6 +19,21 @@
             <groupId>org.mustangproject</groupId>
             <artifactId>library</artifactId>
             <version>2.26.0</version>
+            <!-- only needed for visualization (FOP), UBL conversion (helger) and XSLT (Saxon), none of which this module exposes -->
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.xmlgraphics</groupId>
+                    <artifactId>fop-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.helger</groupId>
+                    <artifactId>en16931-cii2ubl</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>net.sf.saxon</groupId>
+                    <artifactId>Saxon-HE</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 
