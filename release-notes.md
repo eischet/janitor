@@ -1,5 +1,11 @@
 # 0.9.69 (in progress)
 
+- logging: BasicFormatter (console and file log) prints each exception message only once. Wrapping exceptions usually repeat
+  the messages of their causes, e.g. new RuntimeException(e) or a script error listing all of its causes; such a message is
+  now left out, only the class name and the stack frames of that cause are printed. The new BasicFormatter.formatStackTrace
+  does the formatting.
+- logging: when a registered ExceptionFormattingHandler formats an exception, the stack trace is no longer appended as well.
+  Handlers are only called for records that carry an exception.
 - json: reading JSON into objects with dispatch tables, a field that is null is now read like a missing field: the property keeps
   its value. Before, null failed for string, integer, long, double and boolean properties ("expected a string but was NULL"),
   including the nullable variants, and set BigDecimal properties to 0.
