@@ -1,5 +1,14 @@
 # 0.9.69 (in progress)
 
+- new module "mcp" (com.eischet.janitor.modules:mcp): a client for MCP (Model Context Protocol) servers, so that scripts can
+  list and call the tools of any MCP server: `srv = mcp.connect(url, {"headers": {"Authorization": "Bearer ..."}});`,
+  `srv.tools()`, `res = srv.call("name", {...})` with `res.isError`, `res.text`, `res.content` and `res.structured`.
+  Options: headers, timeoutSeconds, clientName/clientVersion, transport ("streamable" or the older "sse") and throwOnError;
+  hosts can set defaults with McpModule.registration(...). Connections are closed when the script ends. Built on the
+  official MCP Java SDK (mcp-core and mcp-json-jackson2 2.1.0, which bring reactor-core and jackson-databind); these
+  dependencies stay in the module. Like all modules with network access, only available where the host registers it.
+  Included in the REPL.
+
 - language: new operators "in" and "not in", like in Python: `17 in [16, 17, 18] == true`. They bind tighter than `==`
   and looser than `<`. "in" calls the method `__in__` of the right operand with the left one, and that method must return
   true or false; other results and values without `__in__` are errors. Lists and sets check for an equal element, maps

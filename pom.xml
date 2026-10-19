@@ -35,6 +35,8 @@
         <deps.docusign>6.9.0</deps.docusign>
         <deps.azure-identity>1.18.7</deps.azure-identity>
         <deps.azure-core-http-jdk-httpclient>1.2.0</deps.azure-core-http-jdk-httpclient>
+        <deps.mcp>2.1.0</deps.mcp>
+        <deps.jetty>12.1.14</deps.jetty>
 
     </properties>
 
@@ -269,6 +271,11 @@
                 <artifactId>pdf</artifactId>
                 <version>${revision}</version>
             </dependency>
+            <dependency>
+                <groupId>com.eischet.janitor.modules</groupId>
+                <artifactId>mcp</artifactId>
+                <version>${revision}</version>
+            </dependency>
 
             <!-- external dependencies -->
             <dependency>
@@ -318,6 +325,30 @@
                 <artifactId>jackson-databind</artifactId>
                 <version>2.22.3</version>
                 <scope>compile</scope>
+            </dependency>
+            <!-- pinned to match jackson-databind; mcp-core would otherwise pull in an older one -->
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
+                <version>2.22</version>
+            </dependency>
+
+            <!-- for the mcp module -->
+            <dependency>
+                <groupId>io.modelcontextprotocol.sdk</groupId>
+                <artifactId>mcp-core</artifactId>
+                <version>${deps.mcp}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.modelcontextprotocol.sdk</groupId>
+                <artifactId>mcp-json-jackson2</artifactId>
+                <version>${deps.mcp}</version>
+            </dependency>
+            <!-- embedded servlet container for the MCP server in McpModuleIT (tests only) -->
+            <dependency>
+                <groupId>org.eclipse.jetty.ee10</groupId>
+                <artifactId>jetty-ee10-servlet</artifactId>
+                <version>${deps.jetty}</version>
             </dependency>
 
             <!-- for the pdf module -->

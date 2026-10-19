@@ -33,6 +33,9 @@ This project uses the following third-party components:
 - **SLF4J**, used for logging.
   See https://www.slf4j.org/
 
+- **MCP Java SDK**, used by the `mcp` module to talk to MCP servers.
+  See https://github.com/modelcontextprotocol/java-sdk
+
 This project **includes** adapted code from the following third-party project:
 
 - **SLF4J**, specifically the `slf4j-jdk14` submodule.  

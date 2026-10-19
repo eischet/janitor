@@ -15,6 +15,7 @@ import com.eischet.janitor.env.JanitorDefaultEnvironment;
 import com.eischet.janitor.modules.common.JanitorModulesCommon;
 import com.eischet.janitor.modules.commonmark.CommonMarkModule;
 import com.eischet.janitor.modules.janitor.JanitorInternalsModule;
+import com.eischet.janitor.modules.mcp.McpModule;
 import com.eischet.janitor.modules.msgraph.MsGraphModule;
 import com.eischet.janitor.modules.mustang.MustangModule;
 import com.eischet.janitor.modules.pdf.PdfModule;
@@ -187,6 +188,7 @@ public class JanitorStandaloneRepl {
         env.addModule(MustangModule.REGISTRATION);
         env.addModule(DocusignModule.REGISTRATION);
         env.addModule(MsGraphModule.REGISTRATION);
+        env.addModule(McpModule.REGISTRATION);
         env.addModule(PdfModule.REGISTRATION);
 
         return env;

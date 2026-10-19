@@ -47,7 +47,7 @@ No linter or auto-formatter is enforced. Follow 4-space indentation, braces on t
 | `janitor-repl` | REPL tooling |
 | `janitor-logging` | Logging integration |
 | `janitor-dbxs` / `janitor-orm` | Database and ORM support |
-| `janitor-modules` | Optional plugin modules (`httpclient`, `files`, `os`, `brrr`, `mustang`) |
+| `janitor-modules` | Optional plugin modules (`httpclient`, `files`, `os`, `brrr`, `mustang`, `msgraph`, `mcp`) |
 | `janitor-maven-plugin` | Maven plugin (uses JUnit 4, unlike other modules) |
 
 ## Architecture: Compilation & Execution Pipeline

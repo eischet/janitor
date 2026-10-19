@@ -23,6 +23,7 @@
         <module>os</module>
         <module>mustang</module>
         <module>msgraph</module>
+        <module>mcp</module>
         <module>commonmark</module>
         <module>docusign</module>
         <module>pdf</module>

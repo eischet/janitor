@@ -54,6 +54,11 @@
         </dependency>
         <dependency>
             <groupId>com.eischet.janitor.modules</groupId>
+            <artifactId>mcp</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.eischet.janitor.modules</groupId>
             <artifactId>commonmark</artifactId>
             <version>${revision}</version>
         </dependency>
