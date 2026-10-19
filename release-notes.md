@@ -1,3 +1,9 @@
+# 0.9.69 (in progress)
+
+- json: reading JSON into objects with dispatch tables, a field that is null is now read like a missing field: the property keeps
+  its value. Before, null failed for string, integer, long, double and boolean properties ("expected a string but was NULL"),
+  including the nullable variants, and set BigDecimal properties to 0.
+
 # 0.9.68, 2026-10-16 (internal release only)
 
 - experimental new module "msgraph" (com.eischet.janitor.modules:msgraph): a small Microsoft Graph client for mail folders and

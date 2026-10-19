@@ -190,6 +190,9 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
 
     /**
      * Creates a JSON adapter for a property, based on a getter, a setter and a JSON delegate.
+     * <p>
+     * A JSON {@code null} is read like a missing field: the setter is not called, so the property keeps the value it has (for a new
+     * instance, the one its constructor gives it).
      * @param name the name of the property
      * @param delegate reads and writes values of the property's type
      * @param getter reads the property from an instance
@@ -219,6 +222,10 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
 
             @Override
             public void read(final JsonInputStream stream, final T instance) throws JsonException {
+                if (stream.peek() == JsonTokenType.NULL) {
+                    stream.nextNull(); // null is read like a missing field: the property keeps its value
+                    return;
+                }
                 final @NotNull X jsonValue = delegate.read(stream);
                 try {
                     setter.set(instance, jsonValue);
