@@ -9,9 +9,6 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Marker;
 import org.slf4j.event.KeyValuePair;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
@@ -90,7 +87,7 @@ public abstract class BasicFormatter extends Formatter {
         final Throwable thrown = record.getThrown();
         boolean omitStackTrace = false;
 
-        if (!exceptionFormattingHandlers.isEmpty()) {
+        if (thrown != null) {
             for (final ExceptionFormattingHandler handler : exceptionFormattingHandlers) {
                 @Nullable final String result = handler.formatLogException(thrown);
                 if (result != null) {
@@ -99,18 +96,8 @@ public abstract class BasicFormatter extends Formatter {
                     break; // only one handler is allowed to format the exception
                 }
             }
-        }
-        if (thrown != null) {
-            try {
-                final StringWriter sw = new StringWriter();
-                final PrintWriter pw = new PrintWriter(sw);
-                thrown.printStackTrace(pw);
-                pw.close();
-                sw.close();
-                message += " STACK TRACE: <" + sw + ">";
-
-            } catch (IOException e) {
-                System.err.printf("error formatting exception %s\n", thrown);
+            if (!omitStackTrace) {
+                message += " STACK TRACE: <" + formatStackTrace(thrown) + ">";
             }
         }
 
@@ -128,6 +115,67 @@ public abstract class BasicFormatter extends Formatter {
             loggingContext = extendedRecord.getLoggingContext();
         }
         return formatLogRecord(cat, thread, ts, record.getLoggerName(), message, arguments, keyValuePairs, markers, contextMap, loggingContext);
+    }
+
+    /**
+     * Formats an exception like {@link Throwable#printStackTrace()}, but prints each message only once.
+     *
+     * <p>Wrapping exceptions usually repeat the messages of their causes: {@code new RuntimeException(e)} takes over
+     * {@code e.toString()} as its message, and a Janitor script error lists the messages of all of its causes. With
+     * printStackTrace, the same text then appears once per cause. Here, a message that is already part of the output is left out,
+     * only the class name and the stack frames of that exception are printed; a wrapper whose message is just
+     * {@code cause.toString()} gets the message of its cause without the class name in front of it.
+     * Stack frames, suppressed exceptions and the "... n more" lines are the same as with printStackTrace.</p>
+     *
+     * @param thrown the exception
+     * @return the formatted stack trace, ending with a line break
+     */
+    public static String formatStackTrace(final Throwable thrown) {
+        final StringBuilder out = new StringBuilder();
+        appendThrowable(out, thrown, new StackTraceElement[0], "", "", Collections.newSetFromMap(new IdentityHashMap<>()));
+        return out.append('\n').toString();
+    }
+
+    private static void appendThrowable(final StringBuilder out, final Throwable t, final StackTraceElement[] enclosingTrace,
+                                        final String caption, final String prefix, final Set<Throwable> seen) {
+        if (!out.isEmpty()) {
+            out.append('\n').append(prefix).append(caption);
+        }
+        if (!seen.add(t)) {
+            out.append("[CIRCULAR REFERENCE: ").append(t.getClass().getName()).append(']');
+            return;
+        }
+        final Throwable cause = t.getCause();
+        String message = t.getMessage();
+        if (cause != null && message != null && message.equals(cause.toString())) {
+            message = cause.getMessage();
+        }
+        out.append(t.getClass().getName());
+        if (message != null && !message.isBlank() && out.indexOf(message.strip()) < 0) {
+            out.append(": ").append(message);
+        }
+
+        final StackTraceElement[] trace = t.getStackTrace();
+        int m = trace.length - 1;
+        int n = enclosingTrace.length - 1;
+        while (m >= 0 && n >= 0 && trace[m].equals(enclosingTrace[n])) {
+            m--;
+            n--;
+        }
+        for (int i = 0; i <= m; i++) {
+            out.append('\n').append(prefix).append("\tat ").append(trace[i]);
+        }
+        final int inCommon = trace.length - 1 - m;
+        if (inCommon > 0) {
+            out.append('\n').append(prefix).append("\t... ").append(inCommon).append(" more");
+        }
+
+        for (final Throwable suppressed : t.getSuppressed()) {
+            appendThrowable(out, suppressed, trace, "Suppressed: ", prefix + "\t", seen);
+        }
+        if (cause != null) {
+            appendThrowable(out, cause, trace, "Caused by: ", prefix, seen);
+        }
     }
 
     /**
