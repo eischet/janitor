@@ -1,4 +1,4 @@
-# 0.9.69 (in progress)
+# 0.9.69, 2026-10-20 (internal reelase only)
 
 - new module "mcp" (com.eischet.janitor.modules:mcp): a client for MCP (Model Context Protocol) servers, so that scripts can
   list and call the tools of any MCP server: `srv = mcp.connect(url, {"headers": {"Authorization": "Bearer ..."}});`,
