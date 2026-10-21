@@ -64,6 +64,29 @@
             <groupId>com.eischet.janitor.modules</groupId>
             <artifactId>commonmark</artifactId>
         </dependency>
+        <!--
+            Not included for now, because their dependencies may clash with Maven's own in the plugin realm:
+        <dependency>
+            <groupId>com.eischet.janitor.modules</groupId>
+            <artifactId>mustang</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.eischet.janitor.modules</groupId>
+            <artifactId>docusign</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.eischet.janitor.modules</groupId>
+            <artifactId>msgraph</artifactId>
+        </dependency>
+        -->
+        <dependency>
+            <groupId>com.eischet.janitor.modules</groupId>
+            <artifactId>mcp</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.eischet.janitor.modules</groupId>
+            <artifactId>pdf</artifactId>
+        </dependency>
 
 
         <!-- https://mvnrepository.com/artifact/org.apache.maven/maven-slf4j-provider -->

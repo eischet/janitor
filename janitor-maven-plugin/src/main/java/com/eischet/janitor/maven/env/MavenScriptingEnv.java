@@ -8,6 +8,8 @@ import com.eischet.janitor.env.JanitorDefaultEnvironment;
 import com.eischet.janitor.modules.common.JanitorModulesCommon;
 import com.eischet.janitor.modules.commonmark.CommonMarkModule;
 import com.eischet.janitor.modules.janitor.JanitorInternalsModule;
+import com.eischet.janitor.modules.mcp.McpModule;
+import com.eischet.janitor.modules.pdf.PdfModule;
 import com.eischet.janitor.runtime.JanitorFormattingLocale;
 import org.apache.maven.plugin.logging.SystemStreamLog;
 
@@ -26,7 +28,15 @@ public class MavenScriptingEnv extends JanitorDefaultEnvironment {
         JanitorInternalsModule.host = JanitorInternalsModule.HOST_MAVEN;
 
         JanitorModulesCommon.registerCommonModules(this, true);
+
+        // these are not included in "common" because they bring additional dependencies:
         this.addModule(CommonMarkModule.REGISTRATION);
+        // not included for now, because their dependencies may clash with Maven's own in the plugin realm:
+        // this.addModule(MustangModule.REGISTRATION);
+        // this.addModule(DocusignModule.REGISTRATION);
+        // this.addModule(MsGraphModule.REGISTRATION);
+        this.addModule(McpModule.REGISTRATION);
+        this.addModule(PdfModule.REGISTRATION);
 
     }
 
