@@ -350,17 +350,30 @@ public class JanitorHttpClient extends JanitorComposed<JanitorHttpClient> implem
     /**
      * Sends a DELETE request.
      * @param url the URL
-     * @throws HttpException if the request fails
+     * @throws HttpException if the request fails or the status is not successful
      */
     public void delete(final String url) throws HttpException {
         final HttpRequest req = configureRequest(HttpRequest.newBuilder(URI.create(url)).DELETE());
-        var future = buildClient().sendAsync(req, HttpResponse.BodyHandlers.discarding());
+        report(req, null);
+        var future = buildClient().sendAsync(req, HttpResponse.BodyHandlers.ofString());
         try {
-            future.orTimeout(requestTimeoutSeconds, TimeUnit.SECONDS).join();
+            final HttpResponse<String> resp = future.orTimeout(requestTimeoutSeconds, TimeUnit.SECONDS).join();
+            report(resp);
+            if (!isSuccess(resp.statusCode())) {
+                throw new HttpException(null, resp.statusCode(), "DELETE", url, cleanHeaders(resp.headers().map()), resp.body(), null);
+            }
         } catch (RuntimeException e) {
             future.cancel(true);
-            throw HttpException.failedDelete(url);
+            throw new HttpException("DELETE", url, e);
         }
+    }
+
+    /**
+     * @param code an HTTP status code
+     * @return true if the code means success; redirects are followed by the client, so a 3xx status that still arrives counts as success, too
+     */
+    private static boolean isSuccess(final int code) {
+        return code >= 200 && code < 400;
     }
 
     /**
@@ -376,10 +389,11 @@ public class JanitorHttpClient extends JanitorComposed<JanitorHttpClient> implem
         try {
             final HttpResponse<byte[]> resp = future.orTimeout(requestTimeoutSeconds, TimeUnit.SECONDS).join();
             report(resp);
-            if (resp.statusCode() >= 200 && resp.statusCode() < 300) {
+            if (isSuccess(resp.statusCode())) {
                 return resp.body();
             } else {
-                throw new HttpException(null, resp.statusCode(), "GET", url, cleanHeaders(resp.headers().map()), null, null);
+                final String body = resp.body() == null || resp.body().length == 0 ? null : new String(resp.body(), StandardCharsets.UTF_8);
+                throw new HttpException(null, resp.statusCode(), "GET", url, cleanHeaders(resp.headers().map()), body, null);
             }
         } catch (RuntimeException e) {
             future.cancel(true);
@@ -401,10 +415,10 @@ public class JanitorHttpClient extends JanitorComposed<JanitorHttpClient> implem
         try {
             final HttpResponse<String> resp = future.orTimeout(requestTimeoutSeconds, TimeUnit.SECONDS).join();
             report(resp);
-            if (resp.statusCode() >= 200 && resp.statusCode() < 300) {
+            if (isSuccess(resp.statusCode())) {
                 return resp.body();
             } else {
-                throw new HttpException(null, resp.statusCode(), "GET", url, cleanHeaders(resp.headers().map()), null, null);
+                throw new HttpException(null, resp.statusCode(), "GET", url, cleanHeaders(resp.headers().map()), resp.body(), null);
             }
         } catch (RuntimeException e) {
             future.cancel(true);
@@ -861,7 +875,7 @@ public class JanitorHttpClient extends JanitorComposed<JanitorHttpClient> implem
          * @throws HttpException if the request failed
          */
         public void throwIfFailed(final JanitorJsonResponse resp) throws HttpException {
-            if (code < 200 || code >= 400) {
+            if (!isSuccess(code)) {
                 final String respBody = resp.getBody();
                 throw new HttpException(null, code, method, url, cleanHeadersPlain(headers), respBody, null);
             }
