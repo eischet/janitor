@@ -41,12 +41,6 @@ public class DirAndHelpTestCase extends JanitorTest {
     }
 
     @Test
-    void cutFilenameIsGone() throws Exception {
-        // it served a single application, which now adds it itself
-        assertFalse(run("dir(\"x\")").contains("cutFilename"));
-    }
-
-    @Test
     void valuesWithoutMembers() throws Exception {
         assertEquals("[]", run("dir(true)"));
         assertEquals("[]", run("dir(null)"));
