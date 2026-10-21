@@ -39,18 +39,42 @@ Hosts should check their stored scripts with `checkCompile` before upgrading.
 
 <a id="format-at-timezone"></a>
 
-### `datetime.formatAtTimezone(zone)` without a pattern
+### `datetime.formatAtTimezone(zone, pattern)`
 
-Without a pattern, the zoned value is never computed, and the method fails with a `NullPointerException`.
-(`JDateTimeClass.__formatAtTimezone`)
+- Without a pattern, the zoned value is never computed, and the method fails with a `NullPointerException`.
+- With a pattern, it does not convert: it calls `LocalDateTime.atZone(zone)`, which attaches the zone to the same clock
+  time, so `@2024-03-05-14:30.formatAtTimezone("UTC", "HH:mm")` gives `"14:30"` in every host time zone; only patterns
+  that print the zone (`z`, `VV`, `XXX`) show a difference. The name suggests "this time, seen in zone X", i.e. a
+  conversion from the host's time zone to X.
+
+Both are planned to be fixed on top of the [configurable time zone](#time-zone), which defines what "the host's time
+zone" is. (`JDateTimeClass.__formatAtTimezone`)
 
 <a id="locale"></a>
 
-### Locale of `format`
+### Locale of `format` and date patterns
 
-`string.format(...)` and date patterns with names (`MMMM`, `EEEE`) use the default locale of the Java VM, while
-`date.format()` without a pattern uses the host's `JanitorFormatting`. So the same script can produce different text on
-different servers.
+Scripts get two kinds of formatting, depending on the method:
+
+- `string.format(...)` uses Java's `String.formatted(...)`, i.e. the JVM's default locale: `"%.2f".format(0.5)` is
+  `0,50` on one server and `0.50` on another.
+- Date patterns (`date.format("...")`, `datetime.string("...")`, `formatAtTimezone`) and `parseDate`/`parseDateTime` use
+  `DateTimeFormatter.ofPattern(...)` without a locale, i.e. also the JVM's default locale, for month and weekday names
+  (`MMMM`, `EEEE`) in output and input.
+- Without a pattern (`date.format()`, `datetime.time()`), the environment's `JanitorFormatting` formats, e.g.
+  `JanitorFormattingLocale(locale)` or `JanitorFormattingGerman`.
+- The interface `JanitorFormatting` does not expose a locale; only `JanitorFormattingLocale` has one internally.
+
+So the same script can produce different text on different servers, and a host with German formatting on a server with
+an English default locale gets a mixture.
+
+The proposal (not decided yet): **one locale per environment.** `JanitorFormatting` gets a method `getLocale()`, as a
+default method that returns the JVM's default locale, so that existing implementations keep compiling and working;
+`JanitorFormattingLocale` returns its locale, `JanitorFormattingGerman` returns German. `format`, all date patterns and
+`parseDate`/`parseDateTime` then use that locale. Later, a process could get its own locale, like the
+[time zone](#time-zone), e.g. for users with their own language. Cockpit, which embeds Janitor, should be checked for its
+own `JanitorFormatting` implementation: the default method would not break it, but would return the JVM's locale
+instead of the one it formats with.
 
 <a id="dir"></a>
 
@@ -78,6 +102,8 @@ The code has a note that this method serves a single application and should be r
 [module-types.md](module-types.md), but the arguments of their functions are not described, and their dispatch tables
 have no HELP texts. The same holds for most members of the other modules. HELP texts in the module code would make the
 generated tables useful.
+
+This is left open on purpose for now: the modules are still rather experimental.
 
 <a id="native-modules"></a>
 
@@ -109,6 +135,41 @@ The HTTP client object has a method `_test_throwNativeException()`, which exists
 <a id="hosting"></a>
 
 ## Hosting
+
+<a id="time-zone"></a>
+
+### A configurable time zone for environments and processes
+
+Dates and datetimes in Janitor have no time zone; where one is needed, a time zone of the host is used. Today, that is
+not one well-defined zone:
+
+- `DateTimeUtils` (janitor-toolbox) holds a single, JVM-wide time zone in a static field. It comes from a static
+  `TimeZoneSource` if a host sets one, else from the JVM's default time zone, and is cached on first use. It is used for
+  `datetime.epoch` and `toEpoch()`, `int.epoch`, the conversion of `java.util.Date` and `java.sql.Timestamp` values,
+  and for writing datetimes to JSON.
+- `@now` and `@today` do not use it: they call `LocalDateTime.now()` and `LocalDate.now()`, i.e. always the JVM's
+  default time zone. If a host sets a different zone through `TimeZoneSource`, `@now.epoch` is off by the difference.
+- A host that serves users in different time zones cannot give each script run its own zone.
+
+The plan:
+
+- The **environment** gets a time zone: by default from the existing `TimeZoneSource`, else from the system, or set
+  explicitly by the host.
+- A **script process** inherits the environment's time zone, unless the host sets one explicitly for that process,
+  e.g. from the current user's profile (like `setMaxInstructionCount` today).
+- Everything that scripts see uses the process's time zone: `@now`, `@today`, `epoch`, `formatAtTimezone`, and the
+  conversion of host date values.
+
+Open design points:
+
+1. Code without a process (the JSON support in janitor-toolbox, `nativeToScript`, the JSON support of dispatch tables)
+   needs the environment's zone, or keeps `DateTimeUtils` as the fallback.
+2. New methods on `JanitorEnvironment` and `JanitorScriptProcess` (e.g. `getZoneId()` / `setZoneId(...)`) should be
+   default methods, so that implementations outside of Janitor do not break; Cockpit, which embeds Janitor, should be
+   checked.
+3. Instead of a time zone alone, the environment could hold a `java.time.Clock` (zone plus current time), so that tests
+   can also fix `@now`.
+4. Hosts that set a `TimeZoneSource` today must keep working.
 
 <a id="instruction-limit"></a>
 
