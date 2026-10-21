@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.eischet.janitor</groupId>
+        <artifactId>janitor-project</artifactId>
+        <version>${revision}</version>
+    </parent>
+
+    <packaging>jar</packaging>
+    <artifactId>janitor-docs</artifactId>
+    <name>${project.groupId}:${project.artifactId}</name>
+    <description>The Janitor language reference as Markdown resources, for hosts that pass it on to users or AI clients</description>
+
+    <!-- no dependencies: hosts can add this artifact without pulling in anything else -->
+
+    <build>
+        <resources>
+            <!-- the reference itself, maintained in docs/reference in the repository root -->
+            <resource>
+                <directory>${project.basedir}/../docs/reference</directory>
+                <targetPath>META-INF/janitor/docs</targetPath>
+                <includes>
+                    <include>*.md</include>
+                </includes>
+                <filtering>false</filtering>
+            </resource>
+            <!-- the index with the version and the list of files -->
+            <resource>
+                <directory>src/main/resources-filtered</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+    </build>
+
+</project>

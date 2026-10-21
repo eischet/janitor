@@ -78,6 +78,7 @@
         <module>janitor-generator</module>
         <module>janitor-modules</module>
         <module>janitor-modules-common</module>
+        <module>janitor-docs</module>
         <module>janitor-tests</module>
     </modules>
 
@@ -189,6 +190,11 @@
             <dependency>
                 <groupId>com.eischet.janitor</groupId>
                 <artifactId>janitor-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eischet.janitor</groupId>
+                <artifactId>janitor-docs</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>

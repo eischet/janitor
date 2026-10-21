@@ -64,6 +64,11 @@
             <groupId>com.eischet.janitor</groupId>
             <artifactId>janitor-modules-common</artifactId>
         </dependency>
+        <!-- the language reference: ReferenceDocsTest checks that the packaged index matches docs/reference -->
+        <dependency>
+            <groupId>com.eischet.janitor</groupId>
+            <artifactId>janitor-docs</artifactId>
+        </dependency>
         <dependency>
             <groupId>com.eischet.janitor.modules</groupId>
             <artifactId>commonmark</artifactId>

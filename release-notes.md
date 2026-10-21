@@ -8,6 +8,12 @@
   Header names in `e.headers` are lowercase, as delivered by the JDK HTTP client.
 - maven plugin: scripts in a Maven build now also get the modules mcp and pdf, in addition to the common modules and
   commonmark. So a build can e.g. call a tool on an MCP server after a release.
+- new language reference in `docs/reference` (Markdown, English), for people and AI models: language, built-in types,
+  standard modules, pitfalls for JavaScript and Python users, hosting, and open questions. The tables of built-in members
+  and module members are generated from the dispatch tables, and every example is run as a test (`ReferenceDocsTest`,
+  `ReferenceExamplesTest`; see `docs/README.md`).
+- new artifact `com.eischet.janitor:janitor-docs` with the reference under `META-INF/janitor/docs/`, so hosts can read it
+  from the class path with `JanitorDocs` and pass it on to users or AI clients.
 - string literals now support unicode escapes (backslash, u, four hex digits), as in Java and JSON; they used to be a
   compile error. Escapes are now processed by Janitor itself instead of String.translateEscapes().
 - integer literals in hexadecimal (0x1F) and binary (0b101), and `_` as a digit separator (1_000_000, also in floats),
@@ -58,6 +64,8 @@
   every JSON text is a valid Janitor literal.
 - REPL: backslashes in the input are no longer removed by JLine, so escape sequences like "\t" work in the REPL, too
   (JLine option DISABLE_EVENT_EXPANSION).
+- every method and property of the built-in types now has a HELP text, so `help(...)` works for all of them. The HELP
+  texts of `string.length` and `string.trim` no longer start with "String.".
 
 # 0.9.69, 2026-10-20 (internal reelase only)
 
