@@ -6,6 +6,7 @@ package com.eischet.janitor.api.errors.runtime;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.types.JanitorObject;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Exceptions thrown by scripts, which are not originally thrown as Exception instances in the script.
@@ -27,5 +28,19 @@ public final class JanitorScriptThrownException extends JanitorRuntimeException 
      */
     public @NotNull JanitorObject getScriptMessage() {
         return scriptMessage;
+    }
+
+    /**
+     * In a catch block, {@code e.value} is the thrown value, and all attributes that errors do not have themselves are read from it,
+     * so {@code throw {code: 404};} can be caught and read as {@code e.code}. The attributes of errors ({@code message},
+     * {@code traceback}, {@code type}) take precedence; {@code e.value.message} reads a key "message" of a thrown map.
+     */
+    @Override
+    public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess process, final @NotNull String name, final boolean required) throws JanitorRuntimeException {
+        return switch (name) {
+            case "value" -> scriptMessage;
+            case "message", "traceback", "type" -> super.janitorGetAttribute(process, name, required);
+            default -> scriptMessage.janitorGetAttribute(process, name, required);
+        };
     }
 }

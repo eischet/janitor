@@ -27,6 +27,12 @@
   and unlike JavaScript, it does not convert other values: `+"3"` is an error. It used to be a compile error.
 - imports: dotted module names (`import a.b;`) are no longer part of the grammar; they never worked. Hosts that want
   hierarchical names can offer them with the string form, `import "acme.crm" as crm;`.
+- catch: the value of `throw value` is now available as `e.value`, and properties that errors do not have themselves are
+  read from it, so `throw {code: 404};` can be caught and read as `e.code`.
+- catch: `e.message` is now the error text without the traceback (e.g. "name 'x' is not defined", or "boom" for
+  `throw "boom"`); the whole text, which `e.message` used to return, is now `e.traceback`. Scripts that searched
+  `e.message` for text keep working, unless they looked for the traceback itself. The Java message (`getMessage()`) is
+  unchanged; the text alone is available as `JanitorRuntimeException.getText()`.
 - compile errors from `runtime.compile(...)` now include the compiler's message, e.g. "Compiler Error: integer literal out
   of range: ...", instead of only "Compiler Error".
 - string literals now accept the JSON escape for a slash (backslash, slash), as written e.g. by PHP's json_encode, so

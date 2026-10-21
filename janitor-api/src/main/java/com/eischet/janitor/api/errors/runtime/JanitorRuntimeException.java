@@ -21,6 +21,9 @@ import java.util.Collections;
  */
 public abstract class JanitorRuntimeException extends JanitorException implements JanitorObject {
 
+    /** The message without the traceback, as scripts see it in {@code e.message}. */
+    private final @NotNull String text;
+
     /**
      * Constructs a new JanitorRuntimeException.
      * @param process the running script
@@ -28,6 +31,7 @@ public abstract class JanitorRuntimeException extends JanitorException implement
      */
     public JanitorRuntimeException(final @NotNull  JanitorScriptProcess process, final @NotNull Class<? extends JanitorRuntimeException> cls) {
         super(formatScriptStackTrace(process, null, cls, null));
+        this.text = plainText(null, cls, null);
     }
 
     /**
@@ -38,6 +42,7 @@ public abstract class JanitorRuntimeException extends JanitorException implement
      */
     public JanitorRuntimeException(final @NotNull  JanitorScriptProcess process, final String message, final Class<? extends JanitorRuntimeException> cls) {
         super(formatScriptStackTrace(process, message, cls, null));
+        this.text = plainText(message, cls, null);
     }
 
     /**
@@ -49,6 +54,7 @@ public abstract class JanitorRuntimeException extends JanitorException implement
      */
     public JanitorRuntimeException(final @NotNull  JanitorScriptProcess process, final String message, final Throwable cause, final Class<? extends JanitorRuntimeException> cls) {
         super(formatScriptStackTrace(process, message, cls, cause), cause);
+        this.text = plainText(message, cls, cause);
     }
 
     /**
@@ -59,16 +65,23 @@ public abstract class JanitorRuntimeException extends JanitorException implement
      */
     public JanitorRuntimeException(final @NotNull  JanitorScriptProcess process, final Throwable cause, final Class<? extends JanitorRuntimeException> cls) {
         super(formatScriptStackTrace(process, null, cls, cause), cause);
+        this.text = plainText(null, cls, cause);
     }
 
 
     @Override
     public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess process, final @NotNull String name, final boolean required) throws JanitorRuntimeException {
         if ("message".equals(name)) {
+            return Janitor.getBuiltins().string(text);
+        }
+        if ("traceback".equals(name)) {
             return Janitor.getBuiltins().nullableString(getMessage());
         }
         if ("type".equals(name)) {
             return Janitor.getBuiltins().string(getClass().getSimpleName());
+        }
+        if ("value".equals(name)) {
+            return Janitor.NULL; // only values thrown by scripts have one, see JanitorScriptThrownException
         }
         if (getCause() instanceof JanitorAware aware) {
             final JanitorObject jo = aware.asJanitorObject();
@@ -80,6 +93,30 @@ public abstract class JanitorRuntimeException extends JanitorException implement
             return jo.janitorGetAttribute(process, name, required);
         }
         return JanitorObject.super.janitorGetAttribute(process, name, required);
+    }
+
+    /**
+     * @return the message without the traceback, e.g. "name 'x' is not defined", which scripts see as {@code e.message};
+     * {@link #getMessage()} contains the whole traceback
+     */
+    public @NotNull String getText() {
+        return text;
+    }
+
+    /**
+     * The message as scripts see it: the detail message, followed by the message of the cause unless it repeats it; without
+     * either, the kind of error, e.g. "AssertionException".
+     */
+    private static @NotNull String plainText(final @Nullable String message, final @NotNull Class<? extends JanitorRuntimeException> cls, final @Nullable Throwable cause) {
+        final String causeMessage = cause == null || cause.getMessage() == null || cause.getMessage().isBlank() ? null : cause.getMessage().strip();
+        if (message != null && !message.isBlank()) {
+            return causeMessage == null || isAlreadyTold(message, causeMessage) ? message : message + ": " + causeMessage;
+        }
+        if (causeMessage != null) {
+            return causeMessage;
+        }
+        final String name = cls.getSimpleName();
+        return name.startsWith("Janitor") ? name.substring(7) : name;
     }
 
     /**
