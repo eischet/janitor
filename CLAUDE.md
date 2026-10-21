@@ -49,6 +49,19 @@ No linter or auto-formatter is enforced. Follow 4-space indentation, braces on t
 | `janitor-dbxs` / `janitor-orm` | Database and ORM support |
 | `janitor-modules` | Optional plugin modules (`httpclient`, `files`, `os`, `brrr`, `mustang`, `msgraph`, `mcp`) |
 | `janitor-maven-plugin` | Maven plugin (uses JUnit 4, unlike other modules) |
+| `janitor-docs` | The language reference from `docs/reference` as class path resources (`JanitorDocs`) |
+
+## Language Reference
+
+`docs/reference/` is the language reference for people and AI models; `docs/README.md` explains how it is maintained.
+Parts of it are generated from the dispatch tables, and all examples run as tests. After changing built-in methods or
+modules, regenerate and check it:
+
+```bash
+mvn -pl janitor-tests -am test -Dtest=ReferenceDocsTest -Djanitor.docs.regenerate=true -Dsurefire.failIfNoSpecifiedTests=false
+```
+
+Every member of a built-in type needs a HELP text that starts with its call form (`"name(arguments): ..."`).
 
 ## Architecture: Compilation & Execution Pipeline
 
