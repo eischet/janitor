@@ -48,6 +48,8 @@
   silently to the last day of the month, or to midnight of the next day (Java's ResolverStyle.SMART). The year must be
   at least 1, and the grammar no longer has an optional minus sign before the year (negative years never worked).
   `parseDate` and `parseDateTime` stay lenient, because scripts give their own patterns there.
+- `list.removeAll(other)` now works: it removes every element that is equal to an element of the other list. It used to
+  fail on every call, because it required zero arguments.
 - `regex.matcher(text)` now works: `find()` steps through the matches (for `while (m.find()) { ... }`), `matches()` tests
   the whole text, `groupCount()` counts the groups, and `group`, `start` and `end` read the current match or a group by
   number or name. The matcher used to have no `find()` or `matches()`, so it never had a match, and the group argument

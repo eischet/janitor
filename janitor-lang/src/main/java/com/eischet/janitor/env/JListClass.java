@@ -445,8 +445,10 @@ public class JListClass {
      * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
      */
     public static JNull __removeAll(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
-        arguments.require(0);
-        for (final JanitorObject jObj : arguments.getRequired(0, JList.class)) {
+        // this used to be require(0), so that every call failed
+        final JList other = arguments.require(1).getRequired(0, JList.class);
+        // a copy, so that list.removeAll(list) does not change the list it iterates over
+        for (final JanitorObject jObj : other.stream().toList()) {
             self.remove(jObj);
         }
         return JNull.NULL;
@@ -512,7 +514,7 @@ public class JListClass {
         listDispatcher.addMethod("remove", JListClass::__remove)
                 .setMetaData(Janitor.MetaData.HELP, "remove(x): Removes every element that is equal to x; returns null.");
         listDispatcher.addMethod("removeAll", JListClass::__removeAll)
-                .setMetaData(Janitor.MetaData.HELP, "removeAll(other): Meant to remove the elements of the other list, but currently fails with an argument error, whatever is passed.");
+                .setMetaData(Janitor.MetaData.HELP, "removeAll(other): Removes every element that is equal to an element of the other list; returns null.");
         listDispatcher.addMethod("clear", JListClass::__clear)
                 .setMetaData(Janitor.MetaData.HELP, "clear(): Removes all elements; returns null.");
     }

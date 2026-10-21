@@ -37,13 +37,6 @@ Hosts should check their stored scripts with `checkCompile` before upgrading.
 
 ## Built-in functions and types
 
-<a id="list-removeall"></a>
-
-### `list.removeAll(other)`
-
-The method requires zero arguments (`arguments.require(0)`) and then reads the first one, so every call fails.
-(`JListClass.__removeAll`)
-
 <a id="format-at-timezone"></a>
 
 ### `datetime.formatAtTimezone(zone)` without a pattern

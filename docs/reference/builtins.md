@@ -289,7 +289,7 @@ loop, and the slice `list[::-1]`.
 | `put(index, x)` | method | Replaces the element at the index, like list[index] = x; returns null. |
 | `randomSublist(n)` | method | Returns a new list with n elements of this list, picked at random. |
 | `remove(x)` | method | Removes every element that is equal to x; returns null. |
-| `removeAll(other)` | method | Meant to remove the elements of the other list, but currently fails with an argument error, whatever is passed. |
+| `removeAll(other)` | method | Removes every element that is equal to an element of the other list; returns null. |
 | `size()` | method | Returns the number of elements. |
 | `sort()` | method | Sorts the list in place, in natural order, and returns null; the elements must be comparable with each other. |
 | `toJson()` | method | Returns the list as a JSON string. |
