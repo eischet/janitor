@@ -33,6 +33,19 @@ arguments, which `**options` gets, too. The code has a TODO for the missing case
 
 Hosts should check their stored scripts with `checkCompile` before upgrading.
 
+<a id="operator-methods"></a>
+
+### Operator methods like `__eq__` and `__lt__`
+
+Today, only two operators look up a method on the value: `x in value` calls `value.__in__(x)`, and `value[i]` calls
+`value.__get__(i)` (see [`dir`](builtins.md#global-dir)). All other operators, such as `==`, `<` and `+`, are fixed in
+the runtime (`JanitorSemantics`).
+
+The plan, not designed yet: more operators get methods like in Python, e.g. `__eq__` for `==` and `__lt__` for `<`, so
+that types that want it can define their own rules for operators. Open design points include which operators get
+methods, how related operators (`!=`, `<=`, ...) follow from them, and what happens if only one of the two values has
+the method.
+
 <a id="builtins"></a>
 
 ## Built-in functions and types
