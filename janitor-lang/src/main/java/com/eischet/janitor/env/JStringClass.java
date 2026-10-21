@@ -106,6 +106,7 @@ public class JStringClass {
      * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
      */
     public static @NotNull JBinary toBinaryUtf8(final @NotNull JString self, final @NotNull JanitorScriptProcess process, final @NotNull JCallArgs arguments) throws JanitorRuntimeException {
+        arguments.require(0);
         return process.getBuiltins().binary(self.janitorGetHostValue().getBytes(StandardCharsets.UTF_8));
     }
 
@@ -118,6 +119,7 @@ public class JStringClass {
      * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
      */
     public static @NotNull JBinary encode(final @NotNull JString self, final @NotNull JanitorScriptProcess process, final @NotNull JCallArgs arguments) throws JanitorRuntimeException {
+        arguments.require(0, 1);
         final String enc = arguments.getOptionalStringValue(0, "UTF-8");
         try {
             return process.getBuiltins().binary(self.janitorGetHostValue().getBytes(enc));
@@ -137,6 +139,7 @@ public class JStringClass {
      * an empty string, not reversed (use a negative step, e.g. {@code s[::-1]}, to reverse a string).
      */
     public static @NotNull JString indexedGet(final @NotNull JString self, final @NotNull JanitorScriptProcess process, final @NotNull JCallArgs arguments) throws JanitorRuntimeException {
+        arguments.require(1, 3);
         final String string = self.janitorGetHostValue();
         final int len = string.length();
         if (arguments.size() == 1) {
@@ -199,6 +202,7 @@ public class JStringClass {
      * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
      */
     public static @NotNull JFloat toFloat(final @NotNull JString self, final @NotNull JanitorScriptProcess process, final @NotNull JCallArgs arguments) throws JanitorRuntimeException {
+        arguments.require(0);
         final String string = self.janitorGetHostValue();
         if (string.isBlank()) {
             return process.getBuiltins().floatingPoint(0);
@@ -344,6 +348,7 @@ public class JStringClass {
      * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
      */
     public static JBool contains(final JString self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+        arguments.require(1);
         return Janitor.toBool(self.janitorGetHostValue().contains(arguments.getString(0).janitorGetHostValue()));
     }
 
@@ -356,6 +361,7 @@ public class JStringClass {
      * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
      */
     public static JBool containsIgnoreCase(final JString self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+        arguments.require(1);
         return Janitor.toBool(self.janitorGetHostValue().toLowerCase(Locale.GERMANY)
             .contains(arguments.getString(0).janitorGetHostValue().toLowerCase(Locale.GERMANY)));
     }
@@ -370,6 +376,7 @@ public class JStringClass {
      * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
      */
     public static JList splitLines(final JString self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+        arguments.require(0);
         final ArrayList<JanitorObject> list = new ArrayList<>();
         for (final String s : self.janitorGetHostValue().split("\r?\n\r?")) {
             list.add(process.getBuiltins().nullableString(s));
@@ -453,6 +460,7 @@ public class JStringClass {
      * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
      */
     public static JInt indexOf(final JString self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+        arguments.require(1);
         return process.getBuiltins().integer(self.janitorGetHostValue().indexOf(arguments.getString(0).janitorGetHostValue()));
     }
 
@@ -465,6 +473,7 @@ public class JStringClass {
      * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
      */
     public static JInt lastIndexOf(final JString self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+        arguments.require(1);
         return process.getBuiltins().integer(self.janitorGetHostValue().lastIndexOf(arguments.getString(0).janitorGetHostValue()));
     }
 
@@ -478,6 +487,7 @@ public class JStringClass {
      * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
      */
     public static JString substring(final JString self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+        arguments.require(1, 2);
         final int from = (int) arguments.getInt(0).getValue();
         final int to = arguments.size() > 1 ? (int) arguments.getInt(1).getValue() : self.janitorGetHostValue().length();
         return process.getBuiltins().string(self.janitorGetHostValue().substring(from, to));
@@ -736,7 +746,7 @@ public class JStringClass {
         stringDispatcher.addMethod("splitLines", JStringClass::splitLines)
                 .setMetaData(Janitor.MetaData.HELP, "splitLines(): Splits the string into a list of lines; accepts both Unix and Windows line breaks.");
         stringDispatcher.addMethod("indexOf", JStringClass::indexOf)
-                .setMetaData(Janitor.MetaData.HELP, "indexOf(text): Returns the index of the first occurrence of the text, or -1. There is no start index: further arguments are ignored.");
+                .setMetaData(Janitor.MetaData.HELP, "indexOf(text): Returns the index of the first occurrence of the text, or -1. There is no start index: indexOf(text, from) is an error.");
         stringDispatcher.addMethod("lastIndexOf", JStringClass::lastIndexOf)
                 .setMetaData(Janitor.MetaData.HELP, "lastIndexOf(text): Returns the index of the last occurrence of the text, or -1.");
         stringDispatcher.addMethod("empty", JStringClass::empty)

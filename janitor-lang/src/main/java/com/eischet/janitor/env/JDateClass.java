@@ -25,6 +25,7 @@ public class JDateClass {
      * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
      */
     public static JString __format(final JDate date, final JanitorScriptProcess janitorScriptProcess, final JCallArgs jCallArgs) throws JanitorRuntimeException {
+        jCallArgs.require(0, 1);
         final String fmt = jCallArgs.getOptionalStringValue(0, null);
         if (fmt == null) {
             return Janitor.string(janitorScriptProcess.getFormatting().formatDate(date.janitorGetHostValue()));

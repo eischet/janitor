@@ -85,6 +85,7 @@ public class JDateTimeClass {
      * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
      */
     public static JString __string(final JDateTime csDateTime, final JanitorScriptProcess janitorScriptProcess, final JCallArgs jCallArgs) throws JanitorRuntimeException {
+        jCallArgs.require(0, 1);
         final String fmt = jCallArgs.getOptionalStringValue(0, null);
         if (fmt == null) {
             return Janitor.string(janitorScriptProcess.getFormatting().formatDateTime(csDateTime.janitorGetHostValue()));
@@ -102,6 +103,7 @@ public class JDateTimeClass {
      * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
      */
     public static JString __formatAtTimezone(final JDateTime csDateTime, final JanitorScriptProcess janitorScriptProcess, final JCallArgs jCallArgs) throws JanitorRuntimeException {
+        jCallArgs.require(1, 2);
         final String tz = jCallArgs.getString(0).janitorGetHostValue();
         final String fmt = jCallArgs.getOptionalStringValue(1, null);
 
@@ -123,6 +125,7 @@ public class JDateTimeClass {
      * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
      */
     public static JInt __year(final JDateTime jDateTime, final JanitorScriptProcess janitorScriptProcess, final JCallArgs jCallArgs) throws JanitorRuntimeException {
+        jCallArgs.require(0);
         return Janitor.integer(jDateTime.janitorGetHostValue().getYear());
     }
 
@@ -136,6 +139,7 @@ public class JDateTimeClass {
      * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
      */
     public static JString __kw(final JDateTime jDateTime, final JanitorScriptProcess janitorScriptProcess, final JCallArgs jCallArgs) throws JanitorRuntimeException {
+        jCallArgs.require(0);
         final int kw = jDateTime.janitorGetHostValue().get(weekFields.weekOfWeekBasedYear());
         return Janitor.string(kw < 10 ? "0" + kw : String.valueOf(kw));
     }

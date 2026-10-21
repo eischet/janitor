@@ -23,6 +23,12 @@
   slice expressions like `list[0];` used to be accepted there by accident (they are compiled as calls); now they are
   rejected like `x;` or `x == 1;`, with the message "this expression has no effect" and the line, instead of "invalid
   block statement: Identifier=...". At the top level, every expression is still allowed and is the script's result.
+- **behavior change:** too many arguments are now an error, as in Python and Java. Script functions and lambdas used to
+  ignore additional positional arguments silently, unless they declared `*rest` or `**options` (which still collect
+  them). 21 methods of the built-in types ignored them, too, e.g. `"banana".indexOf("a", 2)` returned 1; they now fail
+  with an argument error, like the other built-in methods and `apply(map)`. A test checks that every built-in method
+  rejects too many arguments. Hosts that call script functions as callbacks with more arguments than the script declares
+  (JavaScript style) have to pass the right number, or the scripts have to declare `*rest`.
 - unary plus (`+x`) now works as the counterpart of unary minus: it returns a number unchanged. As in Java and Python,
   and unlike JavaScript, it does not convert other values: `+"3"` is an error. It used to be a compile error.
 - imports: dotted module names (`import a.b;`) are no longer part of the grammar; they never worked. Hosts that want

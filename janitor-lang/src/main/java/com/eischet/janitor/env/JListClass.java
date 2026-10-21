@@ -128,6 +128,7 @@ public class JListClass {
      * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
      */
     public static JList __filter(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+        arguments.require(1);
         final JanitorObject callable = arguments.getRequired(0, JanitorObject.class);
         if (callable instanceof JCallable func) {
             JList result = Janitor.list();
@@ -151,6 +152,7 @@ public class JListClass {
      * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
      */
     public static JList __map(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+        arguments.require(1);
         final JanitorObject callable = arguments.getRequired(0, JanitorObject.class);
         if (callable instanceof JCallable func) {
             final JList result = Janitor.list(self.janitorGetHostValue().size());
@@ -172,6 +174,7 @@ public class JListClass {
      * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
      */
     public static JString __join(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+        arguments.require(0, 1);
         final String separator = arguments.getOptionalStringValue(0, " ");
         return Janitor.string(self.janitorGetHostValue().stream().map(JanitorObject::janitorToString).collect(Collectors.joining(separator)));
     }
@@ -255,6 +258,7 @@ public class JListClass {
      * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
      */
     public static JList __randomSublist(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+        arguments.require(1);
         final int count = arguments.getInt(0).getAsInt();
         if (count >= self.janitorGetHostValue().size()) {
             return Janitor.list(self.janitorGetHostValue());
@@ -296,6 +300,7 @@ public class JListClass {
      * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
      */
     public static JNull __addAll(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+        arguments.require(1);
         for (final JanitorObject jObj : arguments.getRequired(0, JList.class)) {
             self.add(jObj);
         }
@@ -357,6 +362,7 @@ public class JListClass {
      * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
      */
     public static JanitorObject __get(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+        arguments.require(1, 3);
         if (arguments.size() == 1) {
             return self.get(arguments.require(1).getInt(0));
         }

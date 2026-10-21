@@ -178,7 +178,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
 
     private void addApplyMethod() {
         addMethod("apply", (self, process, args) -> {
-            final JMap data = args.getRequired(0, JMap.class);
+            final JMap data = args.require(1).getRequired(0, JMap.class);
             data.applyTo(process, self);
             return self;
         }).setMetaData(Janitor.MetaData.HELP, "apply(map): Assigns each entry of the map to the property of the same name, and returns the object itself.");
