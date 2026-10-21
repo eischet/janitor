@@ -62,7 +62,9 @@ public class DefaultBuiltinTypes implements BuiltinTypes {
     private final JInt zero;
 
     public DefaultBuiltinTypes() {
-        baseDispatcher.addStringProperty("class", JanitorObject::janitorClassName);
+        // Every HELP text starts with the call form, "name(arguments): " or "name: " for properties, which the language reference relies on.
+        baseDispatcher.addStringProperty("class", JanitorObject::janitorClassName)
+                .setMetaData(Janitor.MetaData.HELP, "class: The name of the value's type, e.g. \"string\", \"int\" or \"list\".");
 
         emptyString = JString.newInstance(stringDispatcher, "", it -> it); // cannot pass this::intern here in a constructor, and "" is already interned anyway
         zero = JInt.newInstance(intDispatcher, 0);
@@ -76,17 +78,25 @@ public class DefaultBuiltinTypes implements BuiltinTypes {
         JDateClass.applyDefaults(dateDispatch);
         JBinaryClass.applyDefaults(binaryDispatcher);
 
-        intDispatcher.addLongProperty("int", JanitorWrapper::janitorGetHostValue);
+        intDispatcher.addLongProperty("int", JanitorWrapper::janitorGetHostValue)
+                .setMetaData(Janitor.MetaData.HELP, "int: The number itself.");
         // intDispatcher.addDateTimeProperty("epoch", wrapper -> DateTimeUtils.fromEpochSeconds(wrapper.janitorGetHostValue()));
-        intDispatcher.addObjectProperty("epoch", wrapper -> dateTime(DateTimeUtils.fromEpochSeconds(wrapper.janitorGetHostValue())));
+        intDispatcher.addObjectProperty("epoch", wrapper -> dateTime(DateTimeUtils.fromEpochSeconds(wrapper.janitorGetHostValue())))
+                .setMetaData(Janitor.MetaData.HELP, "epoch: Reads the number as seconds since 1970-01-01 00:00 UTC and returns that point in time as a datetime, in the host's time zone.");
 
-        floatDispatcher.addLongProperty("int", doubleJanitorWrapper -> doubleJanitorWrapper.janitorGetHostValue().longValue());
+        floatDispatcher.addLongProperty("int", doubleJanitorWrapper -> doubleJanitorWrapper.janitorGetHostValue().longValue())
+                .setMetaData(Janitor.MetaData.HELP, "int: The number as an integer, with the fraction cut off (towards zero).");
 
-        durationDispatch.addLongProperty("seconds", JDuration::toSeconds);
-        durationDispatch.addLongProperty("minutes", self -> self.toSeconds() / 60);
-        durationDispatch.addLongProperty("hours", self -> self.toSeconds() / 3600);
-        durationDispatch.addLongProperty("days", self -> self.toSeconds() / 86400);
-        durationDispatch.addLongProperty("weeks", self -> self.toSeconds() / 604800);
+        durationDispatch.addLongProperty("seconds", JDuration::toSeconds)
+                .setMetaData(Janitor.MetaData.HELP, "seconds: The length of the duration in whole seconds.");
+        durationDispatch.addLongProperty("minutes", self -> self.toSeconds() / 60)
+                .setMetaData(Janitor.MetaData.HELP, "minutes: The length of the duration in whole minutes, rounded down.");
+        durationDispatch.addLongProperty("hours", self -> self.toSeconds() / 3600)
+                .setMetaData(Janitor.MetaData.HELP, "hours: The length of the duration in whole hours, rounded down.");
+        durationDispatch.addLongProperty("days", self -> self.toSeconds() / 86400)
+                .setMetaData(Janitor.MetaData.HELP, "days: The length of the duration in whole days, rounded down.");
+        durationDispatch.addLongProperty("weeks", self -> self.toSeconds() / 604800)
+                .setMetaData(Janitor.MetaData.HELP, "weeks: The length of the duration in whole weeks, rounded down.");
 
     }
 

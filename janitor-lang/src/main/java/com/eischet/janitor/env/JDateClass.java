@@ -38,11 +38,17 @@ public class JDateClass {
      * @param dateDispatch the dispatch table to add them to
      */
     public static void applyDefaults(DispatchTable<JDate> dateDispatch) {
-        dateDispatch.addLongProperty("year", JDate::getYear);
-        dateDispatch.addLongProperty("month", JDate::getMonth);
-        dateDispatch.addLongProperty("day", JDate::getDayOfMonth);
-        dateDispatch.addMethod("format", JDateClass::__format);
-        dateDispatch.addMethod("string", JDateClass::__format);
+        // Every HELP text starts with the call form, "name(arguments): " or "name: " for properties, which the language reference relies on.
+        dateDispatch.addLongProperty("year", JDate::getYear)
+                .setMetaData(Janitor.MetaData.HELP, "year: The year, e.g. 2024.");
+        dateDispatch.addLongProperty("month", JDate::getMonth)
+                .setMetaData(Janitor.MetaData.HELP, "month: The month, 1 to 12.");
+        dateDispatch.addLongProperty("day", JDate::getDayOfMonth)
+                .setMetaData(Janitor.MetaData.HELP, "day: The day of the month, 1 to 31.");
+        dateDispatch.addMethod("format", JDateClass::__format)
+                .setMetaData(Janitor.MetaData.HELP, "format(pattern): Formats the date with a Java DateTimeFormatter pattern like \"dd.MM.yyyy\"; without a pattern, in the host's default format.");
+        dateDispatch.addMethod("string", JDateClass::__format)
+                .setMetaData(Janitor.MetaData.HELP, "string(pattern): Same as format(pattern).");
     }
 
 }

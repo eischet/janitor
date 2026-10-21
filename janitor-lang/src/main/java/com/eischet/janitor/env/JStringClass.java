@@ -43,7 +43,7 @@ public class JStringClass {
             
             """;
 
-    public static final String STRING_LENGTH = "String.length(): Returns the number of characters in the string.";
+    public static final String STRING_LENGTH = "length(): Returns the number of characters in the string.";
 
     /**
      * Script method {@code string.length()}: the number of characters in the string.
@@ -58,7 +58,7 @@ public class JStringClass {
         return process.getBuiltins().integer(self.janitorGetHostValue().length());
     }
 
-    public static final String STRING_TRIM = "String.trim(): Returns the String with leading and trailing spaces removed";
+    public static final String STRING_TRIM = "trim(): Returns the string with leading and trailing whitespace removed.";
 
     /**
      * Script method {@code string.trim()}: removes leading and trailing whitespace.
@@ -722,48 +722,83 @@ public class JStringClass {
      * @param stringDispatcher the dispatch table to add them to
      */
     public static void applyDefaults(DispatchTable<JString> stringDispatcher) {
-                stringDispatcher.setMetaData(Janitor.MetaData.HELP, JStringClass.STRING_CLASS);
-        // OLD: addStringMethod("length", JStringClass::__length);
+        stringDispatcher.setMetaData(Janitor.MetaData.HELP, JStringClass.STRING_CLASS);
+        // Every HELP text starts with the call form, "name(arguments): ", which the language reference relies on.
         stringDispatcher.addMethod("length", JStringClass::length)
                 .setMetaData(Janitor.MetaData.HELP, JStringClass.STRING_LENGTH); // "foo".length() == 3
         stringDispatcher.addMethod("trim", JStringClass::trim)
                 .setMetaData(Janitor.MetaData.HELP, JStringClass.STRING_TRIM); // "  foo  ".trim() == "foo"
-        stringDispatcher.addMethod("contains", JStringClass::contains); // "foobar".contains("bar") == true, "barbaz".contains("foo") == false
+        stringDispatcher.addMethod("contains", JStringClass::contains)
+                .setMetaData(Janitor.MetaData.HELP, "contains(text): Returns true if the string contains the text. Same as the operator: text in string.");
         stringDispatcher.addMethod(Janitor.IN_OPERATOR_METHOD, JStringClass::contains); // "bar" in "foobar" == true
-        stringDispatcher.addMethod("containsIgnoreCase", JStringClass::containsIgnoreCase); // "foobar".containsIgnoreCase("BAR") == true
-        stringDispatcher.addMethod("splitLines", JStringClass::splitLines); // "foo\nbar\nbaz".splitLines() == ["foo", "bar", "baz"]
-        stringDispatcher.addMethod("indexOf", JStringClass::indexOf); // "foobar".indexOf("bar") == 3, "foobar".indexOf("x") == -1
-        stringDispatcher.addMethod("lastIndexOf", JStringClass::lastIndexOf); // "foobar".indexOf("bar") == 3, "foobar".indexOf("x") == -1
-        stringDispatcher.addMethod("empty", JStringClass::empty); // "".empty() == true, "foo".empty() == false
-        stringDispatcher.addMethod("startsWith", JStringClass::startsWith); // "foobar".startsWith("foo") == true, "foobar".startsWith("bar") == false
-        stringDispatcher.addMethod("endsWith", JStringClass::endsWith); // "foobar".endsWith("bar") == true, "foobar".endsWith("foo") == false
-        stringDispatcher.addMethod("removeLeadingZeros", JStringClass::removeLeadingZeros); // "000123".removeLeadingZeros() == "123"
-        stringDispatcher.addMethod("substring", JStringClass::substring); // "foobar".substring(3) == "bar", "foobar".substring(3, 5) == "ba"
-        stringDispatcher.addMethod("replaceAll", JStringClass::replaceAll); // "foobar".replaceAll("o", "x") == "fxxbar"
-        stringDispatcher.addMethod("replace", JStringClass::replace); // "foobar".replace("o", "x") == "fxobar"
-        stringDispatcher.addMethod("replaceFirst", JStringClass::replaceFirst); // "foobar".replaceFirst("o", "x") == "fxobar"
-        stringDispatcher.addMethod("toUpperCase", JStringClass::toUpperCase); // "foo".toUpperCase() == "FOO"
-        stringDispatcher.addMethod("toLowerCase", JStringClass::toLowerCase); // "FOO".toLowerCase() == "foo"
-        stringDispatcher.addMethod("count", JStringClass::count); // "foobar".count("o") == 2
-        stringDispatcher.addMethod("format", JStringClass::format); // "Hello, %s!".format("world") == "Hello, world!"
-        stringDispatcher.addMethod("expand", JStringClass::expand); // "Hello, ${name}!".expand({name: "world"}) == "Hello, world!"
-        stringDispatcher.addMethod("toBinaryUtf8", JStringClass::toBinaryUtf8); // convert to binary, in UTF-8
-        stringDispatcher.addMethod("encode", JStringClass::encode); // convert to binary, in the given character set
-        stringDispatcher.addMethod("int", JStringClass::toInt); // "123".int() == 123
-        stringDispatcher.addMethod("toInt", JStringClass::toInt); // "123".toInt() == 123
-        stringDispatcher.addMethod("toFloat", JStringClass::toFloat); // "123.45".toFloat() == 123.45
-        stringDispatcher.addMethod("get", JStringClass::indexedGet); // "foobar".get(3) == "b", "foobar".get(3, 5) == "ba"
-        stringDispatcher.addMethod("isNumeric", JStringClass::isNumeric); // "17".isNumeric() == true, "mario".isNumeric() == false
-        stringDispatcher.addMethod("startsWithNumbers", JStringClass::startsWithNumbers); // "123foo".startsWithNumbers() == true, "foo123".startsWithNumbers() == false
-        stringDispatcher.addMethod("parseDate", JStringClass::parseDate); // "2021-12-31".parseDate('yyyy-MM-dd') == @2021-12-31
-        stringDispatcher.addMethod("parseDateTime", JStringClass::parseDateTime); // "2021-12-31T23:59:59".parseDateTime('yyyy-MM-dd\'T\'HH:mm:ss') == @2021-12-31-23:59:59
-        stringDispatcher.addMethod("split", JStringClass::split); // "foo,bar,baz".split(",") == ["foo", "bar", "baz"]
-        stringDispatcher.addMethod("cutFilename", JStringClass::cutFilename);
-        stringDispatcher.addMethod("urlEncode", JStringClass::urlEncode);
-        stringDispatcher.addMethod("urlDecode", JStringClass::urlDecode);
-        stringDispatcher.addMethod("decodeBase64", JStringClass::decodeBase64);
-        stringDispatcher.addMethod("toCamelCase", JStringClass::toCamelCase);
-        stringDispatcher.addMethod("toConstantCase", JStringClass::toConstantCase);
+        stringDispatcher.addMethod("containsIgnoreCase", JStringClass::containsIgnoreCase)
+                .setMetaData(Janitor.MetaData.HELP, "containsIgnoreCase(text): Returns true if the string contains the text, ignoring upper and lower case.");
+        stringDispatcher.addMethod("splitLines", JStringClass::splitLines)
+                .setMetaData(Janitor.MetaData.HELP, "splitLines(): Splits the string into a list of lines; accepts both Unix and Windows line breaks.");
+        stringDispatcher.addMethod("indexOf", JStringClass::indexOf)
+                .setMetaData(Janitor.MetaData.HELP, "indexOf(text): Returns the index of the first occurrence of the text, or -1. There is no start index: further arguments are ignored.");
+        stringDispatcher.addMethod("lastIndexOf", JStringClass::lastIndexOf)
+                .setMetaData(Janitor.MetaData.HELP, "lastIndexOf(text): Returns the index of the last occurrence of the text, or -1.");
+        stringDispatcher.addMethod("empty", JStringClass::empty)
+                .setMetaData(Janitor.MetaData.HELP, "empty(): Returns true if the string has no characters.");
+        stringDispatcher.addMethod("startsWith", JStringClass::startsWith)
+                .setMetaData(Janitor.MetaData.HELP, "startsWith(text): Returns true if the string starts with the text. An empty text never matches.");
+        stringDispatcher.addMethod("endsWith", JStringClass::endsWith)
+                .setMetaData(Janitor.MetaData.HELP, "endsWith(text): Returns true if the string ends with the text. An empty text never matches.");
+        stringDispatcher.addMethod("removeLeadingZeros", JStringClass::removeLeadingZeros)
+                .setMetaData(Janitor.MetaData.HELP, "removeLeadingZeros(): Returns the string without the zeros at its start, e.g. \"007\" becomes \"7\".");
+        stringDispatcher.addMethod("substring", JStringClass::substring)
+                .setMetaData(Janitor.MetaData.HELP, "substring(from, to): Returns the characters from index from (inclusive) to index to (exclusive); without to, up to the end.");
+        stringDispatcher.addMethod("replaceAll", JStringClass::replaceAll)
+                .setMetaData(Janitor.MetaData.HELP, "replaceAll(regex, replacement): Replaces every match of the regular expression, given as a string, by the replacement.");
+        stringDispatcher.addMethod("replace", JStringClass::replace)
+                .setMetaData(Janitor.MetaData.HELP, "replace(text, replacement): Replaces every occurrence of the literal text by the replacement.");
+        stringDispatcher.addMethod("replaceFirst", JStringClass::replaceFirst)
+                .setMetaData(Janitor.MetaData.HELP, "replaceFirst(regex, replacement): Replaces the first match of the regular expression, given as a string, by the replacement.");
+        stringDispatcher.addMethod("toUpperCase", JStringClass::toUpperCase)
+                .setMetaData(Janitor.MetaData.HELP, "toUpperCase(): Returns the string in upper case.");
+        stringDispatcher.addMethod("toLowerCase", JStringClass::toLowerCase)
+                .setMetaData(Janitor.MetaData.HELP, "toLowerCase(): Returns the string in lower case.");
+        stringDispatcher.addMethod("count", JStringClass::count)
+                .setMetaData(Janitor.MetaData.HELP, "count(text): Returns how often the text occurs in the string, without overlaps.");
+        stringDispatcher.addMethod("format", JStringClass::format)
+                .setMetaData(Janitor.MetaData.HELP, "format(args...): Uses the string as a Java format string (%s, %d, %.2f, ...) and fills in the arguments.");
+        stringDispatcher.addMethod("expand", JStringClass::expand)
+                .setMetaData(Janitor.MetaData.HELP, "expand(map): Replaces placeholders like ${name} or ${a.b} by values from the map.");
+        stringDispatcher.addMethod("toBinaryUtf8", JStringClass::toBinaryUtf8)
+                .setMetaData(Janitor.MetaData.HELP, "toBinaryUtf8(): Encodes the string as UTF-8 and returns the bytes as a binary value.");
+        stringDispatcher.addMethod("encode", JStringClass::encode)
+                .setMetaData(Janitor.MetaData.HELP, "encode(charset): Encodes the string with the named character set, UTF-8 if none is given, and returns the bytes as a binary value.");
+        stringDispatcher.addMethod("int", JStringClass::toInt)
+                .setMetaData(Janitor.MetaData.HELP, "int(): Same as toInt().");
+        stringDispatcher.addMethod("toInt", JStringClass::toInt)
+                .setMetaData(Janitor.MetaData.HELP, "toInt(): Parses the string as a decimal integer; a blank string gives 0, any other non-number is an error.");
+        stringDispatcher.addMethod("toFloat", JStringClass::toFloat)
+                .setMetaData(Janitor.MetaData.HELP, "toFloat(): Parses the string as a floating point number; a blank string gives 0.0, any other non-number is an error.");
+        stringDispatcher.addMethod("get", JStringClass::indexedGet)
+                .setMetaData(Janitor.MetaData.HELP, "get(index): Same as string[index]; get(from, to) and get(from, to, step) are the same as string[from:to] and string[from:to:step].");
+        stringDispatcher.addMethod("isNumeric", JStringClass::isNumeric)
+                .setMetaData(Janitor.MetaData.HELP, "isNumeric(): Returns true if the string is not empty and consists of the digits 0-9 only.");
+        stringDispatcher.addMethod("startsWithNumbers", JStringClass::startsWithNumbers)
+                .setMetaData(Janitor.MetaData.HELP, "startsWithNumbers(): Returns true if the string starts with a digit.");
+        stringDispatcher.addMethod("parseDate", JStringClass::parseDate)
+                .setMetaData(Janitor.MetaData.HELP, "parseDate(pattern): Parses the string as a date, using a Java DateTimeFormatter pattern like \"dd.MM.yyyy\".");
+        stringDispatcher.addMethod("parseDateTime", JStringClass::parseDateTime)
+                .setMetaData(Janitor.MetaData.HELP, "parseDateTime(pattern): Parses the string as a datetime, using a Java DateTimeFormatter pattern like \"yyyy-MM-dd HH:mm\".");
+        stringDispatcher.addMethod("split", JStringClass::split)
+                .setMetaData(Janitor.MetaData.HELP, "split(separator): Splits the string into a list. The separator is a literal string or a regex literal; an empty string splits into single characters.");
+        stringDispatcher.addMethod("cutFilename", JStringClass::cutFilename)
+                .setMetaData(Janitor.MetaData.HELP, "cutFilename(maxLength): Takes the file name part of a path and shortens it to maxLength characters, keeping the extension.");
+        stringDispatcher.addMethod("urlEncode", JStringClass::urlEncode)
+                .setMetaData(Janitor.MetaData.HELP, "urlEncode(): Encodes the string for a URL query, in UTF-8; a space becomes +.");
+        stringDispatcher.addMethod("urlDecode", JStringClass::urlDecode)
+                .setMetaData(Janitor.MetaData.HELP, "urlDecode(): Decodes a string that was encoded for a URL query, in UTF-8; + becomes a space.");
+        stringDispatcher.addMethod("decodeBase64", JStringClass::decodeBase64)
+                .setMetaData(Janitor.MetaData.HELP, "decodeBase64(): Decodes the Base64 string and returns the bytes as a binary value.");
+        stringDispatcher.addMethod("toCamelCase", JStringClass::toCamelCase)
+                .setMetaData(Janitor.MetaData.HELP, "toCamelCase(): Converts words separated by spaces, underscores or other characters to camel case, e.g. \"FOO_BAR\" becomes \"fooBar\".");
+        stringDispatcher.addMethod("toConstantCase", JStringClass::toConstantCase)
+                .setMetaData(Janitor.MetaData.HELP, "toConstantCase(): Converts words separated by spaces or other characters to an upper case constant name, e.g. \"foo bar\" becomes \"FOO_BAR\".");
         stringDispatcher.addMethod(JanitorAntlrCompiler.INDEXED_GET_METHOD, JStringClass::indexedGet); // leave this as it is: no assignment by index to parts of a string, since strings are immutable
     }
 

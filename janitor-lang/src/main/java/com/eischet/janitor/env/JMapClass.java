@@ -259,20 +259,34 @@ public class JMapClass {
      * @param mapDispatcher the dispatch table to add them to
      */
     public static void applyDefaults(WrapperDispatchTable<Map<JanitorObject, JanitorObject>> mapDispatcher) {
-        mapDispatcher.addMethod("toJson", JMapClass::__toJson);
-        mapDispatcher.addMethod("parseJson", JMapClass::__parseJson);
-        mapDispatcher.addMethod("get", JMapClass::__get);
+        // Every HELP text starts with the call form, "name(arguments): ", which the language reference relies on.
+        mapDispatcher.addMethod("toJson", JMapClass::__toJson)
+                .setMetaData(Janitor.MetaData.HELP, "toJson(): Returns the map as a JSON string.");
+        mapDispatcher.addMethod("parseJson", JMapClass::__parseJson)
+                .setMetaData(Janitor.MetaData.HELP, "parseJson(json): Parses a JSON object and puts its entries into this map; returns this map. Usage: {}.parseJson(text).");
+        mapDispatcher.addMethod("get", JMapClass::__get)
+                .setMetaData(Janitor.MetaData.HELP, "get(key): Returns the value for the key, or null if there is none.");
         mapDispatcher.addMethod(JanitorAntlrCompiler.INDEXED_GET_METHOD, JMapClass::__getIndexed);
-        mapDispatcher.addMethod("put", JMapClass::__put);
-        mapDispatcher.addMethod("size", JMapClass::__size);
-        mapDispatcher.addMethod("isEmpty", JMapClass::__isEmpty);
-        mapDispatcher.addMethod("keys", JMapClass::__keys);
-        mapDispatcher.addMethod("values", JMapClass::__values);
-        mapDispatcher.addMethod("containsKey", JMapClass::__containsKey);
+        mapDispatcher.addMethod("put", JMapClass::__put)
+                .setMetaData(Janitor.MetaData.HELP, "put(key, value): Stores the value under the key, like map[key] = value; returns null.");
+        mapDispatcher.addMethod("size", JMapClass::__size)
+                .setMetaData(Janitor.MetaData.HELP, "size(): Returns the number of entries.");
+        mapDispatcher.addMethod("isEmpty", JMapClass::__isEmpty)
+                .setMetaData(Janitor.MetaData.HELP, "isEmpty(): Returns true if the map has no entries.");
+        mapDispatcher.addMethod("keys", JMapClass::__keys)
+                .setMetaData(Janitor.MetaData.HELP, "keys(): Returns a list of the keys.");
+        mapDispatcher.addMethod("values", JMapClass::__values)
+                .setMetaData(Janitor.MetaData.HELP, "values(): Returns a list of the values.");
+        mapDispatcher.addMethod("containsKey", JMapClass::__containsKey)
+                .setMetaData(Janitor.MetaData.HELP, "containsKey(key): Returns true if the map has an entry for the key. Same as the operator: key in map.");
         mapDispatcher.addMethod(Janitor.IN_OPERATOR_METHOD, JMapClass::__containsKey); // like Python, "in" looks at the keys
-        mapDispatcher.addMethod("containsValue", JMapClass::__containsValue);
-        mapDispatcher.addMethod("clear", JMapClass::__clear);
-        mapDispatcher.addMethod("copy", JMapClass::__copy);
-        mapDispatcher.addMethod("remove", JMapClass::__remove);
+        mapDispatcher.addMethod("containsValue", JMapClass::__containsValue)
+                .setMetaData(Janitor.MetaData.HELP, "containsValue(value): Returns true if an entry has a value equal to the argument.");
+        mapDispatcher.addMethod("clear", JMapClass::__clear)
+                .setMetaData(Janitor.MetaData.HELP, "clear(): Removes all entries.");
+        mapDispatcher.addMethod("copy", JMapClass::__copy)
+                .setMetaData(Janitor.MetaData.HELP, "copy(): Returns a shallow copy of the map.");
+        mapDispatcher.addMethod("remove", JMapClass::__remove)
+                .setMetaData(Janitor.MetaData.HELP, "remove(key): Removes the entry for the key and returns its value, or null if there was none.");
     }
 }

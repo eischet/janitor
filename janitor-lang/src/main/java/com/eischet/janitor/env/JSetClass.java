@@ -122,14 +122,22 @@ public class JSetClass {
      * @param setDispatcher the dispatch table to add them to
      */
     public static void applyDefaults(WrapperDispatchTable<Set<JanitorObject>> setDispatcher) {
-        setDispatcher.addMethod("add", JSetClass::__add);
-        setDispatcher.addMethod("remove", JSetClass::__remove);
-        setDispatcher.addMethod("contains", JSetClass::__contains);
+        // Every HELP text starts with the call form, "name(arguments): ", which the language reference relies on.
+        setDispatcher.addMethod("add", JSetClass::__add)
+                .setMetaData(Janitor.MetaData.HELP, "add(x): Adds x; returns true if the set did not contain it before.");
+        setDispatcher.addMethod("remove", JSetClass::__remove)
+                .setMetaData(Janitor.MetaData.HELP, "remove(x): Removes x; returns true if the set contained it.");
+        setDispatcher.addMethod("contains", JSetClass::__contains)
+                .setMetaData(Janitor.MetaData.HELP, "contains(x): Returns true if the set contains x. Same as the operator: x in set.");
         setDispatcher.addMethod(Janitor.IN_OPERATOR_METHOD, JSetClass::__contains);
-        setDispatcher.addMethod("toList", JSetClass::__toList);
-        setDispatcher.addMethod("toSet", JSetClass::__toSet); // copies the set
-        setDispatcher.addMethod("size", JSetClass::__size);
-        setDispatcher.addMethod("isEmpty", JSetClass::__isEmpty);
+        setDispatcher.addMethod("toList", JSetClass::__toList)
+                .setMetaData(Janitor.MetaData.HELP, "toList(): Returns a new list with the elements, in no particular order.");
+        setDispatcher.addMethod("toSet", JSetClass::__toSet) // copies the set
+                .setMetaData(Janitor.MetaData.HELP, "toSet(): Returns a copy of the set.");
+        setDispatcher.addMethod("size", JSetClass::__size)
+                .setMetaData(Janitor.MetaData.HELP, "size(): Returns the number of elements.");
+        setDispatcher.addMethod("isEmpty", JSetClass::__isEmpty)
+                .setMetaData(Janitor.MetaData.HELP, "isEmpty(): Returns true if the set has no elements.");
     }
 
 }

@@ -131,12 +131,19 @@ public class JRegexClass {
      * @param regexDispatcher the dispatch table to add them to
      */
     public static void applyDefaults(WrapperDispatchTable<Pattern> regexDispatcher) {
-        regexDispatcher.addMethod("extract", JRegexClass::extract);
-        regexDispatcher.addMethod("extractAll", JRegexClass::extractAll);
-        regexDispatcher.addMethod("replaceAll", JRegexClass::replaceAll);
-        regexDispatcher.addMethod("replaceFirst", JRegexClass::replaceFirst);
-        regexDispatcher.addMethod("split", JRegexClass::split);
-        regexDispatcher.addMethod("matcher", JRegexClass::matcher);
+        // Every HELP text starts with the call form, "name(arguments): ", which the language reference relies on.
+        regexDispatcher.addMethod("extract", JRegexClass::extract)
+                .setMetaData(Janitor.MetaData.HELP, "extract(text): Finds the first match in the text and returns its first capture group, or null if nothing matches. The pattern needs a group, e.g. re/(\\d+)/.");
+        regexDispatcher.addMethod("extractAll", JRegexClass::extractAll)
+                .setMetaData(Janitor.MetaData.HELP, "extractAll(text): Returns a list with the first capture group of every match in the text. The pattern needs a group.");
+        regexDispatcher.addMethod("replaceAll", JRegexClass::replaceAll)
+                .setMetaData(Janitor.MetaData.HELP, "replaceAll(text, replacement): Replaces every match in the text; the replacement may refer to groups as $1, $2, ...");
+        regexDispatcher.addMethod("replaceFirst", JRegexClass::replaceFirst)
+                .setMetaData(Janitor.MetaData.HELP, "replaceFirst(text, replacement): Replaces the first match in the text; the replacement may refer to groups as $1, $2, ...");
+        regexDispatcher.addMethod("split", JRegexClass::split)
+                .setMetaData(Janitor.MetaData.HELP, "split(text): Splits the text at every match and returns the parts as a list.");
+        regexDispatcher.addMethod("matcher", JRegexClass::matcher)
+                .setMetaData(Janitor.MetaData.HELP, "matcher(text): Returns a matcher object for the text; see the matcher type for its limitations.");
     }
 
 }

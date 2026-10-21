@@ -114,13 +114,21 @@ public class JBinaryClass {
      * @param binaryDispatcher the dispatch table to add them to
      */
     public static void applyDefaults(WrapperDispatchTable<byte[]> binaryDispatcher) {
-        binaryDispatcher.addMethod("encodeBase64", JBinaryClass::__encodeBase64);
-        binaryDispatcher.addMethod("decode", JBinaryClass::__toString);
-        binaryDispatcher.addMethod("toString", JBinaryClass::__toString);
-        binaryDispatcher.addMethod("size", JBinaryClass::__size);
-        binaryDispatcher.addStringProperty("string", wrapper -> wrapper.janitorIsTrue() ? new String(wrapper.janitorGetHostValue()) : "");
-        binaryDispatcher.addIntegerProperty("length", wrapper -> wrapper.janitorGetHostValue().length);
-        binaryDispatcher.addMethod("sha256", JBinaryClass::__sha256);
+        // Every HELP text starts with the call form, "name(arguments): " or "name: " for properties, which the language reference relies on.
+        binaryDispatcher.addMethod("encodeBase64", JBinaryClass::__encodeBase64)
+                .setMetaData(Janitor.MetaData.HELP, "encodeBase64(): Returns the bytes as a Base64 string.");
+        binaryDispatcher.addMethod("decode", JBinaryClass::__toString)
+                .setMetaData(Janitor.MetaData.HELP, "decode(charset): Decodes the bytes to a string with the named character set, UTF-8 if none is given.");
+        binaryDispatcher.addMethod("toString", JBinaryClass::__toString)
+                .setMetaData(Janitor.MetaData.HELP, "toString(charset): Same as decode(charset).");
+        binaryDispatcher.addMethod("size", JBinaryClass::__size)
+                .setMetaData(Janitor.MetaData.HELP, "size(): Returns the number of bytes.");
+        binaryDispatcher.addStringProperty("string", wrapper -> wrapper.janitorIsTrue() ? new String(wrapper.janitorGetHostValue()) : "")
+                .setMetaData(Janitor.MetaData.HELP, "string: The bytes decoded with the JVM's default character set; prefer decode().");
+        binaryDispatcher.addIntegerProperty("length", wrapper -> wrapper.janitorGetHostValue().length)
+                .setMetaData(Janitor.MetaData.HELP, "length: The number of bytes, same as size().");
+        binaryDispatcher.addMethod("sha256", JBinaryClass::__sha256)
+                .setMetaData(Janitor.MetaData.HELP, "sha256(): Returns the SHA-256 hash of the bytes as a lower case hex string, without leading zeros; an empty string for no bytes.");
     }
 
 }

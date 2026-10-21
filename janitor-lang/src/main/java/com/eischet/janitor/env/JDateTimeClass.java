@@ -145,14 +145,24 @@ public class JDateTimeClass {
      * @param dateTimeDispatch the dispatch table to add them to
      */
     public static void applyDefaults(DispatchTable<JDateTime> dateTimeDispatch) {
-        dateTimeDispatch.addLongProperty("epoch", JDateTimeClass::__epochAsAttribute);
-        dateTimeDispatch.addMethod("toEpoch", JDateTimeClass::__epoch);
-        dateTimeDispatch.addMethod("date", JDateTimeClass::__date);
-        dateTimeDispatch.addMethod("time", JDateTimeClass::__time);
-        dateTimeDispatch.addMethod("string", JDateTimeClass::__string);
-        dateTimeDispatch.addMethod("format", JDateTimeClass::__string);
-        dateTimeDispatch.addMethod("formatAtTimezone", JDateTimeClass::__formatAtTimezone);
-        dateTimeDispatch.addMethod("kw", JDateTimeClass::__kw);
-        dateTimeDispatch.addMethod("year", JDateTimeClass::__year);
+        // Every HELP text starts with the call form, "name(arguments): " or "name: " for properties, which the language reference relies on.
+        dateTimeDispatch.addLongProperty("epoch", JDateTimeClass::__epochAsAttribute)
+                .setMetaData(Janitor.MetaData.HELP, "epoch: The number of seconds since 1970-01-01 00:00 UTC, reading the datetime in the host's time zone.");
+        dateTimeDispatch.addMethod("toEpoch", JDateTimeClass::__epoch)
+                .setMetaData(Janitor.MetaData.HELP, "toEpoch(): Same as the property epoch.");
+        dateTimeDispatch.addMethod("date", JDateTimeClass::__date)
+                .setMetaData(Janitor.MetaData.HELP, "date(): Returns the date part as a date.");
+        dateTimeDispatch.addMethod("time", JDateTimeClass::__time)
+                .setMetaData(Janitor.MetaData.HELP, "time(): Returns the time part as a string, formatted by the host, e.g. \"14:30\".");
+        dateTimeDispatch.addMethod("string", JDateTimeClass::__string)
+                .setMetaData(Janitor.MetaData.HELP, "string(pattern): Formats the datetime with a Java DateTimeFormatter pattern; without a pattern, in the host's default format.");
+        dateTimeDispatch.addMethod("format", JDateTimeClass::__string)
+                .setMetaData(Janitor.MetaData.HELP, "format(pattern): Same as string(pattern).");
+        dateTimeDispatch.addMethod("formatAtTimezone", JDateTimeClass::__formatAtTimezone)
+                .setMetaData(Janitor.MetaData.HELP, "formatAtTimezone(zone, pattern): Formats the datetime at a time zone like \"Europe/Berlin\" with a DateTimeFormatter pattern; the pattern is required.");
+        dateTimeDispatch.addMethod("kw", JDateTimeClass::__kw)
+                .setMetaData(Janitor.MetaData.HELP, "kw(): Returns the calendar week (German: Kalenderwoche) as a two-digit string, using German week rules.");
+        dateTimeDispatch.addMethod("year", JDateTimeClass::__year)
+                .setMetaData(Janitor.MetaData.HELP, "year(): Returns the year as an integer. Note: for a date, year is a property, not a method.");
     }
 }

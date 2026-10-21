@@ -3,6 +3,7 @@
 
 package com.eischet.janitor.env;
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.JNull;
 import com.eischet.janitor.api.types.builtin.JStringBase;
@@ -31,7 +32,8 @@ public class JMatcherWrapper extends JanitorWrapper<Matcher> {
                 }
             }
             return JNull.NULL;
-        });
+        })
+                .setMetaData(Janitor.MetaData.HELP, "start(group): Meant to return the start index of the current match (of a group). Currently unusable: there is no find() to select a match, and passing a group fails.");
         DISPATCH.addMethod("end", (self, process, arguments) -> {
             arguments.require(0, 1);
             if (arguments.size() == 0) {
@@ -46,7 +48,8 @@ public class JMatcherWrapper extends JanitorWrapper<Matcher> {
                 }
             }
             return JNull.NULL;
-        });
+        })
+                .setMetaData(Janitor.MetaData.HELP, "end(group): Meant to return the end index of the current match (of a group). Currently unusable, like start().");
         DISPATCH.addMethod("group", (self, process, arguments) -> {
             arguments.require(0, 1);
             if (arguments.size() == 0) {
@@ -61,7 +64,8 @@ public class JMatcherWrapper extends JanitorWrapper<Matcher> {
                 }
             }
             return JNull.NULL;
-        });
+        })
+                .setMetaData(Janitor.MetaData.HELP, "group(group): Meant to return the text of the current match (of a group). Currently unusable, like start().");
 
     }
 

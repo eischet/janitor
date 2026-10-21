@@ -19,10 +19,15 @@ public class JElement extends JanitorComposed<JElement> {
     public static final DispatchTable<JElement> DISPATCH = new DispatchTable<>(null);
 
     static {
-        DISPATCH.addStringProperty("name", JElement::getName, JElement::setName);
-        DISPATCH.addListProperty("children", JElement::getChildren);
-        DISPATCH.addObjectProperty("attrs", JElement::getAttributes);
-        DISPATCH.addStringProperty("text", JElement::getText, JElement::setText);
+        // Every HELP text starts with "name: ", which the language reference relies on.
+        DISPATCH.addStringProperty("name", JElement::getName, JElement::setName)
+                .setMetaData(Janitor.MetaData.HELP, "name: The tag name of the element; writable.");
+        DISPATCH.addListProperty("children", JElement::getChildren)
+                .setMetaData(Janitor.MetaData.HELP, "children: The list of child elements.");
+        DISPATCH.addObjectProperty("attrs", JElement::getAttributes)
+                .setMetaData(Janitor.MetaData.HELP, "attrs: The attributes of the element, as a map from name to value.");
+        DISPATCH.addStringProperty("text", JElement::getText, JElement::setText)
+                .setMetaData(Janitor.MetaData.HELP, "text: The text content of the element; writable.");
     }
 
     protected @Nullable String name;

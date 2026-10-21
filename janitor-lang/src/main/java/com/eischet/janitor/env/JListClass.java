@@ -466,28 +466,49 @@ public class JListClass {
      * @param listDispatcher the dispatch table to add them to
      */
     public static void applyDefaults(DispatchTable<JList> listDispatcher) {
-        listDispatcher.addMethod("toJson", JListClass::__toJson);
-        listDispatcher.addMethod("parseJson", JListClass::__parseJson);
-        listDispatcher.addMethod("count", JListClass::__count);
-        listDispatcher.addMethod("filter", JListClass::__filter);
-        listDispatcher.addMethod("map", JListClass::__map);
-        listDispatcher.addMethod("join", JListClass::__join);
-        listDispatcher.addMethod("toSet", JListClass::__toSet);
-        listDispatcher.addMethod("toList", JListClass::__toList); // copies the list
-        listDispatcher.addMethod("size", JListClass::__size);
-        listDispatcher.addMethod("isEmpty", JListClass::__isEmpty);
-        listDispatcher.addMethod("contains", JListClass::__contains);
+        // Every HELP text starts with the call form, "name(arguments): ", which the language reference relies on.
+        listDispatcher.addMethod("toJson", JListClass::__toJson)
+                .setMetaData(Janitor.MetaData.HELP, "toJson(): Returns the list as a JSON string.");
+        listDispatcher.addMethod("parseJson", JListClass::__parseJson)
+                .setMetaData(Janitor.MetaData.HELP, "parseJson(json): Parses a JSON array and appends its elements to this list; returns this list. Usage: [].parseJson(text).");
+        listDispatcher.addMethod("count", JListClass::__count)
+                .setMetaData(Janitor.MetaData.HELP, "count(x): Returns how many elements are equal to x.");
+        listDispatcher.addMethod("filter", JListClass::__filter)
+                .setMetaData(Janitor.MetaData.HELP, "filter(function): Returns a new list with the elements for which the function returns a truthy value.");
+        listDispatcher.addMethod("map", JListClass::__map)
+                .setMetaData(Janitor.MetaData.HELP, "map(function): Returns a new list with the results of calling the function on each element.");
+        listDispatcher.addMethod("join", JListClass::__join)
+                .setMetaData(Janitor.MetaData.HELP, "join(separator): Returns the string forms of the elements, joined by the separator; a single space if none is given.");
+        listDispatcher.addMethod("toSet", JListClass::__toSet)
+                .setMetaData(Janitor.MetaData.HELP, "toSet(): Returns a new set with the elements of this list.");
+        listDispatcher.addMethod("toList", JListClass::__toList) // copies the list
+                .setMetaData(Janitor.MetaData.HELP, "toList(): Returns a shallow copy of this list.");
+        listDispatcher.addMethod("size", JListClass::__size)
+                .setMetaData(Janitor.MetaData.HELP, "size(): Returns the number of elements.");
+        listDispatcher.addMethod("isEmpty", JListClass::__isEmpty)
+                .setMetaData(Janitor.MetaData.HELP, "isEmpty(): Returns true if the list has no elements.");
+        listDispatcher.addMethod("contains", JListClass::__contains)
+                .setMetaData(Janitor.MetaData.HELP, "contains(x): Returns true if an element is equal to x. Same as the operator: x in list.");
         listDispatcher.addMethod(Janitor.IN_OPERATOR_METHOD, JListClass::__contains); // 17 in [16, 17, 18] == true
-        listDispatcher.addMethod("randomSublist", JListClass::__randomSublist);
-        listDispatcher.addMethod("addAll", JListClass::__addAll);
-        listDispatcher.addMethod("put", JListClass::__put);
-        listDispatcher.addMethod("add", JListClass::__add);
-        listDispatcher.addMethod("get", JListClass::__get);
+        listDispatcher.addMethod("randomSublist", JListClass::__randomSublist)
+                .setMetaData(Janitor.MetaData.HELP, "randomSublist(n): Returns a new list with n elements of this list, picked at random.");
+        listDispatcher.addMethod("addAll", JListClass::__addAll)
+                .setMetaData(Janitor.MetaData.HELP, "addAll(other): Appends all elements of the other list; returns null.");
+        listDispatcher.addMethod("put", JListClass::__put)
+                .setMetaData(Janitor.MetaData.HELP, "put(index, x): Replaces the element at the index, like list[index] = x; returns null.");
+        listDispatcher.addMethod("add", JListClass::__add)
+                .setMetaData(Janitor.MetaData.HELP, "add(x): Appends x; add(index, x) inserts x at the index instead. Returns null.");
+        listDispatcher.addMethod("get", JListClass::__get)
+                .setMetaData(Janitor.MetaData.HELP, "get(index): Same as list[index]; get(from, to) and get(from, to, step) return a read-only slice like list[from:to:step].");
         listDispatcher.addMethod(JanitorAntlrCompiler.INDEXED_GET_METHOD, JListClass::__getSliced);
-        listDispatcher.addMethod("sort", JListClass::__sort);
-        listDispatcher.addMethod("remove", JListClass::__remove);
-        listDispatcher.addMethod("removeAll", JListClass::__removeAll);
-        listDispatcher.addMethod("clear", JListClass::__clear);
+        listDispatcher.addMethod("sort", JListClass::__sort)
+                .setMetaData(Janitor.MetaData.HELP, "sort(): Sorts the list in place, in natural order, and returns null; the elements must be comparable with each other.");
+        listDispatcher.addMethod("remove", JListClass::__remove)
+                .setMetaData(Janitor.MetaData.HELP, "remove(x): Removes every element that is equal to x; returns null.");
+        listDispatcher.addMethod("removeAll", JListClass::__removeAll)
+                .setMetaData(Janitor.MetaData.HELP, "removeAll(other): Meant to remove the elements of the other list, but currently fails with an argument error, whatever is passed.");
+        listDispatcher.addMethod("clear", JListClass::__clear)
+                .setMetaData(Janitor.MetaData.HELP, "clear(): Removes all elements; returns null.");
     }
 
 }
