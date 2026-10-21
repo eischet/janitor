@@ -296,7 +296,8 @@ not restricted to a directory. Paths are strings.
 | `lastmod(path)` | the time of the last change, as a datetime in the host's time zone; `null` if the file does not exist |
 | `Zip(path)` | a zip file object for writing a new zip archive |
 
-The zip file object has `addFile(path, entryName)`, `addText(text, entryName)`, `addBinary(data, entryName)`,
+The zip file object has `addFile(path, entryName)`, `addText(text, entryName, encoding)` (the encoding is optional,
+UTF-8 by default), `addBinary(data, entryName)`,
 `setLevel(level)`, `setComment(text)` and `close()`; the `add` methods return the object, so they can be chained.
 
 ```janitor compile-only

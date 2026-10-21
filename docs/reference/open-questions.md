@@ -97,12 +97,6 @@ generated tables useful.
 
 This is left open on purpose for now: the modules are still rather experimental.
 
-<a id="zip-add-text"></a>
-
-### Encoding argument of `Zip.addText`
-
-`addText(text, entryName, encoding)` reads the encoding from the fourth argument instead of the third. (`ZipFile`)
-
 <a id="http-test-method"></a>
 
 ### Test method in the HTTP client

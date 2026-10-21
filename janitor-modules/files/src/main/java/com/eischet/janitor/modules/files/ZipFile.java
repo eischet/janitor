@@ -40,9 +40,10 @@ public class ZipFile extends JanitorComposed<ZipFile> implements JanitorCleanupR
             return self;
         });
         dispatcher.addMethod("addText", (self, process, arguments) -> {
+            arguments.require(2, 3);
             final String text = arguments.getRequiredStringValue(0);
             final String zipEntryName = arguments.getRequiredStringValue(1);
-            final String encoding = arguments.getOptionalStringValue(3, null);
+            final String encoding = arguments.getOptionalStringValue(2, null); // used to be read from the 4th argument; UTF-8 if none is given
             try {
                 self.addText(text, zipEntryName, encoding);
             } catch (IOException e) {

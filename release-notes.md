@@ -48,6 +48,8 @@
   silently to the last day of the month, or to midnight of the next day (Java's ResolverStyle.SMART). The year must be
   at least 1, and the grammar no longer has an optional minus sign before the year (negative years never worked).
   `parseDate` and `parseDateTime` stay lenient, because scripts give their own patterns there.
+- files: `Zip.addText(text, entryName, encoding)` now uses the encoding; it was read from a fourth argument, so the given
+  encoding was ignored and UTF-8 was always used. It also checks the number of arguments now.
 - `files.lastmod(path)` now returns the right time: it used to read the milliseconds of `File.lastModified()` as
   seconds, which gave dates tens of thousands of years in the future. For a file that does not exist, it returns `null`
   instead of a date in 1970.
