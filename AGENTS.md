@@ -9,7 +9,9 @@ Key locations:
 - `janitor-demo/`: embedding examples.
 - `janitor-repl/`: REPL tooling.
 - `sample-scripts/`: example scripts used by tests and docs.
-- `logos/`, `overview.md`, `scripting-intro.md`: assets and documentation.
+- `docs/reference/`: the language reference (start with `docs/reference/index.md`); `docs/README.md` explains how it
+  is maintained.
+- `logos/`, `overview.md`: assets and documentation.
 
 ## Build, Test, and Development Commands
 Use Maven from the repo root:

@@ -99,6 +99,8 @@
   of range: ...", instead of only "Compiler Error".
 - string literals now accept the JSON escape for a slash (backslash, slash), as written e.g. by PHP's json_encode, so
   every JSON text is a valid Janitor literal.
+- scripting-intro.md is removed; the language reference in docs/reference replaces it. It described semicolons as
+  required and a C-style for loop, which Janitor does not have.
 - REPL: `print` separates several arguments with a space, as the test runtime does; it used to print them without a
   separator.
 - REPL: backslashes in the input are no longer removed by JLine, so escape sequences like "\t" work in the REPL, too

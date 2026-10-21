@@ -135,10 +135,3 @@ Open design points:
 3. Instead of a time zone alone, the environment could hold a `java.time.Clock` (zone plus current time), so that tests
    can also fix `@now`.
 4. Hosts that set a `TimeZoneSource` today must keep working.
-
-<a id="older-documents"></a>
-
-### Older introductions
-
-`scripting-intro.md` in the repository says that semicolons are required and that there is a C-style `for(;;)` loop.
-Neither is true for the current version; this reference describes the actual behavior.
