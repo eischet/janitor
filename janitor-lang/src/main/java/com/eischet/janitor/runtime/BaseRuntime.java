@@ -54,7 +54,7 @@ public abstract class BaseRuntime implements JanitorRuntime {
         try {
             return new JanitorScript(this, moduleName, source == null ? "" : source);
         } catch (RuntimeException e) {
-            throw new JanitorCompilerException("Compiler Error", e);
+            throw new JanitorCompilerException(e.getMessage() == null ? "Compiler Error" : "Compiler Error: " + e.getMessage(), e);
         }
     }
 
@@ -63,7 +63,7 @@ public abstract class BaseRuntime implements JanitorRuntime {
         try {
             return new JanitorScript(this, moduleName, source == null ? "" : source, true, false);
         } catch (RuntimeException e) {
-            throw new JanitorCompilerException("Compiler Error", e);
+            throw new JanitorCompilerException(e.getMessage() == null ? "Compiler Error" : "Compiler Error: " + e.getMessage(), e);
         }
     }
 

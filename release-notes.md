@@ -8,6 +8,18 @@
   Header names in `e.headers` are lowercase, as delivered by the JDK HTTP client.
 - maven plugin: scripts in a Maven build now also get the modules mcp and pdf, in addition to the common modules and
   commonmark. So a build can e.g. call a tool on an MCP server after a release.
+- string literals now support unicode escapes (backslash, u, four hex digits), as in Java and JSON; they used to be a
+  compile error. Escapes are now processed by Janitor itself instead of String.translateEscapes().
+- integer literals in hexadecimal (0x1F) and binary (0b101), and `_` as a digit separator (1_000_000, also in floats),
+  now work; they were accepted by the grammar but failed to compile. Hex and binary literals are 64-bit patterns as in
+  Java, so 0xFFFF_FFFF_FFFF_FFFF is -1. Octal literals with a leading zero (017) are a compile error with a clear message,
+  and the Java suffix L is no longer part of the grammar (it never compiled).
+- compile errors from `runtime.compile(...)` now include the compiler's message, e.g. "Compiler Error: integer literal out
+  of range: ...", instead of only "Compiler Error".
+- string literals now accept the JSON escape for a slash (backslash, slash), as written e.g. by PHP's json_encode, so
+  every JSON text is a valid Janitor literal.
+- REPL: backslashes in the input are no longer removed by JLine, so escape sequences like "\t" work in the REPL, too
+  (JLine option DISABLE_EVENT_EXPANSION).
 
 # 0.9.69, 2026-10-20 (internal reelase only)
 
