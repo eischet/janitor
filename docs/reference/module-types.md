@@ -72,7 +72,6 @@ This module defines no object types of its own.
 
 | Member | Kind | Description |
 | --- | --- | --- |
-| `_test_throwNativeException(...)` | method |  |
 | `addHeader(...)` | method |  |
 | `allowCookies(...)` | method |  |
 | `apply(map)` | method | Assigns each entry of the map to the property of the same name, and returns the object itself. |

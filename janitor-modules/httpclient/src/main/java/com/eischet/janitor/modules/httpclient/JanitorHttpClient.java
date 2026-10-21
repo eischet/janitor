@@ -91,11 +91,6 @@ public class JanitorHttpClient extends JanitorComposed<JanitorHttpClient> implem
         DISPATCH.addBooleanProperty("prettyJson", self -> self.prettyJson, (self, value) -> self.prettyJson = value);
         DISPATCH.addVoidMethod("close", (self, process, args) -> self.close());
 
-        DISPATCH.addVoidMethod("_test_throwNativeException", (self, process, args) -> {
-            log.info("TEST: Throwing a native exception!");
-            throw new JanitorNativeException(process, "TEST: Throwing a native exception!", null);
-        });
-
         DISPATCH.addVoidMethod("delete", (self, process, args) -> {
             try {
                 self.delete(args.getString(0).janitorGetHostValue());

@@ -97,13 +97,6 @@ generated tables useful.
 
 This is left open on purpose for now: the modules are still rather experimental.
 
-<a id="http-test-method"></a>
-
-### Test method in the HTTP client
-
-The HTTP client object has a method `_test_throwNativeException()`, which exists for tests and is visible to scripts.
-(`JanitorHttpClient`)
-
 <a id="hosting"></a>
 
 ## Hosting

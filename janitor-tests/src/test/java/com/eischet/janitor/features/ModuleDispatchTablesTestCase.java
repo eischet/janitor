@@ -49,6 +49,7 @@ public class ModuleDispatchTablesTestCase extends JanitorTest {
     void httpclient() throws Exception {
         assertEquals("[build, fetch]", run("import httpclient; dir(httpclient)"));
         assertEquals("http-client", run("import httpclient; httpclient.build().class"));
+        assertFalse(run("import httpclient; dir(httpclient.build())").contains("_test_"), "the test method is gone");
         assertThrows(JanitorArgumentException.class, () -> run("import httpclient; httpclient.fetch();"));
         assertThrows(JanitorArgumentException.class, () -> run("import httpclient; httpclient.build(1);"));
     }

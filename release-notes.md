@@ -48,6 +48,8 @@
   silently to the last day of the month, or to midnight of the next day (Java's ResolverStyle.SMART). The year must be
   at least 1, and the grammar no longer has an optional minus sign before the year (negative years never worked).
   `parseDate` and `parseDateTime` stay lenient, because scripts give their own patterns there.
+- httpclient: the client no longer has the method `_test_throwNativeException()`, which existed for tests, was visible to
+  scripts, and was not used anywhere.
 - files: `Zip.addText(text, entryName, encoding)` now uses the encoding; it was read from a fourth argument, so the given
   encoding was ignored and UTF-8 was always used. It also checks the number of arguments now.
 - `files.lastmod(path)` now returns the right time: it used to read the milliseconds of `File.lastModified()` as
