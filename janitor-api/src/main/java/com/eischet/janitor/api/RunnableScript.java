@@ -16,25 +16,30 @@ import java.util.function.Consumer;
 /**
  * A script that is ready to run.
  * Unless it was compiled in test mode and produces issues, then it's likely not runnable and can be queried for issues.
+ * <p>
+ * The run methods take a callback that receives the {@link JanitorScriptProcess} after it has been created and before the
+ * script starts. It binds the script's global variables, e.g. {@code script.run(p -> p.bind("order", order))}, and can
+ * configure the process, e.g. {@code p.setMaxInstructionCount(10_000)}, which overrides the environment's default.
+ * </p>
  * @see JanitorScriptProcess for the "running" part of a script.
  */
 public interface RunnableScript {
 
     /**
-     * Run the script with a given global scope.
-     * @param prepareGlobals a consumer that can add variables to the global scope
+     * Runs the script.
+     * @param setup receives the process before the script starts, to bind global variables and configure the process
      * @return the script's result
      * @throws JanitorRuntimeException on runtime errors
      */
-    @NotNull JanitorObject run(@NotNull Consumer<Scope> prepareGlobals) throws JanitorRuntimeException;
+    @NotNull JanitorObject run(@NotNull Consumer<JanitorScriptProcess> setup) throws JanitorRuntimeException;
 
     /**
-     * Run the script with a given global scope, and keep the global scope afterward.
-     * @param prepareGlobals a consumer that can add variables to the global scope
+     * Runs the script, and keeps its global scope afterward.
+     * @param setup receives the process before the script starts, to bind global variables and configure the process
      * @return the script's result and the global scope
      * @throws JanitorRuntimeException on runtime errors
      */
-    @NotNull ResultAndScope runAndKeepGlobals(@NotNull Consumer<Scope> prepareGlobals) throws JanitorRuntimeException;
+    @NotNull ResultAndScope runAndKeepGlobals(@NotNull Consumer<JanitorScriptProcess> setup) throws JanitorRuntimeException;
 
     /**
      * Run the script with an empty global scope, and keep the global scope afterward.
@@ -43,28 +48,28 @@ public interface RunnableScript {
      * @throws JanitorRuntimeException on runtime errors
      */
     default @NotNull ResultAndScope runAndKeepGlobals() throws JanitorRuntimeException {
-        return runAndKeepGlobals(scope -> { });
+        return runAndKeepGlobals(process -> { });
     }
 
     /**
-     * Run the script with a given global scope.
+     * Runs the script in a new scope below the given one.
      * The usual way of obtaining such a scope is by using runAndKeepGlobals.
      *
-     * @param prepareGlobals a consumer that can add variables to the global scope
+     * @param setup receives the process before the script starts, to bind global variables and configure the process
      * @param parentScope the parent scope to use
      * @return the script's result
      * @throws JanitorRuntimeException on runtime errors
      */
-    @NotNull JanitorObject runInScope(@NotNull Consumer<Scope> prepareGlobals, Scope parentScope) throws JanitorRuntimeException;
+    @NotNull JanitorObject runInScope(@NotNull Consumer<JanitorScriptProcess> setup, Scope parentScope) throws JanitorRuntimeException;
 
     /**
      * Run the script with an empty global scope.
-     * This is just shorthand for calling {@link #run(Consumer)} with an empty consumer.
+     * This is just shorthand for calling {@link #run(Consumer)} with an empty callback.
      * @return the script's result
      * @throws JanitorRuntimeException on runtime errors
      */
     @NotNull default JanitorObject run() throws JanitorRuntimeException {
-        return run(scope -> { });
+        return run(process -> { });
     }
 
     /**

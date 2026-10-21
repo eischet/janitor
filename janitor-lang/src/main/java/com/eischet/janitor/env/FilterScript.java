@@ -8,7 +8,7 @@ import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.RunnableScript;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
-import com.eischet.janitor.api.scopes.Scope;
+import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.types.builtin.JBool;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.logging.JanitorLogger;
@@ -28,13 +28,13 @@ public class FilterScript implements FilterPredicate {
 
     private final RunnableScript script;
     private final SLFLoggingRuntime runtime;
-    private final Consumer<Scope> globalsProvider;
+    private final Consumer<JanitorScriptProcess> setup;
     private final String name;
 
-    public FilterScript(final JanitorEnvironment env, final String name, final String source, final Consumer<Scope> globalsProvider) throws JanitorCompilerException {
+    public FilterScript(final JanitorEnvironment env, final String name, final String source, final Consumer<JanitorScriptProcess> setup) throws JanitorCompilerException {
         this.name = name;
         runtime = new SLFLoggingRuntime(env, log);
-        this.globalsProvider = globalsProvider;
+        this.setup = setup;
         script = new JanitorScript(runtime, "filter", source);
     }
 
@@ -42,12 +42,12 @@ public class FilterScript implements FilterPredicate {
     @Override
     public boolean test(final JanitorObject t) {
         try {
-            return JBool.TRUE == script.run(g -> {
-                if (globalsProvider != null) {
-                    globalsProvider.accept(g);
+            return JBool.TRUE == script.run(process -> {
+                if (setup != null) {
+                    setup.accept(process);
                 }
-                g.bind("value", t);
-                g.setImplicitObjectProvider(t.asImplicitObjectProvider());
+                process.bind("value", t);
+                process.getMainScope().setImplicitObjectProvider(t.asImplicitObjectProvider());
             });
         } catch (JanitorRuntimeException e) {
             log.warn("{}: filter script error: {}", name, e.getMessage());

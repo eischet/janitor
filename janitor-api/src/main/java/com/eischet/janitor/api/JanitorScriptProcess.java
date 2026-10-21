@@ -12,7 +12,9 @@ import com.eischet.janitor.api.types.BuiltinTypes;
 import com.eischet.janitor.api.types.JanitorCleanupRequired;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.JString;
+import com.eischet.janitor.api.types.composed.JanitorAware;
 import com.eischet.janitor.api.types.functions.JCallArgs;
+import com.eischet.janitor.api.types.functions.JCallable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -217,6 +219,91 @@ public interface JanitorScriptProcess {
      * @param maxInstructionCount the maximum number, or 0 for no limit
      */
     void setMaxInstructionCount(final long maxInstructionCount);
+
+    /**
+     * Binds a global variable of the script, before it runs. This is what hosts call in the callback of
+     * {@code RunnableScript.run(...)}; it binds in the {@link #getMainScope() main scope}.
+     *
+     * @param variableName the variable name
+     * @param variable     the value
+     * @return this process, for chained calls
+     */
+    default JanitorScriptProcess bind(final String variableName, final JanitorObject variable) {
+        getMainScope().bind(variableName, variable);
+        return this;
+    }
+
+    /**
+     * Binds a global string variable of the script, before it runs.
+     *
+     * @param variableName the variable name
+     * @param variable     the value
+     * @return this process, for chained calls
+     */
+    default JanitorScriptProcess bind(final String variableName, final String variable) {
+        getMainScope().bind(variableName, variable);
+        return this;
+    }
+
+    /**
+     * Binds a global integer variable of the script, before it runs.
+     *
+     * @param variableName the variable name
+     * @param variable     the value
+     * @return this process, for chained calls
+     */
+    default JanitorScriptProcess bind(final String variableName, final long variable) {
+        getMainScope().bind(variableName, variable);
+        return this;
+    }
+
+    /**
+     * Binds a global integer variable of the script, before it runs.
+     *
+     * @param variableName the variable name
+     * @param variable     the value
+     * @return this process, for chained calls
+     */
+    default JanitorScriptProcess bind(final String variableName, final int variable) {
+        getMainScope().bind(variableName, variable);
+        return this;
+    }
+
+    /**
+     * Binds a global boolean variable of the script, before it runs.
+     *
+     * @param variableName the variable name
+     * @param variable     the value
+     * @return this process, for chained calls
+     */
+    default JanitorScriptProcess bind(final String variableName, final boolean variable) {
+        getMainScope().bind(variableName, variable);
+        return this;
+    }
+
+    /**
+     * Binds a global variable of the script, before it runs, from a host object that knows its Janitor equivalent.
+     *
+     * @param variableName the variable name
+     * @param variable     the value
+     * @return this process, for chained calls
+     */
+    default JanitorScriptProcess bind(final String variableName, final JanitorAware variable) {
+        getMainScope().bind(variableName, variable);
+        return this;
+    }
+
+    /**
+     * Binds a global function of the script, before it runs.
+     *
+     * @param functionName the function name
+     * @param function     the function
+     * @return this process, for chained calls
+     */
+    default JanitorScriptProcess bindF(final String functionName, final JCallable function) {
+        getMainScope().bindF(functionName, function);
+        return this;
+    }
 
     @FunctionalInterface
     interface ProtectedCall {

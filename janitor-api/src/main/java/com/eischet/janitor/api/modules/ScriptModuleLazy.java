@@ -48,7 +48,7 @@ public class ScriptModuleLazy extends JanitorModuleRegistration {
      * @param source        the source code of the module, compiled exactly once, on first use
      * @param bindings      the bindings to apply to the module's scope every time it's (re-)run
      */
-    public ScriptModuleLazy(@NotNull final String qualifiedName, @NotNull @Language("Janitor") final String source, @Nullable final Consumer<Scope> bindings) {
+    public ScriptModuleLazy(@NotNull final String qualifiedName, @NotNull @Language("Janitor") final String source, @Nullable final Consumer<JanitorScriptProcess> bindings) {
         super(qualifiedName, new LazyCompilingSupplier(qualifiedName, source, bindings));
     }
 
@@ -60,14 +60,14 @@ public class ScriptModuleLazy extends JanitorModuleRegistration {
     private static final class LazyCompilingSupplier implements JanitorModuleSupplier {
         private final String qualifiedName;
         private final @Language("Janitor") String source;
-        private final @Nullable Consumer<Scope> bindings;
+        private final @Nullable Consumer<JanitorScriptProcess> bindings;
 
         // Compilation can race if two scripts import this module for the first time concurrently;
         // double-checked locking avoids compiling twice in that case without paying for
         // synchronization on every subsequent, already-compiled import.
         private volatile RunnableScript compiled;
 
-        private LazyCompilingSupplier(final String qualifiedName, @Language("Janitor") final String source, @Nullable final Consumer<Scope> bindings) {
+        private LazyCompilingSupplier(final String qualifiedName, @Language("Janitor") final String source, @Nullable final Consumer<JanitorScriptProcess> bindings) {
             this.qualifiedName = qualifiedName;
             this.source = source;
             this.bindings = bindings;

@@ -106,10 +106,19 @@ public interface JanitorEnvironment extends JsonOutputSupport {
      *
      * @param name the name of the script
      * @param code the script code
-     * @param globalsProvider a callback to bind more script variables
+     * @param setup a callback that receives each process before the script runs, to bind more script variables
      * @return the filter predicate
      */
-    @NotNull FilterPredicate filterScript(@NotNull String name, @NotNull @Language("Janitor") String code, @Nullable final Consumer<Scope> globalsProvider);
+    @NotNull FilterPredicate filterScript(@NotNull String name, @NotNull @Language("Janitor") String code, @Nullable final Consumer<JanitorScriptProcess> setup);
+
+    /**
+     * The default limit for the number of instructions that a script process may run, which every new process takes over;
+     * a host can override it per run with {@link JanitorScriptProcess#setMaxInstructionCount(long)}.
+     * @return the maximum number of instructions, or 0 for no limit (the default)
+     */
+    default long getMaxInstructionCount() {
+        return 0;
+    }
 
 
     /**

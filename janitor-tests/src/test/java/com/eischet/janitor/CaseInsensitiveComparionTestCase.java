@@ -15,15 +15,15 @@ public class CaseInsensitiveComparionTestCase extends JanitorTest {
     @Test
     void testCaseInsensitiveComparison() throws JanitorCompilerException, JanitorRuntimeException {
         final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
-        Assertions.assertEquals(JBool.TRUE, rt.compile("test", "'x' ~= 'X'").run(JanitorTest.NO_GLOBALS));
-        Assertions.assertEquals(JBool.TRUE, rt.compile("test", "'X' ~= 'X'").run(JanitorTest.NO_GLOBALS));
-        Assertions.assertEquals(JBool.TRUE, rt.compile("test", "'x' ~= 'x'").run(JanitorTest.NO_GLOBALS));
-        Assertions.assertEquals(JBool.TRUE, rt.compile("test", "'X' ~= 'x'").run(JanitorTest.NO_GLOBALS));
+        Assertions.assertEquals(JBool.TRUE, rt.compile("test", "'x' ~= 'X'").run());
+        Assertions.assertEquals(JBool.TRUE, rt.compile("test", "'X' ~= 'X'").run());
+        Assertions.assertEquals(JBool.TRUE, rt.compile("test", "'x' ~= 'x'").run());
+        Assertions.assertEquals(JBool.TRUE, rt.compile("test", "'X' ~= 'x'").run());
 
-        Assertions.assertEquals(JBool.FALSE, rt.compile("test", "'x' ~= 'Y'").run(JanitorTest.NO_GLOBALS));
-        Assertions.assertEquals(JBool.FALSE, rt.compile("test", "'X' ~= 'Y'").run(JanitorTest.NO_GLOBALS));
-        Assertions.assertEquals(JBool.FALSE, rt.compile("test", "'x' ~= 'y'").run(JanitorTest.NO_GLOBALS));
-        Assertions.assertEquals(JBool.FALSE, rt.compile("test", "'X' ~= 'y'").run(JanitorTest.NO_GLOBALS));
+        Assertions.assertEquals(JBool.FALSE, rt.compile("test", "'x' ~= 'Y'").run());
+        Assertions.assertEquals(JBool.FALSE, rt.compile("test", "'X' ~= 'Y'").run());
+        Assertions.assertEquals(JBool.FALSE, rt.compile("test", "'x' ~= 'y'").run());
+        Assertions.assertEquals(JBool.FALSE, rt.compile("test", "'X' ~= 'y'").run());
     }
 
 }

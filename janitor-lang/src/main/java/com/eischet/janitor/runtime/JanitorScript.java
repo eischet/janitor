@@ -5,6 +5,7 @@ package com.eischet.janitor.runtime;
 
 import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorRuntime;
+import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.RunnableScript;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
@@ -163,34 +164,33 @@ public class JanitorScript implements RunnableScript, JsonExportableObject {
 
 
     @Override
-    public @NotNull JanitorObject run(final @NotNull Consumer<Scope> prepareGlobals) throws JanitorRuntimeException {
-        final Scope globalScope = Scope.createGlobalScope(Janitor.current(), module); // new Scope(Location.at(module, 0, 0), BUILTIN_SCOPE, null);
-        prepareGlobals.accept(globalScope);
-        // RunningScriptProcess is constructed here with wrapScope=false (the 4-arg constructor), so
-        // its mainScope IS this globalScope instance, not a fresh child of it. process.run() already
-        // calls getMainScope().janitorLeaveScope() in its own finally block -- calling
-        // globalScope.janitorLeaveScope() again here used to double-fire janitorLeaveScope() on every
-        // object bound in this scope (one janitorEnterScope() call per binding, but two
-        // janitorLeaveScope() calls), which is exactly why ref-counted cleanup objects like
+    public @NotNull JanitorObject run(final @NotNull Consumer<JanitorScriptProcess> setup) throws JanitorRuntimeException {
+        // The process is constructed with wrapScope=false (the 4-arg constructor), so its main scope IS this global scope
+        // instance, not a fresh child of it; the setup callback binds there. process.run() already calls
+        // getMainScope().janitorLeaveScope() in its own finally block -- calling globalScope.janitorLeaveScope() again here
+        // used to double-fire janitorLeaveScope() on every object bound in this scope (one janitorEnterScope() call per
+        // binding, but two janitorLeaveScope() calls), which is exactly why ref-counted cleanup objects like
         // JanitorHttpClient logged a "RefCounter was already zeroed" warning on essentially every run.
+        final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), module);
         final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, module.getName(), scriptObject);
+        setup.accept(process);
         return process.run();
     }
 
     @Override
-    public @NotNull JanitorObject runInScope(final @NotNull Consumer<Scope> prepareGlobals, final Scope parentScope) throws JanitorRuntimeException {
-        final Scope globalScope = Scope.createMainScope(parentScope); // GlobalScope(module); // new Scope(Location.at(module, 0, 0), parentScope, null);
-        prepareGlobals.accept(globalScope);
+    public @NotNull JanitorObject runInScope(final @NotNull Consumer<JanitorScriptProcess> setup, final Scope parentScope) throws JanitorRuntimeException {
+        final Scope globalScope = Scope.createMainScope(parentScope);
         final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, module.getName(), scriptObject);
+        setup.accept(process);
         return process.run();
     }
 
 
     @Override
-    public @NotNull ResultAndScope runAndKeepGlobals(final @NotNull Consumer<Scope> prepareGlobals) throws JanitorRuntimeException {
-        final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), module); // new Scope(Location.at(module, 0, 0), BUILTIN_SCOPE, null);
-        prepareGlobals.accept(globalScope);
+    public @NotNull ResultAndScope runAndKeepGlobals(final @NotNull Consumer<JanitorScriptProcess> setup) throws JanitorRuntimeException {
+        final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), module);
         final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, module.getName(), scriptObject);
+        setup.accept(process);
         return new ResultAndScope(process.getMainScope(), process.run());
     }
 

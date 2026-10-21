@@ -44,7 +44,7 @@ public class ScriptModulePrecompiled extends JanitorModuleRegistration {
      * @param bindings      the bindings to apply to the module's scope every time it's run
      * @throws JanitorCompilerException if the source fails to compile
      */
-    public ScriptModulePrecompiled(@NotNull final String qualifiedName, @NotNull final JanitorRuntime runtime, @NotNull @Language("Janitor") final String source, @Nullable final Consumer<Scope> bindings) throws JanitorCompilerException {
+    public ScriptModulePrecompiled(@NotNull final String qualifiedName, @NotNull final JanitorRuntime runtime, @NotNull @Language("Janitor") final String source, @Nullable final Consumer<JanitorScriptProcess> bindings) throws JanitorCompilerException {
         super(qualifiedName, new PrecompiledSupplier(runtime.compile(qualifiedName, source), bindings));
     }
 
@@ -53,9 +53,9 @@ public class ScriptModulePrecompiled extends JanitorModuleRegistration {
      */
     private static final class PrecompiledSupplier implements JanitorModuleSupplier {
         private final RunnableScript compiled;
-        private final @Nullable Consumer<Scope> bindings;
+        private final @Nullable Consumer<JanitorScriptProcess> bindings;
 
-        private PrecompiledSupplier(final RunnableScript compiled, @Nullable final Consumer<Scope> bindings) {
+        private PrecompiledSupplier(final RunnableScript compiled, @Nullable final Consumer<JanitorScriptProcess> bindings) {
             this.compiled = compiled;
             this.bindings = bindings;
         }

@@ -31,7 +31,7 @@ BaseRuntime runtime = new BaseRuntime(env) {
     }
 };
 RunnableScript script = runtime.compile("discount-rule", source);  // throws JanitorCompilerException
-JanitorObject result = script.run(globals -> globals.bind("order", orderObject));
+JanitorObject result = script.run(process -> process.bind("order", orderObject));
 ```
 
 The `JanitorFormatting` passed to the environment decides how dates and numbers are formatted where a script does not
@@ -106,8 +106,12 @@ A module made from a script exposes the variables and functions defined at the t
 
 There are two places for globals:
 
-- **Per run**: `script.run(globals -> globals.bind("name", value))`. Use this for the data a script works on, such as the
-  current record. `bind` accepts Janitor objects and plain strings, numbers and booleans.
+- **Per run**: `script.run(process -> process.bind("name", value))`. The run methods (`run`, `runAndKeepGlobals`,
+  `runInScope`), `filterScript` and the `ScriptModule` classes take a callback that receives the script process after it
+  has been created and before the script starts. Use it for the data a script works on, such as the current record.
+  `bind` accepts Janitor objects and plain strings, numbers and booleans, `bindF` binds a function, and both return the
+  process, so calls can be chained: `process.bind("order", order).bind("user", user)`. The callback can also configure
+  the process, e.g. its [instruction limit](#limits).
 - **Shared by all scripts**: `env.setupBuiltinScope(scope -> scope.bind("name", value))`. Use this only for values that
   never change, such as constants or stateless functions. The built-in scope is shared between all scripts of the
   environment, so mutable values would leak from one run into the next.
@@ -119,11 +123,21 @@ dispatch table, or wrapped with `JanitorWrapper`. Give their members HELP texts,
 
 ## Limiting scripts
 
-A script process can be limited to a number of instructions with `JanitorScriptProcess.setMaxInstructionCount(n)`; when
-the limit is exceeded, the script ends with a `JanitorInstructionLimitExceededException` (see `ExecLimitTestCase` in
-the Janitor repository for how to set it up). A script cannot escape the limit: `catch` sees the error, but every
-further instruction fails again, so the script ends with this error anyway. `RunnableScript` has no direct option for
-the limit (see [open questions](open-questions.md#instruction-limit)).
+A script can be limited to a number of instructions, so that an endless loop ends with a
+`JanitorInstructionLimitExceededException` instead of blocking the host:
+
+- `JanitorDefaultEnvironment.setMaxInstructionCount(n)` sets a default for every script process of the environment,
+  including filter scripts, templates and callbacks; 0, the default, means no limit.
+- A run can override it in its setup callback: `script.run(process -> process.setMaxInstructionCount(n))`.
+
+```java
+env.setMaxInstructionCount(100_000);                                  // all scripts
+script.run(process -> process.bind("order", order).setMaxInstructionCount(1_000_000)); // this run
+```
+
+A script cannot escape the limit: `catch` sees the error, but every further instruction fails again, so the script
+ends with this error anyway. A function that the host calls later as a callback runs in a new process, which gets the
+environment's default, not the limit of the run that created the function.
 
 <a id="extension-points"></a>
 

@@ -30,7 +30,7 @@ public class ScriptModule extends JanitorModuleRegistration {
      * @param source         the source code of the module
      * @param bindings       the bindings to use when creating the module
      */
-    public ScriptModule(@NotNull String qualifiedName, @NotNull @Language("Janitor") String source, @Nullable Consumer<Scope> bindings) {
+    public ScriptModule(@NotNull String qualifiedName, @NotNull @Language("Janitor") String source, @Nullable Consumer<JanitorScriptProcess> bindings) {
         super(qualifiedName, process -> moduleFromScript(process, qualifiedName, source, bindings));
     }
 
@@ -46,7 +46,7 @@ public class ScriptModule extends JanitorModuleRegistration {
     public static JanitorModule moduleFromScript(@NotNull JanitorScriptProcess process,
                                                  @NotNull final String qualifiedName,
                                                  @NotNull @Language("Janitor") final String source,
-                                                 @Nullable Consumer<Scope> bindings) throws JanitorRuntimeException {
+                                                 @Nullable Consumer<JanitorScriptProcess> bindings) throws JanitorRuntimeException {
         try {
             @NotNull RunnableScript compiled = process.getRuntime().compile(qualifiedName, source);
             @NotNull ResultAndScope result = compiled.runAndKeepGlobals(bindings == null ? g -> {} : bindings);

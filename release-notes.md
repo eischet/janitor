@@ -48,6 +48,19 @@
   silently to the last day of the month, or to midnight of the next day (Java's ResolverStyle.SMART). The year must be
   at least 1, and the grammar no longer has an optional minus sign before the year (negative years never worked).
   `parseDate` and `parseDateTime` stay lenient, because scripts give their own patterns there.
+- **API change for hosts:** the run methods of `RunnableScript` (`run`, `runAndKeepGlobals`, `runInScope`),
+  `JanitorEnvironment.filterScript(name, code, setup)` and the `ScriptModule`, `ScriptModuleLazy` and
+  `ScriptModulePrecompiled` classes now take a `Consumer<JanitorScriptProcess>` instead of a `Consumer<Scope>`. The
+  callback receives the process after it has been created and before the script starts, so it can also configure it.
+  `JanitorScriptProcess` has `bind(...)` (with the same overloads as `Scope`) and `bindF(...)`, which return the process
+  for chaining, so lambdas like `g -> g.bind("x", value).bind("y", other)` compile unchanged. Code that declares
+  `Consumer<Scope>` variables or parameters for these methods has to change the type; other scope methods are available
+  through `process.getMainScope()`. `run` now creates the global scope with the runtime's environment instead of
+  `Janitor.current()`, like the other run methods.
+- instruction limit: `JanitorDefaultEnvironment.setMaxInstructionCount(n)` sets a default limit for every script process
+  of the environment, including filter scripts, templates and callbacks; a run can override it with
+  `process.setMaxInstructionCount(n)` in its setup callback. It used to be settable only on processes that a host created
+  itself.
 - httpclient: the client no longer has the method `_test_throwNativeException()`, which existed for tests, was visible to
   scripts, and was not used anywhere.
 - files: `Zip.addText(text, entryName, encoding)` now uses the encoding; it was read from a fourth argument, so the given

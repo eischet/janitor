@@ -24,6 +24,8 @@ public class RunningScriptProcess extends AbstractScriptProcess {
     public RunningScriptProcess(final JanitorRuntime runtime, final Scope parentScope, final @NotNull String processName, final Script script, final boolean wrapScope) {
         super(runtime, wrapScope ? Scope.createMainScope(parentScope) : parentScope, processName);
         this.script = script;
+        // every process starts with the environment's default limit; hosts can override it per run in the setup callback
+        this.maxInstructionCount = runtime.getEnvironment().getMaxInstructionCount();
     }
 
     public RunningScriptProcess(final JanitorRuntime runtime, final Scope globalScope, final @NotNull String processName, final Script script) {

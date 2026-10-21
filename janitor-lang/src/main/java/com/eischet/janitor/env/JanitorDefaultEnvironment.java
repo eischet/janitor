@@ -57,6 +57,7 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
     public static final FilterPredicate NUMB = x -> true;
     protected final DefaultBuiltinTypes builtins;
     private final JanitorFormatting formatting;
+    private volatile long maxInstructionCount = 0;
     private final List<JanitorModuleRegistration> moduleRegistrations = new ArrayList<>();
     private final List<ModuleResolver> resolvers = new ArrayList<>();
     protected @Nullable Scope.ImplicitObjectProvider implicitTemplateObjectProvider = null;
@@ -156,6 +157,20 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
     }
 
     @Override
+    public long getMaxInstructionCount() {
+        return maxInstructionCount;
+    }
+
+    /**
+     * Sets the default limit for the number of instructions that a script process may run. Every process that is created
+     * afterward takes it over; a host can still override it per run with {@link JanitorScriptProcess#setMaxInstructionCount(long)}.
+     * @param maxInstructionCount the maximum number of instructions, or 0 for no limit
+     */
+    public void setMaxInstructionCount(final long maxInstructionCount) {
+        this.maxInstructionCount = maxInstructionCount;
+    }
+
+    @Override
     public @NotNull JanitorFormatting getFormatting() {
         return formatting;
     }
@@ -244,7 +259,7 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
         }
         // TODO accidentally broke the build here; add tests for old/new style filter scripts!
         try {
-            return new FilterScript(this, name, code, g -> {});
+            return new FilterScript(this, name, code, process -> {});
         } catch (JanitorCompilerException janitorParserException) {
             warn("error compiling filter: " + code + ":" + janitorParserException);
             // TODO: report an exception -> exception(JanitorParserException);
@@ -253,12 +268,12 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
     }
 
     @Override
-    public @NotNull FilterPredicate filterScript(@NotNull String name, @NotNull String code, Consumer<Scope> globalsProvider) {
+    public @NotNull FilterPredicate filterScript(@NotNull String name, @NotNull String code, Consumer<JanitorScriptProcess> setup) {
         if (code.isEmpty() || code.trim().isEmpty()) {
             return NUMB;
         }
         try {
-            return new FilterScript(this, name, code, globalsProvider);
+            return new FilterScript(this, name, code, setup);
         } catch (JanitorCompilerException janitorParserException) {
             warn("error compiling filter: " + code + ":" + janitorParserException);
             // TODO: report an exception -> exception(JanitorParserException);

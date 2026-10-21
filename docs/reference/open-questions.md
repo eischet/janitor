@@ -121,7 +121,7 @@ The plan:
 - The **environment** gets a time zone: by default from the existing `TimeZoneSource`, else from the system, or set
   explicitly by the host.
 - A **script process** inherits the environment's time zone, unless the host sets one explicitly for that process,
-  e.g. from the current user's profile (like `setMaxInstructionCount` today).
+  e.g. from the current user's profile, in the setup callback of the run methods, like the instruction limit.
 - Everything that scripts see uses the process's time zone: `@now`, `@today`, `epoch`, `formatAtTimezone`, and the
   conversion of host date values.
 
@@ -135,13 +135,6 @@ Open design points:
 3. Instead of a time zone alone, the environment could hold a `java.time.Clock` (zone plus current time), so that tests
    can also fix `@now`.
 4. Hosts that set a `TimeZoneSource` today must keep working.
-
-<a id="instruction-limit"></a>
-
-### Setting the instruction limit
-
-The limit is set on the script process (`JanitorScriptProcess.setMaxInstructionCount`), which hosts only get hold of
-when they create the process themselves; `RunnableScript.run` has no option for it.
 
 <a id="print-separator"></a>
 

@@ -176,12 +176,12 @@ public class TemplateParser {
                         g.bind("__OUT__", writer.asObject("__OUT__"));
                         if (values != null) {
                             System.err.println("setting implicit object provider to values=" + values);
-                            g.setImplicitObjectProvider(values.asImplicitObjectProvider());
+                            g.getMainScope().setImplicitObjectProvider(values.asImplicitObjectProvider());
                         } else {
                             System.err.println("setting implcit object provider to NONE");
                             // we only look up the environment's implicit object provide when a provider is attached,
                             // so in this case here attach the NONE dummy provider to trigger that behaviour:
-                            g.setImplicitObjectProvider(Scope.ImplicitObjectProvider.NONE);
+                            g.getMainScope().setImplicitObjectProvider(Scope.ImplicitObjectProvider.NONE);
                         }
                     }, process.getCurrentScope()
             );
