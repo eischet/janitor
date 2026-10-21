@@ -70,9 +70,10 @@ toUpperCase(): Returns the string in upper case.
 ### `dir(value)`
 
 Returns a list with the names of the methods and properties of a value, sorted by name. For a map, these are the map's
-methods, not its keys; use `map.keys()` for those. `true`, `false` and `null` have no members, and some module objects
-do not list theirs (see [open questions](open-questions.md#dir)). The list contains internal names starting with `__`,
-which scripts should not use.
+methods, not its keys; use `map.keys()` for those. `true`, `false` and `null` have no members, and objects without a
+dispatch table, such as some module objects, give an empty list. The list also contains names starting with `__`, which
+implement operators: `__in__` for `x in value` and `__get__` for indexing (`value[i]`). So a value that lists `__in__`
+supports `in`.
 
 ```janitor
 print(dir(1));
@@ -80,6 +81,18 @@ print(dir(1));
 
 ```output
 [apply, class, epoch, int]
+```
+
+These methods can also be called directly, but the operators are the usual way:
+
+```janitor
+print([10, 20].__in__(20), 20 in [10, 20]);
+print([10, 20].__get__(1), [10, 20][1]);
+```
+
+```output
+true true
+20 20
 ```
 
 <a id="global-__builtin__"></a>

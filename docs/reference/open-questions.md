@@ -76,12 +76,6 @@ default method that returns the JVM's default locale, so that existing implement
 own `JanitorFormatting` implementation: the default method would not break it, but would return the JVM's locale
 instead of the one it formats with.
 
-<a id="dir"></a>
-
-### `dir(value)`
-
-`dir` includes internal names like `__get__` and `__in__`, which scripts should not call.
-
 <a id="modules"></a>
 
 ## Modules
