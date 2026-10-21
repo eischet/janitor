@@ -97,13 +97,6 @@ generated tables useful.
 
 This is left open on purpose for now: the modules are still rather experimental.
 
-<a id="files-lastmod"></a>
-
-### `files.lastmod(path)`
-
-`File.lastModified()` returns milliseconds, but the value is converted as if it were seconds, so the date is far in the
-future. (`FilesModule.lastMod`)
-
 <a id="zip-add-text"></a>
 
 ### Encoding argument of `Zip.addText`

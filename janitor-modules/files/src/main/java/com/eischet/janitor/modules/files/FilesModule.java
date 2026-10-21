@@ -241,8 +241,12 @@ public class FilesModule extends JanitorComposed<FilesModule> implements Janitor
 
     private JanitorObject lastMod(JanitorScriptProcess process, JCallArgs arguments) throws JanitorRuntimeException {
         final String fileName = arguments.require(1).getRequiredStringValue(0);
-        final long lastModified = new File(fileName).lastModified();
-        final LocalDateTime date = DateTimeUtils.fromEpochSeconds(lastModified);
+        final File file = new File(fileName);
+        if (!file.exists()) {
+            return JNull.NULL;
+        }
+        // File.lastModified() returns milliseconds; this used to read them as seconds, which gave dates in the far future
+        final LocalDateTime date = DateTimeUtils.fromSystemTimeMillis(file.lastModified());
         return process.getBuiltins().dateTime(date);
     }
 

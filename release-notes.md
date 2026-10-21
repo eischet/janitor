@@ -48,6 +48,9 @@
   silently to the last day of the month, or to midnight of the next day (Java's ResolverStyle.SMART). The year must be
   at least 1, and the grammar no longer has an optional minus sign before the year (negative years never worked).
   `parseDate` and `parseDateTime` stay lenient, because scripts give their own patterns there.
+- `files.lastmod(path)` now returns the right time: it used to read the milliseconds of `File.lastModified()` as
+  seconds, which gave dates tens of thousands of years in the future. For a file that does not exist, it returns `null`
+  instead of a date in 1970.
 - the modules collections and httpclient now use dispatch tables like the other modules, so `dir(...)` and `help(...)`
   work for them. collections offers `Set`, `List` and `Map`, capitalized like classes, with `set`, `list` and `map` as
   aliases. `httpclient.fetch(url)` now reports a failed request like the client's methods: the error has the HTTP

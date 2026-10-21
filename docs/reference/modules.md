@@ -293,7 +293,7 @@ not restricted to a directory. Paths are strings.
 | `delete(path)` | `true` if the file or empty folder was deleted |
 | `move(source, target)`, `copy(source, target)` | `null` |
 | `normalize(path)` | the canonical absolute path |
-| `lastmod(path)` | the time of the last change, as a datetime (but see [open questions](open-questions.md#files-lastmod)) |
+| `lastmod(path)` | the time of the last change, as a datetime in the host's time zone; `null` if the file does not exist |
 | `Zip(path)` | a zip file object for writing a new zip archive |
 
 The zip file object has `addFile(path, entryName)`, `addText(text, entryName)`, `addBinary(data, entryName)`,
