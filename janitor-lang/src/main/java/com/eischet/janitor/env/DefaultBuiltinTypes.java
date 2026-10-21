@@ -22,6 +22,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
+import java.time.DateTimeException;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
@@ -338,10 +340,10 @@ public class DefaultBuiltinTypes implements BuiltinTypes {
             return dateTime(LocalDateTime.now());
         } else if (text == null) {
             return JNull.NULL;
-        } else if (text.lastIndexOf(':') != text.indexOf(':')) {
-            return dateTime(LocalDateTime.parse(text, DATE_FORMAT_LONG));
         } else {
-            return dateTime((LocalDateTime.parse(text, DATE_FORMAT_SHORT)));
+            final LocalDateTime parsed = LocalDateTime.parse(text, text.lastIndexOf(':') != text.indexOf(':') ? LITERAL_DATE_TIME_LONG : LITERAL_DATE_TIME_SHORT);
+            requirePositiveYear(parsed.getYear(), text);
+            return dateTime(parsed);
         }
     }
 
@@ -395,7 +397,24 @@ public class DefaultBuiltinTypes implements BuiltinTypes {
         if ("today".equals(text)) {
             return date(LocalDate.now());
         } else {
-            return date(LocalDate.parse(text, DATE_FORMAT));
+            final LocalDate parsed = LocalDate.parse(text, LITERAL_DATE);
+            requirePositiveYear(parsed.getYear(), text);
+            return date(parsed);
+        }
+    }
+
+    /*
+     * Literals are read strictly: a date that does not exist, like 2024-02-30, or a time like 24:00, is an error. The default
+     * ResolverStyle.SMART would silently turn them into 2024-02-29 and midnight of the next day. STRICT needs "uuuu" (the
+     * proleptic year) instead of "yyyy" (the year of an era), and would accept the year 0, which is excluded separately.
+     */
+    private static final DateTimeFormatter LITERAL_DATE = DateTimeFormatter.ofPattern("uuuu-MM-dd").withResolverStyle(ResolverStyle.STRICT);
+    private static final DateTimeFormatter LITERAL_DATE_TIME_SHORT = DateTimeFormatter.ofPattern("uuuu-MM-dd-HH:mm").withResolverStyle(ResolverStyle.STRICT);
+    private static final DateTimeFormatter LITERAL_DATE_TIME_LONG = DateTimeFormatter.ofPattern("uuuu-MM-dd-HH:mm:ss").withResolverStyle(ResolverStyle.STRICT);
+
+    private static void requirePositiveYear(final int year, final String text) {
+        if (year < 1) {
+            throw new DateTimeException("year " + year + " is not supported: " + text);
         }
     }
 

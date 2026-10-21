@@ -792,9 +792,9 @@ public class JStringClass {
         stringDispatcher.addMethod("startsWithNumbers", JStringClass::startsWithNumbers)
                 .setMetaData(Janitor.MetaData.HELP, "startsWithNumbers(): Returns true if the string starts with a digit.");
         stringDispatcher.addMethod("parseDate", JStringClass::parseDate)
-                .setMetaData(Janitor.MetaData.HELP, "parseDate(pattern): Parses the string as a date, using a Java DateTimeFormatter pattern like \"dd.MM.yyyy\".");
+                .setMetaData(Janitor.MetaData.HELP, "parseDate(pattern): Parses the string as a date, using a Java DateTimeFormatter pattern like \"dd.MM.yyyy\". Leniently: a day that does not exist in the month becomes the last day of the month. Text that does not match the pattern gives null and a warning to the host.");
         stringDispatcher.addMethod("parseDateTime", JStringClass::parseDateTime)
-                .setMetaData(Janitor.MetaData.HELP, "parseDateTime(pattern): Parses the string as a datetime, using a Java DateTimeFormatter pattern like \"yyyy-MM-dd HH:mm\".");
+                .setMetaData(Janitor.MetaData.HELP, "parseDateTime(pattern): Parses the string as a datetime, using a Java DateTimeFormatter pattern like \"yyyy-MM-dd HH:mm\". Leniently, like parseDate; text that does not match the pattern gives null and a warning to the host.");
         stringDispatcher.addMethod("split", JStringClass::split)
                 .setMetaData(Janitor.MetaData.HELP, "split(separator): Splits the string into a list. The separator is a literal string or a regex literal; an empty string splits into single characters.");
         stringDispatcher.addMethod("cutFilename", JStringClass::cutFilename)

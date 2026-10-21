@@ -256,8 +256,9 @@ OCT_LITERAL:        '0' '_'* [0-7] ([0-7_]* [0-7])?;
 BINARY_LITERAL:     '0' [bB] [01] ([01_]* [01])?;
 FLOAT_LITERAL:      (Digits '.' Digits? | '.' Digits) ExponentPart? [fFdD]? | Digits (ExponentPart [fFdD]? | [fFdD]);
 
-DATE_LITERAL:       '@' '-'? [0-9] [0-9] [0-9] [0-9] '-' [0-9]? [0-9] '-' [0-9]? [0-9];
-DATE_TIME_LITERAL:  '@' '-'? [0-9] [0-9] [0-9] [0-9] '-' [0-9]? [0-9] '-' [0-9]? [0-9] '-' [0-9]? [0-9] ':' [0-9] [0-9] (':' [0-9][0-9])?;
+// Years are 0001 to 9999; there are no negative years (an optional '-' before the year was removed, it never worked).
+DATE_LITERAL:       '@' [0-9] [0-9] [0-9] [0-9] '-' [0-9]? [0-9] '-' [0-9]? [0-9];
+DATE_TIME_LITERAL:  '@' [0-9] [0-9] [0-9] [0-9] '-' [0-9]? [0-9] '-' [0-9]? [0-9] '-' [0-9]? [0-9] ':' [0-9] [0-9] (':' [0-9][0-9])?;
 
 // maybe leading zeros should be suppressed by tweaking the expressions a bit
 YEARS_LITERAL:      '@' [0-9]+ 'y';

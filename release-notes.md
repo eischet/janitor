@@ -37,6 +37,11 @@
   `MultiWildCardMatcher`, which host code may use directly, too.
 - the compiled wildcard pattern is now cached with the pattern; it used to be stored with the matched text, where it was
   never found again, or could be found for the wrong pattern when short strings are shared.
+- **behavior change:** date and datetime literals are now read strictly: dates and times that do not exist, like
+  `@2024-02-30`, `@2023-02-29` or `@2024-01-01-24:00`, are compile errors with a clear message. They used to be moved
+  silently to the last day of the month, or to midnight of the next day (Java's ResolverStyle.SMART). The year must be
+  at least 1, and the grammar no longer has an optional minus sign before the year (negative years never worked).
+  `parseDate` and `parseDateTime` stay lenient, because scripts give their own patterns there.
 - unary plus (`+x`) now works as the counterpart of unary minus: it returns a number unchanged. As in Java and Python,
   and unlike JavaScript, it does not convert other values: `+"3"` is an error. It used to be a compile error.
 - imports: dotted module names (`import a.b;`) are no longer part of the grammar; they never worked. Hosts that want

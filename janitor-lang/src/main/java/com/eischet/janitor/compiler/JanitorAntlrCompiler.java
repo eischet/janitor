@@ -42,6 +42,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.time.DateTimeException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -351,7 +352,13 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
         if ("today".equals(text)) {
             return new TodayLiteral(location(ctx.start, ctx.stop));
         }
-        final JanitorObject litConst = env.getBuiltinTypes().nullableDateFromLiteral(text);
+        final JanitorObject litConst;
+        try {
+            litConst = env.getBuiltinTypes().nullableDateFromLiteral(text);
+        } catch (DateTimeException e) {
+            throw new CompilerError("invalid date literal: @" + text + ", there is no such date; write @YYYY-MM-DD with an existing date"
+                    + at(location(ctx.start, ctx.stop)), e);
+        }
         if (litConst instanceof JDate date) {
             return new DateLiteral(location(ctx.start, ctx.stop), date);
         } else {
@@ -365,7 +372,14 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
         if ("now".equals(text)) {
             return new NowLiteral(location(ctx.start, ctx.stop));
         }
-        final @NotNull JanitorObject literalValue = env.getBuiltinTypes().nullableDateTimeFromLiteral(text);
+        final @NotNull JanitorObject literalValue;
+        try {
+            literalValue = env.getBuiltinTypes().nullableDateTimeFromLiteral(text);
+        } catch (DateTimeException e) {
+            throw new CompilerError("invalid datetime literal: @" + text
+                    + ", there is no such date or time; write @YYYY-MM-DD-HH:MM or @YYYY-MM-DD-HH:MM:SS with an existing date and a time up to 23:59"
+                    + at(location(ctx.start, ctx.stop)), e);
+        }
         if (literalValue instanceof JDateTime dt) {
             return new DateTimeLiteral(location(ctx.start, ctx.stop), dt);
         } else {
