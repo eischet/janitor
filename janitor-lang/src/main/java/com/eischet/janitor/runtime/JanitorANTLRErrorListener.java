@@ -38,19 +38,6 @@ public class JanitorANTLRErrorListener extends BaseErrorListener implements ANTL
             lines = splitSource();
         }
 
-        // When semicolons were made optional, we started getting warnings like this:
-        //      ... print("hello") }
-        //                         ^ here at the closing brace
-        // "no viable alternative at input '}'"
-        // It would be desirable to remove these warnings, but until I figure out how to upgrade the grammar to do that,
-        // I'll simply mute them.
-        if (offendingSymbol instanceof Token token) {
-            int type = token.getType();
-            if (type == JanitorLexer.RBRACE && msg.contains("no viable alternative")) {
-                return;
-            }
-        }
-
         final String improvedMessage = improveAntlrMessage(msg);
         if (improvedMessage == null) {
             return;
@@ -72,10 +59,6 @@ public class JanitorANTLRErrorListener extends BaseErrorListener implements ANTL
     }
 
     private @Nullable String improveAntlrMessage(final String msg) {
-        if (msg.contains("failed predicate") && msg.contains("stmtTerminator")) {
-            // ignore; it's just the predicate returning false when trying to determine if a ';' is required
-            return null;
-        }
         String improved = msg;
         if (improved != null) {
             if (improved.startsWith("token recognition error at: '\"") || improved.startsWith("token recognition error at: ''")) {

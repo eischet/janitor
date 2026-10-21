@@ -7,7 +7,7 @@ grammar Janitor;
     private boolean isLineTerminatorAhead() {
         Token next = _input.LT(1);
         int t = next.getType();
-        if (t == JanitorLexer.RBRACE) return false;
+        if (t == JanitorLexer.RBRACE) return true; // a closing brace ends the statement before it, e.g. { print(1) }
         if (t == Token.EOF) return true;
         CommonTokenStream stream = (CommonTokenStream) getInputStream();
         java.util.List<Token> hidden = stream.getHiddenTokensToLeft(next.getTokenIndex());
@@ -36,7 +36,7 @@ importStatement
     ;
 
 importClause
-    : qualifiedName ('as' importAlias )?    # importPlain
+    : validIdentifier ('as' importAlias )?  # importPlain    // a module registered under this name; dotted names are not supported
     | STRING_LITERAL_SINGLE 'as' importAlias  # importStringSingle
     | STRING_LITERAL_DOUBLE 'as' importAlias  # importStringDouble
     ;
@@ -175,8 +175,6 @@ formalParameterWithDefault
 // foo
 
 importAlias: validIdentifier;
-
-qualifiedName: validIdentifier (DOT validIdentifier)*;
 
 catchClause: CATCH LPAREN validIdentifier RPAREN block;
 

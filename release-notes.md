@@ -14,6 +14,19 @@
   now work; they were accepted by the grammar but failed to compile. Hex and binary literals are 64-bit patterns as in
   Java, so 0xFFFF_FFFF_FFFF_FFFF is -1. Octal literals with a leading zero (017) are a compile error with a clear message,
   and the Java suffix L is no longer part of the grammar (it never compiled).
+- **behavior change:** syntax errors after a statement are no longer muted. The parser used to hide errors around the
+  optional semicolon, and ANTLR's error recovery then silently dropped tokens, sometimes whole statements: in
+  `print(1) } print(2);`, `print(1)` disappeared, and `import a.b;` ran as `import a` followed by `b;`. Such scripts now
+  fail to compile with a syntax error. Statements without a semicolon before a closing brace (`{ print(1) }`) or at the
+  end of a line still work. Check existing scripts with `checkCompile` before upgrading.
+- **behavior change:** inside a block, a statement must now do something: a call, an assignment or ++/--. Index and
+  slice expressions like `list[0];` used to be accepted there by accident (they are compiled as calls); now they are
+  rejected like `x;` or `x == 1;`, with the message "this expression has no effect" and the line, instead of "invalid
+  block statement: Identifier=...". At the top level, every expression is still allowed and is the script's result.
+- unary plus (`+x`) now works as the counterpart of unary minus: it returns a number unchanged. As in Java and Python,
+  and unlike JavaScript, it does not convert other values: `+"3"` is an error. It used to be a compile error.
+- imports: dotted module names (`import a.b;`) are no longer part of the grammar; they never worked. Hosts that want
+  hierarchical names can offer them with the string form, `import "acme.crm" as crm;`.
 - compile errors from `runtime.compile(...)` now include the compiler's message, e.g. "Compiler Error: integer literal out
   of range: ...", instead of only "Compiler Error".
 - string literals now accept the JSON escape for a slash (backslash, slash), as written e.g. by PHP's json_encode, so

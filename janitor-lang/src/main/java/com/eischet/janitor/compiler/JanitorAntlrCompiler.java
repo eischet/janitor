@@ -17,13 +17,13 @@ import com.eischet.janitor.compiler.ast.AstNode;
 import com.eischet.janitor.compiler.ast.expression.Expression;
 import com.eischet.janitor.compiler.ast.expression.ArgumentList;
 import com.eischet.janitor.compiler.ast.expression.Identifier;
-import com.eischet.janitor.compiler.ast.expression.QualifiedName;
 import com.eischet.janitor.compiler.ast.expression.binary.*;
 import com.eischet.janitor.compiler.ast.expression.literal.*;
 import com.eischet.janitor.compiler.ast.expression.ternary.IfThenElse;
 import com.eischet.janitor.compiler.ast.expression.ternary.TernaryOperation;
 import com.eischet.janitor.compiler.ast.expression.unary.LogicalNot;
 import com.eischet.janitor.compiler.ast.expression.unary.Negation;
+import com.eischet.janitor.compiler.ast.expression.unary.UnaryPlus;
 import com.eischet.janitor.compiler.ast.function.ScriptFunction;
 import com.eischet.janitor.compiler.ast.statement.*;
 import com.eischet.janitor.compiler.ast.statement.assignment.*;
@@ -197,11 +197,19 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
         final List<Statement> statements = new ArrayList<>(ctx.blockStatement().size());
         for (final JanitorParser.BlockStatementContext blockStatementContext : ctx.blockStatement()) {
             final Ast blockStatementCandidate = visit(blockStatementContext);
-            if (blockStatementCandidate instanceof final Statement stmt) {
+            // Inside a block, an expression may only stand alone if it does something: a call or ++/--. Index and slice
+            // expressions are compiled as calls of __get__, but have no effect, so they are rejected like x; or x == 1;
+            // (which is usually a typo for x = 1;). At the top level, every expression is allowed: it is the script's result.
+            final boolean indexAccess = blockStatementCandidate instanceof FunctionCallStatement call
+                    && INDEXED_GET_METHOD.equals(call.getFunctionName());
+            if (blockStatementCandidate instanceof final Statement stmt && !indexAccess) {
                 if (verbose) log.info("block statement: {}", stmt);
                 statements.add(stmt);
             } else {
-                throw new CompilerError("invalid block statement: " + blockStatementCandidate + " at " + blockStatementCandidate.getLocation());
+                final String where = blockStatementContext.getText();
+                throw new CompilerError("this expression has no effect: " + where
+                        + "; inside a block, a statement must be a call, an assignment or ++/--"
+                        + at(location(blockStatementContext.start, blockStatementContext.stop)));
             }
 
 
@@ -482,6 +490,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
             case JanitorLexer.INC -> new PrefixIncrement(location(ctx.start, ctx.stop), expr);
             case JanitorLexer.DEC -> new PrefixDecrement(location(ctx.start, ctx.stop), expr);
             case JanitorLexer.SUB -> new Negation(location(ctx.start, ctx.stop), expr);
+            case JanitorLexer.ADD -> new UnaryPlus(location(ctx.start, ctx.stop), expr);
             default -> throw new CompilerError("unimplemented prefix expression: " + ctx.getText());
         };
     }
@@ -624,21 +633,14 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
         }
         return new ImportStatement(location(ctx.start, ctx.stop), clauses);
         // old: final String alias = Optional.ofNullable(ctx.importAlias()).map(RuleContext::getText).orElse(null);
-        // old: final QualifiedName qname = visitQualifiedName(ctx.qualifiedName());
         // return new ImportStatement(location(ctx.start, ctx.stop), /* qname, alias */ clauses);
     }
 
     @Override
     public Ast visitImportPlain(final JanitorParser.ImportPlainContext ctx) {
         return new ImportClause(location(ctx.start, ctx.stop),
-                visitQualifiedName(ctx.qualifiedName()),
+                visitValidIdentifier(ctx.validIdentifier()),
                 (Identifier) visitImportAlias(ctx.importAlias()));
-    }
-
-    @Override
-    public QualifiedName visitQualifiedName(final JanitorParser.QualifiedNameContext ctx) {
-        final List<String> parts = ctx.validIdentifier().stream().map(ParseTree::getText).toList();
-        return new QualifiedName(location(ctx.start, ctx.stop), parts);
     }
 
     @Override

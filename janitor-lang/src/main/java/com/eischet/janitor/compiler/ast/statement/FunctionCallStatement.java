@@ -47,6 +47,13 @@ public class FunctionCallStatement extends Statement implements Expression, Json
         this.expressionList = expressionList;
     }
 
+    /**
+     * @return the name of the called function or method; {@code __get__} for index and slice expressions like {@code list[1]}
+     */
+    public String getFunctionName() {
+        return functionName;
+    }
+
     @Override
     public String toString() {
         return getClass().getSimpleName() + " for " + functionName + "@" + getLocation();

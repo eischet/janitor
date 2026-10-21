@@ -104,6 +104,20 @@ public class JanitorSemantics {
         }
     }
 
+    /**
+     * Unary plus: returns a number unchanged. Unlike JavaScript's +x, it does not convert other values to numbers.
+     * @param process the running script
+     * @param currentValue the operand
+     * @return the operand, if it is an int or a float
+     * @throws JanitorRuntimeException if the operand is not a number
+     */
+    public static @NotNull JanitorObject unaryPlus(JanitorScriptProcess process, final JanitorObject currentValue) throws JanitorRuntimeException {
+        if (currentValue instanceof JInt || currentValue instanceof JFloat) {
+            return currentValue;
+        }
+        throw new JanitorNotImplementedException(process, "unary + only applies to numbers, not to " + currentValue.janitorClassName());
+    }
+
 
     /**
      * Perform a numeric operation on two objects.

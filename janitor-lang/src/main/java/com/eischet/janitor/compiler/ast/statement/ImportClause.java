@@ -10,7 +10,6 @@ import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.modules.JanitorModule;
 import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.compiler.ast.expression.Identifier;
-import com.eischet.janitor.compiler.ast.expression.QualifiedName;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonExportableObject;
 import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
@@ -24,18 +23,18 @@ import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 public class ImportClause extends Statement implements JsonExportableObject {
     private final String module;
     private final Identifier alias;
-    private final QualifiedName qname;
+    private final Identifier name;
 
     /**
-     * Constructor for imports with plain names: import foo; import bar as baz;.
+     * Constructor for imports of registered modules: import foo; import bar as baz;.
      *
      * @param location where
-     * @param qname    qualified name
-     * @param alias    alias
+     * @param name     the name under which the module is registered
+     * @param alias    alias, or null to bind the module under its name
      */
-    public ImportClause(final Location location, final QualifiedName qname, final Identifier alias) {
+    public ImportClause(final Location location, final Identifier name, final Identifier alias) {
         super(location);
-        this.qname = qname;
+        this.name = name;
         this.alias = alias;
         this.module = null;
     }
@@ -51,22 +50,16 @@ public class ImportClause extends Statement implements JsonExportableObject {
         super(location);
         this.module = module;
         this.alias = alias;
-        this.qname = null;
+        this.name = null;
     }
 
     @Override
     public void execute(final JanitorScriptProcess process) throws JanitorRuntimeException, JanitorControlFlowException {
-        // Load qualified modules:
-        if (qname != null) {
-            if (qname.getParts().size() == 1) {
-                final JanitorModule m = process.getEnvironment().getModuleByQualifier(process, qname.getParts().getFirst());
-                if (alias == null) {
-                    process.getMainScope().bind(process, qname.getParts().getFirst(), m);
-                } else {
-                    process.getMainScope().bind(process, alias.getText(), m);
-                }
-                return;
-            }
+        // Load registered modules:
+        if (name != null) {
+            final JanitorModule m = process.getEnvironment().getModuleByQualifier(process, name.getText());
+            process.getMainScope().bind(process, alias == null ? name.getText() : alias.getText(), m);
+            return;
         }
         // Load string-based modules (implementation specific):
         if (module != null) {
@@ -74,7 +67,7 @@ public class ImportClause extends Statement implements JsonExportableObject {
             process.getMainScope().bind(process, alias.getText(), m);
             return;
         }
-        throw new JanitorNotImplementedException(process, "invalid import clause: either a qualified name or a module name string is required");
+        throw new JanitorNotImplementedException(process, "invalid import clause: either a module name or a module name string is required");
     }
 
     @Override
@@ -83,7 +76,7 @@ public class ImportClause extends Statement implements JsonExportableObject {
                 .optional("type", simpleClassNameOf(this))
                 .optional("module", module)
                 .optional("alias", alias)
-                .optional("qname", qname)
+                .optional("name", name)
                 .endObject();
 
     }
