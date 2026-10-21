@@ -83,13 +83,6 @@ instead of the one it formats with.
 `dir` includes internal names like `__get__` and `__in__`, which scripts should not call, and returns an empty list for
 modules that do not use a dispatch table ([`collections` and `httpclient`](#native-modules)).
 
-<a id="cut-filename"></a>
-
-### `string.cutFilename(maxLength)`
-
-The code has a note that this method serves a single application and should be removed from the language.
-(`JStringClass.cutFilename`)
-
 <a id="modules"></a>
 
 ## Modules

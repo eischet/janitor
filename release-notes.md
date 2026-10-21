@@ -48,6 +48,8 @@
   silently to the last day of the month, or to midnight of the next day (Java's ResolverStyle.SMART). The year must be
   at least 1, and the grammar no longer has an optional minus sign before the year (negative years never worked).
   `parseDate` and `parseDateTime` stay lenient, because scripts give their own patterns there.
+- **behavior change:** `string.cutFilename(maxLength)` is removed; it served a single application. A host that needs it
+  can add it to the string type itself, through `getBuiltinTypes().internals().getStringDispatcher()`.
 - `dir(value)` now lists the members of numbers, maps, sets, binary values, regular expressions and matchers, too; it
   used to return an empty list for them, because `JanitorWrapper` did not implement `HasDispatcher`. It does now.
 - `list.removeAll(other)` now works: it removes every element that is equal to an element of the other list. It used to

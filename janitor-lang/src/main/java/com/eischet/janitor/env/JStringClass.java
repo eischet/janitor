@@ -17,7 +17,6 @@ import com.eischet.janitor.toolbox.strings.StringHelpers;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -537,45 +536,6 @@ public class JStringClass {
         return JDateTime.parse(process, self.janitorGetHostValue(), format);
     }
 
-    /**
-     * Script method {@code string.cutFilename(maxLength)}: reduces a file name to the given length, preserving the file extension.
-     * @param self the object that the method is called on
-     * @param process the running script process
-     * @param arguments the call arguments
-     * @return the shortened file name
-     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
-     */
-    public static JanitorObject cutFilename(final JString self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
-        // TODO: remove this from the language, as it is only of interest for a single application!
-        arguments.require(1);
-        return process.getBuiltins().string(cutFilename(self.janitorGetHostValue(), arguments.getInt(0).getAsInt()));
-    }
-
-    /**
-     * Reduces a file name to the given length, preserving the file extension.
-     * @param filename the file name or path, may be null
-     * @param maxLength the maximum length of the result
-     * @return the shortened file name, or null if the file name is null
-     */
-    public static @Nullable String cutFilename(@Nullable String filename, int maxLength) {
-        // TODO: remove this from the language, as it is only of interest for a single application!
-        if (filename == null) {
-            return null;
-        }
-        File file = new File(filename.trim());
-        filename = file.getName();
-        if (filename.length() <= maxLength) {
-            return filename;
-        }
-        String[] parts = filename.split("\\.(?=[^.]+$)");
-        if (parts.length > 1) {
-            filename = parts[0].substring(0, maxLength - parts[1].length() - 1).trim() + "." + parts[1].trim();
-        } else {
-            filename = parts[0].substring(0, maxLength).trim();
-        }
-        return filename;
-    }
-
 
     /**
      * Script method {@code string.urlEncode()}: encodes the string for use in a URL.
@@ -797,8 +757,6 @@ public class JStringClass {
                 .setMetaData(Janitor.MetaData.HELP, "parseDateTime(pattern): Parses the string as a datetime, using a Java DateTimeFormatter pattern like \"yyyy-MM-dd HH:mm\". Leniently, like parseDate; text that does not match the pattern gives null and a warning to the host.");
         stringDispatcher.addMethod("split", JStringClass::split)
                 .setMetaData(Janitor.MetaData.HELP, "split(separator): Splits the string into a list. The separator is a literal string or a regex literal; an empty string splits into single characters.");
-        stringDispatcher.addMethod("cutFilename", JStringClass::cutFilename)
-                .setMetaData(Janitor.MetaData.HELP, "cutFilename(maxLength): Takes the file name part of a path and shortens it to maxLength characters, keeping the extension.");
         stringDispatcher.addMethod("urlEncode", JStringClass::urlEncode)
                 .setMetaData(Janitor.MetaData.HELP, "urlEncode(): Encodes the string for a URL query, in UTF-8; a space becomes +.");
         stringDispatcher.addMethod("urlDecode", JStringClass::urlDecode)

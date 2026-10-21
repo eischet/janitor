@@ -169,7 +169,6 @@ print("1.2.3".replaceAll("\\.", "-"));
 | `contains(text)` | method | Returns true if the string contains the text. Same as the operator: text in string. |
 | `containsIgnoreCase(text)` | method | Returns true if the string contains the text, ignoring upper and lower case. |
 | `count(text)` | method | Returns how often the text occurs in the string, without overlaps. |
-| `cutFilename(maxLength)` | method | Takes the file name part of a path and shortens it to maxLength characters, keeping the extension. |
 | `decodeBase64()` | method | Decodes the Base64 string and returns the bytes as a binary value. |
 | `empty()` | method | Returns true if the string has no characters. |
 | `encode(charset)` | method | Encodes the string with the named character set, UTF-8 if none is given, and returns the bytes as a binary value. |
