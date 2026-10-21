@@ -48,6 +48,11 @@
   silently to the last day of the month, or to midnight of the next day (Java's ResolverStyle.SMART). The year must be
   at least 1, and the grammar no longer has an optional minus sign before the year (negative years never worked).
   `parseDate` and `parseDateTime` stay lenient, because scripts give their own patterns there.
+- the modules collections and httpclient now use dispatch tables like the other modules, so `dir(...)` and `help(...)`
+  work for them. collections offers `Set`, `List` and `Map`, capitalized like classes, with `set`, `list` and `map` as
+  aliases. `httpclient.fetch(url)` now reports a failed request like the client's methods: the error has the HTTP
+  message instead of "fetch: error calling native code", and still `e.code`, `e.body` and so on. Both modules now check
+  the number of arguments.
 - **behavior change:** `string.cutFilename(maxLength)` is removed; it served a single application. A host that needs it
   can add it to the string type itself, through `getBuiltinTypes().internals().getStringDispatcher()`.
 - `dir(value)` now lists the members of numbers, maps, sets, binary values, regular expressions and matchers, too; it

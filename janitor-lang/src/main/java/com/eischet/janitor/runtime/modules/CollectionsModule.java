@@ -4,35 +4,37 @@
 package com.eischet.janitor.runtime.modules;
 
 import com.eischet.janitor.api.Janitor;
-import com.eischet.janitor.api.JanitorScriptProcess;
-import com.eischet.janitor.lang.JNativeMethod;
-import com.eischet.janitor.api.errors.runtime.JanitorNameException;
+import com.eischet.janitor.api.modules.JanitorModule;
 import com.eischet.janitor.api.modules.JanitorModuleRegistration;
-import com.eischet.janitor.api.modules.JanitorNativeModule;
-import com.eischet.janitor.api.types.JanitorObject;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import com.eischet.janitor.api.types.composed.JanitorComposed;
+import com.eischet.janitor.api.types.dispatch.DispatchTable;
 
-/** A native module with factory functions for collections: {@code set}, {@code list} and {@code map}. */
-public class CollectionsModule extends JanitorNativeModule {
+/**
+ * A module with factory functions for collections: {@code Set}, {@code List} and {@code Map}. Like classes in Java, they
+ * are capitalized; {@code set}, {@code list} and {@code map} remain as aliases.
+ */
+public class CollectionsModule extends JanitorComposed<CollectionsModule> implements JanitorModule {
 
     public static final JanitorModuleRegistration REGISTRATION = new JanitorModuleRegistration("collections", CollectionsModule::new);
 
-    @Override
-    public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess process, final @NotNull String name, final boolean required) throws JanitorNameException {
-        if ("set".equals(name) || "Set".equals(name)) {
-            return JNativeMethod.of(arguments -> Janitor.set(arguments.getList().stream()));
-        }
-        if ("list".equals(name) || "List".equals(name)) {
-            return JNativeMethod.of(arguments -> Janitor.list(arguments.getList()));
-        }
-        if ("map".equals(name) || "Map".equals(name)) {
-            return JNativeMethod.of(arguments -> {
-                arguments.require(0);
-                return Janitor.map();
-            });
-        }
-        return null;
+    private static final DispatchTable<CollectionsModule> DISPATCH = new DispatchTable<>(CollectionsModule::new, false);
+
+    static {
+        // Every HELP text starts with the call form, "name(arguments): ", which the language reference relies on.
+        DISPATCH.addMethod("Set", (self, process, arguments) -> Janitor.set(arguments.getList().stream()))
+                .setMetaData(Janitor.MetaData.HELP, "Set(values...): Returns a new set with the values. Also available as set(...).");
+        DISPATCH.addMethod("List", (self, process, arguments) -> Janitor.list(arguments.getList()))
+                .setMetaData(Janitor.MetaData.HELP, "List(values...): Returns a new list with the values. Also available as list(...).");
+        DISPATCH.addMethod("Map", (self, process, arguments) -> {
+            arguments.require(0);
+            return Janitor.map();
+        }).setMetaData(Janitor.MetaData.HELP, "Map(): Returns a new, empty map; takes no arguments. Also available as map().");
+        DISPATCH.addAlias("set", "Set");
+        DISPATCH.addAlias("list", "List");
+        DISPATCH.addAlias("map", "Map");
     }
 
+    public CollectionsModule() {
+        super(DISPATCH);
+    }
 }

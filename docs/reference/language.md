@@ -306,7 +306,7 @@ null
 ```
 
 Since a map literal uses braces, Janitor has **no set literal**: `{1, 2}` is a syntax error. Use
-`collections.set(...)` or `list.toSet()` (see [builtins.md](builtins.md#type-set)).
+`collections.Set(...)` or `list.toSet()` (see [builtins.md](builtins.md#type-set)).
 
 <a id="date-literals"></a>
 

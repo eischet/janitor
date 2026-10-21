@@ -80,8 +80,7 @@ instead of the one it formats with.
 
 ### `dir(value)`
 
-`dir` includes internal names like `__get__` and `__in__`, which scripts should not call, and returns an empty list for
-modules that do not use a dispatch table ([`collections` and `httpclient`](#native-modules)).
+`dir` includes internal names like `__get__` and `__in__`, which scripts should not call.
 
 <a id="modules"></a>
 
@@ -97,13 +96,6 @@ have no HELP texts. The same holds for most members of the other modules. HELP t
 generated tables useful.
 
 This is left open on purpose for now: the modules are still rather experimental.
-
-<a id="native-modules"></a>
-
-### Modules without dispatch tables
-
-`collections` and `httpclient` implement `janitorGetAttribute` directly instead of using a dispatch table, so neither
-`dir()` nor the generator of this reference can list their functions.
 
 <a id="files-lastmod"></a>
 

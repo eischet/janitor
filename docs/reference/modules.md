@@ -16,8 +16,8 @@ modules in different ways:
 ```janitor
 import collections;
 import collections as c;
-print(collections.list(1, 2));
-print(c.set(1, 1, 2).size());
+print(collections.List(1, 2));
+print(c.Set(1, 1, 2).size());
 ```
 
 ```output
@@ -54,7 +54,7 @@ Rules:
 - A registered module has a simple name. Dotted names like `import a.b;` are a syntax error; a host that wants
   hierarchical names offers them through the string form, e.g. `import "acme.crm" as crm;`.
 - There is no `from module import name`, no `require(...)`, and no `import * as`. Members are always used through the
-  module: `collections.set()`.
+  module: `collections.Set()`.
 
 <a id="availability"></a>
 
@@ -107,15 +107,16 @@ registered.
 
 | Function | Returns |
 | --- | --- |
-| `set(values...)` | a new [set](builtins.md#type-set) with the values |
-| `list(values...)` | a new [list](builtins.md#type-list) with the values |
-| `map()` | a new, empty [map](builtins.md#type-map); takes no arguments |
+| `Set(values...)` | a new [set](builtins.md#type-set) with the values |
+| `List(values...)` | a new [list](builtins.md#type-list) with the values |
+| `Map()` | a new, empty [map](builtins.md#type-map); takes no arguments |
 
-The names `Set`, `List` and `Map` work, too.
+Like classes in Java, the names are capitalized. `set`, `list` and `map` work as aliases, but do not appear in
+`dir(collections)`.
 
 ```janitor
 import collections;
-seen = collections.set();
+seen = collections.Set();
 for (word in ["a", "b", "a"]) {
     seen.add(word);
 }
@@ -127,7 +128,11 @@ print(seen.size());
 ```
 
 <!-- generated:begin modules/collections -->
-This module does not describe its members in a dispatch table, so they cannot be listed here; see the description above.
+| Member | Kind | Description |
+| --- | --- | --- |
+| `List(values...)` | method | Returns a new list with the values. Also available as list(...). |
+| `Map()` | method | Returns a new, empty map; takes no arguments. Also available as map(). |
+| `Set(values...)` | method | Returns a new set with the values. Also available as set(...). |
 <!-- generated:end -->
 
 <a id="module-janitor"></a>
@@ -234,7 +239,10 @@ try {
 ```
 
 <!-- generated:begin modules/httpclient -->
-This module does not describe its members in a dispatch table, so they cannot be listed here; see the description above.
+| Member | Kind | Description |
+| --- | --- | --- |
+| `build()` | method | Returns a new HTTP client, for requests with headers, authentication, JSON and so on. |
+| `fetch(url)` | method | Sends a GET request and returns the body of the response as a string; a failed request is an error with code, body, headers, method and url. |
 <!-- generated:end -->
 
 <a id="module-brrr"></a>
