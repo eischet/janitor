@@ -136,13 +136,6 @@ Open design points:
    can also fix `@now`.
 4. Hosts that set a `TimeZoneSource` today must keep working.
 
-<a id="print-separator"></a>
-
-### Separator of `print`
-
-How `print` separates several arguments is up to each runtime: the test runtime uses a space, the demo runtime nothing.
-A defined default would make scripts portable.
-
 <a id="older-documents"></a>
 
 ### Older introductions

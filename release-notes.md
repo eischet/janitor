@@ -99,6 +99,8 @@
   of range: ...", instead of only "Compiler Error".
 - string literals now accept the JSON escape for a slash (backslash, slash), as written e.g. by PHP's json_encode, so
   every JSON text is a valid Janitor literal.
+- REPL: `print` separates several arguments with a space, as the test runtime does; it used to print them without a
+  separator.
 - REPL: backslashes in the input are no longer removed by JLine, so escape sequences like "\t" work in the REPL, too
   (JLine option DISABLE_EVENT_EXPANSION).
 - every method and property of the built-in types now has a HELP text, so `help(...)` works for all of them. The HELP

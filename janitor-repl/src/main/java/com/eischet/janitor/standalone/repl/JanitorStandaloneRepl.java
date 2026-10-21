@@ -39,6 +39,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 /**
  * Standalone launcher: "janitor" (or "janitor.exe" via install4j).
@@ -195,16 +196,13 @@ public class JanitorStandaloneRepl {
     }
 
     /**
-     * A runtime whose print() goes straight to System.out, for the plain console and script execution.
+     * A runtime whose print() goes straight to System.out, separating its arguments with a space, for the plain console and script execution.
      */
     static BaseRuntime createStdoutRuntime(final JanitorEnvironment env) {
         return new BaseRuntime(env) {
             @Override
             public JanitorObject print(final JanitorScriptProcess process, final JCallArgs args) {
-                for (final JanitorObject janitorObject : args.getList()) {
-                    System.out.print(janitorObject.janitorToString());
-                }
-                System.out.println();
+                System.out.println(args.getList().stream().map(JanitorObject::janitorToString).collect(Collectors.joining(" ")));
                 return JNull.NULL;
             }
         };
@@ -233,10 +231,7 @@ public class JanitorStandaloneRepl {
         JanitorRuntime runtime = new BaseRuntime(env) {
             @Override
             public JanitorObject print(final JanitorScriptProcess process, final JCallArgs args) {
-                for (final JanitorObject janitorObject : args.getList()) {
-                    writer.print(janitorObject.janitorToString());
-                }
-                writer.println();
+                writer.println(args.getList().stream().map(JanitorObject::janitorToString).collect(Collectors.joining(" ")));
                 return JNull.NULL;
             }
         };

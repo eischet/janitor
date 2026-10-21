@@ -164,14 +164,15 @@ Where scripts are used in the host (rules, filters, buttons, scheduled jobs, ...
 - which globals are bound;
 - which modules are registered;
 - whether there is an instruction limit;
-- where `print` output goes.
+- where `print` output goes, and how it separates several arguments.
 
 <a id="host-provided-globals"></a>
 
 #### Globals
 
 Every global variable and function that the host binds, with its type and meaning. Built-in globals (`print`,
-`assert`, `help`, `dir`) need not be repeated; describe only what the host changes, e.g. where `print` writes.
+`assert`, `help`, `dir`) need not be repeated; describe only what the host changes, e.g. where `print` writes and how it
+separates several arguments.
 
 <a id="host-provided-modules"></a>
 
