@@ -84,6 +84,10 @@
             <groupId>com.eischet.janitor.modules</groupId>
             <artifactId>mcp</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.eischet.janitor.modules</groupId>
+            <artifactId>httpclient</artifactId>
+        </dependency>
         <!-- McpModuleIT runs a real MCP server (the server part of mcp-core) in an embedded Jetty -->
         <dependency>
             <groupId>org.eclipse.jetty.ee10</groupId>

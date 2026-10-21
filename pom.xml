@@ -19,7 +19,7 @@
 
     <properties>
         <!-- project revision -->
-        <revision>0.9.69</revision>
+        <revision>0.9.70-SNAPSHOT</revision>
 
         <!-- project settings -->
         <maven.plugin.validation>VERBOSE</maven.plugin.validation>
@@ -274,6 +274,11 @@
             <dependency>
                 <groupId>com.eischet.janitor.modules</groupId>
                 <artifactId>mcp</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eischet.janitor.modules</groupId>
+                <artifactId>httpclient</artifactId>
                 <version>${revision}</version>
             </dependency>
 

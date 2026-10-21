@@ -1,3 +1,14 @@
+# 0.9.70 (in development)
+
+- httpclient: all request methods now report failed requests the same way, so scripts can read `e.code` (status, 0 for
+  network errors), `e.body`, `e.headers`, `e.method` and `e.url` from the caught exception. getString, getBinary and fetch
+  now include the response body (getBinary as UTF-8 text); delete now checks the status and throws for 4xx/5xx, where it
+  used to ignore the status, and keeps the cause of network errors. Every method treats status 200-399 as success; getString,
+  getBinary and fetch used to fail on a 3xx status (redirects are followed, so this only affects a 3xx without a usable Location).
+  Header names in `e.headers` are lowercase, as delivered by the JDK HTTP client.
+- maven plugin: scripts in a Maven build now also get the modules mcp and pdf, in addition to the common modules and
+  commonmark. So a build can e.g. call a tool on an MCP server after a release.
+
 # 0.9.69, 2026-10-20 (internal reelase only)
 
 - new module "mcp" (com.eischet.janitor.modules:mcp): a client for MCP (Model Context Protocol) servers, so that scripts can
