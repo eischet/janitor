@@ -85,13 +85,73 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
     }
 
     /**
-     * Processes the Java-style escape sequences (e.g. backslash-n) in a string.
+     * Processes the escape sequences that the grammar allows in string literals (fragment EscapeSequence in Janitor.g4):
+     * backslash followed by one of {@code b t n f r " ' \ /}, octal escapes up to {@code \377}, and unicode escapes, i.e. a
+     * backslash, one or more {@code u} and four hex digits, as in Java and JSON.
+     * <p>
+     * This is a single pass on purpose: the unicode escape of the backslash (code 5C) yields a backslash character and does
+     * not start a new escape sequence. {@code String.translateEscapes()}, used before, does not know unicode escapes at all.
+     * </p>
      * @param literal the text to process
      * @return the text with the escape sequences replaced
+     * @throws IllegalArgumentException if the text contains an invalid escape sequence
      */
     public static String unescapeJava(final String literal) {
-        // previously: return StringEscapeUtils.unescapeJava(literal);
-        return literal.translateEscapes();
+        if (literal.indexOf('\\') < 0) {
+            return literal;
+        }
+        final StringBuilder out = new StringBuilder(literal.length());
+        final int length = literal.length();
+        int i = 0;
+        while (i < length) {
+            final char ch = literal.charAt(i++);
+            if (ch != '\\') {
+                out.append(ch);
+                continue;
+            }
+            if (i >= length) {
+                throw new IllegalArgumentException("invalid escape sequence at the end of: " + literal);
+            }
+            final char next = literal.charAt(i++);
+            switch (next) {
+                case 'b' -> out.append('\b');
+                case 't' -> out.append('\t');
+                case 'n' -> out.append('\n');
+                case 'f' -> out.append('\f');
+                case 'r' -> out.append('\r');
+                case '"' -> out.append('"');
+                case '\'' -> out.append('\'');
+                case '\\' -> out.append('\\');
+                case '/' -> out.append('/'); // allowed in JSON, so every JSON text is a valid literal
+                case 'u' -> {
+                    while (i < length && literal.charAt(i) == 'u') {
+                        i++; // like Java, allow any number of u's
+                    }
+                    if (i + 4 > length) {
+                        throw new IllegalArgumentException("invalid unicode escape in: " + literal);
+                    }
+                    try {
+                        out.append((char) Integer.parseInt(literal.substring(i, i + 4), 16));
+                    } catch (NumberFormatException e) {
+                        throw new IllegalArgumentException("invalid unicode escape in: " + literal, e);
+                    }
+                    i += 4;
+                }
+                default -> {
+                    if (next < '0' || next > '7') {
+                        throw new IllegalArgumentException("invalid escape sequence \\" + next + " in: " + literal);
+                    }
+                    // octal: up to three digits, the first of three at most 3, i.e. \0 to \377
+                    int value = next - '0';
+                    final int maxDigits = next <= '3' ? 3 : 2;
+                    for (int digits = 1; digits < maxDigits && i < length && literal.charAt(i) >= '0' && literal.charAt(i) <= '7'; digits++) {
+                        value = value * 8 + (literal.charAt(i++) - '0');
+                    }
+                    out.append((char) value);
+                }
+            }
+        }
+        return out.toString();
     }
 
     @Override
@@ -228,7 +288,47 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
     @Override
     public IntegerLiteral visitIntegerLiteral(final JanitorParser.IntegerLiteralContext ctx) {
         if (verbose) log.info("visitIntegerLiteral {}", ctx.getText());
-        return new IntegerLiteral(location(ctx.start, ctx.stop), env.getBuiltinTypes().integer(Long.parseLong(ctx.getText())));
+        final Location location = location(ctx.start, ctx.stop);
+        return new IntegerLiteral(location, env.getBuiltinTypes().integer(parseIntegerLiteral(ctx.getText(), location)));
+    }
+
+    /**
+     * Converts the text of an integer literal into its value. Decimal literals range from 0 to {@code Long.MAX_VALUE}
+     * (negative numbers are literals with a unary minus). Hexadecimal ({@code 0x}) and binary ({@code 0b}) literals are bit
+     * patterns of up to 64 bits, as in Java, so {@code 0xFFFFFFFFFFFFFFFF} is -1. Underscores separate digits. Octal literals
+     * with a leading zero, e.g. {@code 017}, are rejected, because {@code 010 == 8} is a classic trap.
+     * @param text the literal's text from the source code
+     * @param location where the literal is, for error messages
+     * @return the value
+     * @throws CompilerError if the literal is out of range or octal
+     */
+    public static long parseIntegerLiteral(final String text, final @Nullable Location location) {
+        final String digits = text.replace("_", "");
+        try {
+            if (digits.length() > 1 && digits.charAt(0) == '0') {
+                final char kind = Character.toLowerCase(digits.charAt(1));
+                if (kind == 'x') {
+                    return Long.parseUnsignedLong(digits.substring(2), 16);
+                }
+                if (kind == 'b') {
+                    return Long.parseUnsignedLong(digits.substring(2), 2);
+                }
+                throw new CompilerError("integer literals must not start with 0, and octal literals are not supported: " + text
+                        + "; write " + stripLeadingZeros(digits) + ", or use 0x for hex and 0b for binary" + at(location));
+            }
+            return Long.parseLong(digits);
+        } catch (NumberFormatException e) {
+            throw new CompilerError("integer literal out of range: " + text + at(location), e);
+        }
+    }
+
+    private static String stripLeadingZeros(final String digits) {
+        final String stripped = digits.replaceFirst("^0+", "");
+        return stripped.isEmpty() ? "0" : stripped;
+    }
+
+    private static String at(final @Nullable Location location) {
+        return location == null ? "" : " at " + location;
     }
 
     @Override
@@ -999,7 +1099,8 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
     @Override
     public Ast visitFloatLiteral(final JanitorParser.FloatLiteralContext ctx) {
         if (verbose) log.info("visitFloatLiteral {}", ctx.getText());
-        return new FloatLiteral(location(ctx.start, ctx.stop), Double.parseDouble(ctx.getText()), env.getBuiltinTypes());
+        // Double.parseDouble accepts the suffixes f and d, but not the underscores that the grammar allows between digits
+        return new FloatLiteral(location(ctx.start, ctx.stop), Double.parseDouble(ctx.getText().replace("_", "")), env.getBuiltinTypes());
     }
 
     @Override

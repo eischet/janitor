@@ -71,7 +71,7 @@ expression
     | functionCall                                                                                                                  # callExpression
     | expression bop=(DOT|QDOT) ( validIdentifier | functionCall | explicitGenericInvocation )                                      # callExpression
     | LPAREN expression RPAREN                                                                                                      # parensExpression
-    | (DECIMAL_LITERAL | HEX_LITERAL | BINARY_LITERAL)                                                                              # integerLiteral
+    | (DECIMAL_LITERAL | HEX_LITERAL | BINARY_LITERAL | OCT_LITERAL)                                                                # integerLiteral
     | FLOAT_LITERAL                                                                                                                 # floatLiteral
     | (YEARS_LITERAL | MONTHS_LITERAL | DAYS_LITERAL | WEEKS_LITERAL | HOURS_LITERAL | MINUTES_LITERAL | SECONDS_LITERAL )          # durationLiteral
     | (DATE_TIME_LITERAL | NOW_LITERAL)                                                                                             # dateTimeLiteral
@@ -250,10 +250,12 @@ FROM:               'from';
 TO:                 'to';
 IN:                 'in';
 
-DECIMAL_LITERAL:    ('0' | [1-9] (Digits? | '_'+ Digits)) [lL]?;
-HEX_LITERAL:        '0' [xX] [0-9a-fA-F] ([0-9a-fA-F_]* [0-9a-fA-F])? [lL]?;
-OCT_LITERAL:        '0' '_'* [0-7] ([0-7_]* [0-7])? [lL]?;
-BINARY_LITERAL:     '0' [bB] [01] ([01_]* [01])? [lL]?;
+// Integer literals are always 64 bits wide, so there is no Java-style suffix L. '_' separates digits, e.g. 1_000_000.
+DECIMAL_LITERAL:    '0' | [1-9] (Digits? | '_'+ Digits);
+HEX_LITERAL:        '0' [xX] [0-9a-fA-F] ([0-9a-fA-F_]* [0-9a-fA-F])?;
+// Octal literals are not supported. This token only exists so that the compiler can reject e.g. 017 with a clear message.
+OCT_LITERAL:        '0' '_'* [0-7] ([0-7_]* [0-7])?;
+BINARY_LITERAL:     '0' [bB] [01] ([01_]* [01])?;
 FLOAT_LITERAL:      (Digits '.' Digits? | '.' Digits) ExponentPart? [fFdD]? | Digits (ExponentPart [fFdD]? | [fFdD]);
 
 DATE_LITERAL:       '@' '-'? [0-9] [0-9] [0-9] [0-9] '-' [0-9]? [0-9] '-' [0-9]? [0-9];
@@ -333,7 +335,8 @@ NEWLINE:            [\r\n]+ -> channel(HIDDEN);
 IDENTIFIER:         Letter LetterOrDigit*;
 
 fragment ExponentPart: [eE] [+-]? Digits;
-fragment EscapeSequence : '\\' [btnfr"'\\] | '\\' ([0-3]? [0-7])? [0-7] | '\\' 'u'+ HexDigit HexDigit HexDigit HexDigit;
+// '/' is allowed because JSON allows it (an escaped slash, as written e.g. by PHP), so that every JSON text is a valid literal
+fragment EscapeSequence : '\\' [btnfr"'\\/] | '\\' ([0-3]? [0-7])? [0-7] | '\\' 'u'+ HexDigit HexDigit HexDigit HexDigit;
 fragment HexDigits: HexDigit ((HexDigit | '_')* HexDigit)?;
 fragment HexDigit: [0-9a-fA-F];
 fragment Digits: [0-9] ([0-9_]* [0-9])?;

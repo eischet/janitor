@@ -221,7 +221,13 @@ public class JanitorStandaloneRepl {
     protected static void runJlineConsole(final JanitorEnvironment env, final boolean verbose, final @Nullable Scope seedScope, final boolean suppressBanner) throws IOException {
 
         final Terminal terminal = TerminalBuilder.builder().system(true).build();
-        final LineReader reader = LineReaderBuilder.builder().terminal(terminal).build();
+        // Without DISABLE_EVENT_EXPANSION, JLine treats '\' as its own escape character and removes it from the line, so
+        // escape sequences in string literals never reach Janitor: a unicode escape for the letter a-umlaut arrived as "u00e4",
+        // and "a\tb" as "atb".
+        final LineReader reader = LineReaderBuilder.builder()
+                .terminal(terminal)
+                .option(LineReader.Option.DISABLE_EVENT_EXPANSION, true)
+                .build();
         final PrintWriter writer = terminal.writer();
 
         JanitorRuntime runtime = new BaseRuntime(env) {
