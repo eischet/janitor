@@ -80,8 +80,8 @@ instead of the one it formats with.
 
 ### `dir(value)`
 
-`dir` returns an empty list for numbers, booleans, maps and some module objects, because it only looks at values that
-implement `HasDispatcher`, and it includes internal names like `__get__`.
+`dir` includes internal names like `__get__` and `__in__`, which scripts should not call, and returns an empty list for
+modules that do not use a dispatch table ([`collections` and `httpclient`](#native-modules)).
 
 <a id="cut-filename"></a>
 

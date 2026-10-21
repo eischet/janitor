@@ -48,6 +48,8 @@
   silently to the last day of the month, or to midnight of the next day (Java's ResolverStyle.SMART). The year must be
   at least 1, and the grammar no longer has an optional minus sign before the year (negative years never worked).
   `parseDate` and `parseDateTime` stay lenient, because scripts give their own patterns there.
+- `dir(value)` now lists the members of numbers, maps, sets, binary values, regular expressions and matchers, too; it
+  used to return an empty list for them, because `JanitorWrapper` did not implement `HasDispatcher`. It does now.
 - `list.removeAll(other)` now works: it removes every element that is equal to an element of the other list. It used to
   fail on every call, because it required zero arguments.
 - `regex.matcher(text)` now works: `find()` steps through the matches (for `while (m.find()) { ... }`), `matches()` tests

@@ -69,9 +69,18 @@ toUpperCase(): Returns the string in upper case.
 
 ### `dir(value)`
 
-Returns a list with the names of the members of a value. It only works for some types (strings, lists, sets, dates,
-datetimes, durations, and many objects from modules and hosts); for the others, including numbers and maps, it returns
-an empty list. The list contains internal names starting with `__`, which scripts should not use.
+Returns a list with the names of the methods and properties of a value, sorted by name. For a map, these are the map's
+methods, not its keys; use `map.keys()` for those. `true`, `false` and `null` have no members, and some module objects
+do not list theirs (see [open questions](open-questions.md#dir)). The list contains internal names starting with `__`,
+which scripts should not use.
+
+```janitor
+print(dir(1));
+```
+
+```output
+[apply, class, epoch, int]
+```
 
 <a id="global-__builtin__"></a>
 
