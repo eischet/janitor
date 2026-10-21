@@ -37,14 +37,6 @@ Hosts should check their stored scripts with `checkCompile` before upgrading.
 
 ## Built-in functions and types
 
-<a id="regex-matcher"></a>
-
-### `regex.matcher(text)`
-
-The matcher object has `start`, `end` and `group`, but no `find` or `matches`, so there is never a current match, and
-the methods fail with "No match found". With an argument, they read the wrong argument index (`get(1)` instead of
-`get(0)`). (`JMatcherWrapper`)
-
 <a id="list-removeall"></a>
 
 ### `list.removeAll(other)`

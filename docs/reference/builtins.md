@@ -433,7 +433,7 @@ mail example at ada now
 | --- | --- | --- |
 | `extract(text)` | method | Finds the first match in the text and returns its first capture group, or null if nothing matches. The pattern needs a group, e.g. re/(\d+)/. |
 | `extractAll(text)` | method | Returns a list with the first capture group of every match in the text. The pattern needs a group. |
-| `matcher(text)` | method | Returns a matcher object for the text; see the matcher type for its limitations. |
+| `matcher(text)` | method | Returns a matcher for the text, to step through the matches with find() and read groups by number or name. |
 | `replaceAll(text, replacement)` | method | Replaces every match in the text; the replacement may refer to groups as $1, $2, ... |
 | `replaceFirst(text, replacement)` | method | Replaces the first match in the text; the replacement may refer to groups as $1, $2, ... |
 | `split(text)` | method | Splits the text at every match and returns the parts as a list. |
@@ -443,16 +443,37 @@ mail example at ada now
 
 ## matcher
 
-The result of `regex.matcher(text)`. Its class name is `JMatcherWrapper`. In the current version, a matcher cannot be
-used in a meaningful way (see [open questions](open-questions.md#regex-matcher)); use `extract`, `extractAll` and the
-`~` operator instead.
+The result of `regex.matcher(text)`, for when `extract` and `extractAll` are not enough: it steps through the matches
+of a pattern and gives access to every capture group, by number or by name (`(?<name>...)`), and to positions. Its class
+name is `JMatcherWrapper`.
+
+`find()` moves to the next match and returns `false` when there is none, so it drives a `while` loop; `matches()` tests
+the whole text instead. Afterwards, `group`, `start` and `end` describe the current match; before a successful `find()`
+or `matches()`, they are an error.
+
+```janitor
+m = re/(?<key>\w+)=(?<value>\d+)/.matcher("a=1, b=22");
+while (m.find()) {
+    print(m.group("key") + " -> " + m.group("value") + " at " + m.start());
+}
+print(re/\d+/.matcher("123").matches());
+```
+
+```output
+a -> 1 at 0
+b -> 22 at 5
+true
+```
 
 <!-- generated:begin builtins/matcher -->
 | Member | Kind | Description |
 | --- | --- | --- |
-| `end(group)` | method | Meant to return the end index of the current match (of a group). Currently unusable, like start(). |
-| `group(group)` | method | Meant to return the text of the current match (of a group). Currently unusable, like start(). |
-| `start(group)` | method | Meant to return the start index of the current match (of a group). Currently unusable: there is no find() to select a match, and passing a group fails. |
+| `end(group)` | method | Returns the index after the end of the current match, or of a capture group given by number or name; -1 if the group did not take part in the match. |
+| `find()` | method | Moves to the next match in the text and returns true, or returns false if there is none. Use it in a loop: while (m.find()) { ... }. |
+| `group(group)` | method | Returns the text of the current match, or of a capture group given by number or name; null if the group did not take part in the match. group() and group(0) are the whole match. |
+| `groupCount()` | method | Returns the number of capture groups in the pattern. |
+| `matches()` | method | Returns true if the whole text matches the pattern; then the whole text is the current match. |
+| `start(group)` | method | Returns the index where the current match, or a capture group given by number or name, starts; -1 if the group did not take part in the match. |
 <!-- generated:end -->
 
 <a id="type-duration"></a>

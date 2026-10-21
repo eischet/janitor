@@ -143,7 +143,7 @@ public class JRegexClass {
         regexDispatcher.addMethod("split", JRegexClass::split)
                 .setMetaData(Janitor.MetaData.HELP, "split(text): Splits the text at every match and returns the parts as a list.");
         regexDispatcher.addMethod("matcher", JRegexClass::matcher)
-                .setMetaData(Janitor.MetaData.HELP, "matcher(text): Returns a matcher object for the text; see the matcher type for its limitations.");
+                .setMetaData(Janitor.MetaData.HELP, "matcher(text): Returns a matcher for the text, to step through the matches with find() and read groups by number or name.");
     }
 
 }

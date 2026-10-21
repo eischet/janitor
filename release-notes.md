@@ -48,6 +48,10 @@
   silently to the last day of the month, or to midnight of the next day (Java's ResolverStyle.SMART). The year must be
   at least 1, and the grammar no longer has an optional minus sign before the year (negative years never worked).
   `parseDate` and `parseDateTime` stay lenient, because scripts give their own patterns there.
+- `regex.matcher(text)` now works: `find()` steps through the matches (for `while (m.find()) { ... }`), `matches()` tests
+  the whole text, `groupCount()` counts the groups, and `group`, `start` and `end` read the current match or a group by
+  number or name. The matcher used to have no `find()` or `matches()`, so it never had a match, and the group argument
+  was read from the wrong position. Reading without a current match or an unknown group is now a clear error.
 - `assert(condition, message)` now works; it used to fail with an argument error, whether the condition held or not,
   because assert accepted at most one argument. `assert()` without a condition is now an argument error.
 - unary plus (`+x`) now works as the counterpart of unary minus: it returns a number unchanged. As in Java and Python,
