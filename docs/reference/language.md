@@ -1241,5 +1241,5 @@ true
 
 ### assert
 
-`assert(condition)` raises a `JanitorAssertionException` if the condition is not truthy. See
-[builtins.md](builtins.md#global-assert) for its restrictions.
+`assert(condition)` and `assert(condition, message)` raise a `JanitorAssertionException` if the condition is not
+truthy. See [builtins.md](builtins.md#global-assert).

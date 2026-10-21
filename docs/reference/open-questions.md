@@ -37,14 +37,6 @@ Hosts should check their stored scripts with `checkCompile` before upgrading.
 
 ## Built-in functions and types
 
-<a id="assert-message"></a>
-
-### `assert(condition, message)`
-
-`assert` declares that it accepts at most one argument (`args.require(0, 1)`), but then reads the message as the second
-argument. So `assert(x, "message")` always fails with an argument error, even if `x` is true.
-(`JanitorDefaultEnvironment.doAssert`)
-
 <a id="regex-matcher"></a>
 
 ### `regex.matcher(text)`

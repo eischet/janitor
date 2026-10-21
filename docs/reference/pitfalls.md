@@ -310,8 +310,8 @@ this expression has no effect
 - `throw` accepts any value. In `catch`, the value is `e.value`, not `e` itself as in JavaScript; keys of a thrown map
   can also be read directly, as `e.code`. `e.message` is the text without the traceback, `e.traceback` the whole text.
   ([language.md](language.md#throw))
-- `assert(condition, "message")` with a message fails; use `assert(condition)` or `if (...) { throw "message"; }`.
-  ([builtins.md](builtins.md#global-assert))
+- `assert(condition, "message")` raises a `JanitorAssertionException`, which `catch` catches like every other error; it
+  is not switched off in production as in Java or Python. ([builtins.md](builtins.md#global-assert))
 
 <a id="dates"></a>
 

@@ -29,20 +29,25 @@ to be sure of the result.
 
 <a id="global-assert"></a>
 
-### `assert(condition)`
+### `assert(condition, message)`
 
-Raises a `JanitorAssertionException` if `condition` is not truthy; otherwise returns `condition`. Only the form with one
-argument works: `assert(condition, "message")` currently fails with an argument error, whether the condition holds or
-not (see [open questions](open-questions.md#assert-message)).
+Raises a `JanitorAssertionException` if `condition` is not truthy; otherwise returns `condition`. The message is
+optional and must be a string; it becomes part of the error text: "assertion failed: message", or "assertion failed!"
+without one.
 
 ```janitor
 total = 3 + 4;
 assert(total == 7);
-print("ok");
+assert(total > 0, "the total must be positive");
+try {
+    assert(total > 10, "the total is too small");
+} catch (e) {
+    print(e.message);
+}
 ```
 
 ```output
-ok
+assertion failed: the total is too small
 ```
 
 <a id="global-help"></a>

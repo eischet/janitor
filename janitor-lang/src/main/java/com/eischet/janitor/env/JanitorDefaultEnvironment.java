@@ -130,7 +130,8 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
      */
     public static JanitorObject doAssert(final JanitorScriptProcess process, final JCallArgs args) throws JanitorRuntimeException {
         // TODO: this is really not the right place to put this method, because it is not at all related to the scope. JanitorSemantics would be better, for example.
-        final JanitorObject condition = args.require(0, 1).get(0);
+        // the condition is required, the message optional; this used to be require(0, 1), which rejected every message
+        final JanitorObject condition = args.require(1, 2).get(0);
         final String message = args.getOptionalStringValue(1, "");
         if (!JanitorSemantics.isTruthy(condition)) {
             if (message == null || message.isBlank()) {

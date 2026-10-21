@@ -48,6 +48,8 @@
   silently to the last day of the month, or to midnight of the next day (Java's ResolverStyle.SMART). The year must be
   at least 1, and the grammar no longer has an optional minus sign before the year (negative years never worked).
   `parseDate` and `parseDateTime` stay lenient, because scripts give their own patterns there.
+- `assert(condition, message)` now works; it used to fail with an argument error, whether the condition held or not,
+  because assert accepted at most one argument. `assert()` without a condition is now an argument error.
 - unary plus (`+x`) now works as the counterpart of unary minus: it returns a number unchanged. As in Java and Python,
   and unlike JavaScript, it does not convert other values: `+"3"` is an error. It used to be a compile error.
 - imports: dotted module names (`import a.b;`) are no longer part of the grammar; they never worked. Hosts that want
