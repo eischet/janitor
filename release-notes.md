@@ -29,6 +29,14 @@
   with an argument error, like the other built-in methods and `apply(map)`. A test checks that every built-in method
   rejects too many arguments. Hosts that call script functions as callbacks with more arguments than the script declares
   (JavaScript style) have to pass the right number, or the scripts have to declare `*rest`.
+- **behavior change:** the wildcard operators `~` and `!~` now use real wildcard patterns: `*` for any characters, `?` for
+  exactly one character, and every other character literally. Before, only `*` was translated and the rest of the pattern
+  was used as a regular expression, so `.` matched any character, `?` was not a wildcard, and characters like `(`, `[`
+  or `+` changed the meaning; the patterns `"*"` and `""` failed with a NullPointerException. Case is still ignored, now
+  also for non-ASCII letters. For regular expressions, use `text ~ re/.../`. This changes `SingleWildCardMatcher` and
+  `MultiWildCardMatcher`, which host code may use directly, too.
+- the compiled wildcard pattern is now cached with the pattern; it used to be stored with the matched text, where it was
+  never found again, or could be found for the wrong pattern when short strings are shared.
 - unary plus (`+x`) now works as the counterpart of unary minus: it returns a number unchanged. As in Java and Python,
   and unlike JavaScript, it does not convert other values: `+"3"` is an error. It used to be a compile error.
 - imports: dotted module names (`import a.b;`) are no longer part of the grammar; they never worked. Hosts that want

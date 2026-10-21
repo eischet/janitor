@@ -17,6 +17,7 @@ import com.eischet.janitor.api.types.builtin.*;
 import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.types.functions.JCallable;
 import com.eischet.janitor.api.util.ObjectUtilities;
+import com.eischet.janitor.api.util.WildCardMatcher;
 import com.eischet.janitor.runtime.wildcard.SingleWildCardMatcher;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -304,6 +305,21 @@ public class JanitorSemantics {
     }
 
     /**
+     * Returns the matcher for a wildcard pattern, compiled once and kept with the pattern string. It used to be kept with the
+     * text that was matched instead, where it was never found again, or, since short strings are shared, could be found for
+     * the wrong pattern.
+     */
+    private static WildCardMatcher wildCardMatcher(final JString pattern) {
+        WildCardMatcher matcher = pattern.getWildCardMatcher();
+        if (matcher == null) {
+            // a benign race: two threads may compile the same pattern, and either result is fine
+            matcher = new SingleWildCardMatcher(pattern.janitorGetHostValue());
+            pattern.setWildCardMatcher(matcher);
+        }
+        return matcher;
+    }
+
+    /**
      * Perform a wildcard match operation on a string.
      *
      * @param process    the running script
@@ -316,13 +332,8 @@ public class JanitorSemantics {
         if (leftValue == Janitor.NULL || rightValue == Janitor.NULL) {
             return Janitor.FALSE;
         }
-        if (leftValue instanceof JString && rightValue instanceof JString) {
-            if (((JString) rightValue).getWildCardMatcher() != null) {
-                return ((JString) rightValue).getWildCardMatcher().matches((String) leftValue.janitorGetHostValue()) ? JBool.TRUE : JBool.FALSE;
-            }
-            final SingleWildCardMatcher wc = new SingleWildCardMatcher((String) rightValue.janitorGetHostValue());
-            ((JString) leftValue).setWildCardMatcher(wc);
-            return wc.matches((String) leftValue.janitorGetHostValue()) ? JBool.TRUE : JBool.FALSE;
+        if (leftValue instanceof JString text && rightValue instanceof JString pattern) {
+            return Janitor.toBool(wildCardMatcher(pattern).matches(text.janitorGetHostValue()));
         }
         if (leftValue instanceof JString str && rightValue instanceof JRegex regex) {
             return Janitor.toBool(regex.janitorGetHostValue().matcher(str.janitorGetHostValue()).matches());
@@ -343,13 +354,8 @@ public class JanitorSemantics {
         if (leftValue == Janitor.NULL || rightValue == Janitor.NULL) {
             return Janitor.FALSE;
         }
-        if (leftValue instanceof JString && rightValue instanceof JString) {
-            if (((JString) rightValue).getWildCardMatcher() != null) {
-                return ((JString) rightValue).getWildCardMatcher().matches((String) leftValue.janitorGetHostValue()) ? JBool.FALSE : JBool.TRUE;
-            }
-            final SingleWildCardMatcher wc = new SingleWildCardMatcher((String) rightValue.janitorGetHostValue());
-            ((JString) leftValue).setWildCardMatcher(wc);
-            return wc.matches((String) leftValue.janitorGetHostValue()) ? JBool.FALSE : JBool.TRUE;
+        if (leftValue instanceof JString text && rightValue instanceof JString pattern) {
+            return Janitor.toBool(!wildCardMatcher(pattern).matches(text.janitorGetHostValue()));
         }
         if (leftValue instanceof JString str && rightValue instanceof JRegex regex) {
             return Janitor.toBool(!regex.janitorGetHostValue().matcher(str.janitorGetHostValue()).matches());
