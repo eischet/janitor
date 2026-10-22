@@ -3,11 +3,14 @@
 
 package com.eischet.janitor;
 
+import com.eischet.janitor.api.RunnableScript;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.errors.runtime.JanitorInstructionLimitExceededException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
+import com.eischet.janitor.runtime.OutputCatchingTestRuntime;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class ExecLimitTestCase extends JanitorTest{
@@ -30,6 +33,13 @@ public class ExecLimitTestCase extends JanitorTest{
 
     @Test void testWhileTrue() throws JanitorRuntimeException, JanitorCompilerException {
         assertThrows(JanitorInstructionLimitExceededException.class, () -> evaluateWithConfigurableProcess("while (true) { }", proc -> proc.setMaxInstructionCount(1000)));
+    }
+
+    @Test void scriptCannotCatchTheLimit() throws Exception {
+        final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
+        final RunnableScript script = runtime.compile("test", "try { while (true) { } } catch (e) { print('caught'); }");
+        assertThrows(JanitorInstructionLimitExceededException.class, () -> script.run(proc -> proc.setMaxInstructionCount(1000)));
+        assertEquals("", runtime.getAllOutput());
     }
 
 

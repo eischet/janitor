@@ -135,8 +135,8 @@ env.setMaxInstructionCount(100_000);                                  // all scr
 script.run(process -> process.bind("order", order).setMaxInstructionCount(1_000_000)); // this run
 ```
 
-A script cannot escape the limit: `catch` sees the error, but every further instruction fails again, so the script
-ends with this error anyway. A function that the host calls later as a callback runs in a new process, which gets the
+A script cannot escape the limit: `catch` does not see this error, and every further instruction, also in a `finally`
+block, fails again. The error is a `JanitorAbortException`, the base class for all ways in which a host aborts a script. A function that the host calls later as a callback runs in a new process, which gets the
 environment's default, not the limit of the run that created the function.
 
 <a id="extension-points"></a>

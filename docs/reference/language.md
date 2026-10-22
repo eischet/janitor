@@ -1160,7 +1160,7 @@ These are the runtime errors of the language itself; modules and hosts can add t
 | `JanitorAssertionException` | a failed `assert(...)` |
 | `JanitorScriptThrownException` | a value thrown with `throw` |
 | `JanitorNativeException` | an error inside a built-in method or module, e.g. an index out of range |
-| `JanitorInstructionLimitExceededException` | the script ran more instructions than the host allows |
+| `JanitorInstructionLimitExceededException` | the script ran more instructions than the host allows; it cannot be caught |
 
 <a id="try-catch"></a>
 
@@ -1187,7 +1187,8 @@ checked x
 12
 ```
 
-- `catch (e)` catches every runtime error; there are no typed catch clauses. The parentheses and the name are required.
+- `catch (e)` catches every runtime error except the ones with which the host aborts the script, such as
+  `JanitorInstructionLimitExceededException`; there are no typed catch clauses. The parentheses and the name are required.
 - `finally` runs in every case, also after `return`, `break` and `continue`. Either `catch` or `finally` can be left out.
 - The variable in `catch` is an error object with these properties:
 

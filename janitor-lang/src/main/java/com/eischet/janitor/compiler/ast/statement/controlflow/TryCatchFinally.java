@@ -5,6 +5,7 @@ package com.eischet.janitor.compiler.ast.statement.controlflow;
 
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.glue.JanitorControlFlowException;
+import com.eischet.janitor.api.errors.runtime.JanitorAbortException;
 import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.Location;
@@ -50,6 +51,9 @@ public class TryCatchFinally extends Statement implements JsonExportableObject {
                     tryBlock.execute(process);
                 } catch (RuntimeException runtimeException) {
                     throw new JanitorNativeException(process, runtimeException.getMessage(), runtimeException);
+                } catch (JanitorAbortException e) {
+                    // the host aborts the script, e.g. after a limit was exceeded; scripts must not be able to catch that
+                    throw e;
                 } catch (JanitorRuntimeException e) {
                     try {
                         process.enterBlock(null);
