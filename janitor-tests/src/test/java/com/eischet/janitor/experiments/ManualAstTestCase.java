@@ -22,7 +22,9 @@ import com.eischet.janitor.runtime.*;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
+import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -59,6 +61,26 @@ public class ManualAstTestCase extends JanitorTest {
 
             @Override
             public void setMaxInstructionCount(final long maxInstructionCount) {
+
+            }
+
+            @Override
+            public void setMaxRunTime(final Duration maxRunTime) {
+
+            }
+
+            @Override
+            public void setCancellation(final @NotNull AtomicBoolean token) {
+
+            }
+
+            @Override
+            public void cancel() {
+
+            }
+
+            @Override
+            public void checkAbort() throws JanitorRuntimeException {
 
             }
 

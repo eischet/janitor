@@ -23,6 +23,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.time.Duration;
 import java.util.function.Consumer;
 
 /**
@@ -118,6 +119,15 @@ public interface JanitorEnvironment extends JsonOutputSupport {
      */
     default long getMaxInstructionCount() {
         return 0;
+    }
+
+    /**
+     * The default limit for the time that a script process may run, which every new process takes over;
+     * a host can override it per run with {@link JanitorScriptProcess#setMaxRunTime(Duration)}.
+     * @return the maximum run time, or null for no limit (the default)
+     */
+    default @Nullable Duration getMaxRunTime() {
+        return null;
     }
 
 

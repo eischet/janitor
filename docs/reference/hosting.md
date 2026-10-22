@@ -111,7 +111,7 @@ There are two places for globals:
   has been created and before the script starts. Use it for the data a script works on, such as the current record.
   `bind` accepts Janitor objects and plain strings, numbers and booleans, `bindF` binds a function, and both return the
   process, so calls can be chained: `process.bind("order", order).bind("user", user)`. The callback can also configure
-  the process, e.g. its [instruction limit](#limits).
+  the process, e.g. its [limits](#limits).
 - **Shared by all scripts**: `env.setupBuiltinScope(scope -> scope.bind("name", value))`. Use this only for values that
   never change, such as constants or stateless functions. The built-in scope is shared between all scripts of the
   environment, so mutable values would leak from one run into the next.
@@ -123,21 +123,39 @@ dispatch table, or wrapped with `JanitorWrapper`. Give their members HELP texts,
 
 ## Limiting scripts
 
-A script can be limited to a number of instructions, so that an endless loop ends with a
-`JanitorInstructionLimitExceededException` instead of blocking the host:
+A host can abort a script in three ways, so that an endless loop or a slow script does not block it:
 
-- `JanitorDefaultEnvironment.setMaxInstructionCount(n)` sets a default for every script process of the environment,
-  including filter scripts, templates and callbacks; 0, the default, means no limit.
-- A run can override it in its setup callback: `script.run(process -> process.setMaxInstructionCount(n))`.
+| Limit | Default for the environment | Per run, in the setup callback | Error |
+| --- | --- | --- | --- |
+| number of instructions | `env.setMaxInstructionCount(n)` | `process.setMaxInstructionCount(n)` | `JanitorInstructionLimitExceededException` |
+| run time | `env.setMaxRunTime(duration)` | `process.setMaxRunTime(duration)` | `JanitorTimeLimitExceededException` |
+| cancellation from outside | | `process.setCancellation(token)`, `process.cancel()` | `JanitorCancelledException` |
+
+- The defaults are set on `JanitorDefaultEnvironment` and apply to every script process of the environment, including
+  filter scripts, templates and callbacks. 0 and null mean no limit, which is the default.
+- The run time is counted from the start of the script, so the setup callback does not count.
+- The cancellation token is an `AtomicBoolean`: when the host sets it to true, from any thread, the script ends. One
+  token can cancel several runs. Without a token of its own, every process has one that `process.cancel()` sets.
 
 ```java
 env.setMaxInstructionCount(100_000);                                  // all scripts
 script.run(process -> process.bind("order", order).setMaxInstructionCount(1_000_000)); // this run
+
+AtomicBoolean cancelled = new AtomicBoolean();                       // e.g. set by a "Cancel" button
+script.run(process -> {
+    process.setMaxRunTime(Duration.ofSeconds(5));
+    process.setCancellation(cancelled);
+});
 ```
 
-A script cannot escape the limit: `catch` does not see this error, and every further instruction, also in a `finally`
-block, fails again. The error is a `JanitorAbortException`, the base class for all ways in which a host aborts a script. A function that the host calls later as a callback runs in a new process, which gets the
-environment's default, not the limit of the run that created the function.
+The instruction limit is checked on every instruction, the run time and the token every 1024 instructions, because
+reading the clock costs more. A built-in or host method that runs for a long time is not interrupted; it can call
+`process.checkAbort()` in between to end early.
+
+A script cannot escape these limits: `catch` does not see the error, and every further instruction, also in a `finally`
+block, fails again. All three errors extend `JanitorAbortException`, so a host can catch them together. A function that
+the host calls later as a callback runs in a new process, which gets the environment's defaults, not the limits of the
+run that created the function.
 
 <a id="extension-points"></a>
 
@@ -163,7 +181,7 @@ Where scripts are used in the host (rules, filters, buttons, scheduled jobs, ...
   record if the result is truthy";
 - which globals are bound;
 - which modules are registered;
-- whether there is an instruction limit;
+- whether there is an instruction or time limit, and whether scripts can be cancelled;
 - where `print` output goes, and how it separates several arguments.
 
 <a id="host-provided-globals"></a>

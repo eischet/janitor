@@ -41,6 +41,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -58,6 +59,7 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
     protected final DefaultBuiltinTypes builtins;
     private final JanitorFormatting formatting;
     private volatile long maxInstructionCount = 0;
+    private volatile @Nullable Duration maxRunTime = null;
     private final List<JanitorModuleRegistration> moduleRegistrations = new ArrayList<>();
     private final List<ModuleResolver> resolvers = new ArrayList<>();
     protected @Nullable Scope.ImplicitObjectProvider implicitTemplateObjectProvider = null;
@@ -168,6 +170,20 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
      */
     public void setMaxInstructionCount(final long maxInstructionCount) {
         this.maxInstructionCount = maxInstructionCount;
+    }
+
+    @Override
+    public @Nullable Duration getMaxRunTime() {
+        return maxRunTime;
+    }
+
+    /**
+     * Sets the default limit for the time that a script process may run. Every process that is created afterward takes
+     * it over; a host can still override it per run with {@link JanitorScriptProcess#setMaxRunTime(Duration)}.
+     * @param maxRunTime the maximum run time, or null or zero for no limit
+     */
+    public void setMaxRunTime(final @Nullable Duration maxRunTime) {
+        this.maxRunTime = maxRunTime;
     }
 
     @Override

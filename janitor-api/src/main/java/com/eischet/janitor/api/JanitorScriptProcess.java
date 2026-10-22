@@ -18,7 +18,9 @@ import com.eischet.janitor.api.types.functions.JCallable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
 /**
@@ -219,6 +221,34 @@ public interface JanitorScriptProcess {
      * @param maxInstructionCount the maximum number, or 0 for no limit
      */
     void setMaxInstructionCount(final long maxInstructionCount);
+
+    /**
+     * Limits the time that the script may run. The clock starts when the script starts, not when the process is created,
+     * and is checked every few instructions; a script that exceeds it ends with a {@code JanitorTimeLimitExceededException}.
+     * @param maxRunTime the maximum run time, or null or zero for no limit
+     */
+    void setMaxRunTime(final @Nullable Duration maxRunTime);
+
+    /**
+     * Shares a cancellation token with the host: when the host sets it to true, from any thread, the script ends with a
+     * {@code JanitorCancelledException}. One token can cancel several runs at once.
+     * Without this call, every process has a token of its own, which {@link #cancel()} sets.
+     * @param token the cancellation token
+     */
+    void setCancellation(final @NotNull AtomicBoolean token);
+
+    /**
+     * Cancels the script by setting its cancellation token; may be called from any thread.
+     * The script notices this within a few instructions and ends with a {@code JanitorCancelledException}.
+     */
+    void cancel();
+
+    /**
+     * Throws if the script was cancelled or exceeded its time limit. The interpreter checks this every few instructions;
+     * native code that runs for a long time, such as a module method, can call it in between to end early.
+     * @throws JanitorRuntimeException a {@code JanitorAbortException} when the script must end
+     */
+    void checkAbort() throws JanitorRuntimeException;
 
     /**
      * Binds a global variable of the script, before it runs. This is what hosts call in the callback of
