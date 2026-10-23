@@ -1621,6 +1621,9 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
             parent.writeSchemaToJson(stream);
         }
         for (final Attribute<T> attribute : attributes) {
+            if (isOmitted(stream, attribute)) {
+                continue;
+            }
             final Dispatcher<?> subDispatch = getMetaData(attribute.name(), Janitor.MetaData.DISPATCHER);
             final JsonType jsonType = getMetaData(attribute.name, Janitor.MetaData.JSON_TYPE);
             if (subDispatch != null) {
@@ -1641,13 +1644,17 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
     private void writeMyAttributes(final JsonOutputStream stream, final T instance) throws Exception {
         for (final Attribute<T> attribute : attributes) {
             @Nullable final JsonAdapter<T> attributeAdapter = attribute.jsonAdapter;
-            if (attributeAdapter != null) {
+            if (attributeAdapter != null && !isOmitted(stream, attribute)) {
                 if (!attributeAdapter.isDefault(instance)) {
                     stream.key(attribute.name());
                     attributeAdapter.write(stream, instance);
                 }
             }
         }
+    }
+
+    private boolean isOmitted(final JsonOutputStream stream, final Attribute<T> attribute) {
+        return stream.options().omitConfidential() && Boolean.TRUE.equals(getMetaData(attribute.name(), Janitor.MetaData.CONFIDENTIAL));
     }
 
     @Language("JSON")

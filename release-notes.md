@@ -1,5 +1,8 @@
 # 0.9.70 (in development)
 
+- json: new meta-data key `Janitor.MetaData.CONFIDENTIAL` marks properties like passwords or tokens. Dispatch tables still
+  write them to JSON by default; with `JsonWriteOptions.withOmitConfidential(true)` they are left out of the JSON and the
+  JSON schema. Scripts can still read such properties, so this guards exports, not the sandbox.
 - httpclient: all request methods now report failed requests the same way, so scripts can read `e.code` (status, 0 for
   network errors), `e.body`, `e.headers`, `e.method` and `e.url` from the caught exception. getString, getBinary and fetch
   now include the response body (getBinary as UTF-8 text); delete now checks the status and throws for 4xx/5xx, where it

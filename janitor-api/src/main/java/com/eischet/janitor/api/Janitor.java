@@ -978,6 +978,16 @@ public final class Janitor {
         public static final MetaDataKey<Boolean> HOST_NULLABLE = new MetaDataKey<>("host_nullable", Boolean.class);
 
         /**
+         * Marks a property as confidential, e.g. a password or a token.
+         * <p>
+         * Dispatch tables write such properties to JSON like any other, unless the options of the output stream say
+         * {@link com.eischet.janitor.toolbox.json.api.JsonWriteOptions#omitConfidential()}; then they are left out, and
+         * left out of the JSON schema, too. Scripts can still read the property; this is not a sandbox measure.
+         * </p>
+         */
+        public static final MetaDataKey<Boolean> CONFIDENTIAL = new MetaDataKey<>("confidential", Boolean.class);
+
+        /**
          * Specify the JSON type for a property, for JSON Schema exports.
          */
         public static final MetaDataKey<JsonType> JSON_TYPE = new MetaDataKey<>("json_type", JsonType.class);

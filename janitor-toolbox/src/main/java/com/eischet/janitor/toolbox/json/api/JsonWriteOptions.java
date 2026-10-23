@@ -13,11 +13,13 @@ import java.util.Objects;
  * @param indent one indentation step, e.g. two spaces; the empty string produces compact output
  * @param nonFinite how NaN and infinite numbers are written
  * @param empty which values the {@code pair(...)} and {@code optional(...)} helpers leave out
+ * @param omitConfidential true to leave out fields marked as confidential, e.g. passwords, when writing objects; this is up to the
+ *                         writers, the stream itself does not know which fields are confidential
  */
-public record JsonWriteOptions(@NotNull String indent, @NotNull NonFinitePolicy nonFinite, @NotNull EmptyPolicy empty) {
+public record JsonWriteOptions(@NotNull String indent, @NotNull NonFinitePolicy nonFinite, @NotNull EmptyPolicy empty, boolean omitConfidential) {
 
-    /** Compact output, failing on NaN and infinite numbers, writing all values. */
-    public static final JsonWriteOptions COMPACT = new JsonWriteOptions("", NonFinitePolicy.FAIL, EmptyPolicy.WRITE);
+    /** Compact output, failing on NaN and infinite numbers, writing all values, including confidential ones. */
+    public static final JsonWriteOptions COMPACT = new JsonWriteOptions("", NonFinitePolicy.FAIL, EmptyPolicy.WRITE, false);
 
     /** Like {@link #COMPACT}, but indented by two spaces per level. */
     public static final JsonWriteOptions PRETTY = COMPACT.withIndent("  ");
@@ -47,11 +49,22 @@ public record JsonWriteOptions(@NotNull String indent, @NotNull NonFinitePolicy 
      * @param indent one indentation step; the empty string produces compact output
      * @param nonFinite how NaN and infinite numbers are written
      * @param empty which values the helpers leave out
+     * @param omitConfidential true to leave out confidential fields
      */
     public JsonWriteOptions {
         Objects.requireNonNull(indent, "indent");
         Objects.requireNonNull(nonFinite, "nonFinite");
         Objects.requireNonNull(empty, "empty");
+    }
+
+    /**
+     * Creates options that write confidential fields.
+     * @param indent one indentation step; the empty string produces compact output
+     * @param nonFinite how NaN and infinite numbers are written
+     * @param empty which values the helpers leave out
+     */
+    public JsonWriteOptions(final @NotNull String indent, final @NotNull NonFinitePolicy nonFinite, final @NotNull EmptyPolicy empty) {
+        this(indent, nonFinite, empty, false);
     }
 
     /**
@@ -66,7 +79,7 @@ public record JsonWriteOptions(@NotNull String indent, @NotNull NonFinitePolicy 
      * @return a copy of these options with the given indentation
      */
     public JsonWriteOptions withIndent(final @NotNull String indent) {
-        return new JsonWriteOptions(indent, nonFinite, empty);
+        return new JsonWriteOptions(indent, nonFinite, empty, omitConfidential);
     }
 
     /**
@@ -74,7 +87,7 @@ public record JsonWriteOptions(@NotNull String indent, @NotNull NonFinitePolicy 
      * @return a copy of these options with the given policy
      */
     public JsonWriteOptions withNonFinite(final @NotNull NonFinitePolicy nonFinite) {
-        return new JsonWriteOptions(indent, nonFinite, empty);
+        return new JsonWriteOptions(indent, nonFinite, empty, omitConfidential);
     }
 
     /**
@@ -82,7 +95,15 @@ public record JsonWriteOptions(@NotNull String indent, @NotNull NonFinitePolicy 
      * @return a copy of these options with the given policy
      */
     public JsonWriteOptions withEmpty(final @NotNull EmptyPolicy empty) {
-        return new JsonWriteOptions(indent, nonFinite, empty);
+        return new JsonWriteOptions(indent, nonFinite, empty, omitConfidential);
+    }
+
+    /**
+     * @param omitConfidential true to leave out confidential fields, false to write them
+     * @return a copy of these options with the given setting
+     */
+    public JsonWriteOptions withOmitConfidential(final boolean omitConfidential) {
+        return new JsonWriteOptions(indent, nonFinite, empty, omitConfidential);
     }
 
     /**
