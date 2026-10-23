@@ -15,6 +15,10 @@ import com.eischet.janitor.api.types.builtin.JString;
 import com.eischet.janitor.api.types.composed.JanitorAware;
 import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.types.functions.JCallable;
+import com.eischet.janitor.toolbox.json.api.JsonException;
+import com.eischet.janitor.toolbox.json.api.JsonWriteOptions;
+import com.eischet.janitor.toolbox.json.api.JsonWriter;
+import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -228,6 +232,30 @@ public interface JanitorScriptProcess {
      * @param maxRunTime the maximum run time, or null or zero for no limit
      */
     void setMaxRunTime(final @Nullable Duration maxRunTime);
+
+    /**
+     * The options for JSON that the script creates, e.g. with {@code toJson()} or as a request body.
+     * Every process starts with {@link JanitorEnvironment#getJsonWriteOptions()}.
+     * @return the options
+     */
+    @NotNull JsonWriteOptions getJsonWriteOptions();
+
+    /**
+     * Sets the options for JSON that the script creates, overriding the environment's default for this run,
+     * e.g. {@code JsonWriteOptions.COMPACT.withOmitConfidential(true)}.
+     * @param options the options
+     */
+    void setJsonWriteOptions(final @NotNull JsonWriteOptions options);
+
+    /**
+     * Writes JSON for the script, with this process's {@link #getJsonWriteOptions() options}.
+     * @param writer writes the content
+     * @return the JSON text
+     * @throws JsonException on errors
+     */
+    default @NotNull @Language("JSON") String writeJson(final @NotNull JsonWriter writer) throws JsonException {
+        return getEnvironment().getJsonStreams().write(getJsonWriteOptions(), writer);
+    }
 
     /**
      * Shares a cancellation token with the host: when the host sets it to true, from any thread, the script ends with a

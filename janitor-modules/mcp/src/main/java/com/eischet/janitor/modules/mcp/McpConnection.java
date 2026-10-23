@@ -372,7 +372,7 @@ public class McpConnection extends JanitorComposed<McpConnection> implements Jan
 
     private static String writeJson(final JanitorScriptProcess process, final JMap arguments) throws JanitorRuntimeException {
         try {
-            return Janitor.writeJson(arguments::writeJson);
+            return process.writeJson(arguments::writeJson);
         } catch (JsonException e) {
             throw new JanitorNativeException(process, "cannot convert MCP tool arguments to JSON: " + e.getMessage(), e);
         }

@@ -5,9 +5,12 @@ package com.eischet.janitor.features;
 
 import com.eischet.janitor.JanitorTest;
 import com.eischet.janitor.api.Janitor;
+import com.eischet.janitor.api.RunnableScript;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
+import com.eischet.janitor.env.JanitorDefaultEnvironment;
+import com.eischet.janitor.runtime.OutputCatchingTestRuntime;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonWriteOptions;
 import org.junit.jupiter.api.Test;
@@ -61,6 +64,34 @@ public class JsonConfidentialFieldsTestCase extends JanitorTest {
         login.password = "anders";
         Login.DISPATCH.readFromJson(() -> login, Janitor.writeJson(OMIT, out -> Login.DISPATCH.writeToJson(out, new Login())));
         assertEquals("anders", login.password);
+    }
+
+    @Test
+    public void scriptsWriteEverythingByDefault() throws Exception {
+        final RunnableScript script = OutputCatchingTestRuntime.fresh().compile("test", "return [login].toJson();");
+        assertEquals("[{\"user\":\"stefan\",\"password\":\"geheim\",\"retries\":3}]",
+                script.run(process -> process.bind("login", new Login())).janitorGetHostValue());
+    }
+
+    @Test
+    public void scriptsTakeOverTheEnvironmentDefault() throws Exception {
+        final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh(env -> ((JanitorDefaultEnvironment) env).setJsonWriteOptions(OMIT));
+        final RunnableScript script = runtime.compile("test", "return {login: login}.toJson();");
+        assertEquals("{\"login\":{\"user\":\"stefan\",\"retries\":3}}", script.run(process -> process.bind("login", new Login())).janitorGetHostValue());
+        // a run can override the default
+        assertEquals("{\"login\":{\"user\":\"stefan\",\"password\":\"geheim\",\"retries\":3}}", script.run(process -> {
+            process.bind("login", new Login());
+            process.setJsonWriteOptions(JsonWriteOptions.COMPACT);
+        }).janitorGetHostValue());
+    }
+
+    @Test
+    public void aRunCanOmitConfidentialFields() throws Exception {
+        final RunnableScript script = OutputCatchingTestRuntime.fresh().compile("test", "return [login].toJson();");
+        assertEquals("[{\"user\":\"stefan\",\"retries\":3}]", script.run(process -> {
+            process.bind("login", new Login());
+            process.setJsonWriteOptions(OMIT);
+        }).janitorGetHostValue());
     }
 
     private static class Login extends JanitorComposed<Login> {

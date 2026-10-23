@@ -60,6 +60,7 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
     private final JanitorFormatting formatting;
     private volatile long maxInstructionCount = 0;
     private volatile @Nullable Duration maxRunTime = null;
+    private volatile @NotNull JsonWriteOptions jsonWriteOptions = JsonWriteOptions.COMPACT;
     private final List<JanitorModuleRegistration> moduleRegistrations = new ArrayList<>();
     private final List<ModuleResolver> resolvers = new ArrayList<>();
     protected @Nullable Scope.ImplicitObjectProvider implicitTemplateObjectProvider = null;
@@ -184,6 +185,20 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
      */
     public void setMaxRunTime(final @Nullable Duration maxRunTime) {
         this.maxRunTime = maxRunTime;
+    }
+
+    @Override
+    public @NotNull JsonWriteOptions getJsonWriteOptions() {
+        return jsonWriteOptions;
+    }
+
+    /**
+     * Sets the default options for JSON that scripts create. Every process that is created afterward takes them over;
+     * a host can still override them per run with {@link JanitorScriptProcess#setJsonWriteOptions(JsonWriteOptions)}.
+     * @param jsonWriteOptions the options, e.g. {@code JsonWriteOptions.COMPACT.withOmitConfidential(true)}
+     */
+    public void setJsonWriteOptions(final @NotNull JsonWriteOptions jsonWriteOptions) {
+        this.jsonWriteOptions = Objects.requireNonNull(jsonWriteOptions, "jsonWriteOptions");
     }
 
     @Override

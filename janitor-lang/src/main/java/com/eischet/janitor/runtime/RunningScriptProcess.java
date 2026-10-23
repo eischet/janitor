@@ -14,10 +14,12 @@ import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.compiler.ast.statement.Script;
 import com.eischet.janitor.compiler.ast.statement.controlflow.ReturnStatement;
+import com.eischet.janitor.toolbox.json.api.JsonWriteOptions;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.Duration;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -36,15 +38,17 @@ public class RunningScriptProcess extends AbstractScriptProcess {
     private @Nullable Duration deadlineLimit = null; // the limit that the running deadline was started with
     private long deadline = 0;
     private @NotNull AtomicBoolean cancellation = new AtomicBoolean();
+    private @NotNull JsonWriteOptions jsonWriteOptions;
     // once an abort was detected, check on every instruction, so that code which swallows the error cannot keep going
     private boolean aborting = false;
 
     public RunningScriptProcess(final JanitorRuntime runtime, final Scope parentScope, final @NotNull String processName, final Script script, final boolean wrapScope) {
         super(runtime, wrapScope ? Scope.createMainScope(parentScope) : parentScope, processName);
         this.script = script;
-        // every process starts with the environment's default limits; hosts can override them per run in the setup callback
+        // every process starts with the environment's defaults; hosts can override them per run in the setup callback
         this.maxInstructionCount = runtime.getEnvironment().getMaxInstructionCount();
         this.maxRunTime = runtime.getEnvironment().getMaxRunTime();
+        this.jsonWriteOptions = runtime.getEnvironment().getJsonWriteOptions();
     }
 
     public RunningScriptProcess(final JanitorRuntime runtime, final Scope globalScope, final @NotNull String processName, final Script script) {
@@ -85,6 +89,16 @@ public class RunningScriptProcess extends AbstractScriptProcess {
      */
     public @Nullable Duration getMaxRunTime() {
         return maxRunTime;
+    }
+
+    @Override
+    public @NotNull JsonWriteOptions getJsonWriteOptions() {
+        return jsonWriteOptions;
+    }
+
+    @Override
+    public void setJsonWriteOptions(final @NotNull JsonWriteOptions options) {
+        this.jsonWriteOptions = Objects.requireNonNull(options, "options");
     }
 
     @Override

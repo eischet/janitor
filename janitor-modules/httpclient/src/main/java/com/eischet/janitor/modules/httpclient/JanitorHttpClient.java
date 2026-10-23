@@ -724,7 +724,8 @@ public class JanitorHttpClient extends JanitorComposed<JanitorHttpClient> implem
         }
         if (arg instanceof JsonWriter jw) { // includes every JsonExportable
             try {
-                final JsonWriteOptions options = prettyJson ? JsonWriteOptions.PRETTY : JsonWriteOptions.COMPACT;
+                // the process's options apply, e.g. leaving out confidential fields; prettyJson only changes the indentation
+                final JsonWriteOptions options = prettyJson ? proc.getJsonWriteOptions().withIndent("  ") : proc.getJsonWriteOptions();
                 return proc.getRuntime().getEnvironment().getJsonStreams().write(options, jw);
             } catch (JsonException e) {
                 throw new JanitorArgumentException(proc, "failed to convert to JSON: " + arg + " [" + simpleClassNameOf(arg) + "]", e);

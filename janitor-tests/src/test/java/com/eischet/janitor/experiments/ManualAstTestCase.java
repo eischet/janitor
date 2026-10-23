@@ -19,6 +19,7 @@ import com.eischet.janitor.compiler.ast.statement.FunctionCallStatement;
 import com.eischet.janitor.compiler.ast.statement.Script;
 import com.eischet.janitor.env.JanitorDefaultEnvironment;
 import com.eischet.janitor.runtime.*;
+import com.eischet.janitor.toolbox.json.api.JsonWriteOptions;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
@@ -66,6 +67,16 @@ public class ManualAstTestCase extends JanitorTest {
 
             @Override
             public void setMaxRunTime(final Duration maxRunTime) {
+
+            }
+
+            @Override
+            public @NotNull JsonWriteOptions getJsonWriteOptions() {
+                return JsonWriteOptions.COMPACT;
+            }
+
+            @Override
+            public void setJsonWriteOptions(final @NotNull JsonWriteOptions options) {
 
             }
 

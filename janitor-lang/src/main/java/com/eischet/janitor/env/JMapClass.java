@@ -37,7 +37,7 @@ public class JMapClass {
     public static JString __toJson(final JanitorWrapper<Map<JanitorObject, JanitorObject>> self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         try {
             arguments.require(0);
-            return Janitor.string(((JMap) self).exportToJson(process.getEnvironment()));
+            return Janitor.string(process.writeJson(((JMap) self)::writeJson));
         } catch (JsonException e) {
             throw new JanitorNativeException(process, "error exporting json", e);
         }

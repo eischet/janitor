@@ -157,6 +157,26 @@ block, fails again. All three errors extend `JanitorAbortException`, so a host c
 the host calls later as a callback runs in a new process, which gets the environment's defaults, not the limits of the
 run that created the function.
 
+<a id="json-options"></a>
+
+## JSON written by scripts
+
+JSON that a script creates, e.g. with `toJson()` on lists and maps, as an HTTP request body or as MCP tool arguments,
+follows the process's `JsonWriteOptions`. Like the limits, the default comes from the environment
+(`env.setJsonWriteOptions(options)`, by default `JsonWriteOptions.COMPACT`), and a host can override it per run with
+`process.setJsonWriteOptions(options)`. Native code writes JSON for the script with `process.writeJson(writer)`.
+
+Host objects can mark properties like passwords or tokens with `Janitor.MetaData.CONFIDENTIAL`. They are written like
+any other property, unless the options say `withOmitConfidential(true)`:
+
+```java
+env.setJsonWriteOptions(JsonWriteOptions.COMPACT.withOmitConfidential(true));   // scripts never export them
+String backup = Janitor.writeJson(out -> Login.DISPATCH.writeToJson(out, login)); // host code: COMPACT, writes them
+```
+
+Scripts can still read a confidential property directly, so this keeps such values out of exports by accident; it is
+not a sandbox boundary. Scripts cannot choose the options themselves.
+
 <a id="extension-points"></a>
 
 ## Extension points for host documentation

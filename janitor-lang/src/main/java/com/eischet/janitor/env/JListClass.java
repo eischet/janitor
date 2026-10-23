@@ -94,7 +94,7 @@ public class JListClass {
     public static JString __toJson(final JList self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         try {
             arguments.require(0);
-            return Janitor.string(self.exportToJson(process.getRuntime().getEnvironment()));
+            return Janitor.string(process.writeJson(self::writeJson));
         } catch (JsonException e) {
             throw new JanitorNativeException(process, "error exporting json", e);
         }

@@ -18,6 +18,7 @@ import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonInputStream;
 import com.eischet.janitor.toolbox.json.api.JsonOutputSupport;
 import com.eischet.janitor.toolbox.json.api.JsonStreamFactory;
+import com.eischet.janitor.toolbox.json.api.JsonWriteOptions;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -128,6 +129,15 @@ public interface JanitorEnvironment extends JsonOutputSupport {
      */
     default @Nullable Duration getMaxRunTime() {
         return null;
+    }
+
+    /**
+     * The default options for JSON that scripts create, which every new process takes over;
+     * a host can override them per run with {@link JanitorScriptProcess#setJsonWriteOptions(JsonWriteOptions)}.
+     * @return the options; by default {@link JsonWriteOptions#COMPACT}
+     */
+    default @NotNull JsonWriteOptions getJsonWriteOptions() {
+        return JsonWriteOptions.COMPACT;
     }
 
 
