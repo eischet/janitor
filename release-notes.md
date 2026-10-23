@@ -1,5 +1,12 @@
 # 0.9.70 (in development)
 
+- i18n: `TranslationService` looks texts up for an explicit locale, without thread-local state: `setBundleBaseName(...)`, then
+  `translate(locale, key, default)` and `translateOrNull(locale, key)`; bundles are loaded once per locale. Fixes: overrides per
+  language now use the language code ("de.foo"; they used the country code, so "de.foo" never matched), and `translate(key, default)`
+  returns the default instead of throwing a `NullPointerException` when no bundle is configured. `UTF8ResourceBundle` no longer
+  falls back to the JVM's default locale, only to the bundle without a language suffix. New `reset()` for tests.
+- metadata: new class-level key `Janitor.MetaData.TEXT_KEY`, e.g. "entity.Tool", and `DispatcherTexts.title(...)`/`help(...)`,
+  which look up "<key>.title" and "<key>.help" in the host's bundles via the `TranslationService`, falling back to `CLASS` and `HELP`.
 - json: new meta-data key `Janitor.MetaData.CONFIDENTIAL` marks properties like passwords or tokens. Dispatch tables still
   write them to JSON by default; with `JsonWriteOptions.withOmitConfidential(true)` they are left out of the JSON and the
   JSON schema. Scripts can still read such properties, so this guards exports, not the sandbox.

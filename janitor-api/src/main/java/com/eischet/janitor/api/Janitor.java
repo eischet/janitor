@@ -998,6 +998,14 @@ public final class Janitor {
         public static final MetaDataKey<Dispatcher<?>> DISPATCHER = new MetaDataKey<>("dispatcher", Dispatcher.class);
 
         /**
+         * The translation key of a class's texts, e.g. "entity.Tool": its title is "entity.Tool.title", its description
+         * "entity.Tool.help". The texts come from the host's resource bundles via
+         * {@link com.eischet.janitor.toolbox.i18n.TranslationService}; {@link com.eischet.janitor.api.metadata.DispatcherTexts}
+         * looks them up, with {@link #HELP} and {@link #CLASS} as fallbacks.
+         */
+        public static final MetaDataKey<String> TEXT_KEY = new MetaDataKey<>("text_key", String.class);
+
+        /**
          * Private constructor, to keep you from creating instances of this singleton / "namespace class".
          */
         private MetaData() {
