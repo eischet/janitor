@@ -58,6 +58,23 @@ public final class OrmApiModel {
      * @return the model
      */
     public static @NotNull OrmApiModel of(final @NotNull OrmDaoCollection<?> collection) {
+        return build(collection, null);
+    }
+
+    /**
+     * Builds the model of a part of a collection, e.g. for one of several APIs on the same database that offer different entities: only the
+     * exposed entities that the selection names are part of it, with the operations the selection gives them instead of
+     * {@link RestMetaData#OPERATIONS}. Sub-resources and links whose entities are not both part of the model are left out (in the full model,
+     * that is an error in the declarations).
+     * @param collection the collection whose DAOs are looked at
+     * @param selection  which entities to take, and what they offer
+     * @return the model
+     */
+    public static @NotNull OrmApiModel of(final @NotNull OrmDaoCollection<?> collection, final @NotNull ApiSelection selection) {
+        return build(collection, selection);
+    }
+
+    private static @NotNull OrmApiModel build(final @NotNull OrmDaoCollection<?> collection, final @Nullable ApiSelection selection) {
         final List<ApiEntity> result = new ArrayList<>();
         for (final Dao<? extends OrmEntity> dao : collection.getDaos()) {
             final EntityDispatchTable<?, ?> table = collection.getEntityDispatchTable(dao.getEntityClassName());
@@ -68,10 +85,20 @@ public final class OrmApiModel {
             if (path == null || path.isBlank()) {
                 continue;
             }
-            result.add(buildEntity(collection, dao.getEntityClassName(), path, table));
+            final RestOperations operations;
+            if (selection == null) {
+                operations = table.getMetaData(RestMetaData.OPERATIONS);
+            } else {
+                operations = selection.operationsFor(dao.getEntityClassName());
+                if (operations == null) {
+                    continue;
+                }
+            }
+            result.add(buildEntity(collection, dao.getEntityClassName(), path, table, operations));
         }
-        final List<ApiSubresource> subresources = buildSubresources(result);
-        final List<ApiLink> links = buildLinks(collection, result);
+        final boolean partial = selection != null;
+        final List<ApiSubresource> subresources = buildSubresources(result, partial);
+        final List<ApiLink> links = buildLinks(collection, result, partial);
         checkUniquePaths(subresources, links);
         return new OrmApiModel(result, subresources, links);
     }
@@ -85,7 +112,7 @@ public final class OrmApiModel {
         return null;
     }
 
-    private static List<ApiSubresource> buildSubresources(final List<ApiEntity> entities) {
+    private static List<ApiSubresource> buildSubresources(final List<ApiEntity> entities, final boolean partial) {
         final List<ApiSubresource> result = new ArrayList<>();
         for (final ApiEntity child : entities) {
             for (final ApiField field : child.fields()) {
@@ -97,6 +124,9 @@ public final class OrmApiModel {
                     throw new IllegalStateException("the sub-resource '" + path + "' is declared on " + child.className() + "." + field.name() + ", which is not a reference");
                 }
                 final ApiEntity parent = entityNamed(entities, field.referencedEntity());
+                if (parent == null && partial) {
+                    continue;
+                }
                 if (parent == null) {
                     throw new IllegalStateException("the sub-resource '" + path + "' of " + child.className() + "." + field.name() + " is below " + field.referencedEntity() + ", which is not exposed");
                 }
@@ -106,7 +136,7 @@ public final class OrmApiModel {
         return result;
     }
 
-    private static List<ApiLink> buildLinks(final OrmDaoCollection<?> collection, final List<ApiEntity> entities) {
+    private static List<ApiLink> buildLinks(final OrmDaoCollection<?> collection, final List<ApiEntity> entities, final boolean partial) {
         final List<ApiLink> result = new ArrayList<>();
         for (final String joinName : collection.getJoinNames()) {
             final JoinDao<? extends OrmJoined> dao = collection.getJoinDao(joinName);
@@ -121,10 +151,22 @@ public final class OrmApiModel {
             final RestOperations declaredOperations = table.getMetaData(RestMetaData.OPERATIONS);
             final Set<RestOperation> operations = declaredOperations == null ? RestOperations.READ_ONLY.set() : declaredOperations.set();
             for (final RestLink link : declared.list()) {
+                if (partial && !connectsExposed(entities, table, link)) {
+                    continue;
+                }
                 result.add(buildLink(collection, entities, dao, joinName, table, link, operations));
             }
         }
         return result;
+    }
+
+    /**
+     * Whether both ends of a link are entities of the model; used to leave out links of a partial model.
+     */
+    private static boolean connectsExposed(final List<ApiEntity> entities, final DispatchTable<?> table, final RestLink link) {
+        final String from = table.getMetaData(link.fromField(), Janitor.MetaData.REF);
+        final String to = table.getMetaData(link.toField(), Janitor.MetaData.REF);
+        return from != null && to != null && entityNamed(entities, from) != null && entityNamed(entities, to) != null;
     }
 
     private static ApiLink buildLink(final OrmDaoCollection<?> collection, final List<ApiEntity> entities, final JoinDao<? extends OrmJoined> dao, final String joinName,
@@ -235,7 +277,8 @@ public final class OrmApiModel {
         return null;
     }
 
-    private static ApiEntity buildEntity(final OrmDaoCollection<?> collection, final String className, final String path, final EntityDispatchTable<?, ?> table) {
+    private static ApiEntity buildEntity(final OrmDaoCollection<?> collection, final String className, final String path, final EntityDispatchTable<?, ?> table,
+                                         final @Nullable RestOperations operations) {
         final String idColumn = table.getMetaData(JanitorOrm.MetaData.ID_FIELD);
         final String keyColumn = table.getMetaData(JanitorOrm.MetaData.KEY_FIELD);
         final String versionColumn = table.getMetaData(JanitorOrm.MetaData.VERSION_FIELD);
@@ -278,7 +321,6 @@ public final class OrmApiModel {
             throw new IllegalStateException("the id of " + className + " is not exposed, but entities cannot be addressed without it");
         }
         final Integer maxPageSize = table.getMetaData(RestMetaData.MAX_PAGE_SIZE);
-        final RestOperations operations = table.getMetaData(RestMetaData.OPERATIONS);
         return new ApiEntity(className, path, table, List.copyOf(fields), idField, keyField, versionField, modifiedField,
                 maxPageSize == null ? DEFAULT_MAX_PAGE_SIZE : maxPageSize, table.getMetaData(RestMetaData.DEFAULT_SORT),
                 operations == null ? RestOperations.READ_ONLY.set() : operations.set());

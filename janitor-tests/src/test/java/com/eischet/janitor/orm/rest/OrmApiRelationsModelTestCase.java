@@ -276,4 +276,17 @@ public class OrmApiRelationsModelTestCase extends JanitorTest {
         assertThrows(IllegalArgumentException.class, () -> RestOrm.link(OrmRestRelationsFixture.Membership.DISPATCH, "team", "a/b", "member"));
         assertThrows(IllegalArgumentException.class, () -> RestOrm.link(OrmRestRelationsFixture.Membership.DISPATCH, "team", "", "member"));
     }
+    @Test
+    public void aSelectionTakesOnlyTheNamedEntitiesWithTheirOperationsAndDropsWhatConnectsToOthers() throws Exception {
+        final OrmApiModel model = OrmApiModel.of(OrmRestRelationsFixture.newCollection(),
+                className -> className.equals("Team") ? RestOperations.of(RestOperation.LIST, RestOperation.GET, RestOperation.UPDATE)
+                        : className.equals("Task") ? RestOperations.READ_ONLY : null);
+        assertEquals(List.of("Task", "Team"), model.getEntities().stream().map(ApiEntity::className).sorted().toList());
+        assertEquals(Set.of(RestOperation.LIST, RestOperation.GET, RestOperation.UPDATE), model.findByPath("teams").operations());
+        assertNull(model.findByPath("members"), "not selected");
+        assertEquals(1, model.getSubresources().size(), "tasks below teams: both are selected");
+        assertTrue(model.getLinks().isEmpty(), "the links lead to members, which are not selected");
+        assertEquals(2, model().getLinks().size(), "the full model is unchanged");
+    }
+
 }
