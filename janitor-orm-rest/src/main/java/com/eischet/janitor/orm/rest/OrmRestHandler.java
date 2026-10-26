@@ -1189,8 +1189,10 @@ public final class OrmRestHandler<U> {
             case 405 -> "Method Not Allowed";
             case 409 -> "Conflict";
             case 412 -> "Precondition Failed";
+            case 422 -> "Unprocessable Content";
             case 428 -> "Precondition Required";
-            default -> "Internal Server Error";
+            case 429 -> "Too Many Requests";
+            default -> status < 500 ? "Client Error" : "Internal Server Error";
         };
         try {
             final String body = JsonTree.toJson(JsonTree.object("type", "about:blank", "title", title, "status", (long) status, "detail", detail));
