@@ -83,7 +83,7 @@ public class DatabaseErrorMessageTestCase extends JanitorTest {
     @Test
     void aScriptErrorListsTheStatementOnce() {
         final DatabaseError dbError = insertDuplicate();
-        // like Cockpit's ScriptErrors: the script error names the operation and what the driver said
+        // as a host would report it: the script error names the operation and what the driver said
         final String reason = dbError.getCause().getMessage().lines().findFirst().orElseThrow();
         final JNativeMethod merge = new JNativeMethod((process, args) -> {
             throw new JanitorNativeException(process, "merge: " + reason, dbError);

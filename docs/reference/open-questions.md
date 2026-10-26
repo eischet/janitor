@@ -85,9 +85,9 @@ The proposal (not decided yet): **one locale per environment.** `JanitorFormatti
 default method that returns the JVM's default locale, so that existing implementations keep compiling and working;
 `JanitorFormattingLocale` returns its locale, `JanitorFormattingGerman` returns German. `format`, all date patterns and
 `parseDate`/`parseDateTime` then use that locale. Later, a process could get its own locale, like the
-[time zone](#time-zone), e.g. for users with their own language. Cockpit, which embeds Janitor, should be checked for its
-own `JanitorFormatting` implementation: the default method would not break it, but would return the JVM's locale
-instead of the one it formats with.
+[time zone](#time-zone), e.g. for users with their own language. Hosts with their own `JanitorFormatting`
+implementation should be checked: the default method would not break them, but would return the JVM's locale
+instead of the one they format with.
 
 <a id="modules"></a>
 
@@ -137,8 +137,7 @@ Open design points:
 1. Code without a process (the JSON support in janitor-toolbox, `nativeToScript`, the JSON support of dispatch tables)
    needs the environment's zone, or keeps `DateTimeUtils` as the fallback.
 2. New methods on `JanitorEnvironment` and `JanitorScriptProcess` (e.g. `getZoneId()` / `setZoneId(...)`) should be
-   default methods, so that implementations outside of Janitor do not break; Cockpit, which embeds Janitor, should be
-   checked.
+   default methods, so that implementations outside of Janitor, in host applications, do not break.
 3. Instead of a time zone alone, the environment could hold a `java.time.Clock` (zone plus current time), so that tests
    can also fix `@now`.
 4. Hosts that set a `TimeZoneSource` today must keep working.
