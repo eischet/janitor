@@ -46,8 +46,8 @@ public class JoinedList<T extends OrmJoined, U extends Uplink, V extends JoinDao
     private final Function<U, V> daoRetriever;
     private final JoinLoader<T, V> loader;
     private final Function<T, ForeignKey<W>> plucker;
-    protected @Nullable List<T> list;
-    protected boolean loaded = false;
+    protected volatile @Nullable List<T> list;
+    protected volatile boolean loaded = false;
 
     public JoinedList(final OrmEntity parent,
                       final Class<T> entityClass,
@@ -80,13 +80,18 @@ public class JoinedList<T extends OrmJoined, U extends Uplink, V extends JoinDao
 
     /**
      * Loads the join records from the database, unless that has already happened.
+     * Safe to call from several threads at once, e.g. on a parent entity that lives in a cache: only one of them loads.
      * @return this list
      */
     public JoinedList<T, U, V, W> lazyLoad() {
         if (!loaded) {
-            final U uplink = uplinkSupplier.get();
-            final V dao = daoRetriever.apply(uplink);
-            dao.callLazyTransaction(conn -> load(conn, dao));
+            synchronized (this) {
+                if (!loaded) {
+                    final U uplink = uplinkSupplier.get();
+                    final V dao = daoRetriever.apply(uplink);
+                    dao.callLazyTransaction(conn -> load(conn, dao));
+                }
+            }
         }
         return this;
     }
@@ -94,18 +99,29 @@ public class JoinedList<T extends OrmJoined, U extends Uplink, V extends JoinDao
     /**
      * Loads this join collection through an already active connection. This is useful for callers
      * that need several lazy values to participate in one surrounding transaction.
+     * Like {@link #lazyLoad()}, only one of several concurrent callers loads.
      */
     public JoinedList<T, U, V, W> load(final @NotNull DatabaseConnection connection) throws DatabaseError {
         if (!loaded) {
-            final U uplink = uplinkSupplier.get();
-            load(connection, daoRetriever.apply(uplink));
+            synchronized (this) {
+                if (!loaded) {
+                    final U uplink = uplinkSupplier.get();
+                    load(connection, daoRetriever.apply(uplink));
+                }
+            }
         }
         return this;
     }
 
+    /**
+     * Adds the loaded join records to those already in memory. The new list is built aside and then replaces the old one, so that
+     * readers on other threads never see it half filled.
+     */
     private Void load(final @NotNull DatabaseConnection connection, final @NotNull V dao) throws DatabaseError {
         @NotNull @Unmodifiable final List<T> items = loader.load(connection, dao);
-        ensureList().addAll(items);
+        final List<T> loadedList = new ArrayList<>(readList());
+        loadedList.addAll(items);
+        list = loadedList;
         loaded = true;
         return null;
     }
@@ -143,7 +159,8 @@ public class JoinedList<T extends OrmJoined, U extends Uplink, V extends JoinDao
      */
     protected @NotNull @Unmodifiable List<T> readList() {
         // copy the existing list to prevent concurrent modification exceptions
-        return list == null ? Collections.emptyList() : List.copyOf(list);
+        final List<T> current = list;
+        return current == null ? Collections.emptyList() : List.copyOf(current);
     }
 
     /**
@@ -192,7 +209,8 @@ public class JoinedList<T extends OrmJoined, U extends Uplink, V extends JoinDao
      * @return the join records
      */
     public Stream<T> getFullJoinedObjects() {
-        return list == null ? Stream.empty() : list.stream();
+        final List<T> current = list;
+        return current == null ? Stream.empty() : current.stream();
     }
 
     /**

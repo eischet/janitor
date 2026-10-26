@@ -1,5 +1,9 @@
 # 0.9.70 (in development)
 
+- orm: `JoinedList.lazyLoad()` and `load(connection)` are now safe to call from several threads at once. Before, threads that
+  loaded the join records of the same parent entity at the same time (e.g. one held in a DAO cache) each appended them, so the
+  list contained every record several times, until the entity left the cache.
+
 - i18n: `TranslationService` looks texts up for an explicit locale, without thread-local state: `setBundleBaseName(...)`, then
   `translate(locale, key, default)` and `translateOrNull(locale, key)`; bundles are loaded once per locale. Fixes: overrides per
   language now use the language code ("de.foo"; they used the country code, so "de.foo" never matched), and `translate(key, default)`
