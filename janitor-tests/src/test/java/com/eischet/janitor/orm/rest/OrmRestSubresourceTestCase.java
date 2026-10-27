@@ -195,7 +195,7 @@ public class OrmRestSubresourceTestCase extends JanitorTest {
         final long plan = ((Number) Janitor.current().parseJsonToMap(get("/tasks/by-key/plan").body()).get(Janitor.string("id")).janitorGetHostValue()).longValue();
         final RestResponse created = send(handler, "POST", "/tasks/" + write + "/notes", "{\"key\": \"n1\", \"text\": \"first\"}");
         assertEquals(201, created.status(), created.body());
-        assertTrue(created.body().replaceAll("\\s", "").contains("\"taskId\":" + write), "the id of the parent comes from the path: " + created.body());
+        assertTrue(created.body().replaceAll("\s", "").contains("\"taskId\":" + write), "the id of the parent comes from the path: " + created.body());
         assertEquals(201, send(handler, "POST", "/tasks/" + plan + "/notes", "{\"key\": \"n2\", \"text\": \"other\"}").status());
         assertEquals(List.of("n1"), keys(get("/tasks/" + write + "/notes")));
         assertEquals(400, send(handler, "POST", "/tasks/" + write + "/notes", "{\"key\": \"n3\", \"taskId\": " + plan + "}").status(), "the body cannot name another parent");

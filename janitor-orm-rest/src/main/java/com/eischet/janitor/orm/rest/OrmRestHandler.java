@@ -985,8 +985,7 @@ public final class OrmRestHandler<U> {
             authorize(request, scope.subresource().parent(), RestOperation.GET);
         }
         final Set<String> denied = policy.deniedFields(request.user(), entity);
-        final WriteBody body = parseBody(request, entity, denied, !policy.createsFromPartialBody(entity),
-                scope == null ? Map.of() : Map.of(scope.subresource().field().name(), scope.parentId()));
+        final WriteBody body = parseBody(request, entity, denied, true, scope == null ? Map.of() : Map.of(scope.subresource().field().name(), scope.parentId()));
         final Dao<OrmEntity> dao = daoOf(entity);
         final OrmEntity instance = newInstance(entity);
         apply(entity, instance, body);

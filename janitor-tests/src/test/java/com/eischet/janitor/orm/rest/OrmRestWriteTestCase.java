@@ -263,18 +263,6 @@ public class OrmRestWriteTestCase extends JanitorTest {
     }
 
     @Test
-    public void aPolicyCanLetPostKeepTheValuesOfANewEntity() throws Exception {
-        final OrmRestHandler<Object> partial = OrmRestHandler.of(collection, new RestPolicy<Object>() {
-            @Override public boolean permits(final @Nullable Object user, final @NotNull ApiEntity entity, final @NotNull RestOperation operation) { return true; }
-            @Override public boolean createsFromPartialBody(final @NotNull ApiEntity entity) { return true; }
-        });
-        final RestResponse created = send(partial, "POST", "/docs", "{\"name\":\"x\"}");
-        assertEquals(201, created.status(), "rank keeps the value of a new doc: " + created.body());
-        assertTrue(compact(created).contains("\"rank\":0"), created.body());
-        assertEquals(400, send(partial, "POST", "/docs", "{\"name\":\"x\",\"nope\":1}").status(), "unknown properties are still refused");
-    }
-
-    @Test
     public void refusesBodiesThatAreNotAcceptable() throws Exception {
         assertEquals(400, send("POST", "/docs", null).status(), "no body");
         assertEquals(400, send("POST", "/docs", "  ").status(), "blank body");
