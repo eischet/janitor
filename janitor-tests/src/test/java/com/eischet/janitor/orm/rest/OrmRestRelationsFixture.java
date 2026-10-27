@@ -26,7 +26,8 @@ import org.jetbrains.annotations.NotNull;
 
 /**
  * Entities for the tests of sub-resources and links: teams and members (both with a key, read-only) that are connected by memberships (a join
- * table with the extra column "role"), and tasks that belong to a team (a sub-resource of the team, which can be created).
+ * table with the extra column "role"), tasks that belong to a team (a sub-resource of the team, which can be created), and notes on a task,
+ * which hold the id of their task as a plain number (a sub-resource of the task all the same).
  * <p>
  * Teams have the links {@code /teams/{id}/members}, members have {@code /members/{id}/teams}; memberships can be created and deleted.
  * </p>
@@ -121,6 +122,37 @@ public final class OrmRestRelationsFixture {
         void setTeam(final ForeignKey<Team> team) { this.team = team; }
     }
 
+    /** A note on a task, which refers to its task by a plain number, not by a reference. */
+    public static class Note implements OrmEntity {
+        static final ForeignKeyNull<Note> NULL = new ForeignKeyNull<>(Note.class);
+        static final EntityDispatchTable<Note, RelationsCollection> DISPATCH = new EntityDispatchTable<>(Note.class, up -> new Note(), NULL, RelationsCollection::getNoteDao);
+
+        static {
+            DISPATCH.dbTable("r_note", "note_id", "note_key", "note_text", "seq_r_note");
+            DISPATCH.addLongColumn("id", "note_id", Note::getId, Note::setId);
+            DISPATCH.addStringColumn("key", "note_key", Note::getKey, Note::setKey, 20);
+            DISPATCH.addStringColumn("text", "note_text", Note::getName, Note::setName, 50);
+            RestOrm.subresource(DISPATCH.addNullableLongColumn("taskId", "task_id", Note::getTaskId, Note::setTaskId), "notes", "Task");
+            RestOrm.allow(RestOrm.expose(DISPATCH, "notes"), RestOperation.CREATE);
+        }
+
+        private long id;
+        private String key;
+        private String text;
+        private Long taskId;
+
+        @Override public long getId() { return id; }
+        @Override public void setId(final long id) { this.id = id; }
+        @Override public String getKey() { return key; }
+        @Override public void setKey(final String key) { this.key = key; }
+        @Override public String getName() { return text; }
+        @Override public void setName(final String name) { this.text = name; }
+        @Override public boolean isSoftDeleted() { return false; }
+        @Override public void setSoftDeleted(final boolean softDeleted) { }
+        Long getTaskId() { return taskId; }
+        void setTaskId(final Long taskId) { this.taskId = taskId; }
+    }
+
     /** The join record: a member belongs to a team, in a role. */
     public static class Membership implements OrmJoined {
         static final OrmDispatchTable<Membership, RelationsCollection> DISPATCH = new OrmDispatchTable<>(Membership.class, Membership::new);
@@ -169,6 +201,12 @@ public final class OrmRestRelationsFixture {
         @Override public @NotNull String getEntityClassName() { return "Task"; }
     }
 
+    public static class NoteDao extends GenericDao<Note, RelationsCollection> {
+        NoteDao(final RelationsCollection c) { super(new DispatchTable<NoteDao>(false), c, Note.class, Note.DISPATCH, Note::new); }
+        @Override public @NotNull Class<Note> getEntityClass() { return Note.class; }
+        @Override public @NotNull String getEntityClassName() { return "Note"; }
+    }
+
     public static class MembershipDao extends JoinDao<Membership> {
         MembershipDao(final RelationsCollection c) { super(Membership.class, new DispatchTable<MembershipDao>(false), c, Membership.DISPATCH, () -> new Membership(c)); }
 
@@ -185,6 +223,7 @@ public final class OrmRestRelationsFixture {
         private final MemberDao memberDao;
         private final TaskDao taskDao;
         private final MembershipDao membershipDao;
+        private final NoteDao noteDao;
 
         RelationsCollection(final DataManager dataManager) {
             super(DISPATCH, dataManager.getDialect(), null, null);
@@ -193,12 +232,14 @@ public final class OrmRestRelationsFixture {
             this.memberDao = new MemberDao(this);
             this.taskDao = new TaskDao(this);
             this.membershipDao = new MembershipDao(this);
+            this.noteDao = new NoteDao(this);
         }
 
         TeamDao getTeamDao() { return teamDao; }
         MemberDao getMemberDao() { return memberDao; }
         TaskDao getTaskDao() { return taskDao; }
         MembershipDao getMembershipDao() { return membershipDao; }
+        NoteDao getNoteDao() { return noteDao; }
         @Override public DataManager getDataManager() { return dataManager; }
     }
 
@@ -207,12 +248,13 @@ public final class OrmRestRelationsFixture {
         final SimpleDataManager manager = TestDb.newManager();
         final RelationsCollection collection = new RelationsCollection(manager);
         manager.executeTransaction(conn -> {
-            for (final String name : new String[]{"r_team", "r_member", "r_task"}) {
+            for (final String name : new String[]{"r_team", "r_member", "r_task", "r_note"}) {
                 conn.update(UpdateStatement.of("create sequence seq_" + name + " start with 1"));
             }
             conn.update(UpdateStatement.of("create table r_team (team_id bigint primary key, team_key varchar(20), team_name varchar(50))"));
             conn.update(UpdateStatement.of("create table r_member (member_id bigint primary key, member_key varchar(20), member_name varchar(50))"));
             conn.update(UpdateStatement.of("create table r_task (task_id bigint primary key, task_key varchar(20), task_name varchar(50), team_id bigint references r_team(team_id))"));
+            conn.update(UpdateStatement.of("create table r_note (note_id bigint primary key, note_key varchar(20), note_text varchar(50), task_id bigint)"));
             conn.update(UpdateStatement.of("""
                     create table r_membership (
                       team_id bigint not null references r_team(team_id),

@@ -120,15 +120,17 @@ public final class OrmApiModel {
                 if (path == null) {
                     continue;
                 }
-                if (!field.isReference()) {
-                    throw new IllegalStateException("the sub-resource '" + path + "' is declared on " + child.className() + "." + field.name() + ", which is not a reference");
+                final String parentName = field.isReference() ? field.referencedEntity() : child.table().getMetaData(field.name(), RestMetaData.SUB_PARENT);
+                if (parentName == null) {
+                    throw new IllegalStateException("the sub-resource '" + path + "' is declared on " + child.className() + "." + field.name()
+                                                    + ", which is not a reference and does not name its parent");
                 }
-                final ApiEntity parent = entityNamed(entities, field.referencedEntity());
+                final ApiEntity parent = entityNamed(entities, parentName);
                 if (parent == null && partial) {
                     continue;
                 }
                 if (parent == null) {
-                    throw new IllegalStateException("the sub-resource '" + path + "' of " + child.className() + "." + field.name() + " is below " + field.referencedEntity() + ", which is not exposed");
+                    throw new IllegalStateException("the sub-resource '" + path + "' of " + child.className() + "." + field.name() + " is below " + parentName + ", which is not exposed");
                 }
                 result.add(new ApiSubresource(path, parent, child, field));
             }

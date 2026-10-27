@@ -40,7 +40,7 @@ public class OrmApiRelationsModelTestCase extends JanitorTest {
     @Test
     public void aReferenceWithASubPathMakesTheChildrenASubresourceOfTheParent() throws Exception {
         final OrmApiModel model = model();
-        assertEquals(1, model.getSubresources().size());
+        assertEquals(2, model.getSubresources().size(), "tasks below teams, notes below tasks");
         final ApiSubresource sub = model.findSubresource(model.findByPath("teams"), "tasks");
         assertNotNull(sub);
         assertEquals("Task", sub.child().className());
@@ -48,6 +48,17 @@ public class OrmApiRelationsModelTestCase extends JanitorTest {
         assertEquals("team", sub.field().name());
         assertNull(model.findSubresource(model.findByPath("teams"), "nothing"));
         assertNull(model.findSubresource(model.findByPath("members"), "tasks"));
+    }
+
+    @Test
+    public void aPlainIdWithASubPathAndAParentIsASubresourceToo() throws Exception {
+        final OrmApiModel model = model();
+        final ApiSubresource sub = model.findSubresource(model.findByPath("tasks"), "notes");
+        assertNotNull(sub);
+        assertEquals("Note", sub.child().className());
+        assertEquals("Task", sub.parent().className());
+        assertEquals("taskId", sub.field().name());
+        assertFalse(sub.field().isReference());
     }
 
     @Test

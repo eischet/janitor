@@ -13,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
  * @param path   the path below the parent, e.g. "docs"
  * @param parent the entity that the path is below
  * @param child  the entities that are listed (and created) there
- * @param field  the reference property of the child that points to the parent
+ * @param field  the property of the child that points to the parent: a reference, or the id of the parent as a number
  */
 public record ApiSubresource(@NotNull String path, @NotNull ApiEntity parent, @NotNull ApiEntity child, @NotNull ApiField field) {
 }

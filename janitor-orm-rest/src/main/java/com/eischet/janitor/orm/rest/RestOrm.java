@@ -49,6 +49,20 @@ public final class RestOrm {
     }
 
     /**
+     * Like {@link #subresource(OrmPropertyHandle, String)}, for a property that holds the id of the parent as a plain number instead of a
+     * reference: given the property {@code ticketId} of {@code Action}, {@code subresource(handle, "actions", "Ticket")} makes
+     * {@code /tickets/{id}/actions} list the actions of a ticket.
+     * @param handle the property of the child that holds the id of the parent
+     * @param path   the path below the parent, e.g. "actions"
+     * @param parent the name of the parent entity in its collection
+     * @return the handle
+     */
+    public static <T, V> OrmPropertyHandle<T, V> subresource(final @NotNull OrmPropertyHandle<T, V> handle, final @NotNull String path, final @NotNull String parent) {
+        subresource(handle, path);
+        return handle.setMetaData(RestMetaData.SUB_PARENT, parent);
+    }
+
+    /**
      * Exposes the records of a join table as links, in one direction: {@code link(membership, "user", "groups", "group")} makes
      * {@code /users/{id}/groups} the memberships of a user, and {@code /users/{id}/groups/{groupId}} one of them, which can be created with PUT and
      * deleted (if the join table allows {@link RestOperation#CREATE} and {@link RestOperation#DELETE}). Call it again for the other direction.

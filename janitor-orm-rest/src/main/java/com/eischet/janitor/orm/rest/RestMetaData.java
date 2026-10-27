@@ -50,6 +50,12 @@ public final class RestMetaData {
     public static final MetaDataKey<String> SUB_PATH = new MetaDataKey<>("rest_sub_path", String.class);
 
     /**
+     * For a sub-resource ({@link #SUB_PATH}) on a property that holds the id of the parent as a plain number instead of a reference: the name
+     * of the parent entity in its collection. A reference property knows its target itself and does not need this.
+     */
+    public static final MetaDataKey<String> SUB_PARENT = new MetaDataKey<>("rest_sub_parent", String.class);
+
+    /**
      * Exposes the records of a join table as links between the entities that it connects, see {@link RestLinks}. Set on the dispatch table of
      * the join records.
      */
