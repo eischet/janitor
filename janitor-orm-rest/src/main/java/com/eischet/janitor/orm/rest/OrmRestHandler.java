@@ -54,6 +54,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -235,7 +236,7 @@ public final class OrmRestHandler<U> {
      */
     private void requireParent(final RestRequest<U> request, final DatabaseConnection conn, final Scope scope) throws DatabaseError {
         final ApiEntity parent = scope.subresource().parent();
-        if (load(conn, daoOf(parent), parent.idField(), scope.parentId(), policy.restriction(request.user(), parent)) == null) {
+        if (loadVisible(request, conn, parent, scope.parentId()) == null) {
             throw rollback(404, "There is no such " + parent.className() + ".", Map.of());
         }
     }
@@ -407,6 +408,9 @@ public final class OrmRestHandler<U> {
         final FilterExpression finalExpression = expression;
         final FilterQuery query = new FilterQuery(expression).withPage(parameters.page(), size);
         applySort(entity, parameters, denied, query);
+        if (policy.checksEachEntity(request.user(), entity)) {
+            return scan(request, entity, parameters, denied, size, finalExpression, scope);
+        }
         final Dao<OrmEntity> dao = daoOf(entity);
         final String json = collection.getDataManager().callTransaction(conn -> {
             if (scope != null) {
@@ -416,6 +420,41 @@ public final class OrmRestHandler<U> {
             final List<OrmEntity> found = dao.findByFilter(conn, query);
             final List<Object> items = new ArrayList<>(toTrees(conn, entity, found, denied, false));
             return JsonTree.toJson(JsonTree.object("items", items, "total", (long) total, "page", (long) parameters.page(), "size", (long) size));
+        });
+        return new RestResponse(200, JSON, Map.of(), json);
+    }
+
+    /**
+     * A list of entities that the policy checks one by one: loads at most its scan limit of candidates, keeps those it reveals, and returns the
+     * requested page of them. The total counts the visible candidates; {@code truncated} says that there were more candidates than were checked.
+     */
+    private RestResponse scan(final RestRequest<U> request, final ApiEntity entity, final ListParameters parameters, final Set<String> denied, final int size,
+                              final FilterExpression expression, final @Nullable Scope scope) throws DatabaseError {
+        final int limit = Math.max(1, policy.scanLimit(request.user(), entity));
+        final FilterQuery query = new FilterQuery(expression).withMaxRows(limit + 1);
+        applySort(entity, parameters, denied, query);
+        final Dao<OrmEntity> dao = daoOf(entity);
+        final String json = collection.getDataManager().callTransaction(conn -> {
+            if (scope != null) {
+                requireParent(request, conn, scope);
+            }
+            final List<OrmEntity> candidates = dao.findByFilter(conn, query);
+            final boolean truncated = candidates.size() > limit;
+            final List<OrmEntity> visible = new ArrayList<>();
+            for (final OrmEntity candidate : truncated ? candidates.subList(0, limit) : candidates) {
+                final OrmEntity shown = policy.reveal(request.user(), entity, candidate, conn);
+                if (shown != null) {
+                    visible.add(shown);
+                }
+            }
+            final long start = Math.min((long) parameters.page() * size, visible.size());
+            final List<OrmEntity> slice = visible.subList((int) start, (int) Math.min(start + size, visible.size()));
+            try {
+                return JsonTree.toJson(JsonTree.object("items", new ArrayList<Object>(toTrees(conn, entity, slice, denied, false)), "total", (long) visible.size(),
+                        "page", (long) parameters.page(), "size", (long) size, "truncated", truncated));
+            } catch (JsonException e) {
+                throw new DatabaseError("cannot write " + entity.className() + " as JSON", e);
+            }
         });
         return new RestResponse(200, JSON, Map.of(), json);
     }
@@ -514,14 +553,17 @@ public final class OrmRestHandler<U> {
         final FilterExpression restriction = policy.restriction(request.user(), entity);
         final Dao<OrmEntity> dao = daoOf(entity);
         final OrmEntity found = collection.getDataManager().callTransaction(conn -> {
+            final OrmEntity candidate;
             if (restriction == null) {
-                return lookupValue instanceof Long id ? dao.findById(conn, id) : dao.findByKey(conn, (String) lookupValue);
+                candidate = lookupValue instanceof Long id ? dao.findById(conn, id) : dao.findByKey(conn, (String) lookupValue);
+            } else {
+                final FilterExpression match = lookupValue instanceof Long id
+                        ? FilterExpression.from(lookupField, FilterOperator.EQ, id)
+                        : FilterExpression.from(lookupField, FilterOperator.EQ, (String) lookupValue);
+                final List<OrmEntity> matches = dao.findByFilter(conn, new FilterQuery(FilterExpression.and(List.of(match, restriction))).withMaxRows(1));
+                candidate = matches.isEmpty() ? null : matches.get(0);
             }
-            final FilterExpression match = lookupValue instanceof Long id
-                    ? FilterExpression.from(lookupField, FilterOperator.EQ, id)
-                    : FilterExpression.from(lookupField, FilterOperator.EQ, (String) lookupValue);
-            final List<OrmEntity> matches = dao.findByFilter(conn, new FilterQuery(FilterExpression.and(List.of(match, restriction))).withMaxRows(1));
-            return matches.isEmpty() ? null : matches.get(0);
+            return candidate == null ? null : reveal(request, conn, entity, candidate);
         });
         if (found == null) {
             throw new RestException(404, "There is no such " + entity.className() + ".");
@@ -574,7 +616,7 @@ public final class OrmRestHandler<U> {
     /** The parent that the links belong to has to be visible (inside of its restriction), else it is "not found". */
     private void requireLinkParent(final RestRequest<U> request, final DatabaseConnection conn, final ApiLink link, final long parentId) throws DatabaseError {
         final ApiEntity parent = link.parent();
-        if (load(conn, daoOf(parent), parent.idField(), parentId, policy.restriction(request.user(), parent)) == null) {
+        if (loadVisible(request, conn, parent, parentId) == null) {
             throw rollback(404, "There is no such " + parent.className() + ".", Map.of());
         }
     }
@@ -596,7 +638,23 @@ public final class OrmRestHandler<U> {
      * Loads those of the entities at the other end of a link that the caller may see (inside of their restriction): without a restriction
      * with one query per few hundred, with one with queries for blocks of ids, since filters have no "in".
      */
-    private Map<Long, OrmEntity> visibleOthers(final DatabaseConnection conn, final ApiLink link, final Collection<Long> ids, final @Nullable FilterExpression restriction) throws DatabaseError {
+    private Map<Long, OrmEntity> visibleOthers(final RestRequest<U> request, final DatabaseConnection conn, final ApiLink link, final Collection<Long> ids) throws DatabaseError {
+        final Map<Long, OrmEntity> result = loadOthers(conn, link, ids, policy.restriction(request.user(), link.other()));
+        if (policy.checksEachEntity(request.user(), link.other())) {
+            for (final Iterator<Map.Entry<Long, OrmEntity>> it = result.entrySet().iterator(); it.hasNext(); ) {
+                final Map.Entry<Long, OrmEntity> entry = it.next();
+                final OrmEntity shown = policy.reveal(request.user(), link.other(), entry.getValue(), conn);
+                if (shown == null) {
+                    it.remove();
+                } else {
+                    entry.setValue(shown);
+                }
+            }
+        }
+        return result;
+    }
+
+    private Map<Long, OrmEntity> loadOthers(final DatabaseConnection conn, final ApiLink link, final Collection<Long> ids, final @Nullable FilterExpression restriction) throws DatabaseError {
         final Dao<OrmEntity> dao = daoOf(link.other());
         final Map<Long, OrmEntity> result = new java.util.LinkedHashMap<>();
         if (ids.isEmpty()) {
@@ -624,7 +682,7 @@ public final class OrmRestHandler<U> {
 
     /** The join record between a parent and another entity, if there is one and the other entity is visible to the caller. */
     private @Nullable OrmJoined findLink(final RestRequest<U> request, final DatabaseConnection conn, final ApiLink link, final long parentId, final long otherId) throws DatabaseError {
-        if (visibleOthers(conn, link, List.of(otherId), policy.restriction(request.user(), link.other())).isEmpty()) {
+        if (visibleOthers(request, conn, link, List.of(otherId)).isEmpty()) {
             return null;
         }
         for (final OrmJoined row : joinDaoOf(link).findByColumnValue(conn, link.fromColumn(), parentId)) {
@@ -645,11 +703,10 @@ public final class OrmRestHandler<U> {
             throw new RestException(400, "'page' must not be negative.");
         }
         final int size = pageSize(link.other(), parseOptionalInt(request.param("size"), "size"));
-        final FilterExpression otherRestriction = policy.restriction(request.user(), link.other());
         final String json = collection.getDataManager().callTransaction(conn -> {
             requireLinkParent(request, conn, link, parentId);
             final List<OrmJoined> rows = joinDaoOf(link).findByColumnValue(conn, link.fromColumn(), parentId);
-            final Map<Long, OrmEntity> others = visibleOthers(conn, link, rows.stream().map(row -> otherIdOf(link, row)).toList(), otherRestriction);
+            final Map<Long, OrmEntity> others = visibleOthers(request, conn, link, rows.stream().map(row -> otherIdOf(link, row)).toList());
             final List<OrmJoined> visible = new ArrayList<>(rows.stream().filter(row -> others.containsKey(otherIdOf(link, row))).toList());
             visible.sort(Comparator.<OrmJoined, String>comparing(row -> others.get(otherIdOf(link, row)).coalesceKey()).thenComparingLong(row -> otherIdOf(link, row)));
             final long start = Math.min((long) page * size, visible.size());
@@ -677,7 +734,7 @@ public final class OrmRestHandler<U> {
         final WriteBody body = parseBodyText(text, link, Set.of(), true, Map.of(link.fromField(), parentId, link.toField(), otherId));
         return collection.getDataManager().callTransaction(conn -> {
             requireLinkParent(request, conn, link, parentId);
-            if (visibleOthers(conn, link, List.of(otherId), policy.restriction(request.user(), link.other())).isEmpty()) {
+            if (visibleOthers(request, conn, link, List.of(otherId)).isEmpty()) {
                 throw rollback(404, "There is no such " + link.other().className() + ".", Map.of());
             }
             final OrmJoined existing = findLink(request, conn, link, parentId, otherId);
@@ -869,8 +926,20 @@ public final class OrmRestHandler<U> {
         }
     }
 
-    private boolean matches(final DatabaseConnection conn, final Dao<OrmEntity> dao, final ApiEntity entity, final long id, final @Nullable FilterExpression restriction) throws DatabaseError {
-        return load(conn, dao, entity.idField(), id, restriction) != null;
+    /**
+     * Loads an entity as the caller may see it: inside of the restriction and revealed by the policy (see {@link RestPolicy#reveal}); null if
+     * there is none, or it is hidden.
+     */
+    private @Nullable OrmEntity loadVisible(final RestRequest<U> request, final DatabaseConnection conn, final ApiEntity entity, final long id) throws DatabaseError {
+        final OrmEntity found = load(conn, daoOf(entity), entity.idField(), id, policy.restriction(request.user(), entity));
+        return found == null ? null : reveal(request, conn, entity, found);
+    }
+
+    /**
+     * The entity as the policy shows it, if it checks its kind one by one; else the entity itself.
+     */
+    private @Nullable OrmEntity reveal(final RestRequest<U> request, final DatabaseConnection conn, final ApiEntity entity, final OrmEntity instance) throws DatabaseError {
+        return policy.checksEachEntity(request.user(), entity) ? policy.reveal(request.user(), entity, instance, conn) : instance;
     }
 
     /** Loads an entity from the database, never from a cache, so that it can be changed without harm; null if there is none, or none that the restriction lets through. */
@@ -917,7 +986,6 @@ public final class OrmRestHandler<U> {
         }
         final Set<String> denied = policy.deniedFields(request.user(), entity);
         final WriteBody body = parseBody(request, entity, denied, true, scope == null ? Map.of() : Map.of(scope.subresource().field().name(), scope.parentId()));
-        final FilterExpression restriction = policy.restriction(request.user(), entity);
         final Dao<OrmEntity> dao = daoOf(entity);
         final OrmEntity instance = newInstance(entity);
         apply(entity, instance, body);
@@ -929,11 +997,10 @@ public final class OrmRestHandler<U> {
             checkReferences(conn, entity, instance, body.written());
             runHook(() -> policy.beforeWrite(request.user(), entity, RestOperation.CREATE, instance, conn));
             dao.insert(conn, instance);
-            if (!matches(conn, dao, entity, instance.getId(), restriction)) {
+            final OrmEntity result = loadVisible(request, conn, entity, instance.getId());
+            if (result == null) {
                 throw new Rollback(denial(request, policy.securityFor(entity, RestOperation.CREATE))); // the new entity would be outside of what the caller may see
             }
-            final OrmEntity stored = load(conn, dao, entity.idField(), instance.getId(), null);
-            final OrmEntity result = stored == null ? instance : stored;
             final Map<String, String> headers = validatorHeaders(entity, result);
             headers.put("Location", locationOf(request, entity, result.getId()));
             return entityResponse(conn, entity, result, denied, 201, headers);
@@ -948,7 +1015,7 @@ public final class OrmRestHandler<U> {
         final Dao<OrmEntity> dao = daoOf(entity);
         return collection.getDataManager().callTransaction(conn -> {
             final OrmEntity found = load(conn, dao, entity.idField(), id, restriction);
-            if (found == null) {
+            if (found == null || reveal(request, conn, entity, found) == null) {
                 throw rollback(404, "There is no such " + entity.className() + ".", Map.of());
             }
             checkPrecondition(request, entity, found);
@@ -962,11 +1029,10 @@ public final class OrmRestHandler<U> {
             checkReferences(conn, entity, found, body.written());
             runHook(() -> policy.beforeWrite(request.user(), entity, RestOperation.UPDATE, found, conn));
             dao.update(conn, found);
-            if (!matches(conn, dao, entity, id, restriction)) {
+            final OrmEntity result = loadVisible(request, conn, entity, id);
+            if (result == null) {
                 throw new Rollback(denial(request, policy.securityFor(entity, RestOperation.UPDATE))); // the change would take the entity out of what the caller may see
             }
-            final OrmEntity stored = load(conn, dao, entity.idField(), id, null);
-            final OrmEntity result = stored == null ? found : stored;
             return entityResponse(conn, entity, result, denied, 200, validatorHeaders(entity, result));
         });
     }
@@ -977,7 +1043,7 @@ public final class OrmRestHandler<U> {
         final Dao<OrmEntity> dao = daoOf(entity);
         return collection.getDataManager().callTransaction(conn -> {
             final OrmEntity found = load(conn, dao, entity.idField(), id, restriction);
-            if (found == null) {
+            if (found == null || reveal(request, conn, entity, found) == null) {
                 throw rollback(404, "There is no such " + entity.className() + ".", Map.of());
             }
             checkPrecondition(request, entity, found);

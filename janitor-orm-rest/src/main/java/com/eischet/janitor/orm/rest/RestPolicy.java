@@ -83,6 +83,47 @@ public interface RestPolicy<U> extends RestSecurityDescription {
     }
 
     /**
+     * Whether the policy checks the entities of a kind one by one ({@link #reveal}), for rules that a filter cannot express, e.g. a script that
+     * decides per record. Lists then work differently: they check at most {@link #scanLimit} candidates (those that match the filter and the
+     * {@link #restriction}, in the order of the request), so that their {@code total} counts only the visible ones among those, and
+     * {@code truncated} says whether there were more candidates.
+     *
+     * @param user   the user of the request, or null if there is none
+     * @param entity the entity
+     * @return true to have every entity of the kind checked with {@link #reveal}; false (the default) to rely on {@link #restriction} alone
+     */
+    default boolean checksEachEntity(@Nullable U user, @NotNull ApiEntity entity) {
+        return false;
+    }
+
+    /**
+     * Checks one entity for a request, if {@link #checksEachEntity} says so: wherever the API would show it (getting it, in a list, as the
+     * parent of a sub-resource or as an end of a link) and before it is changed or deleted. An entity that is hidden looks like "not found".
+     * The policy can also show a changed copy instead, e.g. with some text blanked out; it is only shown, never written.
+     *
+     * @param user     the user of the request, or null if there is none
+     * @param entity   the entity
+     * @param instance the entity as loaded, inside of the {@link #restriction}
+     * @param conn     the connection of the request
+     * @return the entity to show (the instance itself, or a copy), or null to hide it
+     * @throws DatabaseError on database errors
+     */
+    default @Nullable OrmEntity reveal(@Nullable U user, @NotNull ApiEntity entity, @NotNull OrmEntity instance, @NotNull DatabaseConnection conn) throws DatabaseError {
+        return instance;
+    }
+
+    /**
+     * How many candidates a list checks at most for entities that are checked one by one ({@link #checksEachEntity}).
+     *
+     * @param user   the user of the request, or null if there is none
+     * @param entity the entity
+     * @return the largest number of candidates to load and check for one request
+     */
+    default int scanLimit(@Nullable U user, @NotNull ApiEntity entity) {
+        return 1000;
+    }
+
+    /**
      * Hides properties from a request: they are left out of the output, and filtering or sorting by them is rejected.
      *
      * @param user   the user of the request, or null if there is none

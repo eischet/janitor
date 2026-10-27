@@ -51,7 +51,8 @@ public final class RestOrm {
      * Exposes the records of a join table as links, in one direction: {@code link(membership, "user", "groups", "group")} makes
      * {@code /users/{id}/groups} the memberships of a user, and {@code /users/{id}/groups/{groupId}} one of them, which can be created with PUT and
      * deleted (if the join table allows {@link RestOperation#CREATE} and {@link RestOperation#DELETE}). Call it again for the other direction.
-     * Both entities have to be exposed, and the primary key of the join table must consist of exactly the two columns of the references.
+     * Both entities have to be exposed, and the primary key of the join table must contain the two columns of the references. If it has more
+     * columns (e.g. a reason, so that two entities can be linked more than once), the links can only be listed.
      *
      * @param joinTable the dispatch table of the join records
      * @param fromField the property of the join records that refers to the entity that the links belong to

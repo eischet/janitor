@@ -24,7 +24,7 @@ import java.util.Set;
  * @param toField    the name of the property that refers to the other entity
  * @param fromColumn the column of the reference to the parent
  * @param toColumn   the column of the reference to the other entity
- * @param operations the operations that the API offers: listing and getting always, {@link RestOperation#CREATE} (PUT) and {@link RestOperation#DELETE} if the join table allows them
+ * @param operations the operations that the API offers: listing and getting always, {@link RestOperation#CREATE} (PUT) and {@link RestOperation#DELETE} if the join table allows them; only listing if its primary key has more than the two columns
  */
 public record ApiLink(@NotNull String path,
                       @NotNull ApiEntity parent,

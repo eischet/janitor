@@ -195,15 +195,18 @@ public final class OrmApiModel {
         if (parent == null || other == null) {
             throw new IllegalStateException(where + " connects " + from.referencedEntity() + " and " + to.referencedEntity() + ", and both have to be exposed");
         }
-        if (!Set.copyOf(dao.getPrimaryKeyColumns()).equals(Set.of(from.column(), to.column()))) {
-            throw new IllegalStateException(where + " cannot address its records: the primary key is " + dao.getPrimaryKeyColumns() + ", but has to be exactly " + from.column() + " and " + to.column());
+        final Set<String> key = Set.copyOf(dao.getPrimaryKeyColumns());
+        if (!key.contains(from.column()) || !key.contains(to.column())) {
+            throw new IllegalStateException(where + " cannot address its records: the primary key is " + dao.getPrimaryKeyColumns() + ", but has to contain " + from.column() + " and " + to.column());
         }
+        // with more columns in the key (e.g. a reason), two entities can be linked more than once: such links can only be listed
+        final Set<RestOperation> offered = key.size() == 2 ? operations : operations.contains(RestOperation.LIST) ? Set.of(RestOperation.LIST) : Set.of();
         if (!(table instanceof OrmDispatchTable<?, ?>)) {
             throw new IllegalStateException(where + " needs a dispatch table that can create new records, an OrmDispatchTable");
         }
         final String className = table.getMetaData(Janitor.MetaData.CLASS);
         return new ApiLink(link.path(), parent, other, className == null ? joinName : className, table, List.copyOf(fields),
-                from.name(), to.name(), from.column(), to.column(), operations);
+                from.name(), to.name(), from.column(), to.column(), offered);
     }
 
     /** Below an entity, sub-resources and links share the paths, so they must not use one twice. */

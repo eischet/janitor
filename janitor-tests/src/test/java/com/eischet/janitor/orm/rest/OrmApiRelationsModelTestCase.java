@@ -182,6 +182,25 @@ public class OrmApiRelationsModelTestCase extends JanitorTest {
     }
 
     @Test
+    public void aLinkWithMoreColumnsInItsKeyCanOnlyBeListed() {
+        Join.declare("left_id", "right_id", "reason_id");
+        RestOrm.link(Join.DISPATCH, "left", "others", "right");
+        RestOrm.allow(Join.DISPATCH, RestOperation.CREATE, RestOperation.DELETE);
+        RestOrm.expose(Other.DISPATCH, "others");
+        try {
+            final ApiLink link = OrmApiModel.of(new BrokenCollection()).getLinks().get(0);
+            assertTrue(link.allows(RestOperation.LIST));
+            assertFalse(link.allows(RestOperation.GET), "one pair can be linked more than once, so a pair does not address a record");
+            assertFalse(link.allows(RestOperation.CREATE));
+            assertFalse(link.allows(RestOperation.DELETE));
+        } finally {
+            Join.DISPATCH.setMetaData(RestMetaData.LINKS, null);
+            Join.DISPATCH.setMetaData(RestMetaData.OPERATIONS, null);
+            Other.DISPATCH.setMetaData(RestMetaData.PATH, null);
+        }
+    }
+
+    @Test
     public void aLinkThatNamesAPropertyThatIsNoReferenceIsRefused() {
         Join.declare("left_id", "right_id");
         RestOrm.expose(Other.DISPATCH, "others");

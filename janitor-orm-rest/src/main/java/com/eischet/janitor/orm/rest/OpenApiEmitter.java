@@ -184,7 +184,10 @@ public final class OpenApiEmitter {
                 "required", List.of("items", "total", "page", "size"),
                 "properties", JsonTree.object(
                         "items", JsonTree.object("type", "array", "items", ref(className)),
-                        "total", JsonTree.object("type", "integer", "format", "int64", "description", "The number of entities that match the filter, over all pages."),
+                        "total", JsonTree.object("type", "integer", "format", "int64", "description", "The number of entities that match the filter, over all pages; "
+                                + "for entities that are checked one by one, the number of visible ones among the candidates that were checked."),
+                        "truncated", JsonTree.object("type", "boolean", "description", "Only for entities that are checked one by one: true if there were more "
+                                + "candidates than were checked, so that the pages end early; a narrower filter finds the rest."),
                         "page", JsonTree.object("type", "integer", "description", "The number of this page, starting at 0."),
                         "size", JsonTree.object("type", "integer", "description", "The page size that was used.")));
     }
