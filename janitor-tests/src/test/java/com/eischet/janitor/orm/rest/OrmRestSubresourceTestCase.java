@@ -242,4 +242,32 @@ public class OrmRestSubresourceTestCase extends JanitorTest {
         final String description = send(hosted, "GET", "/openapi.json", null).body();
         assertTrue(description.contains("\"say\""), "the body schema of the host is described");
     }
+
+    @Test
+    public void theHostCanStoreANewEntityItself() throws Exception {
+        final RestPolicy<Object> policy = new RestPolicy<>() {
+            @Override public boolean permits(final @Nullable Object user, final @NotNull ApiEntity entity, final @NotNull RestOperation operation) { return true; }
+
+            @Override
+            public @Nullable com.eischet.janitor.orm.entity.OrmEntity insert(final @Nullable Object user, final @NotNull ApiEntity entity,
+                                                                            final @NotNull com.eischet.janitor.orm.entity.OrmEntity instance,
+                                                                            final @NotNull com.eischet.dbxs.DatabaseConnection conn) throws DatabaseError {
+                if (!(instance instanceof Task task)) {
+                    return null;
+                }
+                if ("no".equals(task.getKey())) {
+                    throw new RestRejection(422, "not this one");
+                }
+                task.setName(task.getName() + " (stored by the host)");
+                collection.getTaskDao().insert(conn, task);
+                return task;
+            }
+        };
+        final OrmRestHandler<Object> hosted = OrmRestHandler.of(collection, policy);
+        final RestResponse created = send(hosted, "POST", "/teams/" + alpha + "/tasks", "{\"key\": \"host\", \"name\": \"Host\"}");
+        assertEquals(201, created.status(), created.body());
+        assertTrue(created.body().contains("Host (stored by the host)"), created.body());
+        assertEquals(422, send(hosted, "POST", "/teams/" + alpha + "/tasks", "{\"key\": \"no\", \"name\": \"No\"}").status());
+        assertFalse(keys(get("/teams/" + alpha + "/tasks")).contains("no"));
+    }
 }

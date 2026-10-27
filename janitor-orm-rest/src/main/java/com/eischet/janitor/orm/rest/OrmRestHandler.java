@@ -1003,8 +1003,13 @@ public final class OrmRestHandler<U> {
             }
             checkReferences(conn, entity, instance, body.written());
             runHook(() -> policy.beforeWrite(request.user(), entity, RestOperation.CREATE, instance, conn));
-            dao.insert(conn, instance);
-            final OrmEntity result = loadVisible(request, conn, entity, instance.getId());
+            final OrmEntity[] stored = new OrmEntity[1];
+            runHook(() -> stored[0] = policy.insert(request.user(), entity, instance, conn));
+            if (stored[0] == null) {
+                dao.insert(conn, instance);
+                stored[0] = instance;
+            }
+            final OrmEntity result = loadVisible(request, conn, entity, stored[0].getId());
             if (result == null) {
                 throw new Rollback(denial(request, policy.securityFor(entity, RestOperation.CREATE))); // the new entity would be outside of what the caller may see
             }

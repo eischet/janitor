@@ -124,6 +124,23 @@ public interface RestPolicy<U> extends RestSecurityDescription {
     }
 
     /**
+     * Lets the host store a new entity itself, after the API read the body into it, checked it and called {@link #beforeWrite}: for entities
+     * whose creation is more than an insert (e.g. one that creates further records), through the host's own code for that. It runs in the
+     * transaction of the request; the host may also store the entity in a transaction of its own.
+     *
+     * @param user     the user of the request, or null if there is none
+     * @param entity   the entity
+     * @param instance the new entity, as read from the body
+     * @param conn     the connection of the transaction of the request
+     * @return the entity as stored, with its id; or null (the default) to have the API insert the instance
+     * @throws RestRejection if the request is to be refused
+     * @throws DatabaseError on database errors
+     */
+    default @Nullable OrmEntity insert(@Nullable U user, @NotNull ApiEntity entity, @NotNull OrmEntity instance, @NotNull DatabaseConnection conn) throws DatabaseError {
+        return null;
+    }
+
+    /**
      * Lets the host create entities of a kind itself (see {@link RestCreation}), e.g. because creating one means more than inserting it.
      *
      * @param entity the entity
