@@ -22,7 +22,7 @@ import java.util.Map;
 public interface RestCreation<U> {
 
     /**
-     * @return the JSON schema of the request body, for the API description, as a tree of maps (with string keys), lists, strings, numbers and booleans
+     * @return the JSON schema of the request body, for the API description, as a tree of maps and lists (see {@link JsonTree})
      */
     @NotNull Map<String, Object> bodySchema();
 
