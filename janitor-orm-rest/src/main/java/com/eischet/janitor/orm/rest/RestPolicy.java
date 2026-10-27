@@ -124,6 +124,19 @@ public interface RestPolicy<U> extends RestSecurityDescription {
     }
 
     /**
+     * Whether a body that creates an entity (POST) may leave out properties, which then keep the values of a new entity, the way a PATCH
+     * leaves the other properties of an existing one alone. By default, a body that creates an entity describes all of it, like a PUT:
+     * properties that are left out become null, and those that cannot be null have to be given. Hosts that create entities from partial
+     * data elsewhere (e.g. from a map in a script) can offer the same here.
+     *
+     * @param entity the entity
+     * @return true to keep the values of a new entity for the properties that the body leaves out
+     */
+    default boolean createsFromPartialBody(@NotNull ApiEntity entity) {
+        return false;
+    }
+
+    /**
      * Lets the host store a new entity itself, after the API read the body into it, checked it and called {@link #beforeWrite}: for entities
      * whose creation is more than an insert (e.g. one that creates further records), through the host's own code for that. It runs in the
      * transaction of the request; the host may also store the entity in a transaction of its own.
