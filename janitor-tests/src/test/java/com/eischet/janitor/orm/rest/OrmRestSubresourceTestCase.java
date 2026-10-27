@@ -230,4 +230,31 @@ public class OrmRestSubresourceTestCase extends JanitorTest {
         assertEquals(422, send(hosted, "POST", "/teams/" + alpha + "/tasks", "{\"key\": \"no\", \"name\": \"No\"}").status());
         assertFalse(keys(get("/teams/" + alpha + "/tasks")).contains("no"));
     }
+
+    @Test
+    public void theHostCanApplyTheBodyItself() throws Exception {
+        final RestPolicy<Object> policy = new RestPolicy<>() {
+            @Override public boolean permits(final @Nullable Object user, final @NotNull ApiEntity entity, final @NotNull RestOperation operation) { return true; }
+
+            @Override
+            public boolean applyBody(final @Nullable Object user, final @NotNull ApiFields entity, final @NotNull com.eischet.janitor.orm.entity.OrmObject instance,
+                                     final @NotNull JMap values) {
+                if (!(instance instanceof Task task)) {
+                    return false;
+                }
+                final String name = String.valueOf(values.get(Janitor.string("name")).janitorGetHostValue());
+                if (name.equals("no")) {
+                    throw new RestRejection(422, "not this name");
+                }
+                task.setName(name.toUpperCase()); // the key of the body is left out on purpose
+                return true;
+            }
+        };
+        final OrmRestHandler<Object> hosted = OrmRestHandler.of(collection, policy);
+        final RestResponse created = send(hosted, "POST", "/teams/" + alpha + "/tasks", "{\"key\": \"applied\", \"name\": \"abc\"}");
+        assertEquals(201, created.status(), created.body());
+        final String body = created.body().replaceAll("\s", "");
+        assertTrue(body.contains("\"name\":\"ABC\"") && body.contains("\"key\":null") && body.contains("\"team\":\"alpha\""), body);
+        assertEquals(422, send(hosted, "POST", "/teams/" + alpha + "/tasks", "{\"name\": \"no\"}").status());
+    }
 }

@@ -5,7 +5,9 @@ package com.eischet.janitor.orm.rest;
 
 import com.eischet.dbxs.DatabaseConnection;
 import com.eischet.dbxs.exceptions.DatabaseError;
+import com.eischet.janitor.api.types.builtin.JMap;
 import com.eischet.janitor.orm.entity.OrmEntity;
+import com.eischet.janitor.orm.entity.OrmObject;
 import com.eischet.janitor.orm.entity.OrmJoined;
 import com.eischet.janitor.orm.filter.FilterExpression;
 import org.jetbrains.annotations.NotNull;
@@ -121,6 +123,23 @@ public interface RestPolicy<U> extends RestSecurityDescription {
      */
     default int scanLimit(@Nullable U user, @NotNull ApiEntity entity) {
         return 1000;
+    }
+
+    /**
+     * Lets the host apply the values of a body to an entity itself (to a new one for POST, to the stored one for PUT and PATCH), e.g. with the
+     * code its scripts use for the same, instead of the JSON readers of the properties. It may also leave values out, e.g. those that only the
+     * server sets. The values are those the API accepted: known properties only, without read-only ones, date-times as local ones, references
+     * as in the API (ids or keys); properties that the body sets to null are not among them and are set afterwards, as usual, and so is the parent that the path names.
+     *
+     * @param user     the user of the request, or null if there is none
+     * @param entity   the entity, or the join records of a link
+     * @param instance the entity to apply the values to
+     * @param values   the values of the body
+     * @return true if the host applied the values; false (the default) to have the API apply them
+     * @throws RestRejection if the request is to be refused
+     */
+    default boolean applyBody(@Nullable U user, @NotNull ApiFields entity, @NotNull OrmObject instance, @NotNull JMap values) {
+        return false;
     }
 
     /**

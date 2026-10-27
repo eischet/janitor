@@ -740,7 +740,7 @@ public final class OrmRestHandler<U> {
             final OrmJoined existing = findLink(request, conn, link, parentId, otherId);
             final OrmJoined row = existing != null ? existing : newJoin(link);
             try {
-                apply(link, row, body);
+                apply(request, link, row, body);
             } catch (JsonException e) {
                 throw rollback(400, String.valueOf(e.getMessage()), Map.of());
             } catch (RestException e) {
@@ -791,7 +791,7 @@ public final class OrmRestHandler<U> {
      * What a request wants to write: the JSON with the values that are applied to the entity, the properties that are set to null (the readers
      * of plain properties do not know null, so those are assigned directly), and the names of all properties that are written.
      */
-    private record WriteBody(String json, Set<String> nulls, Set<String> written, @Nullable Object claimed) {
+    private record WriteBody(String json, JMap values, String forcedJson, Set<String> nulls, Set<String> written, @Nullable Object claimed) {
     }
 
     /**
@@ -861,8 +861,10 @@ public final class OrmRestHandler<U> {
             }
             written.add(key);
         }
+        final JMap forcedValues = Janitor.map();
         for (final Map.Entry<String, Long> entry : forced.entrySet()) {
             kept.put(entry.getKey(), Janitor.integer(entry.getValue()));
+            forcedValues.put(entry.getKey(), Janitor.integer(entry.getValue()));
             written.add(entry.getKey());
         }
         if (complete) {
@@ -877,7 +879,7 @@ public final class OrmRestHandler<U> {
                 written.add(field.name());
             }
         }
-        return new WriteBody(Janitor.current().writeJson(kept::writeJson), nulls, written, claimed);
+        return new WriteBody(Janitor.current().writeJson(kept::writeJson), kept, Janitor.current().writeJson(forcedValues::writeJson), nulls, written, claimed);
     }
 
     /**
@@ -893,8 +895,18 @@ public final class OrmRestHandler<U> {
     }
 
     @SuppressWarnings("unchecked")
-    private void apply(final ApiFields entity, final OrmObject instance, final WriteBody body) throws JsonException {
-        ((DispatchTable<OrmObject>) entity.table()).readFromJson(() -> instance, body.json());
+    private void apply(final RestRequest<U> request, final ApiFields entity, final OrmObject instance, final WriteBody body) throws JsonException {
+        final boolean applied;
+        try {
+            applied = policy.applyBody(request.user(), entity, instance, body.values());
+        } catch (RestRejection e) {
+            throw new RestException(e.status(), e.getMessage(), Map.of());
+        }
+        if (!applied) {
+            ((DispatchTable<OrmObject>) entity.table()).readFromJson(() -> instance, body.json());
+        } else {
+            ((DispatchTable<OrmObject>) entity.table()).readFromJson(() -> instance, body.forcedJson()); // what the path says is not up to the host
+        }
         for (final String name : body.nulls()) {
             try {
                 final JanitorObject property = ((AttributeLookupHandler<OrmObject>) entity.table().get(name)).lookupAttribute(instance);
@@ -989,7 +1001,7 @@ public final class OrmRestHandler<U> {
         final WriteBody body = parseBody(request, entity, denied, false, scope == null ? Map.of() : Map.of(scope.subresource().field().name(), scope.parentId()));
         final Dao<OrmEntity> dao = daoOf(entity);
         final OrmEntity instance = newInstance(entity);
-        apply(entity, instance, body);
+        apply(request, entity, instance, body);
         return collection.getDataManager().callTransaction(conn -> {
             if (scope != null) {
                 requireParent(request, conn, scope);
@@ -1026,7 +1038,7 @@ public final class OrmRestHandler<U> {
             }
             checkPrecondition(request, entity, found);
             try {
-                apply(entity, found, body);
+                apply(request, entity, found, body);
             } catch (JsonException e) {
                 throw rollback(400, String.valueOf(e.getMessage()), Map.of());
             } catch (RestException e) {
