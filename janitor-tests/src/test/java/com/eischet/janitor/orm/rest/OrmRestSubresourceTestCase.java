@@ -202,4 +202,44 @@ public class OrmRestSubresourceTestCase extends JanitorTest {
         assertEquals(404, get("/tasks/999999/notes").status());
         assertTrue(Janitor.current().parseJsonToMap(get("/openapi.json").body()).toString().contains("/tasks/{id}/notes"));
     }
+
+    @Test
+    public void theHostCanCreateEntitiesItself() throws Exception {
+        final long write = ((Number) Janitor.current().parseJsonToMap(get("/tasks/by-key/write").body()).get(Janitor.string("id")).janitorGetHostValue()).longValue();
+        final RestCreation<Object> creation = new RestCreation<>() {
+            @Override
+            public @NotNull Map<String, Object> bodySchema() {
+                return JsonTree.object("type", "object", "properties", JsonTree.object("say", JsonTree.object("type", "string")));
+            }
+
+            @Override
+            public @NotNull com.eischet.janitor.orm.entity.OrmEntity create(final @Nullable Object user, final @Nullable com.eischet.janitor.orm.entity.OrmEntity parent,
+                                                                           final @Nullable String body, final @NotNull com.eischet.dbxs.DatabaseConnection conn) throws DatabaseError {
+                if (body == null || !body.contains("hello")) {
+                    throw new RestRejection(422, "say hello");
+                }
+                final OrmRestRelationsFixture.Note note = new OrmRestRelationsFixture.Note();
+                note.setKey("by-host");
+                note.setName("created for " + (parent == null ? "nobody" : parent.getKey()));
+                note.setTaskId(parent == null ? null : parent.getId());
+                collection.getNoteDao().insert(conn, note);
+                return note;
+            }
+        };
+        final RestPolicy<Object> policy = new RestPolicy<>() {
+            @Override public boolean permits(final @Nullable Object user, final @NotNull ApiEntity entity, final @NotNull RestOperation operation) { return true; }
+            @Override public @Nullable RestCreation<Object> creation(final @NotNull ApiEntity entity) { return entity.className().equals("Note") ? creation : null; }
+        };
+        final OrmRestHandler<Object> hosted = OrmRestHandler.of(collection, policy);
+        final RestResponse created = send(hosted, "POST", "/tasks/" + write + "/notes", "{\"say\": \"hello\"}");
+        assertEquals(201, created.status(), created.body());
+        assertTrue(created.body().contains("created for write"), created.body());
+        assertTrue(created.headers().get("Location").matches("\\.\\./\\.\\./notes/\\d+"), created.headers().get("Location"));
+        final RestResponse refused = send(hosted, "POST", "/tasks/" + write + "/notes", "{}");
+        assertEquals(422, refused.status());
+        assertEquals(List.of("by-host"), keys(get("/tasks/" + write + "/notes")), "the refused request created nothing");
+        assertEquals(404, send(hosted, "POST", "/tasks/999999/notes", "{\"say\": \"hello\"}").status());
+        final String description = send(hosted, "GET", "/openapi.json", null).body();
+        assertTrue(description.contains("\"say\""), "the body schema of the host is described");
+    }
 }

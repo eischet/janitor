@@ -8,10 +8,12 @@ import com.eischet.janitor.orm.filter.FilterLogic;
 import com.eischet.janitor.orm.filter.FilterOperator;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -27,6 +29,7 @@ public final class OpenApiEmitter {
     private final @NotNull OrmApiModel model;
     private final @NotNull OpenApiOptions options;
     private final @NotNull RestSecurityDescription security;
+    private final @NotNull Function<ApiEntity, @Nullable Map<String, Object>> createBodies;
     private boolean usesUnauthorized;
 
     /**
@@ -35,9 +38,22 @@ public final class OpenApiEmitter {
      * @param security what it takes to call the operations, where that differs from what the options say; the policy of the API is one
      */
     public OpenApiEmitter(final @NotNull OrmApiModel model, final @NotNull OpenApiOptions options, final @NotNull RestSecurityDescription security) {
+        this(model, options, security, entity -> null);
+    }
+
+    /**
+     * @param model        the entities to describe
+     * @param options      title, version, authentication etc. of the API
+     * @param security     what it takes to call the operations, where that differs from what the options say; the policy of the API is one
+     * @param createBodies the schema of the body that creates an entity, where the host creates it itself (see {@link RestCreation}); null for
+     *                     the entity's own schema
+     */
+    public OpenApiEmitter(final @NotNull OrmApiModel model, final @NotNull OpenApiOptions options, final @NotNull RestSecurityDescription security,
+                          final @NotNull Function<ApiEntity, @Nullable Map<String, Object>> createBodies) {
         this.model = model;
         this.options = options;
         this.security = security;
+        this.createBodies = createBodies;
     }
 
     /**
@@ -242,7 +258,7 @@ public final class OpenApiEmitter {
                     "summary", "Creates a " + name,
                     "description", writeNote(entity),
                     "tags", List.of(name),
-                    "requestBody", entityBody(name),
+                    "requestBody", createBody(entity),
                     "responses", JsonTree.object("201", created, "400", responseRef("BadRequest"), "403", responseRef("Forbidden"), "409", responseRef("Conflict"))));
         }
         if (!collectionItem.isEmpty()) {
@@ -356,7 +372,7 @@ public final class OpenApiEmitter {
                     "description", writeNote(child) + " The property '" + sub.field().name() + "' is set from the path; if the body has it, it has to name the same " + parent.className() + ".",
                     "tags", List.of(name),
                     "parameters", List.of(idParameter("id", "The id of the " + parent.className() + ".")),
-                    "requestBody", entityBody(name),
+                    "requestBody", createBody(child),
                     "responses", responses));
         }
         if (!item.isEmpty()) {
@@ -435,6 +451,14 @@ public final class OpenApiEmitter {
 
     private static String capitalized(final String text) {
         return text.isEmpty() ? text : Character.toUpperCase(text.charAt(0)) + text.substring(1);
+    }
+
+    /**
+     * The body that creates an entity: the entity itself, unless the host creates it from a body of its own.
+     */
+    private Map<String, Object> createBody(final ApiEntity entity) {
+        final Map<String, Object> schema = createBodies.apply(entity);
+        return schema == null ? entityBody(entity.className()) : JsonTree.object("required", Boolean.TRUE, "content", JsonTree.object(JSON, JsonTree.object("schema", schema)));
     }
 
     private static Map<String, Object> entityBody(final String name) {
