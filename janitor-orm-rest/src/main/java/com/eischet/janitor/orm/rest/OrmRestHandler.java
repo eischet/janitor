@@ -817,8 +817,8 @@ public final class OrmRestHandler<U> {
      * properties that the caller may not see are refused, read-only ones (id, version, ...) are ignored, so that a changed answer of the
      * API can be sent back as it is.
      *
-     * @param complete true if the body has to describe the whole entity (POST and PUT): all required properties must be given, and
-     *                 nullable ones that are not given are set to null
+     * @param complete true if the body has to describe the whole entity (PUT): all required properties must be given, and nullable ones
+     *                 that are not given are set to null; false for POST and PATCH, which leave what is not given as it is
      */
     private WriteBody parseBody(final RestRequest<U> request, final ApiFields entity, final Set<String> denied, final boolean complete, final Map<String, Long> forced) throws JsonException {
         final String text = request.body();
@@ -985,7 +985,8 @@ public final class OrmRestHandler<U> {
             authorize(request, scope.subresource().parent(), RestOperation.GET);
         }
         final Set<String> denied = policy.deniedFields(request.user(), entity);
-        final WriteBody body = parseBody(request, entity, denied, true, scope == null ? Map.of() : Map.of(scope.subresource().field().name(), scope.parentId()));
+        // like a PATCH of a new entity: what the body leaves out keeps the value of the new entity
+        final WriteBody body = parseBody(request, entity, denied, false, scope == null ? Map.of() : Map.of(scope.subresource().field().name(), scope.parentId()));
         final Dao<OrmEntity> dao = daoOf(entity);
         final OrmEntity instance = newInstance(entity);
         apply(entity, instance, body);

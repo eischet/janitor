@@ -185,7 +185,7 @@ public class OrmRestUserHookTestCase extends JanitorTest {
     @Test
     public void theHookDoesNotRunForRequestsThatAreRefusedBeforeAnythingIsWritten() {
         assertEquals(400, send(ALICE, "POST", "/docs", "{\"nope\":1}").status());
-        assertEquals(400, send(ALICE, "POST", "/docs", "{}").status(), "rank is missing");
+        assertEquals(400, send(ALICE, "POST", "/docs", "{\"rank\":\"high\"}").status(), "rank is no number");
         assertEquals(404, send(ALICE, "PATCH", "/docs/999", "{\"rank\":1}").status());
         assertEquals(403, OrmRestHandler.of(collection, new Auditing() {
             @Override public boolean permits(final @Nullable Person user, final @NotNull ApiEntity entity, final @NotNull RestOperation operation) { return false; }

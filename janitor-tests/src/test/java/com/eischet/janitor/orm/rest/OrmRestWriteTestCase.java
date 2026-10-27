@@ -257,9 +257,9 @@ public class OrmRestWriteTestCase extends JanitorTest {
     }
 
     @Test
-    public void nullablePropertiesThatAreMissingBecomeNull() throws Exception {
-        final String body = compact(send("POST", "/docs", "{\"rank\":1}"));
-        assertTrue(body.contains("\"key\":null") && body.contains("\"name\":null") && body.contains("\"folder\":null"), body);
+    public void propertiesThatAreMissingKeepTheValuesOfANewEntity() throws Exception {
+        final String body = compact(send("POST", "/docs", "{\"name\":\"x\"}"));
+        assertTrue(body.contains("\"rank\":0") && body.contains("\"key\":null") && body.contains("\"folder\":null"), body);
     }
 
     @Test
@@ -267,7 +267,6 @@ public class OrmRestWriteTestCase extends JanitorTest {
         assertEquals(400, send("POST", "/docs", null).status(), "no body");
         assertEquals(400, send("POST", "/docs", "  ").status(), "blank body");
         assertEquals(400, send("POST", "/docs", "{not json").status(), "malformed");
-        assertEquals(400, send("POST", "/docs", "{\"name\":\"x\"}").status(), "required property rank is missing");
         assertEquals(400, send("POST", "/docs", "{\"rank\":1,\"nope\":1}").status(), "unknown property");
         assertEquals(400, send("POST", "/docs", "{\"rank\":1,\"secret\":\"mine\"}").status(), "hidden property");
         assertEquals(400, send("POST", "/docs", "{\"rank\":\"high\"}").status(), "wrong type");

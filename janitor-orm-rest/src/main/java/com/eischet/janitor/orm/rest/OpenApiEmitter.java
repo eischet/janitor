@@ -240,7 +240,7 @@ public final class OpenApiEmitter {
             collectionItem.put("post", JsonTree.object(
                     "operationId", "create" + name,
                     "summary", "Creates a " + name,
-                    "description", writeNote(entity),
+                    "description", createNote(entity),
                     "tags", List.of(name),
                     "requestBody", entityBody(name),
                     "responses", JsonTree.object("201", created, "400", responseRef("BadRequest"), "403", responseRef("Forbidden"), "409", responseRef("Conflict"))));
@@ -353,7 +353,7 @@ public final class OpenApiEmitter {
             item.put("post", JsonTree.object(
                     "operationId", "create" + name + "In" + parent.className(),
                     "summary", "Creates a " + name + " in a " + parent.className(),
-                    "description", writeNote(child) + " The property '" + sub.field().name() + "' is set from the path; if the body has it, it has to name the same " + parent.className() + ".",
+                    "description", createNote(child) + " The property '" + sub.field().name() + "' is set from the path; if the body has it, it has to name the same " + parent.className() + ".",
                     "tags", List.of(name),
                     "parameters", List.of(idParameter("id", "The id of the " + parent.className() + ".")),
                     "requestBody", entityBody(name),
@@ -473,6 +473,10 @@ public final class OpenApiEmitter {
     }
 
     /** Explains which properties of the body count, since the schema is the one of reading. */
+    private static String createNote(final ApiEntity entity) {
+        return writeNote(entity) + " Properties that are missing keep the values of a new " + entity.className() + ".";
+    }
+
     private static String writeNote(final ApiEntity entity) {
         return "The body has the properties of " + entity.className() + ". Read-only properties are ignored, so an entity that was read can be sent back. "
                 + "Properties that are not part of the API are refused.";
