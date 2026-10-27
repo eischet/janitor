@@ -3,6 +3,7 @@
 
 package com.eischet.janitor.orm.rest;
 
+import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import com.eischet.janitor.orm.entity.OrmEntity;
 import com.eischet.janitor.orm.dao.Uplink;
 import com.eischet.janitor.orm.meta.EntityDispatchTable;
@@ -52,7 +53,8 @@ public final class RestOrm {
      * {@code /users/{id}/groups} the memberships of a user, and {@code /users/{id}/groups/{groupId}} one of them, which can be created with PUT and
      * deleted (if the join table allows {@link RestOperation#CREATE} and {@link RestOperation#DELETE}). Call it again for the other direction.
      * Both entities have to be exposed, and the primary key of the join table must contain the two columns of the references. If it has more
-     * columns (e.g. a reason, so that two entities can be linked more than once), the links can only be listed.
+     * columns (e.g. a reason, so that two entities can be linked more than once), the links can only be listed. Links can only be created
+     * if the join table is an {@link OrmDispatchTable}, which can create new records.
      *
      * @param joinTable the dispatch table of the join records
      * @param fromField the property of the join records that refers to the entity that the links belong to
@@ -60,7 +62,7 @@ public final class RestOrm {
      * @param toField   the property of the join records that refers to the entity at the other end
      * @return the join table
      */
-    public static <D extends OrmDispatchTable<?, ?>> D link(final @NotNull D joinTable, final @NotNull String fromField, final @NotNull String path, final @NotNull String toField) {
+    public static <D extends DispatchTable<?>> D link(final @NotNull D joinTable, final @NotNull String fromField, final @NotNull String path, final @NotNull String toField) {
         checkPath(path);
         final RestLinks current = joinTable.getMetaData(RestMetaData.LINKS);
         joinTable.setMetaData(RestMetaData.LINKS, (current == null ? RestLinks.none() : current).with(new RestLink(fromField, path, toField)));

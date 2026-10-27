@@ -201,7 +201,7 @@ public final class OrmApiModel {
         }
         // with more columns in the key (e.g. a reason), two entities can be linked more than once: such links can only be listed
         final Set<RestOperation> offered = key.size() == 2 ? operations : operations.contains(RestOperation.LIST) ? Set.of(RestOperation.LIST) : Set.of();
-        if (!(table instanceof OrmDispatchTable<?, ?>)) {
+        if (offered.contains(RestOperation.CREATE) && !(table instanceof OrmDispatchTable<?, ?>)) {
             throw new IllegalStateException(where + " needs a dispatch table that can create new records, an OrmDispatchTable");
         }
         final String className = table.getMetaData(Janitor.MetaData.CLASS);
