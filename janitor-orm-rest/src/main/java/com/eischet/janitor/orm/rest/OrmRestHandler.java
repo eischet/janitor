@@ -283,10 +283,7 @@ public final class OrmRestHandler<U> {
     private String openApi() throws JsonException {
         String json = openApiJson;
         if (json == null) {
-            json = new OpenApiEmitter(model, options, policy, entity -> {
-                final RestCreation<? super U> creation = policy.creation(entity);
-                return creation == null ? null : creation.bodySchema();
-            }).toJson();
+            json = new OpenApiEmitter(model, options, policy).toJson();
             openApiJson = json;
         }
         return json;
@@ -987,10 +984,6 @@ public final class OrmRestHandler<U> {
         if (scope != null) {
             authorize(request, scope.subresource().parent(), RestOperation.GET);
         }
-        final RestCreation<? super U> creation = policy.creation(entity);
-        if (creation != null) {
-            return createByHost(request, entity, scope, creation);
-        }
         final Set<String> denied = policy.deniedFields(request.user(), entity);
         final WriteBody body = parseBody(request, entity, denied, true, scope == null ? Map.of() : Map.of(scope.subresource().field().name(), scope.parentId()));
         final Dao<OrmEntity> dao = daoOf(entity);
@@ -1015,33 +1008,6 @@ public final class OrmRestHandler<U> {
             }
             final Map<String, String> headers = validatorHeaders(entity, result);
             headers.put("Location", locationOf(request, entity, result.getId()));
-            return entityResponse(conn, entity, result, denied, 201, headers);
-        });
-    }
-
-    /**
-     * Has the host create an entity ({@link RestCreation}) and answers with it as the caller may see it; with no body if it is hidden.
-     */
-    private RestResponse createByHost(final RestRequest<U> request, final ApiEntity entity, final @Nullable Scope scope, final RestCreation<? super U> creation) throws DatabaseError {
-        final Set<String> denied = policy.deniedFields(request.user(), entity);
-        return collection.getDataManager().callTransaction(conn -> {
-            OrmEntity parent = null;
-            if (scope != null) {
-                parent = loadVisible(request, conn, scope.subresource().parent(), scope.parentId());
-                if (parent == null) {
-                    throw rollback(404, "There is no such " + scope.subresource().parent().className() + ".", Map.of());
-                }
-            }
-            final OrmEntity parentOfRequest = parent;
-            final OrmEntity[] created = new OrmEntity[1];
-            runHook(() -> created[0] = creation.create(request.user(), parentOfRequest, request.body(), conn));
-            final OrmEntity result = loadVisible(request, conn, entity, created[0].getId());
-            final Map<String, String> headers = new HashMap<>();
-            headers.put("Location", locationOf(request, entity, created[0].getId()));
-            if (result == null) {
-                return RestResponse.empty(201, headers);
-            }
-            headers.putAll(validatorHeaders(entity, result));
             return entityResponse(conn, entity, result, denied, 201, headers);
         });
     }

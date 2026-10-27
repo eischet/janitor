@@ -141,16 +141,6 @@ public interface RestPolicy<U> extends RestSecurityDescription {
     }
 
     /**
-     * Lets the host create entities of a kind itself (see {@link RestCreation}), e.g. because creating one means more than inserting it.
-     *
-     * @param entity the entity
-     * @return how the host creates the entity, or null (the default) to have the API read the body into a new entity and insert it
-     */
-    default @Nullable RestCreation<U> creation(@NotNull ApiEntity entity) {
-        return null;
-    }
-
-    /**
      * Hides properties from a request: they are left out of the output, and filtering or sorting by them is rejected.
      *
      * @param user   the user of the request, or null if there is none
