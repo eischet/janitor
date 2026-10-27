@@ -3,6 +3,14 @@
 - orm: `JoinedList.lazyLoad()` and `load(connection)` are now safe to call from several threads at once. Before, threads that
   loaded the join records of the same parent entity at the same time (e.g. one held in a DAO cache) each appended them, so the
   list contained every record several times, until the entity left the cache.
+- orm: the script method `add` on a `JoinedList` now adds the saved join record to an already loaded list. Before, it marked the
+  list as not loaded, and the next load appended all records from the database to those already there, so every earlier entry
+  was in the list twice.
+- orm: `AssociatedList.lazyLoad()` is now safe to call from several threads at once, like `JoinedList`; before, concurrent loads
+  could list the entities several times or fail. With a sorter, it no longer sorts the DAO's unmodifiable result in place, which
+  threw an `UnsupportedOperationException`.
+- orm: `LazyLoadedString` is now safe to read from several threads at once: the column is fetched once, and no thread sees it as
+  loaded before its value (which could return `null` for an entity in a cache).
 
 - i18n: `TranslationService` looks texts up for an explicit locale, without thread-local state: `setBundleBaseName(...)`, then
   `translate(locale, key, default)` and `translateOrNull(locale, key)`; bundles are loaded once per locale. Fixes: overrides per

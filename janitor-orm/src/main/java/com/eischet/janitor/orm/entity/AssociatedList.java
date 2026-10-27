@@ -34,8 +34,8 @@ public class AssociatedList<T extends OrmEntity, U extends Uplink> implements As
     protected final Supplier<U> uplinkSupplier;
     protected final String foreignKeyColumn;
     protected final OrmEntity parent;
-    protected @Nullable List<T> list;
-    protected boolean loaded = false;
+    protected volatile @Nullable List<T> list;
+    protected volatile boolean loaded = false;
     protected @Nullable Comparator<? super T> sorter;
 
     public AssociatedList(final OrmEntity parent,
@@ -76,18 +76,26 @@ public class AssociatedList<T extends OrmEntity, U extends Uplink> implements As
 
     /**
      * Loads the entities from the database, unless that has already happened.
+     * Safe to call from several threads at once, e.g. on a parent entity that lives in a cache: only one of them loads, and the new list
+     * is built aside and then replaces the old one, so that readers on other threads never see it half filled.
      * @return this list
      */
     public AssociatedList<T, U> lazyLoad() {
         if (!loaded) {
-            final U uplink = uplinkSupplier.get();
-            @NotNull final Dao<T> dao = wrangler.retrieveDao(uplink);
-            @NotNull @Unmodifiable final List<T> items = dao.lazyLoadByAssociation(foreignKeyColumn, parent);
-            if (sorter != null) {
-                items.sort(sorter);
+            synchronized (this) {
+                if (!loaded) {
+                    final U uplink = uplinkSupplier.get();
+                    @NotNull final Dao<T> dao = wrangler.retrieveDao(uplink);
+                    final List<T> items = new ArrayList<>(dao.lazyLoadByAssociation(foreignKeyColumn, parent));
+                    if (sorter != null) {
+                        items.sort(sorter);
+                    }
+                    final List<T> loadedList = new ArrayList<>(readList());
+                    loadedList.addAll(items);
+                    list = loadedList;
+                    loaded = true;
+                }
             }
-            ensureList().addAll(items);
-            loaded = true;
         }
         return this;
     }
@@ -107,7 +115,8 @@ public class AssociatedList<T extends OrmEntity, U extends Uplink> implements As
      */
     protected @NotNull @Unmodifiable List<T> readList() {
         // copy the existing list to prevent concurrent modification exceptions
-        return list == null ? Collections.emptyList() : List.copyOf(list);
+        final List<T> current = list;
+        return current == null ? Collections.emptyList() : List.copyOf(current);
     }
 
     /**
@@ -166,7 +175,7 @@ public class AssociatedList<T extends OrmEntity, U extends Uplink> implements As
             DISPATCH.addBuilderMethod("add", (self, process, args) -> self.parent.addGeneric(args.get(0)));
             DISPATCH.addMethod("size", (self, process, args) -> Janitor.integer(self.parent.size()));
             DISPATCH.addBuilderMethod("clear", (self, process, args) -> self.parent.clear());
-            DISPATCH.addMethod("asList", (self, process, args) -> self.parent.list == null ? Janitor.list() : Janitor.list(self.parent.list));
+            DISPATCH.addMethod("asList", (self, process, args) -> Janitor.list(self.parent.readList()));
         }
         protected final @NotNull AssociatedList<?, ?> parent;
 

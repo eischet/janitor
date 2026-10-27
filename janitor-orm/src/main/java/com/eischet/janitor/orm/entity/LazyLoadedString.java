@@ -44,8 +44,9 @@ public final class LazyLoadedString {
     private final LongSupplier idSupplier;
     private final String column;
 
-    private @Nullable String value;
-    private boolean loaded;
+    /** volatile, like {@link #loaded}: an entity in a cache is read by many threads, and the value is always written before the flag. */
+    private volatile @Nullable String value;
+    private volatile boolean loaded;
 
     /**
      * @param daoSupplier retrieves the DAO to query when this field needs to be fetched (typically
@@ -77,7 +78,7 @@ public final class LazyLoadedString {
      * from a script/JSON payload that's about to be inserted, not loaded, doesn't need a round trip just
      * to overwrite the field).
      */
-    public void setValue(final @Nullable String value) {
+    public synchronized void setValue(final @Nullable String value) {
         this.value = value;
         this.loaded = true;
     }
@@ -89,10 +90,19 @@ public final class LazyLoadedString {
         return loaded;
     }
 
+    /** Safe to call from several threads at once: only one of them fetches, and none sees the flag without the value. */
     private void ensureLoaded() {
         if (loaded) {
             return;
         }
+        synchronized (this) {
+            if (!loaded) {
+                fetch();
+            }
+        }
+    }
+
+    private void fetch() {
         final long id = idSupplier.getAsLong();
         if (id == 0) {
             loaded = true;

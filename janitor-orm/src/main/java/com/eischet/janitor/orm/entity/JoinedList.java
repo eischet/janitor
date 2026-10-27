@@ -135,12 +135,22 @@ public class JoinedList<T extends OrmJoined, U extends Uplink, V extends JoinDao
 
 
 
+    /**
+     * Script method {@code add}: saves a new join record and adds it to the list. A list that was not loaded yet gets the record from the
+     * database with the others when it is loaded. Under the same lock as loading, so that the record ends up in the list exactly once.
+     */
     private void scriptAdd(final JanitorScriptProcess process, final JCallArgs args) throws JanitorRuntimeException {
         final U uplink = uplinkSupplier.get();
         final V dao = daoRetriever.apply(uplink);
         final T entity = dao.convertToEntity(process, args, parent);
-        dao.insertForScript(process, JCallArgs.ofSingleArgument(process, entity));
-        loaded = false; // simply lazy-load again if needed
+        synchronized (this) {
+            dao.insertForScript(process, JCallArgs.ofSingleArgument(process, entity));
+            if (loaded) {
+                final List<T> extendedList = new ArrayList<>(readList());
+                extendedList.add(entity);
+                list = extendedList;
+            }
+        }
     }
 
 

@@ -16,7 +16,10 @@ import com.eischet.janitor.orm.ref.ForeignKeyNull;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -120,6 +123,7 @@ public class LazyLoadedStringTestCase extends JanitorTest {
     static class LazyThingDao extends GenericDao<LazyThing, TestCollection> {
         final AtomicInteger fetchCount = new AtomicInteger();
         String canned = "fetched-from-db";
+        long fetchDelayMillis = 0;
 
         LazyThingDao(final TestCollection collection, final EntityDispatchTable<LazyThing, TestCollection> dispatch) {
             super(new DispatchTable<LazyThingDao>(false), collection, LazyThing.class, dispatch, () -> new LazyThing(collection));
@@ -129,6 +133,13 @@ public class LazyLoadedStringTestCase extends JanitorTest {
         public String fetchLazyColumn(final long id, final @NotNull String column) throws DatabaseError {
             fetchCount.incrementAndGet();
             assertEquals("big_text", column);
+            if (fetchDelayMillis > 0) {
+                try {
+                    Thread.sleep(fetchDelayMillis);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
             return canned;
         }
 
@@ -207,6 +218,38 @@ public class LazyLoadedStringTestCase extends JanitorTest {
         // a second read must be served from the cached value, not fetched again
         assertEquals("fetched-from-db", thing.getBigText());
         assertEquals(1, collection.getLazyThingDao().fetchCount.get());
+    }
+
+    /** An entity in a cache is read by many threads at once: the column is fetched once, and every thread sees the fetched value. */
+    @Test
+    void concurrentReadsFetchOnce() throws Exception {
+        final TestCollection collection = new TestCollection();
+        collection.getLazyThingDao().fetchDelayMillis = 50; // long enough for the other threads to arrive while one fetches
+        final LazyThing thing = new LazyThing(collection);
+        thing.setId(42);
+
+        final CountDownLatch start = new CountDownLatch(1);
+        final List<Thread> started = new ArrayList<>();
+        final List<String> values = Collections.synchronizedList(new ArrayList<>());
+        for (int i = 0; i < 8; i++) {
+            final Thread thread = new Thread(() -> {
+                try {
+                    start.await();
+                    values.add(String.valueOf(thing.getBigText()));
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            });
+            thread.start();
+            started.add(thread);
+        }
+        start.countDown();
+        for (final Thread thread : started) {
+            thread.join();
+        }
+
+        assertEquals(1, collection.getLazyThingDao().fetchCount.get());
+        assertEquals(Collections.nCopies(8, "fetched-from-db"), values);
     }
 
     @Test
