@@ -45,11 +45,14 @@ public final class OrmApiModel {
     private final @NotNull @Unmodifiable List<ApiEntity> entities;
     private final @NotNull @Unmodifiable List<ApiSubresource> subresources;
     private final @NotNull @Unmodifiable List<ApiLink> links;
+    private final @NotNull @Unmodifiable List<ApiJoin> joins;
 
-    private OrmApiModel(final @NotNull List<ApiEntity> entities, final @NotNull List<ApiSubresource> subresources, final @NotNull List<ApiLink> links) {
+    private OrmApiModel(final @NotNull List<ApiEntity> entities, final @NotNull List<ApiSubresource> subresources, final @NotNull List<ApiLink> links,
+                        final @NotNull List<ApiJoin> joins) {
         this.entities = List.copyOf(entities);
         this.subresources = List.copyOf(subresources);
         this.links = List.copyOf(links);
+        this.joins = List.copyOf(joins);
     }
 
     /**
@@ -100,7 +103,13 @@ public final class OrmApiModel {
         final List<ApiSubresource> subresources = buildSubresources(result, partial);
         final List<ApiLink> links = buildLinks(collection, result, partial);
         checkUniquePaths(subresources, links);
-        return new OrmApiModel(result, subresources, links);
+        final List<ApiJoin> joins = buildJoins(collection, selection);
+        for (final ApiJoin join : joins) {
+            if (entityAt(result, join.path()) != null || joins.stream().filter(other -> other.path().equals(join.path())).count() > 1) {
+                throw new IllegalStateException("the path '" + join.path() + "' is used twice");
+            }
+        }
+        return new OrmApiModel(result, subresources, links, joins);
     }
 
     private static ApiEntity entityNamed(final List<ApiEntity> entities, final String className) {
@@ -134,6 +143,73 @@ public final class OrmApiModel {
                 }
                 result.add(new ApiSubresource(path, parent, child, field));
             }
+        }
+        return result;
+    }
+
+    private static @Nullable ApiEntity entityAt(final List<ApiEntity> entities, final String path) {
+        for (final ApiEntity entity : entities) {
+            if (entity.path().equals(path)) {
+                return entity;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * The join tables with a path of their own ({@link RestMetaData#JOIN_PATH}); in a partial model only those the selection names, by the
+     * class name of their records.
+     */
+    private static List<ApiJoin> buildJoins(final OrmDaoCollection<?> collection, final @Nullable ApiSelection selection) {
+        final List<ApiJoin> result = new ArrayList<>();
+        for (final String joinName : collection.getJoinNames()) {
+            final JoinDao<? extends OrmJoined> dao = collection.getJoinDao(joinName);
+            if (dao == null) {
+                continue;
+            }
+            final DispatchTable<?> table = dao.getEntityDispatchTable();
+            final String path = table.getMetaData(RestMetaData.JOIN_PATH);
+            if (path == null || path.isBlank()) {
+                continue;
+            }
+            final String declaredClass = table.getMetaData(Janitor.MetaData.CLASS);
+            final String className = declaredClass == null ? joinName : declaredClass;
+            final RestOperations operations;
+            if (selection == null) {
+                operations = table.getMetaData(RestMetaData.OPERATIONS);
+            } else {
+                operations = selection.operationsFor(className);
+                if (operations == null) {
+                    continue;
+                }
+            }
+            final List<ApiField> fields = new ArrayList<>();
+            for (final String name : table.streamAttributeNames().toList()) {
+                final String column = table.getMetaData(name, JanitorOrm.MetaData.COLUMN_NAME);
+                final ColumnTypeHint columnType = table.getMetaData(name, JanitorOrm.MetaData.COLUMN_TYPE);
+                if (column == null || column.isBlank() || columnType == null || Boolean.TRUE.equals(table.getMetaData(name, RestMetaData.HIDDEN))) {
+                    continue;
+                }
+                if (!OrmPropertyHandle.isAvailableIn(table.getMetaData(name, JanitorOrm.MetaData.VERSION_RANGE), collection.getSchemaVersion())) {
+                    continue;
+                }
+                fields.add(buildField(collection, table, name, column, columnType, false));
+            }
+            final List<String> keyFields = new ArrayList<>();
+            for (final String keyColumn : dao.getPrimaryKeyColumns()) {
+                final ApiField keyField = fields.stream().filter(field -> field.column().equalsIgnoreCase(keyColumn)).findFirst().orElse(null);
+                if (keyField == null) {
+                    throw new IllegalStateException("the join records at '" + path + "' do not expose the key column " + keyColumn);
+                }
+                keyFields.add(keyField.name());
+            }
+            final Set<RestOperation> offered = new HashSet<>();
+            for (final RestOperation operation : (operations == null ? RestOperations.READ_ONLY : operations).set()) {
+                if (operation == RestOperation.LIST || operation == RestOperation.CREATE || operation == RestOperation.DELETE) {
+                    offered.add(operation);
+                }
+            }
+            result.add(new ApiJoin(path, className, table, List.copyOf(fields), List.copyOf(keyFields), Set.copyOf(offered)));
         }
         return result;
     }
@@ -229,6 +305,24 @@ public final class OrmApiModel {
     /** @return the sub-resources of all entities */
     public @NotNull @Unmodifiable List<ApiSubresource> getSubresources() {
         return subresources;
+    }
+
+    /** @return the join tables at paths of their own */
+    public @NotNull @Unmodifiable List<ApiJoin> getJoins() {
+        return joins;
+    }
+
+    /**
+     * @param path a path
+     * @return the join records at that path, or null if there are none
+     */
+    public @Nullable ApiJoin findJoin(final @NotNull String path) {
+        for (final ApiJoin join : joins) {
+            if (join.path().equals(path)) {
+                return join;
+            }
+        }
+        return null;
     }
 
     /** @return the links of all entities */

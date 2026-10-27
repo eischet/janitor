@@ -58,6 +58,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -168,6 +169,15 @@ public final class OrmRestHandler<U> {
                 throw denial(request, null);
             }
             return new RestResponse(200, JSON, Map.of(), openApi());
+        }
+        final ApiJoin join = segments.size() == 1 ? model.findJoin(segments.get(0)) : null;
+        if (join != null) {
+            requireMethod(request, allowed(join::allows, RestOperation.LIST, "GET", RestOperation.CREATE, "POST", RestOperation.DELETE, "DELETE"));
+            return switch (request.method()) {
+                case "POST" -> mergeJoin(request, join);
+                case "DELETE" -> deleteJoin(request, join);
+                default -> listJoin(request, join);
+            };
         }
         final ApiEntity entity = model.findByPath(segments.get(0));
         if (entity == null) {
@@ -783,6 +793,195 @@ public final class OrmRestHandler<U> {
         } catch (JsonException e) {
             throw new DatabaseError("cannot write " + link.className() + " as JSON", e);
         }
+    }
+
+    // --- join records at a path of their own ---
+
+    private void authorizeJoin(final RestRequest<U> request, final ApiJoin join, final RestOperation operation) {
+        if (!policy.permitsJoin(request.user(), join, operation)) {
+            throw denial(request, null);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private JoinDao<OrmJoined> joinDaoOf(final ApiJoin join) {
+        final JoinDao<? extends OrmJoined> dao = collection.getJoinDao(join.className());
+        if (dao == null) {
+            throw new IllegalStateException("no DAO for " + join.className());
+        }
+        return (JoinDao<OrmJoined>) dao;
+    }
+
+    /**
+     * The conditions of a request on join records: its query parameters other than {@code page} and {@code size}, by property.
+     */
+    private static Map<String, String> criteriaOf(final RestRequest<?> request, final ApiJoin join) {
+        final Map<String, String> criteria = new java.util.LinkedHashMap<>();
+        for (final Map.Entry<String, List<String>> entry : request.query().entrySet()) {
+            if (entry.getKey().equals("page") || entry.getKey().equals("size") || entry.getValue().isEmpty()) {
+                continue;
+            }
+            if (join.field(entry.getKey()) == null) {
+                throw new RestException(400, "Unknown property '" + entry.getKey() + "'.");
+            }
+            criteria.put(entry.getKey(), entry.getValue().get(0));
+        }
+        return criteria;
+    }
+
+    /**
+     * The id that a parameter names for a reference: a number is the id, anything else the key of the entity; -1 if there is no such entity.
+     */
+    private long referencedId(final DatabaseConnection conn, final ApiField field, final String value) throws DatabaseError {
+        try {
+            return Long.parseLong(value);
+        } catch (NumberFormatException ignored) {
+            final Dao<? extends OrmEntity> dao = collection.getDao(field.referencedEntity());
+            final OrmEntity found = dao == null ? null : dao.findByKey(conn, value);
+            return found == null ? -1 : found.getId();
+        }
+    }
+
+    private boolean matches(final DatabaseConnection conn, final ApiJoin join, final OrmJoined row, final Map<String, String> criteria) throws DatabaseError {
+        for (final Map.Entry<String, String> criterion : criteria.entrySet()) {
+            final ApiField field = Objects.requireNonNull(join.field(criterion.getKey()));
+            final Object value = valueOf(join, field.name(), row);
+            if (field.isReference()) {
+                if (!(value instanceof ForeignKey<?> reference) || reference.isNull() || reference.getId() != referencedId(conn, field, criterion.getValue())) {
+                    return false;
+                }
+            } else if (value == null || !String.valueOf(plainValue(value)).equals(criterion.getValue())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Whether the caller may see what a join record refers to, as far as the API offers it.
+     */
+    private boolean visible(final RestRequest<U> request, final DatabaseConnection conn, final ApiJoin join, final OrmJoined row) throws DatabaseError {
+        for (final ApiField field : join.fields()) {
+            if (!field.isReference() || !(valueOf(join, field.name(), row) instanceof ForeignKey<?> reference) || reference.isNull()) {
+                continue;
+            }
+            final ApiEntity target = model.getEntities().stream().filter(entity -> entity.className().equals(field.referencedEntity())).findFirst().orElse(null);
+            if (target != null && loadVisible(request, conn, target, reference.getId()) == null) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * The join records that match the conditions and that the caller may see; at least one reference of the key has to be among the conditions.
+     */
+    private List<OrmJoined> findJoined(final RestRequest<U> request, final DatabaseConnection conn, final ApiJoin join, final Map<String, String> criteria) throws DatabaseError {
+        ApiField anchor = null;
+        for (final String keyField : join.keyFields()) {
+            final ApiField field = join.field(keyField);
+            if (field != null && field.isReference() && criteria.containsKey(keyField)) {
+                anchor = field;
+                break;
+            }
+        }
+        if (anchor == null) {
+            throw rollback(400, "Name at least one of " + join.keyFields().stream().filter(name -> Objects.requireNonNull(join.field(name)).isReference()).toList()
+                                + ", by id or key.", Map.of());
+        }
+        final long anchorId = referencedId(conn, anchor, criteria.get(anchor.name()));
+        final List<OrmJoined> result = new ArrayList<>();
+        if (anchorId < 0) {
+            return result;
+        }
+        for (final OrmJoined row : joinDaoOf(join).findByColumnValue(conn, anchor.column(), anchorId)) {
+            if (matches(conn, join, row, criteria) && visible(request, conn, join, row)) {
+                result.add(row);
+            }
+        }
+        return result;
+    }
+
+    private RestResponse listJoin(final RestRequest<U> request, final ApiJoin join) throws DatabaseError {
+        authorizeJoin(request, join, RestOperation.LIST);
+        final Map<String, String> criteria = criteriaOf(request, join);
+        final int page = parseInt(request.param("page"), "page", 0);
+        if (page < 0) {
+            throw new RestException(400, "'page' must not be negative.");
+        }
+        final Integer requested = parseOptionalInt(request.param("size"), "size");
+        if (requested != null && requested < 1) {
+            throw new RestException(400, "'size' must be at least 1.");
+        }
+        final int size = requested == null ? OrmApiModel.DEFAULT_PAGE_SIZE : Math.min(requested, OrmApiModel.DEFAULT_MAX_PAGE_SIZE);
+        final String json = collection.getDataManager().callTransaction(conn -> {
+            final List<OrmJoined> rows = findJoined(request, conn, join, criteria);
+            final long start = Math.min((long) page * size, rows.size());
+            final List<OrmJoined> slice = rows.subList((int) start, (int) Math.min(start + size, rows.size()));
+            try {
+                return JsonTree.toJson(JsonTree.object("items", new ArrayList<Object>(toTrees(conn, join, slice, Set.of(), true)), "total", (long) rows.size(),
+                        "page", (long) page, "size", (long) size));
+            } catch (JsonException e) {
+                throw new DatabaseError("cannot write " + join.className() + " as JSON", e);
+            }
+        });
+        return new RestResponse(200, JSON, Map.of(), json);
+    }
+
+    /**
+     * {@code POST}: creates the join record of the body, or changes the one with the same key (a merge, as in scripts).
+     */
+    private RestResponse mergeJoin(final RestRequest<U> request, final ApiJoin join) throws DatabaseError, JsonException {
+        authorizeJoin(request, join, RestOperation.CREATE);
+        final WriteBody body = parseBody(request, join, Set.of(), false, Map.of());
+        return collection.getDataManager().callTransaction(conn -> {
+            final OrmJoined row = joinDaoOf(join).newInstance();
+            try {
+                apply(request, join, row, body);
+            } catch (JsonException e) {
+                throw rollback(400, String.valueOf(e.getMessage()), Map.of());
+            } catch (RestException e) {
+                throw new Rollback(e);
+            }
+            for (final String keyField : join.keyFields()) {
+                final Object value = valueOf(join, keyField, row);
+                if (value == null || value instanceof ForeignKey<?> reference && reference.isNull()) {
+                    throw rollback(400, "Missing property '" + keyField + "': the key of the record is " + join.keyFields() + ".", Map.of());
+                }
+            }
+            checkReferences(conn, join, row, body.written());
+            if (!visible(request, conn, join, row)) {
+                throw rollback(404, "The record refers to something that does not exist.", Map.of());
+            }
+            runHook(() -> policy.beforeJoinWrite(request.user(), join, RestOperation.CREATE, row, conn));
+            joinDaoOf(join).merge(conn, row);
+            try {
+                return new RestResponse(200, JSON, Map.of(), JsonTree.toJson(toTrees(conn, join, List.of(row), Set.of(), true).get(0)));
+            } catch (JsonException e) {
+                throw new DatabaseError("cannot write " + join.className() + " as JSON", e);
+            }
+        });
+    }
+
+    /**
+     * {@code DELETE}: deletes the join record that the query parameters name by its whole key.
+     */
+    private RestResponse deleteJoin(final RestRequest<U> request, final ApiJoin join) throws DatabaseError {
+        authorizeJoin(request, join, RestOperation.DELETE);
+        final Map<String, String> criteria = criteriaOf(request, join);
+        if (!criteria.keySet().containsAll(join.keyFields())) {
+            throw new RestException(400, "Name the whole key of the record: " + join.keyFields() + ".");
+        }
+        return collection.getDataManager().callTransaction(conn -> {
+            final List<OrmJoined> rows = findJoined(request, conn, join, criteria);
+            if (rows.isEmpty()) {
+                throw rollback(404, "There is no such record.", Map.of());
+            }
+            final OrmJoined row = rows.get(0);
+            runHook(() -> policy.beforeJoinWrite(request.user(), join, RestOperation.DELETE, row, conn));
+            joinDaoOf(join).delete(conn, row);
+            return RestResponse.empty(204, Map.of());
+        });
     }
 
     // --- writing ---

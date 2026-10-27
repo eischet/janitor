@@ -84,6 +84,21 @@ public final class RestOrm {
     }
 
     /**
+     * Exposes the records of a join table at a path of their own, e.g. {@code exposeJoin(personItem, "person-items")}: listed by any part of
+     * their key, created or changed by posting a whole record, deleted by naming their whole key (see {@link ApiJoin}). Which of that a join
+     * table offers is up to {@link RestMetaData#OPERATIONS}, or to the selection of a partial model; reading by default.
+     *
+     * @param joinTable the dispatch table of the join records
+     * @param path      the path, e.g. "person-items"
+     * @return the join table
+     */
+    public static <D extends DispatchTable<?>> D exposeJoin(final @NotNull D joinTable, final @NotNull String path) {
+        checkPath(path);
+        joinTable.setMetaData(RestMetaData.JOIN_PATH, path);
+        return joinTable;
+    }
+
+    /**
      * Offers operations in addition to the reading ones, e.g. {@code RestOrm.allow(table, RestOperation.CREATE, RestOperation.UPDATE)}.
      * Allowing an operation only makes it possible: the {@link RestPolicy} still decides for every request.
      * @param table      the dispatch table of the entity

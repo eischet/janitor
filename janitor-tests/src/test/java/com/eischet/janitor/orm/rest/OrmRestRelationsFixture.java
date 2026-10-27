@@ -29,7 +29,8 @@ import org.jetbrains.annotations.NotNull;
  * table with the extra column "role"), tasks that belong to a team (a sub-resource of the team, which can be created), and notes on a task,
  * which hold the id of their task as a plain number (a sub-resource of the task all the same).
  * <p>
- * Teams have the links {@code /teams/{id}/members}, members have {@code /members/{id}/teams}; memberships can be created and deleted.
+ * Teams have the links {@code /teams/{id}/members}, members have {@code /members/{id}/teams}; memberships can be created and deleted, also at
+ * their own path {@code /memberships}.
  * </p>
  */
 public final class OrmRestRelationsFixture {
@@ -166,6 +167,7 @@ public final class OrmRestRelationsFixture {
             RestOrm.link(DISPATCH, "team", "members", "member");
             RestOrm.link(DISPATCH, "member", "teams", "team");
             RestOrm.allow(DISPATCH, RestOperation.CREATE, RestOperation.DELETE);
+            RestOrm.exposeJoin(DISPATCH, "memberships");
         }
 
         private final RelationsCollection source;

@@ -268,6 +268,13 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
     }
 
     /**
+     * @return a new, empty join record, as {@code dao.insert(map)} starts from in scripts
+     */
+    public @NotNull T newInstance() {
+        return newValue.get();
+    }
+
+    /**
      * @return the columns that make up the primary key of the join table
      */
     public @NotNull @Unmodifiable List<String> getPrimaryKeyColumns() {

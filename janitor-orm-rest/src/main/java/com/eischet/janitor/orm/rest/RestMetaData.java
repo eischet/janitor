@@ -61,6 +61,11 @@ public final class RestMetaData {
      */
     public static final MetaDataKey<RestLinks> LINKS = new MetaDataKey<>("rest_links", RestLinks.class);
 
+    /**
+     * Exposes the records of a join table at a path of their own, see {@link ApiJoin}. Set on the dispatch table of the join records.
+     */
+    public static final MetaDataKey<String> JOIN_PATH = new MetaDataKey<>("rest_join_path", String.class);
+
     /** Set on a property to keep it out of the API entirely, e.g. for internal fields. */
     public static final MetaDataKey<Boolean> HIDDEN = new MetaDataKey<>("rest_hidden", Boolean.class);
 

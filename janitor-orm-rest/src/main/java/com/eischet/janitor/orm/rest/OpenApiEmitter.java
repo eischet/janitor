@@ -12,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -86,6 +87,11 @@ public final class OpenApiEmitter {
         }
         for (final ApiSubresource sub : model.getSubresources()) {
             addSubresourcePaths(paths, sub);
+        }
+        for (final ApiJoin join : model.getJoins()) {
+            schemas.put(join.className() + "Record", OrmSchemaBuilder.entitySchema(join));
+            schemas.put(join.className() + "RecordPage", pageSchema(join.className() + "Record"));
+            addJoinPaths(paths, join);
         }
         for (final ApiLink link : model.getLinks()) {
             if (!schemas.containsKey(link.className())) {
@@ -430,6 +436,64 @@ public final class OpenApiEmitter {
                 default -> RestOperation.GET;
             }));
             paths.put(base + "/{otherId}", one);
+        }
+    }
+
+    /** {@code /join-records}: join records at a path of their own, listed by part of their key, merged, deleted by their whole key. */
+    private void addJoinPaths(final Map<String, Object> paths, final ApiJoin join) {
+        final String name = join.className() + "Record"; // not the schema of the links, whose references are read-only
+        final List<String> references = join.keyFields().stream().filter(field -> Objects.requireNonNull(join.field(field)).isReference()).toList();
+        final Map<String, Object> item = JsonTree.object();
+        if (join.allows(RestOperation.LIST)) {
+            final List<Object> parameters = new ArrayList<>();
+            for (final ApiField field : join.fields()) {
+                parameters.add(JsonTree.object("name", field.name(), "in", "query", "required", Boolean.FALSE,
+                        "description", field.isReference() ? "The " + field.referencedEntity() + ", by id or key." : "The value of " + field.name() + ".",
+                        "schema", JsonTree.object("type", "string")));
+            }
+            parameters.add(JsonTree.object("name", "page", "in", "query", "required", Boolean.FALSE, "description", "The number of the page, starting at 0.",
+                    "schema", JsonTree.object("type", "integer", "minimum", 0L, "default", 0L)));
+            parameters.add(JsonTree.object("name", "size", "in", "query", "required", Boolean.FALSE, "description", "The page size; at most " + OrmApiModel.DEFAULT_MAX_PAGE_SIZE + ".",
+                    "schema", JsonTree.object("type", "integer", "minimum", 1L, "maximum", (long) OrmApiModel.DEFAULT_MAX_PAGE_SIZE, "default", (long) OrmApiModel.DEFAULT_PAGE_SIZE)));
+            item.put("get", JsonTree.object(
+                    "operationId", "list" + name,
+                    "summary", "Lists " + name + " records",
+                    "description", "The records that match all parameters; at least one of " + references + " has to be given.",
+                    "tags", List.of(name),
+                    "parameters", parameters,
+                    "responses", JsonTree.object("200", JsonTree.object("description", "One page of the records.",
+                                    "content", JsonTree.object(JSON, JsonTree.object("schema", ref(name + "Page")))),
+                            "400", responseRef("BadRequest"), "403", responseRef("Forbidden"))));
+        }
+        if (join.allows(RestOperation.CREATE)) {
+            item.put("post", JsonTree.object(
+                    "operationId", "merge" + name,
+                    "summary", "Creates a " + name + " record, or changes the one with the same key",
+                    "description", "The key of the record is " + join.keyFields() + "; references by id or key. Properties that are missing keep the values of a new record.",
+                    "tags", List.of(name),
+                    "requestBody", entityBody(name),
+                    "responses", JsonTree.object("200", JsonTree.object("description", "The record as it was stored.", "content", JsonTree.object(JSON, JsonTree.object("schema", ref(name)))),
+                            "400", responseRef("BadRequest"), "403", responseRef("Forbidden"), "404", responseRef("NotFound"))));
+        }
+        if (join.allows(RestOperation.DELETE)) {
+            final List<Object> parameters = new ArrayList<>();
+            for (final String keyField : join.keyFields()) {
+                final ApiField field = Objects.requireNonNull(join.field(keyField));
+                parameters.add(JsonTree.object("name", keyField, "in", "query", "required", Boolean.TRUE,
+                        "description", field.isReference() ? "The " + field.referencedEntity() + ", by id or key." : "The value of " + keyField + ".",
+                        "schema", JsonTree.object("type", "string")));
+            }
+            item.put("delete", JsonTree.object(
+                    "operationId", "delete" + name,
+                    "summary", "Deletes a " + name + " record",
+                    "tags", List.of(name),
+                    "parameters", parameters,
+                    "responses", JsonTree.object("204", JsonTree.object("description", "The record was deleted."),
+                            "400", responseRef("BadRequest"), "403", responseRef("Forbidden"), "404", responseRef("NotFound"))));
+        }
+        if (!item.isEmpty()) {
+            secure(item, method -> null);
+            paths.put("/" + join.path(), item);
         }
     }
 

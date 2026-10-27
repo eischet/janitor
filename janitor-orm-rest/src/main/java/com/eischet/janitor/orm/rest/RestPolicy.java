@@ -63,6 +63,35 @@ public interface RestPolicy<U> extends RestSecurityDescription {
     }
 
     /**
+     * Decides whether a request may do an operation on join records at a path of their own ({@link ApiJoin}): {@code LIST} reads them,
+     * {@code CREATE} creates or changes one (a merge), {@code DELETE} deletes one. Whatever the join records refer to also has to be visible
+     * to the caller, as far as the API offers it.
+     *
+     * @param user      the user of the request, or null if there is none
+     * @param join      the join records
+     * @param operation the operation
+     * @return true to allow it, which is the default; false makes the API answer with 401 or 403
+     */
+    default boolean permitsJoin(@Nullable U user, @NotNull ApiJoin join, @NotNull RestOperation operation) {
+        return true;
+    }
+
+    /**
+     * Like {@link #beforeWrite}, for join records at a path of their own: {@link RestOperation#CREATE} before one is merged,
+     * {@link RestOperation#DELETE} before one is deleted.
+     *
+     * @param user      the user of the request, or null if there is none
+     * @param join      the join records
+     * @param operation what is about to happen
+     * @param row       the join record that will be written
+     * @param conn      the connection of the transaction of the request
+     * @throws RestRejection if the request is to be refused
+     * @throws DatabaseError on database errors
+     */
+    default void beforeJoinWrite(@Nullable U user, @NotNull ApiJoin join, @NotNull RestOperation operation, @NotNull OrmJoined row, @NotNull DatabaseConnection conn) throws DatabaseError {
+    }
+
+    /**
      * Decides whether a request may get the API description itself ({@code /openapi.json}), which lists everything that is exposed.
      *
      * @param user the user of the request, or null if there is none
