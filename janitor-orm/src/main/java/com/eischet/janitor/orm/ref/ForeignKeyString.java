@@ -24,7 +24,10 @@ public final class ForeignKeyString<T extends OrmEntity> implements ForeignKey<T
 
     private final @NotNull String key;
     private final @NotNull Dao<T> dao;
-    /** volatile: resolving can happen on any thread, and the entity must be safely visible to all others. */
+    /**
+     * The entity loaded first, kept only if the DAO has no cache (see {@link Dao#cachesEntities()}).
+     * volatile: resolving can happen on any thread, and the entity must be safely visible to all others.
+     */
     private volatile T resolved;
 
     public ForeignKeyString(final @NotNull String key, final @NotNull Dao<T> dao) {
@@ -59,6 +62,9 @@ public final class ForeignKeyString<T extends OrmEntity> implements ForeignKey<T
         if (key.isBlank()) {
             return Optional.empty();
         }
+        if (dao.cachesEntities()) {
+            return Optional.ofNullable(dao.lazyLoadByKey(key));
+        }
         if (resolved == null) {
             resolved = dao.lazyLoadByKey(key);
         }
@@ -68,6 +74,9 @@ public final class ForeignKeyString<T extends OrmEntity> implements ForeignKey<T
 
     @Override
     public @NotNull Optional<T> resolve(final @NotNull DatabaseConnection conn) throws DatabaseError {
+        if (dao.cachesEntities()) {
+            return Optional.ofNullable(dao.findByKey(conn, key));
+        }
         if (resolved == null) {
             resolved = dao.findByKey(conn, key);
         }
@@ -76,15 +85,16 @@ public final class ForeignKeyString<T extends OrmEntity> implements ForeignKey<T
 
     @Override
     public void preResolve(@NotNull final DatabaseConnection conn) throws DatabaseError {
-        resolved = dao.findByKey(conn, key);
+        if (dao.cachesEntities()) {
+            dao.findByKey(conn, key); // only fills the cache, so that resolving later needs no transaction
+        } else {
+            resolved = dao.findByKey(conn, key);
+        }
     }
 
     @Override
     public @NotNull JanitorObject janitorUnpack() {
-        if (resolved == null) {
-            resolved = dao.lazyLoadByKey(key);
-        }
-        return Janitor.nullableObject(resolved);
+        return Janitor.nullableObject(resolve().orElse(null));
     }
 
     @Override

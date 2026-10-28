@@ -24,7 +24,9 @@ import static com.eischet.janitor.api.Janitor.nullable;
  * or lookups at query time.</p>
  * <p>The FK implementations act as lazy proxies for the values they point to, interacting with the responsible DAO to load them when requested. While every
  * call site will have to deal with the typical database exceptions that come with database operations, only the first load will have to do the actual work.
- * In my experience, this works nicely with caching and my own usual access patterns, while at the same time keeping the client code reasonably clean.</p>
+ * In my experience, this works nicely with caching and my own usual access patterns, while at the same time keeping the client code reasonably clean.
+ * If the DAO keeps a cache ({@link com.eischet.janitor.orm.dao.Dao#cachesEntities()}), a reference does not hold on to the entity, but asks the DAO each
+ * time: the cache is cheap to ask and has the current state, while an entity held here would go stale as soon as somebody saves it.</p>
  * <p>Notice that database NULL is not represented by Java null, but by a special {@link ForeignKeyNull} instance, of which every FK type should provide a typed singleton.
  * This simplifies NULL handling tremendously and allows us to mark any foreign key references as @NotNull, removing the need for lots of branches in client code.</p>
  * @param <T>

@@ -177,6 +177,15 @@ public interface Dao<T extends OrmEntity> extends JanitorObject {
     @Nullable T lazyLoadById(long id);
     @Nullable T lazyLoadByKey(String key);
 
+    /**
+     * Whether this DAO keeps its entities in a cache that it keeps up to date on writes. References to its entities then ask the
+     * DAO each time instead of holding on to the entity they loaded first, which would go stale when the entity is saved.
+     * @return true if this DAO has an entity cache
+     */
+    default boolean cachesEntities() {
+        return false;
+    }
+
     // TODO: should lazyLoadByAssociation better throw an exception on errors?
 
     /**

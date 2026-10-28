@@ -9,6 +9,11 @@
 - orm: `AssociatedList.lazyLoad()` is now safe to call from several threads at once, like `JoinedList`; before, concurrent loads
   could list the entities several times or fail. With a sorter, it no longer sorts the DAO's unmodifiable result in place, which
   threw an `UnsupportedOperationException`.
+- orm: a reference (`ForeignKeyInteger`, `ForeignKeyString`) to an entity whose DAO keeps a cache no longer holds on to the
+  entity it loaded first, but asks the DAO each time (a cache hit, no transaction). Before, an entity in a cache that referred to
+  another one kept showing it as it was when first resolved, even after it was saved, until the referring entity left the cache.
+  `preResolve(conn)` then only fills the cache. New `Dao.cachesEntities()`; references to entities of a DAO without a cache keep
+  what they loaded, as before.
 - orm: `LazyLoadedString` is now safe to read from several threads at once: the column is fetched once, and no thread sees it as
   loaded before its value (which could return `null` for an entity in a cache).
 

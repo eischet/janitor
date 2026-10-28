@@ -318,6 +318,11 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
         return (Object) cache != EntityCache.noop();
     }
 
+    @Override
+    public final boolean cachesEntities() {
+        return isCachingEnabled();
+    }
+
     /**
      * The state of the attached cache (size, maximum, time to live), for monitoring; null if this DAO has no cache.
      */

@@ -22,7 +22,10 @@ public final class ForeignKeyInteger<T extends OrmEntity> implements ForeignKey<
 
     private final long id;
     private final Dao<T> dao;
-    /** volatile: resolving can happen on any thread, and the entity must be safely visible to all others. */
+    /**
+     * The entity loaded first, kept only if the DAO has no cache (see {@link Dao#cachesEntities()}).
+     * volatile: resolving can happen on any thread, and the entity must be safely visible to all others.
+     */
     private volatile T resolved;
 
     public ForeignKeyInteger(final long id, final Dao<T> dao) {
@@ -52,6 +55,9 @@ public final class ForeignKeyInteger<T extends OrmEntity> implements ForeignKey<
         if (isEmpty()) {
             return Optional.empty();
         }
+        if (dao.cachesEntities()) {
+            return Optional.ofNullable(dao.lazyLoadById(id));
+        }
         if (resolved == null) {
             resolved = dao.lazyLoadById(id);
         }
@@ -60,13 +66,18 @@ public final class ForeignKeyInteger<T extends OrmEntity> implements ForeignKey<
 
     @Override
     public void preResolve(@NotNull DatabaseConnection conn) throws DatabaseError {
-        if (resolved == null) {
+        if (dao.cachesEntities()) {
+            dao.findById(conn, id); // only fills the cache, so that resolving later needs no transaction
+        } else if (resolved == null) {
             resolved = dao.findById(conn, id);
         }
     }
 
     @Override
     public @NotNull Optional<T> resolve(final @NotNull DatabaseConnection conn) throws DatabaseError {
+        if (dao.cachesEntities()) {
+            return Optional.ofNullable(dao.findById(conn, id));
+        }
         preResolve(conn);
         return Optional.ofNullable(resolved);
     }
