@@ -1,4 +1,4 @@
-# 0.9.70 (in development)
+# 0.9.70, 2026-10-29 (internal release only)
 
 - orm: `JoinedList.lazyLoad()` and `load(connection)` are now safe to call from several threads at once. Before, threads that
   loaded the join records of the same parent entity at the same time (e.g. one held in a DAO cache) each appended them, so the
@@ -16,7 +16,6 @@
   what they loaded, as before.
 - orm: `LazyLoadedString` is now safe to read from several threads at once: the column is fetched once, and no thread sees it as
   loaded before its value (which could return `null` for an entity in a cache).
-
 - i18n: `TranslationService` looks texts up for an explicit locale, without thread-local state: `setBundleBaseName(...)`, then
   `translate(locale, key, default)` and `translateOrNull(locale, key)`; bundles are loaded once per locale. Fixes: overrides per
   language now use the language code ("de.foo"; they used the country code, so "de.foo" never matched), and `translate(key, default)`
@@ -141,7 +140,7 @@
 - every method and property of the built-in types now has a HELP text, so `help(...)` works for all of them. The HELP
   texts of `string.length` and `string.trim` no longer start with "String.".
 
-# 0.9.69, 2026-10-20 (internal reelase only)
+# 0.9.69, 2026-10-20 (internal release only)
 
 - new module "mcp" (com.eischet.janitor.modules:mcp): a client for MCP (Model Context Protocol) servers, so that scripts can
   list and call the tools of any MCP server: `srv = mcp.connect(url, {"headers": {"Authorization": "Bearer ..."}});`,
