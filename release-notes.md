@@ -1,4 +1,4 @@
-# 0.9.70, 2026-10-29 (internal release only)
+# 0.9.71, 2026-10-29 (internal release only)
 
 - orm: `JoinedList.lazyLoad()` and `load(connection)` are now safe to call from several threads at once. Before, threads that
   loaded the join records of the same parent entity at the same time (e.g. one held in a DAO cache) each appended them, so the
@@ -139,6 +139,8 @@
   (JLine option DISABLE_EVENT_EXPANSION).
 - every method and property of the built-in types now has a HELP text, so `help(...)` works for all of them. The HELP
   texts of `string.length` and `string.trim` no longer start with "String.".
+- skipped 0.9.70 for technical reasons
+
 
 # 0.9.69, 2026-10-20 (internal release only)
 
