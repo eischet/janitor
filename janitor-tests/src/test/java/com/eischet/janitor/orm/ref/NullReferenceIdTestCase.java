@@ -255,4 +255,51 @@ public class NullReferenceIdTestCase extends JanitorTest {
         assertEquals(List.of("WITHOUT"), keys(things, new FilterExpression("owner", FilterOperator.ISNULL)));
         assertEquals(List.of("WITH"), keys(things, new FilterExpression("owner", FilterOperator.ISNOTNULL)));
     }
+
+    @Test
+    void theSystemRowIsNeverReturned() throws DatabaseError {
+        final Things things = new SystemRowThings(newDatabase(false));
+        final OwnerDao owners = things.getOwnerDao();
+        things.getDataManager().executeTransaction(conn -> {
+            conn.update(UpdateStatement.of("update n_owner set owner_key = 'SYS' where owner_id = 0"));
+            final Owner owner = new Owner();
+            owner.setKey("ACME");
+            owner.setName("Acme");
+            owners.insert(conn, owner);
+        });
+        things.getDataManager().callTransaction(conn -> {
+            assertNull(owners.findById(conn, 0));
+            assertNull(owners.findByIdIgnoringCache(conn, 0));
+            assertNull(owners.findByKey(conn, "SYS"));
+            assertEquals(List.of("ACME"), owners.findAll(conn, null).stream().map(Owner::getKey).toList());
+            assertEquals(List.of("ACME"), owners.findAll(conn, 10, 0).stream().map(Owner::getKey).toList());
+            assertEquals(List.of("ACME"), owners.findByIds(conn, List.of(0L, 1L)).stream().map(Owner::getKey).toList());
+            assertEquals(List.of("ACME"), owners.findByFilter(conn, FilterQuery.from(new FilterExpression("name", FilterOperator.ISNOTNULL))).stream().map(Owner::getKey).toList());
+            assertEquals(List.of("ACME"), owners.findByQuery(conn, "select owner_id, owner_key, owner_name from n_owner", ps -> {
+            }).stream().map(Owner::getKey).toList());
+            assertEquals(1, owners.countByFilter(conn, null));
+            assertEquals(1, owners.countByFilter(conn, new FilterExpression("name", FilterOperator.ISNOTNULL)));
+            return null;
+        });
+    }
+
+    @Test
+    void theSystemRowIsNeverWritten() throws DatabaseError {
+        final Things things = new SystemRowThings(newDatabase(false));
+        final Owner system = new Owner();
+        system.setId(0);
+        system.setName("changed");
+        assertThrows(DatabaseError.class, () -> things.getDataManager().executeTransaction(conn -> things.getOwnerDao().update(conn, system)));
+        assertThrows(DatabaseError.class, () -> things.getDataManager().executeTransaction(conn -> things.getOwnerDao().delete(conn, system)));
+        assertEquals("system row", things.getDataManager().callTransaction(conn -> conn.queryForObject(
+                SelectStatement.of("select owner_name from n_owner where owner_id = 0"), ps -> {
+                }, rs -> rs.getString())));
+    }
+
+    @Test
+    void withoutConfigurationRowZeroIsARecord() throws DatabaseError {
+        final Things things = new Things(newDatabase(true));
+        assertNotNull(things.getDataManager().callTransaction(conn -> things.getOwnerDao().findById(conn, 0)));
+        assertEquals(1, things.getDataManager().callTransaction(conn -> things.getOwnerDao().findAll(conn, null)).size());
+    }
 }

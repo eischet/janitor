@@ -148,6 +148,13 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
     /** Select of all selectable columns without a where clause; the base for queries that append their own conditions. */
     private final @NotNull String selectAllSql;
     private final @NotNull String countAllSql;
+    /**
+     * The id of the row that stands for "no record" in this collection ({@link OrmDaoCollection#getNullReferenceId()}), or null if there is
+     * none. Since a reference to it means nothing, the row is no record either: this DAO never reads, updates or deletes it.
+     */
+    private final @Nullable Long nullRowId;
+    /** The condition that leaves out the row {@link #nullRowId}, or null if there is none. */
+    private final @Nullable String visibleRowsCondition;
     private final @NotNull UpdateStatement insertStatement;
     private final @NotNull UpdateStatement updateStatement;
     private final @NotNull UpdateStatement deleteStatement;
@@ -223,9 +230,12 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
         }
         this.selectMappings = selected;
 
+        this.nullRowId = collection.getNullReferenceId();
+        this.visibleRowsCondition = nullRowId == null ? null : getDialect().quoteColumn(idColumn) + " <> " + nullRowId;
         final StatementCreator creator = new StatementCreator(getDialect());
         this.selectByIdStatement = SelectStatement.of(creator.createSelectStatement(tableName, selectColumns, idColumn));
-        this.selectByKeyStatement = keyColumn == null ? null : SelectStatement.of(creator.createSelectStatement(tableName, selectColumns, keyColumn));
+        this.selectByKeyStatement = keyColumn == null ? null : SelectStatement.of(creator.createSelectStatement(tableName, selectColumns, keyColumn)
+                + (visibleRowsCondition == null ? "" : " and " + visibleRowsCondition));
         this.selectAllSql = creator.createSelectAllStatement(tableName, selectColumns);
         this.countAllSql = creator.createCountStatement(tableName);
         this.updateColumns = columns.stream().filter(column -> !Objects.equals(column, idColumn)).toList();
@@ -244,6 +254,32 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
         }
 
         collection.registerDao(this);
+    }
+
+    /**
+     * Appends a where clause to a query: the condition, if any, and the one that leaves out the row that stands for "no record", if there is one.
+     */
+    private @NotNull String where(final @NotNull String sql, final @Nullable String condition) {
+        if (visibleRowsCondition == null) {
+            return condition == null ? sql : sql + "\nWHERE\n  " + condition;
+        }
+        return sql + "\nWHERE\n  " + visibleRowsCondition + (condition == null ? "" : " and (" + condition + ")");
+    }
+
+    /**
+     * Whether an id is that of the row that stands for "no record" in this collection, see {@link OrmDaoCollection#getNullReferenceId()}.
+     * That row is never read, updated or deleted.
+     * @param id an id
+     * @return true for the id of that row
+     */
+    protected final boolean isNullRowId(final long id) {
+        return nullRowId != null && nullRowId == id;
+    }
+
+    private void refuseNullRow(final @NotNull T record, final @NotNull String operation) throws DatabaseError {
+        if (isNullRowId(record.getId())) {
+            throw new DatabaseError("cannot " + operation + " " + className + " " + record.getId() + ": that row stands for \"no record\"");
+        }
     }
 
     /**
@@ -450,6 +486,9 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
 
     @Override
     public @Nullable T findById(final @NotNull DatabaseConnection conn, final long id) throws DatabaseError {
+        if (isNullRowId(id)) {
+            return null;
+        }
         final T cached = cache.findById(id);
         if (cached != null) {
             metrics().cacheHit();
@@ -471,7 +510,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
     public @NotNull @Unmodifiable List<T> findByIds(final @NotNull DatabaseConnection conn, final @NotNull Collection<Long> ids) throws DatabaseError {
         final Set<Long> distinct = new LinkedHashSet<>();
         for (final Long id : ids) {
-            if (id != null) {
+            if (id != null && !isNullRowId(id)) {
                 distinct.add(id);
             }
         }
@@ -529,6 +568,9 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
      * miss would.
      */
     public @Nullable T findByIdIgnoringCache(final @NotNull DatabaseConnection conn, final long id) throws DatabaseError {
+        if (isNullRowId(id)) {
+            return null;
+        }
         final SelectStatement select = selectByIdStatement;
         if (verbose) {
             log.info("{}::findById(id={}): running {}", className, id, select);
@@ -589,7 +631,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
     public @NotNull List<T> findAll(final @NotNull DatabaseConnection conn, final @Nullable Integer limit, final @Nullable Integer offset) throws DatabaseError {
         final boolean limited = limit != null && limit > 0;
         final int skip = checkOffset(offset, limited);
-        final String sql = limited ? selectAllSql + " " + defaultOrderBy(offset != null) : selectAllSql;
+        final String sql = limited ? where(selectAllSql, null) + " " + defaultOrderBy(offset != null) : where(selectAllSql, null);
         if (verbose) {
             log.info("{}::findAll(): running {}, limit={}, offset={}", className, sql, limit, offset);
         }
@@ -665,7 +707,8 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
     @Override
     public @NotNull @Unmodifiable List<T> findByQuery(@NotNull final DatabaseConnection conn, @NotNull final String query, @NotNull final StatementConfigurator statementConfigurator) throws DatabaseError {
         final SelectStatement select = SelectStatement.of(query);
-        return conn.queryForList(select, statementConfigurator, rs -> readAllProperties(conn, rs));
+        final List<T> found = conn.queryForList(select, statementConfigurator, rs -> readAllProperties(conn, rs));
+        return nullRowId == null ? found : found.stream().filter(entity -> !isNullRowId(entity.getId())).toList();
 
     }
 
@@ -924,9 +967,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
     @Override
     public int countByFilter(@NotNull final DatabaseConnection conn, @Nullable final FilterExpression filterExpression) throws DatabaseError {
                 final List<Prepper> preppers = new LinkedList<>();
-        @Language("SQL") final String sql =
-                filterExpression == null ? countAllSql :
-                        countAllSql + "\nWHERE\n  " + expressionToSql(filterExpression, preppers::add);
+        @Language("SQL") final String sql = where(countAllSql, filterExpression == null ? null : expressionToSql(filterExpression, preppers::add));
         if (verbose) {
             log.info("countByFilter, sql: {}, preppers: {}", sql, preppers);
         }
@@ -942,7 +983,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
 
     @Override
     public @NotNull List<T> findByAssociation(final @NotNull DatabaseConnection conn, final String foreignKeyColumn, final long foreignKeyValue) throws DatabaseError {
-        @Language("SQL") final String sql = selectAllSql + "\nWHERE\n  " + getDialect().quoteColumn(foreignKeyColumn) + " = ?";
+        @Language("SQL") final String sql = where(selectAllSql, getDialect().quoteColumn(foreignKeyColumn) + " = ?");
         if (verbose) {
             log.info("findByAssociation, sql: {}, fk = {}", sql, foreignKeyValue);
         }
@@ -1069,7 +1110,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
         final boolean limited = limit != null && limit > 0;
         final int offset = checkOffset(filterQuery.getOffset(), limited);
         final @NotNull String finalOrderBy = orderByFor(filterQuery);
-        @Language("SQL") final String sql = selectAllSql + "\nWHERE\n  " + expressionToSql(filterQuery.filterExpression, preppers::add);
+        @Language("SQL") final String sql = where(selectAllSql, expressionToSql(filterQuery.filterExpression, preppers::add));
         if (limited && collection.canLimitAndOffset()) {
             SelectStatement limitedSelect = filterQuery.rewriteQuery(getDialect().addLimitAndOffset(SelectStatement.of(sql + " " + finalOrderBy)));
             return new LimitedSelectStatement(limitedSelect.getSql(), limit, offset, true, preppers);
@@ -1149,6 +1190,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
 
     @Override
     public void update(@NotNull DatabaseConnection conn, @NotNull T record) throws DatabaseError {
+        refuseNullRow(record, "update");
         final List<String> updatingColumns = updateColumns;
         touchModifiedDate(record);
         record.beforeUpdate();
@@ -1186,6 +1228,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
 
     @Override
     public void delete(@NotNull final DatabaseConnection conn, @NotNull final T record) throws DatabaseError {
+        refuseNullRow(record, "delete");
         if (versionedDeleteStatement != null && record instanceof Versioned versioned) {
             final long expected = versioned.getVersion();
             final int rows = conn.update(versionedDeleteStatement, ps -> {
@@ -1501,7 +1544,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
                     if (obj != null) {
                         ++count;
                         callback.call(process, new JCallArgs("callback", process, List.of(forScript(obj), Janitor.nullableInteger(identifier))));
-                    } else {
+                    } else if (identifier == null || !isNullRowId(identifier)) {
                         log.warn("queryForEach: object not found for identifier {}", identifier);
                     }
                 }

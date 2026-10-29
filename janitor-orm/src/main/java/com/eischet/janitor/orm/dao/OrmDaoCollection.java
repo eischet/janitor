@@ -141,6 +141,10 @@ public abstract class OrmDaoCollection<S extends OrmDaoCollection<S>> extends Ja
      * {@link com.eischet.janitor.orm.JanitorOrm.MetaData#NULL_REFERENCE_ID}. Override this for schemas whose reference columns are
      * {@code NOT NULL} and point to a system row instead, e.g. {@code return 0L;} for Assyst.
      * <p>
+     * The row with this id is then no record of its own: the DAOs ({@link GenericDao}) never return it from any query, by id, key, filter or
+     * otherwise, and refuse to update or delete it.
+     * </p>
+     * <p>
      * The DAOs ask for this while they are constructed, which usually happens in the constructor of the collection, so an override
      * must not depend on fields of the subclass: return a constant.
      * </p>
