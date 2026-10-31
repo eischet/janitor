@@ -26,7 +26,7 @@ function greet(name, greeting = "Hello", *rest, **options) {
     } else if (not name ~ re/^[A-Z]\w*\/?$/ &amp;&amp; name !~ re/x/) {
         return greeting + ", " + name.toUpperCase() + "!\n";
     }
-    return if options.loud then 'LOUD A \x' else '''quiet
+    return if options.loud then 'LOUD \t &#92;u00e4 \x' else '''quiet
         and $not interpolated'''
 }
 
@@ -46,7 +46,7 @@ unicodeNäme = "ünicode";
 <script>
     (function () {
         var params = new URLSearchParams(location.search);
-        var version = params.get("ace") || "1.43.4";
+        var version = params.get("ace") || "1.44.0";
         var theme = params.get("theme") || "eclipse";
         var base = "https://cdnjs.cloudflare.com/ajax/libs/ace/" + version + "/";
         document.getElementById("version").textContent = version;

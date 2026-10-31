@@ -56,7 +56,7 @@ ace.define("ace/mode/janitor_highlight_rules",
                     {token: "constant.numeric", regex: "@\\d{4}-\\d?\\d-\\d?\\d"},
                     {token: "constant.numeric", regex: "@\\d+(?:y|mo|w|d|h|mi|s)"},
                     {token: "constant.numeric", regex: "@(?:today|now)\\b"},
-                    {token: "invalid.illegal", regex: "@\\S*"},
+                    {token: "invalid.illegal", regex: "@[a-zA-Z0-9_$]*"},
 
                     {token: "constant.numeric", regex: "0[xX][0-9a-fA-F](?:[0-9a-fA-F_]*[0-9a-fA-F])?\\b"},
                     {token: "constant.numeric", regex: "0[bB][01](?:[01_]*[01])?\\b"},
