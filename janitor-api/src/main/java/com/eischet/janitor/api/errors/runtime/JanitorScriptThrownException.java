@@ -37,10 +37,12 @@ public final class JanitorScriptThrownException extends JanitorRuntimeException 
      */
     @Override
     public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess process, final @NotNull String name, final boolean required) throws JanitorRuntimeException {
-        return switch (name) {
-            case "value" -> scriptMessage;
-            case "message", "traceback", "type" -> super.janitorGetAttribute(process, name, required);
-            default -> scriptMessage.janitorGetAttribute(process, name, required);
-        };
+        final JanitorObject attribute = getDispatcher().dispatch(this, process, name);
+        return attribute != null ? attribute : scriptMessage.janitorGetAttribute(process, name, required);
+    }
+
+    @Override
+    protected @NotNull JanitorObject janitorThrownValue() {
+        return scriptMessage;
     }
 }

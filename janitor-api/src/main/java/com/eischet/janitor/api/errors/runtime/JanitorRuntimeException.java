@@ -10,6 +10,9 @@ import com.eischet.janitor.api.scopes.ScriptSource;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.composed.JanitorAware;
+import com.eischet.janitor.api.types.dispatch.DispatchTable;
+import com.eischet.janitor.api.types.dispatch.Dispatcher;
+import com.eischet.janitor.api.types.dispatch.HasDispatcher;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -19,7 +22,20 @@ import java.util.Collections;
 /**
  * A runtime exception that is thrown by the Janitor interpreter.
  */
-public abstract class JanitorRuntimeException extends JanitorException implements JanitorObject {
+public abstract class JanitorRuntimeException extends JanitorException implements JanitorObject, HasDispatcher<JanitorRuntimeException> {
+
+    private static final DispatchTable<JanitorRuntimeException> DISPATCH = new DispatchTable<>(false);
+
+    static {
+        DISPATCH.addStringProperty("message", JanitorRuntimeException::getText)
+                .setMetaData(Janitor.MetaData.HELP, "message: The error message without the traceback; read-only.");
+        DISPATCH.addStringProperty("traceback", JanitorRuntimeException::getMessage)
+                .setMetaData(Janitor.MetaData.HELP, "traceback: The error message with the script's traceback; read-only.");
+        DISPATCH.addStringProperty("type", self -> self.getClass().getSimpleName())
+                .setMetaData(Janitor.MetaData.HELP, "type: The kind of error, e.g. \"JanitorNameException\"; read-only.");
+        DISPATCH.addObjectProperty("value", JanitorRuntimeException::janitorThrownValue)
+                .setMetaData(Janitor.MetaData.HELP, "value: The value a script threw, e.g. with throw {code: 404}; null for other errors; read-only.");
+    }
 
     /** The message without the traceback, as scripts see it in {@code e.message}. */
     private final @NotNull String text;
@@ -71,17 +87,9 @@ public abstract class JanitorRuntimeException extends JanitorException implement
 
     @Override
     public @Nullable JanitorObject janitorGetAttribute(final @NotNull JanitorScriptProcess process, final @NotNull String name, final boolean required) throws JanitorRuntimeException {
-        if ("message".equals(name)) {
-            return Janitor.getBuiltins().string(text);
-        }
-        if ("traceback".equals(name)) {
-            return Janitor.getBuiltins().nullableString(getMessage());
-        }
-        if ("type".equals(name)) {
-            return Janitor.getBuiltins().string(getClass().getSimpleName());
-        }
-        if ("value".equals(name)) {
-            return Janitor.NULL; // only values thrown by scripts have one, see JanitorScriptThrownException
+        final JanitorObject attribute = DISPATCH.dispatch(this, process, name);
+        if (attribute != null) {
+            return attribute;
         }
         if (getCause() instanceof JanitorAware aware) {
             final JanitorObject jo = aware.asJanitorObject();
@@ -93,6 +101,19 @@ public abstract class JanitorRuntimeException extends JanitorException implement
             return jo.janitorGetAttribute(process, name, required);
         }
         return JanitorObject.super.janitorGetAttribute(process, name, required);
+    }
+
+    @Override
+    public Dispatcher<JanitorRuntimeException> getDispatcher() {
+        return DISPATCH;
+    }
+
+    /**
+     * @return the value a script threw, which scripts see as {@code e.value}; null here, only values thrown by scripts have one,
+     * see {@link JanitorScriptThrownException}
+     */
+    protected @Nullable JanitorObject janitorThrownValue() {
+        return null;
     }
 
     /**
