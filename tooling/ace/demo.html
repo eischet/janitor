@@ -46,9 +46,9 @@ unicodeNäme = "ünicode";
 <script>
     (function () {
         var params = new URLSearchParams(location.search);
-        var version = params.get("ace") || "1.44.0";
+        var version = params.get("ace") || "1.45.2";
         var theme = params.get("theme") || "eclipse";
-        var base = "https://cdnjs.cloudflare.com/ajax/libs/ace/" + version + "/";
+        var base = "https://cdn.jsdelivr.net/npm/ace-builds@" + version + "/src-min-noconflict/";
         document.getElementById("version").textContent = version;
 
         function load(src, then) {

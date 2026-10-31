@@ -12,7 +12,7 @@ The file mode-janitor.js implements a Janitor mode for the [ACE editor](https://
 Copy mode-janitor.js next to ace.js (or into ACE's modePath) and select the mode with `session.setMode("ace/mode/janitor")`;
 ACE loads the file on demand.
 
-Tested with ACE 1.4.7 and 1.44.0. demo.html shows the mode with all kinds of tokens; serve this folder with any web server
+Tested with ACE 1.4.7 and 1.45.2. demo.html shows the mode with all kinds of tokens; serve this folder with any web server
 (e.g. `jwebserver -d .`) and open demo.html, demo.html?ace=1.4.7 or demo.html?theme=monokai.
 
 When the grammar changes, update the highlighting rules and the sample code in demo.html.
