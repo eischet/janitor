@@ -12,6 +12,7 @@ import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.api.types.dispatch.GenericDispatchTable;
 import com.eischet.janitor.api.types.dispatch.HasDispatcher;
+import com.eischet.janitor.tooling.DispatcherMembers;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 import com.eischet.janitor.docusign.DocusignModule;
 import com.eischet.janitor.env.JElement;
@@ -207,16 +208,11 @@ public final class ReferenceGenerator {
         if (dispatcher == null) {
             return List.of();
         }
-        final TreeSet<String> names = dispatcher.streamAttributeNames()
-                .filter(name -> !name.startsWith("__")) // operator implementations like __in__ and __get__
-                .filter(name -> !excluded.contains(name))
-                .collect(Collectors.toCollection(TreeSet::new));
         final List<Member> members = new ArrayList<>();
-        for (final String name : names) {
-            final boolean method = dispatcher.getMetaData(name, Janitor.MetaData.TYPE_HINT) == Janitor.MetaData.TypeHint.METHOD;
-            final String help = dispatcher.getMetaData(name, Janitor.MetaData.HELP);
-            String kind = method ? "method" : "property";
-            if (!method) {
+        for (final DispatcherMembers.Member found : DispatcherMembers.of(dispatcher, excluded)) {
+            final String name = found.name();
+            String kind = found.method() ? "method" : "property";
+            if (!found.method()) {
                 final Janitor.MetaData.TypeHint hint = dispatcher.getMetaData(name, Janitor.MetaData.TYPE_HINT);
                 if (hint != null) {
                     kind += ", " + typeName(hint);
@@ -225,32 +221,23 @@ public final class ReferenceGenerator {
                     kind += table.isReadOnlyProperty(name) ? ", read-only" : ", writable";
                 }
             }
-            members.add(member(owner, name, method, kind, help, helpRequired));
+            members.add(member(owner, found, kind, helpRequired));
         }
         return members;
     }
 
-    private Member member(final String owner, final String name, final boolean method, final String kind, final @Nullable String help, final boolean helpRequired) {
-        if (help == null || help.isBlank()) {
+    private Member member(final String owner, final DispatcherMembers.Member found, final String kind, final boolean helpRequired) {
+        final String name = found.name();
+        if (found.help() == null || found.help().isBlank()) {
             if (helpRequired) {
                 problems.add(owner + "." + name + ": no HELP text");
             }
-            return new Member(name, method ? name + "(...)" : name, kind, "");
+            return new Member(name, found.signature(), kind, "");
         }
-        final String text = help.strip().replaceAll("\\s+", " ");
-        if (method && text.startsWith(name + "(")) {
-            final int end = text.indexOf("): ");
-            if (end > 0) {
-                return new Member(name, text.substring(0, end + 1), kind, text.substring(end + 3));
-            }
+        if (!found.wellFormed() && helpRequired) {
+            problems.add(owner + "." + name + ": the HELP text must start with \"" + name + (found.method() ? "(arguments): " : ": ") + "\", but is: " + found.description());
         }
-        if (!method && text.startsWith(name + ": ")) {
-            return new Member(name, name, kind, text.substring(name.length() + 2));
-        }
-        if (helpRequired) {
-            problems.add(owner + "." + name + ": the HELP text must start with \"" + name + (method ? "(arguments): " : ": ") + "\", but is: " + text);
-        }
-        return new Member(name, method ? name + "(...)" : name, kind, text);
+        return new Member(name, found.signature(), kind, found.description());
     }
 
     private static String typeName(final Janitor.MetaData.TypeHint hint) {

@@ -1,5 +1,9 @@
 # 0.9.72, not released yet
 
+- tooling: `JanitorCompletions` (package `com.eischet.janitor.tooling`) suggests what may be written at a position, for
+  editors: keywords, the environment's global functions and the script's own names, and after a dot the members of the
+  built-in types with their call form and HELP text (only those of the type, after a literal like `"abc".` or `@today.`).
+  `DispatcherMembers` lists the members of a dispatcher with their HELP texts; the reference generator uses it, too.
 - tooling: `RunnableScript.getDiagnostics()` lists the syntax and compiler errors of a script compiled with `checkCompile`
   as `ScriptDiagnostic`s with line, column and end, e.g. for marking them in an editor. Compiler errors now know where they
   are (`CompilerError.getLocation()`), also those that had no position in their message before, like invalid literals.
