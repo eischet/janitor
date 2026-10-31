@@ -3,10 +3,15 @@
 
 package com.eischet.janitor.tooling;
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorRuntime;
+import com.eischet.janitor.api.metadata.HasMetaData;
+import com.eischet.janitor.api.scopes.Scope;
+import com.eischet.janitor.api.scopes.ScriptBindings;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.api.types.dispatch.HasDispatcher;
+import com.eischet.janitor.api.types.functions.JCallable;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 import com.eischet.janitor.lang.JanitorLexer;
 import com.eischet.janitor.logging.JanitorLogger;
@@ -28,9 +33,11 @@ import java.util.stream.Collectors;
  * Suggestions for an editor: keywords, the environment's global functions and the names used in the script, and after a
  * dot the members of the built-in types with their HELP texts.
  * <p>
- * Without types, a member suggestion cannot know the receiver, except for literals ({@code "abc".}, {@code @2024-01-01.});
- * then it offers the members of all built-in types, with the types that have them. Build one instance per environment
- * and keep it: it reads the dispatchers once.
+ * Without types, a member suggestion knows the receiver only for literals ({@code "abc".}, {@code @2024-01-01.}) and for
+ * chains of names that start at a global: one the host declares for the script ({@link ScriptBindings}) or one of the
+ * environment, followed by properties whose dispatchers are known ({@code shop.Order.}, through the
+ * {@link Janitor.MetaData#DISPATCHER} metadata). Otherwise it offers the members of all built-in types, with the types that
+ * have them. Build one instance per environment and keep it: it reads the dispatchers once.
  * </p>
  */
 public final class JanitorCompletions {
@@ -76,6 +83,8 @@ public final class JanitorCompletions {
 
     private final List<Completion> keywords;
     private final List<Completion> globals;
+    private final Scope builtinScope;
+    private final Set<String> commonNames;
     // type name -> members; COMMON first
     private final Map<String, List<DispatcherMembers.Member>> typeMembers = new LinkedHashMap<>();
     private final List<Completion> allMembers;
@@ -86,13 +95,14 @@ public final class JanitorCompletions {
      */
     public JanitorCompletions(final @NotNull JanitorRuntime runtime) {
         keywords = keywords();
-        globals = runtime.getEnvironment().getBuiltinScope().dir().stream()
+        builtinScope = runtime.getEnvironment().getBuiltinScope();
+        globals = builtinScope.dir().stream()
                 .filter(name -> !name.startsWith("__"))
                 .sorted()
-                .map(name -> new Completion(name, Kind.FUNCTION, name + "(...)", "", ""))
+                .map(name -> global(name, builtinScope.getVariable(name)))
                 .toList();
         final Dispatcher<?> base = runtime.getEnvironment().getBuiltinTypes().internals().getBaseDispatcher();
-        final Set<String> commonNames = base.streamAttributeNames().collect(Collectors.toSet());
+        commonNames = base.streamAttributeNames().collect(Collectors.toSet());
         typeMembers.put(COMMON, DispatcherMembers.of(base, Set.of()));
         SAMPLES.forEach((type, sample) -> {
             try {
@@ -112,6 +122,19 @@ public final class JanitorCompletions {
      * @return the suggestions; the editor filters them by what is already typed
      */
     public @NotNull List<Completion> complete(final @NotNull String source, final int line, final int column) {
+        return complete(source, line, column, List.of());
+    }
+
+    /**
+     * Suggest what may be written at a position, knowing the globals the host declares for the script.
+     * @param source   the script
+     * @param line     the cursor's line, starting at 1
+     * @param column   the cursor's column, starting at 0
+     * @param declared the globals the host declares, see {@link ScriptBindings#declarations()}
+     * @return the suggestions; the editor filters them by what is already typed
+     */
+    public @NotNull List<Completion> complete(final @NotNull String source, final int line, final int column,
+                                              final @NotNull List<ScriptBindings.Declaration> declared) {
         final int offset = offsetOf(source, line, column);
         final List<Token> before = tokens(source.substring(0, offset));
         int last = before.size() - 1;
@@ -120,11 +143,17 @@ public final class JanitorCompletions {
             last--;
         }
         if (last >= 0 && isDot(before.get(last))) {
+            final Type type = receiverType(before, last, declared);
+            if (type != null) {
+                return type.dispatcher() != null ? membersOf(type.dispatcher(), type.name()) : merge(List.of(type.name(), COMMON));
+            }
             return members(last > 0 ? before.get(last - 1) : null);
         }
         final List<Completion> result = new ArrayList<>(keywords);
-        result.addAll(globals);
-        final Set<String> known = globals.stream().map(Completion::name).collect(Collectors.toSet());
+        final Set<String> declaredNames = declared.stream().map(ScriptBindings.Declaration::name).collect(Collectors.toSet());
+        globals.stream().filter(g -> !declaredNames.contains(g.name())).forEach(result::add);
+        declared.forEach(d -> result.add(new Completion(d.name(), Kind.VARIABLE, d.name(), d.help(), d.typeName())));
+        final Set<String> known = result.stream().filter(c -> c.kind() != Kind.KEYWORD).map(Completion::name).collect(Collectors.toSet());
         namesIn(source, offset).stream().filter(c -> !known.contains(c.name())).forEach(result::add);
         return result;
     }
@@ -135,6 +164,67 @@ public final class JanitorCompletions {
             return allMembers;
         }
         return merge(List.of(type, COMMON));
+    }
+
+    /**
+     * The type of a value: a dispatcher, or the name of a built-in type that the suggestions know.
+     *
+     * @param name       the type's name as shown to the user
+     * @param dispatcher its dispatcher; null for a built-in type
+     */
+    private record Type(@NotNull String name, @Nullable Dispatcher<?> dispatcher) {
+    }
+
+    // the type before the dot at index dot, if it is a chain of names starting at a global with a known type, e.g. shop.Order
+    private @Nullable Type receiverType(final List<Token> tokens, final int dot, final List<ScriptBindings.Declaration> declared) {
+        final List<String> names = new ArrayList<>();
+        int i = dot - 1;
+        while (i >= 0 && tokens.get(i).getType() == JanitorLexer.IDENTIFIER) {
+            names.addFirst(tokens.get(i).getText());
+            if (i == 0 || !isDot(tokens.get(i - 1))) {
+                break;
+            }
+            i -= 2;
+        }
+        if (names.isEmpty() || i < 0 || tokens.get(i).getType() != JanitorLexer.IDENTIFIER) {
+            return null; // e.g. foo().bar: the chain does not start at a name
+        }
+        Type type = globalType(names.getFirst(), declared);
+        for (final String name : names.subList(1, names.size())) {
+            if (type == null || type.dispatcher() == null) {
+                return null;
+            }
+            final Dispatcher<?> next = type.dispatcher().getMetaData(name, Janitor.MetaData.DISPATCHER);
+            type = next == null ? null : new Type(name, next);
+        }
+        if (type != null && type.dispatcher() == null && !typeMembers.containsKey(type.name())) {
+            return null;
+        }
+        return type;
+    }
+
+    // the type of a global: declared by the host, or from the value in the environment
+    private @Nullable Type globalType(final String name, final List<ScriptBindings.Declaration> declared) {
+        for (final ScriptBindings.Declaration declaration : declared) {
+            if (declaration.name().equals(name)) {
+                return new Type(declaration.typeName(), declaration.dispatcher());
+            }
+        }
+        final JanitorObject value = builtinScope.getVariable(name);
+        final Dispatcher<?> dispatcher = value == null ? null : dispatcherOf(value);
+        return dispatcher == null ? null : new Type(value.janitorClassName(), dispatcher);
+    }
+
+    // the members of a dispatcher, then those of every object
+    private List<Completion> membersOf(final Dispatcher<?> dispatcher, final String owner) {
+        final Map<String, Completion> result = new TreeMap<>();
+        for (final DispatcherMembers.Member m : DispatcherMembers.of(dispatcher, commonNames)) {
+            result.put(m.name(), new Completion(m.name(), m.method() ? Kind.METHOD : Kind.PROPERTY, m.signature(), m.description(), owner));
+        }
+        for (final DispatcherMembers.Member m : typeMembers.get(COMMON)) {
+            result.putIfAbsent(m.name(), new Completion(m.name(), m.method() ? Kind.METHOD : Kind.PROPERTY, m.signature(), m.description(), COMMON));
+        }
+        return List.copyOf(result.values());
     }
 
     // members of several types, each name once, with the types that have it
@@ -175,6 +265,16 @@ public final class JanitorCompletions {
         final List<Completion> result = new ArrayList<>();
         names.forEach((name, kind) -> result.add(new Completion(name, kind, kind == Kind.FUNCTION ? name + "(...)" : name, "", "")));
         return result;
+    }
+
+    // a global with the call form and description from its HELP text, if it has one; values that cannot be called are variables
+    private static Completion global(final String name, final @Nullable JanitorObject value) {
+        final String help = value instanceof HasMetaData hasMetaData ? hasMetaData.getMetaData(Janitor.MetaData.HELP) : null;
+        if (value != null && !(value instanceof JCallable)) {
+            return new Completion(name, Kind.VARIABLE, name, help == null ? "" : help.strip(), value.janitorClassName());
+        }
+        final DispatcherMembers.Member member = DispatcherMembers.member(name, true, help);
+        return new Completion(name, Kind.FUNCTION, member.signature(), member.description(), "");
     }
 
     private static List<Completion> keywords() {

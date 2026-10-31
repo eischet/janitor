@@ -13,8 +13,11 @@ import org.jetbrains.annotations.NotNull;
  */
 public class ArticleDao extends GenericDao<Article, ExampleDaoCollection> {
 
+    /** The script methods of this DAO on top of those of every DAO; none so far. */
+    public static final DispatchTable<ArticleDao> DISPATCH = new DispatchTable<>(false);
+
     public ArticleDao(final ExampleDaoCollection collection) {
-        super(new DispatchTable<ArticleDao>(false), collection, Article.class, Article.DISPATCH, () -> new Article(collection));
+        super(DISPATCH, collection, Article.class, Article.DISPATCH, () -> new Article(collection));
     }
 
     @Override

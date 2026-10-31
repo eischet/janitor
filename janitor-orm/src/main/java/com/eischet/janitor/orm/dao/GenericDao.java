@@ -195,6 +195,17 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
     /** The mappings of {@link #selectColumns}, in that order. */
     private final @NotNull ColumnMapping<T>[] selectMappings;
 
+    /**
+     * The dispatcher that a DAO with these script methods has: those of every DAO and these. It is the same for every
+     * instance of a DAO class, so it can describe the class, e.g. for editors (see {@link DaoProperties}).
+     *
+     * @param daoMethods the script methods of the DAO class, as handed to the constructor
+     * @return the dispatcher of the DAOs
+     */
+    public static @NotNull Dispatcher<?> dispatcherFor(final @NotNull Dispatcher<?> daoMethods) {
+        return Dispatcher.inherit(DISPATCH, daoMethods);
+    }
+
     public GenericDao(
             final @NotNull DispatchTable<? extends GenericDao<T, U>> childDispatch,
             final @NotNull OrmDaoCollection<?> collection,

@@ -144,6 +144,17 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
      */
     public abstract T createFromEntityPair(final @NotNull JanitorScriptProcess process, final @NotNull ForeignKey<?> parentEntity, final @NotNull ForeignKey<?> addedEntity) throws JanitorRuntimeException;
 
+    /**
+     * The dispatcher that a DAO with these script methods has: those of every join DAO and these. It is the same for every
+     * instance of a DAO class, so it can describe the class, e.g. for editors (see {@link DaoProperties}).
+     *
+     * @param daoMethods the script methods of the DAO class, as handed to the constructor
+     * @return the dispatcher of the DAOs
+     */
+    public static @NotNull Dispatcher<?> dispatcherFor(final @NotNull Dispatcher<?> daoMethods) {
+        return Dispatcher.inherit(DISPATCH, daoMethods);
+    }
+
     public JoinDao(
             final Class<T> entityClass,
             final DispatchTable<? extends JoinDao<T>> childDispatch,
