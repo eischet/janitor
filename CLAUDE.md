@@ -34,6 +34,8 @@ mvn -pl janitor-tests -am verify -Dit.test=MsGraphModuleIT
 
 No linter or auto-formatter is enforced. Follow 4-space indentation, braces on the same line, packages under `com.eischet.janitor.*`.
 
+Commit messages are written in English, even when the conversation is in another language.
+
 ## Module Structure
 
 | Module | Purpose |
