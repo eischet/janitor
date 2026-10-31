@@ -114,6 +114,14 @@ public class ScriptDiagnosticsTestCase {
     }
 
     @Test
+    void anUnfinishedMemberAccessIsOnlyASyntaxError() throws JanitorCompilerException {
+        // what an editor checks while the user types: the check stops at the syntax error instead of compiling the broken tree
+        final List<ScriptDiagnostic> diagnostics = check("cc = 1\ncc.");
+        assertEquals(1, diagnostics.size(), diagnostics.toString());
+        assertEquals(2, diagnostics.getFirst().line());
+    }
+
+    @Test
     void statementWithoutEffectIsLocated() throws JanitorCompilerException {
         final ScriptDiagnostic noEffect = check("function f() {\n    x == 1\n}\n").getFirst();
         assertEquals(2, noEffect.line());

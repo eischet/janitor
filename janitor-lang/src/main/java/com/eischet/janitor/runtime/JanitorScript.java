@@ -86,19 +86,22 @@ public class JanitorScript implements RunnableScript, JsonExportableObject {
 
         if (!checking) {
             scriptObject = JanitorCompiler.build(runtime.getEnvironment(), module, script, source, verbose);
-        } else {
+        } else if (issues.isEmpty()) {
+            // after syntax errors, the compiler only trips over what the parser made of them (and logs warnings about it),
+            // so a check stops at the syntax errors; editors check on every key stroke
             Script myScript = null;
             try {
                 myScript = JanitorCompiler.build(runtime.getEnvironment(), module, script, source, verbose);
             } catch (RuntimeException compilerException) {
                 this.compilerException = compilerException;
-                log.info("compiler check error in script {}", moduleName, compilerException);
-                // after syntax errors, the compiler mostly trips over what the parser made of them
+                log.debug("compiler check error in script {}", moduleName, compilerException);
                 if (diagnostics.isEmpty()) {
                     diagnostics.add(diagnosticOf(compilerException));
                 }
             }
             scriptObject = myScript;
+        } else {
+            scriptObject = null;
         }
     }
 
