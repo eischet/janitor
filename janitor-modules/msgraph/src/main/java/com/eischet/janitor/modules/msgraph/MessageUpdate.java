@@ -3,6 +3,7 @@
 
 package com.eischet.janitor.modules.msgraph;
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import com.eischet.janitor.toolbox.json.api.JsonException;
@@ -20,9 +21,12 @@ public class MessageUpdate extends JanitorComposed<MessageUpdate> {
     public static final DispatchTable<MessageUpdate> DISPATCH = new DispatchTable<>(MessageUpdate::new);
 
     static {
-        DISPATCH.addStringProperty("subject", MessageUpdate::getSubject, MessageUpdate::setSubject);
-        DISPATCH.addListOfStringsProperty("categories", MessageUpdate::getCategories, MessageUpdate::setCategories);
-        DISPATCH.addNullableBooleanProperty("isRead", MessageUpdate::getIsRead, MessageUpdate::setIsRead);
+        DISPATCH.addStringProperty("subject", MessageUpdate::getSubject, MessageUpdate::setSubject)
+                .setMetaData(Janitor.MetaData.HELP, "subject: The new subject; null leaves it unchanged; writable.");
+        DISPATCH.addListOfStringsProperty("categories", MessageUpdate::getCategories, MessageUpdate::setCategories)
+                .setMetaData(Janitor.MetaData.HELP, "categories: The new list of categories, replacing the old ones; an empty list removes all, null leaves them unchanged; writable.");
+        DISPATCH.addNullableBooleanProperty("isRead", MessageUpdate::getIsRead, MessageUpdate::setIsRead)
+                .setMetaData(Janitor.MetaData.HELP, "isRead: Marks the message as read (true) or unread (false); null leaves it unchanged; writable.");
     }
 
     private @Nullable String subject;

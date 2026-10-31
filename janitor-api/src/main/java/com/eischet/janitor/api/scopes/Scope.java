@@ -267,7 +267,7 @@ public class Scope implements JanitorObject {
      * @param variableName the name of the variable
      * @return the value, or null if there is no such variable
      */
-    protected @Nullable JanitorObject getVariable(final String variableName) {
+    public @Nullable JanitorObject getVariable(final String variableName) {
         return _variables.get(variableName);
     }
 
@@ -455,6 +455,19 @@ public class Scope implements JanitorObject {
         // log.warn("tried to rebind '{}' as {} in sealed scope {}", function, function, this);
         // }
         setVariable(functionName, function.asObject(functionName), null);
+        return this;
+    }
+
+    /**
+     * Bind a function with a HELP text in this scope; editors and the help() function show the text.
+     *
+     * @param functionName the variable name
+     * @param help         the HELP text, starting with the call form, e.g. "print(values...): Prints the values."
+     * @param function     the function
+     * @return this scope (for chained, builder-style calls)
+     */
+    public Scope bindF(final String functionName, final @Nullable String help, final JCallable function) {
+        setVariable(functionName, function.asObject(functionName, help), null);
         return this;
     }
 

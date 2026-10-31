@@ -163,8 +163,10 @@ public abstract class OrmDaoCollection<S extends OrmDaoCollection<S>> extends Ja
      * @param <S>      the subclass
      */
     public static <S extends OrmDaoCollection<S>> void addRegistryProperties(final @NotNull DispatchTable<S> dispatch) {
-        dispatch.addListProperty("entities", self -> Janitor.list(self.getEntityNames().stream().map(self::getDao).filter(Objects::nonNull)));
-        dispatch.addListProperty("joins", self -> Janitor.list(self.getJoinNames().stream().map(self::getJoinDao).filter(Objects::nonNull)));
+        dispatch.addListProperty("entities", self -> Janitor.list(self.getEntityNames().stream().map(self::getDao).filter(Objects::nonNull)))
+                .setMetaData(Janitor.MetaData.HELP, "entities: The DAOs of all registered entity types, as a list; read-only.");
+        dispatch.addListProperty("joins", self -> Janitor.list(self.getJoinNames().stream().map(self::getJoinDao).filter(Objects::nonNull)))
+                .setMetaData(Janitor.MetaData.HELP, "joins: The DAOs of all registered join tables, as a list; read-only.");
     }
 
     // registration: called by the DAO constructors

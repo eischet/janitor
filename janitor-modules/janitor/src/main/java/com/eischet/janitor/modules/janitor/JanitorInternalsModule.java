@@ -41,15 +41,17 @@ public class JanitorInternalsModule extends JanitorComposed<JanitorInternalsModu
     public static String[] args;
 
     static {
-        dispatcher.addStringProperty("revision", self -> Revision.REVISION);
-        dispatcher.addStringProperty("host", self -> host);
+        dispatcher.addStringProperty("revision", self -> Revision.REVISION)
+                .setMetaData(Janitor.MetaData.HELP, "revision: The revision (version) of the Janitor runtime; read-only.");
+        dispatcher.addStringProperty("host", self -> host)
+                .setMetaData(Janitor.MetaData.HELP, "host: Name of the host application that runs the script, e.g. \"standalone\" or \"maven\", or \"unknown\"; read-only.");
         dispatcher.addListProperty("args", self -> {
             if (args == null) {
                 return Janitor.list();
             } else {
                 return Janitor.list(Arrays.stream(args).map(Janitor::string));
             }
-        });
+        }).setMetaData(Janitor.MetaData.HELP, "args: List of the command line arguments as strings; empty if there are none; read-only.");
     }
 
     public JanitorInternalsModule() {

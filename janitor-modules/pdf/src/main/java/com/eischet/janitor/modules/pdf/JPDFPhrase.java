@@ -6,6 +6,7 @@ package com.eischet.janitor.modules.pdf;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import com.eischet.janitor.api.types.functions.JCallArgs;
@@ -29,14 +30,19 @@ public class JPDFPhrase extends JanitorWrapper<Phrase> {
      * each of those wrapper classes wraps a different concrete Java type (Phrase vs. Paragraph vs. Anchor).
      */
     static <T extends Phrase> void addCommonPhraseAttributes(final WrapperDispatchTable<T> table) {
-        table.addDoubleProperty("leading", self -> self.janitorGetHostValue().getLeading(), (self, value) -> self.janitorGetHostValue().setLeading((float) value));
-        table.addBooleanProperty("empty", self -> self.janitorGetHostValue().isEmpty());
+        table.addDoubleProperty("leading", self -> self.janitorGetHostValue().getLeading(), (self, value) -> self.janitorGetHostValue().setLeading((float) value))
+                .setMetaData(Janitor.MetaData.HELP, "leading: The line spacing (distance between baselines) in points; writable.");
+        table.addBooleanProperty("empty", self -> self.janitorGetHostValue().isEmpty())
+                .setMetaData(Janitor.MetaData.HELP, "empty: True if the phrase contains no content; read-only.");
         table.addObjectProperty("font",
                 self -> new JPDFFont(self.janitorGetHostValue().getFont()),
                 (self, value) -> self.janitorGetHostValue().setFont(value.getFont()),
-                JPDFFont::new);
-        table.addBuilderMethod("add", (self, process, args) -> self.janitorGetHostValue().add(PdfElements.requireElement(process, args, 0)));
-        table.addIntegerProperty("size", self -> self.janitorGetHostValue().size());
+                JPDFFont::new)
+                .setMetaData(Janitor.MetaData.HELP, "font: The Font of the phrase; writable.");
+        table.addBuilderMethod("add", (self, process, args) -> self.janitorGetHostValue().add(PdfElements.requireElement(process, args, 0)))
+                .setMetaData(Janitor.MetaData.HELP, "add(element): Adds a pdf element (Chunk, Phrase, ...) to the phrase; returns the phrase.");
+        table.addIntegerProperty("size", self -> self.janitorGetHostValue().size())
+                .setMetaData(Janitor.MetaData.HELP, "size: The number of elements in the phrase; read-only.");
     }
 
     public JPDFPhrase(final @NotNull Phrase phrase) {

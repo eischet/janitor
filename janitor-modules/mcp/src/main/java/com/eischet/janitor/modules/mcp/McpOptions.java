@@ -3,6 +3,7 @@
 
 package com.eischet.janitor.modules.mcp;
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import org.jetbrains.annotations.NotNull;
@@ -30,11 +31,16 @@ public class McpOptions extends JanitorComposed<McpOptions> {
     public static final DispatchTable<McpOptions> DISPATCH = new DispatchTable<>(McpOptions::new);
 
     static {
-        DISPATCH.addIntegerProperty("timeoutSeconds", McpOptions::getTimeoutSeconds, McpOptions::setTimeoutSeconds);
-        DISPATCH.addStringProperty("clientName", McpOptions::getClientName, McpOptions::setClientName);
-        DISPATCH.addStringProperty("clientVersion", McpOptions::getClientVersion, McpOptions::setClientVersion);
-        DISPATCH.addStringProperty("transport", McpOptions::getTransport, McpOptions::setTransport);
-        DISPATCH.addBooleanProperty("throwOnError", McpOptions::isThrowOnError, McpOptions::setThrowOnError);
+        DISPATCH.addIntegerProperty("timeoutSeconds", McpOptions::getTimeoutSeconds, McpOptions::setTimeoutSeconds)
+                .setMetaData(Janitor.MetaData.HELP, "timeoutSeconds: Time limit in seconds for connecting and for each request (default 60; 0 or less means 60); writable.");
+        DISPATCH.addStringProperty("clientName", McpOptions::getClientName, McpOptions::setClientName)
+                .setMetaData(Janitor.MetaData.HELP, "clientName: The name this client reports to the server (default \"Janitor\"; blank restores it); writable.");
+        DISPATCH.addStringProperty("clientVersion", McpOptions::getClientVersion, McpOptions::setClientVersion)
+                .setMetaData(Janitor.MetaData.HELP, "clientVersion: The version this client reports to the server (blank restores the default); writable.");
+        DISPATCH.addStringProperty("transport", McpOptions::getTransport, McpOptions::setTransport)
+                .setMetaData(Janitor.MetaData.HELP, "transport: \"streamable\" (the default) or \"sse\" for older servers; writable.");
+        DISPATCH.addBooleanProperty("throwOnError", McpOptions::isThrowOnError, McpOptions::setThrowOnError)
+                .setMetaData(Janitor.MetaData.HELP, "throwOnError: If true, a tool result flagged as an error becomes a script error instead of a result with isError = true; writable.");
     }
 
     private final Map<String, String> headers = new LinkedHashMap<>();

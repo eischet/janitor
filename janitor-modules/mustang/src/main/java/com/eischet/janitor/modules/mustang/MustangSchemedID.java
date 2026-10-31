@@ -3,6 +3,7 @@
 
 package com.eischet.janitor.modules.mustang;
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import org.mustangproject.SchemedID;
@@ -15,11 +16,15 @@ public class MustangSchemedID extends JanitorWrapper<SchemedID> {
     public static final WrapperDispatchTable<SchemedID> DISPATCH = new WrapperDispatchTable<>(MustangSchemedID::new);
 
     static {
-        DISPATCH.addBuilderMethod("setScheme", (self, process, args) -> self.janitorGetHostValue().setScheme(args.getRequiredStringValue(0)));
-        DISPATCH.addBuilderMethod("setId", (self, process, args) -> self.janitorGetHostValue().setId(args.getRequiredStringValue(0)));
+        DISPATCH.addBuilderMethod("setScheme", (self, process, args) -> self.janitorGetHostValue().setScheme(args.getRequiredStringValue(0)))
+            .setMetaData(Janitor.MetaData.HELP, "setScheme(scheme): Sets the identification scheme of the ID; returns the SchemedID.");
+        DISPATCH.addBuilderMethod("setId", (self, process, args) -> self.janitorGetHostValue().setId(args.getRequiredStringValue(0)))
+            .setMetaData(Janitor.MetaData.HELP, "setId(id): Sets the identifier value; returns the SchemedID.");
 
-        DISPATCH.addStringProperty("scheme", self -> self.janitorGetHostValue().getScheme(), (self, value) -> self.janitorGetHostValue().setScheme(value));
-        DISPATCH.addStringProperty("id", self -> self.janitorGetHostValue().getID(), (self, value) -> self.janitorGetHostValue().setId(value));
+        DISPATCH.addStringProperty("scheme", self -> self.janitorGetHostValue().getScheme(), (self, value) -> self.janitorGetHostValue().setScheme(value))
+            .setMetaData(Janitor.MetaData.HELP, "scheme: The identification scheme of the ID; writable.");
+        DISPATCH.addStringProperty("id", self -> self.janitorGetHostValue().getID(), (self, value) -> self.janitorGetHostValue().setId(value))
+            .setMetaData(Janitor.MetaData.HELP, "id: The identifier value; writable.");
     }
 
     public MustangSchemedID() {

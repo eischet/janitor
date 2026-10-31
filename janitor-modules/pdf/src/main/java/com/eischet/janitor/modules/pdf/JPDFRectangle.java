@@ -3,6 +3,7 @@
 
 package com.eischet.janitor.modules.pdf;
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import org.jetbrains.annotations.NotNull;
@@ -20,24 +21,36 @@ public class JPDFRectangle extends JanitorWrapper<Rectangle> {
     public static final WrapperDispatchTable<Rectangle> DISPATCH_TABLE = new WrapperDispatchTable<>();
 
     static {
-        DISPATCH_TABLE.addDoubleProperty("left", self -> self.janitorGetHostValue().getLeft(), (self, value) -> self.janitorGetHostValue().setLeft((float) value));
-        DISPATCH_TABLE.addDoubleProperty("right", self -> self.janitorGetHostValue().getRight(), (self, value) -> self.janitorGetHostValue().setRight((float) value));
-        DISPATCH_TABLE.addDoubleProperty("top", self -> self.janitorGetHostValue().getTop(), (self, value) -> self.janitorGetHostValue().setTop((float) value));
-        DISPATCH_TABLE.addDoubleProperty("bottom", self -> self.janitorGetHostValue().getBottom(), (self, value) -> self.janitorGetHostValue().setBottom((float) value));
-        DISPATCH_TABLE.addDoubleProperty("width", self -> self.janitorGetHostValue().getWidth());
-        DISPATCH_TABLE.addDoubleProperty("height", self -> self.janitorGetHostValue().getHeight());
-        DISPATCH_TABLE.addIntegerProperty("rotation", self -> self.janitorGetHostValue().getRotation(), (self, value) -> self.janitorGetHostValue().setRotation(value));
-        DISPATCH_TABLE.addIntegerProperty("border", self -> self.janitorGetHostValue().getBorder(), (self, value) -> self.janitorGetHostValue().setBorder(value));
-        DISPATCH_TABLE.addDoubleProperty("borderWidth", self -> self.janitorGetHostValue().getBorderWidth(), (self, value) -> self.janitorGetHostValue().setBorderWidth((float) value));
+        DISPATCH_TABLE.addDoubleProperty("left", self -> self.janitorGetHostValue().getLeft(), (self, value) -> self.janitorGetHostValue().setLeft((float) value))
+                .setMetaData(Janitor.MetaData.HELP, "left: The x coordinate of the left edge in points; writable, except for page sizes.");
+        DISPATCH_TABLE.addDoubleProperty("right", self -> self.janitorGetHostValue().getRight(), (self, value) -> self.janitorGetHostValue().setRight((float) value))
+                .setMetaData(Janitor.MetaData.HELP, "right: The x coordinate of the right edge in points; writable, except for page sizes.");
+        DISPATCH_TABLE.addDoubleProperty("top", self -> self.janitorGetHostValue().getTop(), (self, value) -> self.janitorGetHostValue().setTop((float) value))
+                .setMetaData(Janitor.MetaData.HELP, "top: The y coordinate of the top edge in points; writable, except for page sizes.");
+        DISPATCH_TABLE.addDoubleProperty("bottom", self -> self.janitorGetHostValue().getBottom(), (self, value) -> self.janitorGetHostValue().setBottom((float) value))
+                .setMetaData(Janitor.MetaData.HELP, "bottom: The y coordinate of the bottom edge in points; writable, except for page sizes.");
+        DISPATCH_TABLE.addDoubleProperty("width", self -> self.janitorGetHostValue().getWidth())
+                .setMetaData(Janitor.MetaData.HELP, "width: The width of the rectangle in points; read-only.");
+        DISPATCH_TABLE.addDoubleProperty("height", self -> self.janitorGetHostValue().getHeight())
+                .setMetaData(Janitor.MetaData.HELP, "height: The height of the rectangle in points; read-only.");
+        DISPATCH_TABLE.addIntegerProperty("rotation", self -> self.janitorGetHostValue().getRotation(), (self, value) -> self.janitorGetHostValue().setRotation(value))
+                .setMetaData(Janitor.MetaData.HELP, "rotation: The rotation in degrees; writable, except for page sizes.");
+        DISPATCH_TABLE.addIntegerProperty("border", self -> self.janitorGetHostValue().getBorder(), (self, value) -> self.janitorGetHostValue().setBorder(value))
+                .setMetaData(Janitor.MetaData.HELP, "border: The sides that have a border, as pdf.BORDER_* flags combined with |; writable, except for page sizes.");
+        DISPATCH_TABLE.addDoubleProperty("borderWidth", self -> self.janitorGetHostValue().getBorderWidth(), (self, value) -> self.janitorGetHostValue().setBorderWidth((float) value))
+                .setMetaData(Janitor.MetaData.HELP, "borderWidth: The width of the border in points; writable, except for page sizes.");
         DISPATCH_TABLE.addObjectProperty("borderColor",
                 self -> nullableColor(self.janitorGetHostValue().getBorderColor()),
                 (self, value) -> self.janitorGetHostValue().setBorderColor(value == null ? null : value.getColor()),
-                () -> new JPDFColor(0, 0, 0));
+                () -> new JPDFColor(0, 0, 0))
+                .setMetaData(Janitor.MetaData.HELP, "borderColor: The Color of the border, or null; writable, except for page sizes.");
         DISPATCH_TABLE.addObjectProperty("backgroundColor",
                 self -> nullableColor(self.janitorGetHostValue().getBackgroundColor()),
                 (self, value) -> self.janitorGetHostValue().setBackgroundColor(value == null ? null : value.getColor()),
-                () -> new JPDFColor(0, 0, 0));
-        DISPATCH_TABLE.addMethod("rotate", (self, process, args) -> new JPDFRectangle(self.janitorGetHostValue().rotate()));
+                () -> new JPDFColor(0, 0, 0))
+                .setMetaData(Janitor.MetaData.HELP, "backgroundColor: The background Color, or null; writable, except for page sizes.");
+        DISPATCH_TABLE.addMethod("rotate", (self, process, args) -> new JPDFRectangle(self.janitorGetHostValue().rotate()))
+                .setMetaData(Janitor.MetaData.HELP, "rotate(): Returns a new rectangle rotated by 90 degrees, e.g. to turn a page size into landscape.");
         // TODO: per-side border width/color (Left/Right/Top/Bottom), enableBorderSide/disableBorderSide, grayFill -- left out for brevity, add on request.
     }
 

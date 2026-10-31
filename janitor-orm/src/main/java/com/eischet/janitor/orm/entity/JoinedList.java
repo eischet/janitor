@@ -244,9 +244,11 @@ public class JoinedList<T extends OrmJoined, U extends Uplink, V extends JoinDao
 
         static {
             //DISPATCH.addBuilderMethod("add", (self, process, args) -> self.parent.addGeneric(args.get(0)));
-            DISPATCH.addMethod("size", (self, process, args) -> Janitor.integer(self.parent.size()));
+            DISPATCH.addMethod("size", (self, process, args) -> Janitor.integer(self.parent.size()))
+                    .setMetaData(Janitor.MetaData.HELP, "size(): Returns the number of join records currently in the list.");
             //DISPATCH.addBuilderMethod("clear", (self, process, args) -> self.parent.clear());
-            DISPATCH.addBuilderMethod("add", (self, process, args) -> self.parent.scriptAdd(process, args));
+            DISPATCH.addBuilderMethod("add", (self, process, args) -> self.parent.scriptAdd(process, args))
+                    .setMetaData(Janitor.MetaData.HELP, "add(value): Saves a new join record in the database and adds it to the list; value is a map, a join record, or a reference to the entity on the other side; returns the list.");
 
         }
 

@@ -3,6 +3,7 @@
 
 package com.eischet.janitor.generator;
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.modules.JanitorModule;
 import com.eischet.janitor.api.modules.JanitorModuleRegistration;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
@@ -16,7 +17,8 @@ public class GeneratorModule extends JanitorComposed<GeneratorModule> implements
     public static final JanitorModuleRegistration REGISTRATION = new JanitorModuleRegistration("generator", GeneratorModule::new);
 
     static {
-        DISPATCH.addMethod("Generator", (self, process, arguments) -> arguments.applyOptionalMap(process, new Generator()));
+        DISPATCH.addMethod("Generator", (self, process, arguments) -> arguments.applyOptionalMap(process, new Generator()))
+                .setMetaData(Janitor.MetaData.HELP, "Generator(properties): Creates a new Java code generator; an optional map argument is applied to its properties.");
     }
 
     public GeneratorModule() {

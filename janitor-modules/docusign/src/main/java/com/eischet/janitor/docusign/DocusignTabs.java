@@ -4,6 +4,7 @@
 package com.eischet.janitor.docusign;
 
 import com.docusign.esign.model.Tabs;
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 
@@ -17,7 +18,7 @@ public class DocusignTabs extends JanitorComposed<DocusignTabs> {
             DocusignSignHere signHere = args.getRequired(0, DocusignSignHere.class);
             self.wrapped.addSignHereTabsItem(signHere.getWrapped());
             return self;
-        });
+        }).setMetaData(Janitor.MetaData.HELP, "addSignHere(signHere): Adds a sign-here tab and returns these tabs.");
     }
 
     private final Tabs wrapped;

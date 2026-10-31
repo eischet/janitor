@@ -49,25 +49,36 @@ public abstract class CMNode extends JanitorWrapper<Node> {
     public static final WrapperDispatchTable<Node> dispatch = new WrapperDispatchTable<>();
 
     static {
-        dispatch.addStringProperty("type", self -> self.janitorGetHostValue().getClass().getSimpleName());
-        dispatch.addObjectProperty("firstChild", self -> CMNode.createNullable(self.janitorGetHostValue().getFirstChild()));
-        dispatch.addObjectProperty("lastChild", self -> CMNode.createNullable(self.janitorGetHostValue().getLastChild()));
-        dispatch.addObjectProperty("next", self -> CMNode.createNullable(self.janitorGetHostValue().getNext()));
-        dispatch.addObjectProperty("previous", self -> CMNode.createNullable(self.janitorGetHostValue().getPrevious()));
-        dispatch.addObjectProperty("parent", self -> CMNode.createNullable(self.janitorGetHostValue().getParent()));
-        dispatch.addVoidMethod("unlink", (self, process, args) -> self.janitorGetHostValue().unlink());
+        dispatch.addStringProperty("type", self -> self.janitorGetHostValue().getClass().getSimpleName())
+                .setMetaData(Janitor.MetaData.HELP, "type: The kind of node, e.g. \"Paragraph\", \"Heading\" or \"Text\"; read-only.");
+        dispatch.addObjectProperty("firstChild", self -> CMNode.createNullable(self.janitorGetHostValue().getFirstChild()))
+                .setMetaData(Janitor.MetaData.HELP, "firstChild: The first child node, or null if the node has no children; read-only.");
+        dispatch.addObjectProperty("lastChild", self -> CMNode.createNullable(self.janitorGetHostValue().getLastChild()))
+                .setMetaData(Janitor.MetaData.HELP, "lastChild: The last child node, or null if the node has no children; read-only.");
+        dispatch.addObjectProperty("next", self -> CMNode.createNullable(self.janitorGetHostValue().getNext()))
+                .setMetaData(Janitor.MetaData.HELP, "next: The next sibling node, or null if there is none; read-only.");
+        dispatch.addObjectProperty("previous", self -> CMNode.createNullable(self.janitorGetHostValue().getPrevious()))
+                .setMetaData(Janitor.MetaData.HELP, "previous: The previous sibling node, or null if there is none; read-only.");
+        dispatch.addObjectProperty("parent", self -> CMNode.createNullable(self.janitorGetHostValue().getParent()))
+                .setMetaData(Janitor.MetaData.HELP, "parent: The parent node, or null if the node has none; read-only.");
+        dispatch.addVoidMethod("unlink", (self, process, args) -> self.janitorGetHostValue().unlink())
+                .setMetaData(Janitor.MetaData.HELP, "unlink(): Removes the node, with its children, from its parent and siblings.");
         dispatch.addVoidMethod("insertBefore", (self, process, args) -> {
             self.janitorGetHostValue().insertBefore(args.getRequired(0, CMNode.class).janitorGetHostValue());
-        });
+        })
+                .setMetaData(Janitor.MetaData.HELP, "insertBefore(node): Inserts the given node as the previous sibling of this node.");
         dispatch.addVoidMethod("insertAfter", (self, process, args) -> {
             self.janitorGetHostValue().insertAfter(args.getRequired(0, CMNode.class).janitorGetHostValue());
-        });
+        })
+                .setMetaData(Janitor.MetaData.HELP, "insertAfter(node): Inserts the given node as the next sibling of this node.");
         dispatch.addVoidMethod("appendChild", (self, process, args) -> {
             self.janitorGetHostValue().appendChild(args.getRequired(0, CMNode.class).janitorGetHostValue());
-        });
+        })
+                .setMetaData(Janitor.MetaData.HELP, "appendChild(node): Adds the given node as the last child of this node.");
         dispatch.addVoidMethod("prependChild", (self, process, args) -> {
             self.janitorGetHostValue().prependChild(args.getRequired(0, CMNode.class).janitorGetHostValue());
-        });
+        })
+                .setMetaData(Janitor.MetaData.HELP, "prependChild(node): Adds the given node as the first child of this node.");
         dispatch.addMethod("toHtml", (self, process, args) -> {
             var renderer = HtmlRenderer.builder().build();
             return Janitor.nullableString(renderer.render(self.janitorGetHostValue()));
@@ -85,6 +96,7 @@ public abstract class CMNode extends JanitorWrapper<Node> {
             if (callback instanceof JCallable callable) {
                 final var v = new CMVisitor(process, callable);
                 self.janitorGetHostValue().accept(v);
+                return;
             }
             throw new JanitorArgumentException(process, "visit() expects a function(node) as first argument");
         });

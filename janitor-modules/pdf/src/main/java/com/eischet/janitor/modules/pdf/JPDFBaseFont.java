@@ -7,6 +7,7 @@ import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.functions.JCallArgs;
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import org.jetbrains.annotations.NotNull;
@@ -27,11 +28,14 @@ public class JPDFBaseFont extends JanitorWrapper<BaseFont> {
     public static final WrapperDispatchTable<BaseFont> DISPATCH_TABLE = new WrapperDispatchTable<>();
 
     static {
-        DISPATCH_TABLE.addStringProperty("postscriptFontName", self -> self.janitorGetHostValue().getPostscriptFontName());
+        DISPATCH_TABLE.addStringProperty("postscriptFontName", self -> self.janitorGetHostValue().getPostscriptFontName())
+                .setMetaData(Janitor.MetaData.HELP, "postscriptFontName: The PostScript name of the font; read-only.");
         DISPATCH_TABLE.addMethod("getWidthPoint", (self, process, args) -> com.eischet.janitor.api.Janitor.floatingPoint(
-                self.janitorGetHostValue().getWidthPoint(args.getRequiredStringValue(0), PdfElements.floatArg(process, args, 1))));
+                self.janitorGetHostValue().getWidthPoint(args.getRequiredStringValue(0), PdfElements.floatArg(process, args, 1))))
+                .setMetaData(Janitor.MetaData.HELP, "getWidthPoint(text, fontSize): Returns the width of the text in points when set in this font at the given size.");
         DISPATCH_TABLE.addMethod("getFont", (self, process, args) -> new JPDFFont(
-                new org.openpdf.text.Font(self.janitorGetHostValue(), PdfElements.optionalFloatArg(process, args, 0, org.openpdf.text.Font.UNDEFINED))));
+                new org.openpdf.text.Font(self.janitorGetHostValue(), PdfElements.optionalFloatArg(process, args, 0, org.openpdf.text.Font.UNDEFINED))))
+                .setMetaData(Janitor.MetaData.HELP, "getFont(size): Returns a Font using this base font at the given size; without a size, the size is left undefined.");
         // TODO: getFullFontName, getFamilyFontName, setSubset/isSubset, and the CJK/embedding-related APIs -- left out, add on request.
     }
 

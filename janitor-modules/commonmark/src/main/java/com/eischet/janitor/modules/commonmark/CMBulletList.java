@@ -3,6 +3,7 @@
 
 package com.eischet.janitor.modules.commonmark;
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import org.commonmark.node.BulletList;
@@ -16,7 +17,8 @@ public class CMBulletList extends CMListBlock {
         dispatch.addStringProperty("marker",
             node -> node.janitorGetHostValue().getMarker(),
             (self, value) -> self.janitorGetHostValue().setMarker(value)
-        );
+        )
+                .setMetaData(Janitor.MetaData.HELP, "marker: The character used as the bullet marker, e.g. \"-\", \"*\" or \"+\"; writable.");
         // TODO: property bulletMarker
     }
 

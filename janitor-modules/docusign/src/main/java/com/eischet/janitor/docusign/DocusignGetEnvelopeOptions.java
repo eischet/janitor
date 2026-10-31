@@ -4,6 +4,7 @@
 package com.eischet.janitor.docusign;
 
 import com.docusign.esign.api.EnvelopesApi;
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 
@@ -15,8 +16,10 @@ public class DocusignGetEnvelopeOptions extends JanitorComposed<DocusignGetEnvel
 
     static {
         DISPATCH.addStringProperty("advancedUpdate", self -> self.wrapped.getAdvancedUpdate(), (self, value) -> self.wrapped.setAdvancedUpdate(value));
-        DISPATCH.addStringProperty("include", self -> self.wrapped.getInclude(), (self, value) -> self.wrapped.setInclude(value));
-        DISPATCH.addStringProperty("includeAnchorTabLocations", self -> self.wrapped.getIncludeAnchorTabLocations(), (self, value) -> self.wrapped.setIncludeAnchorTabLocations(value));
+        DISPATCH.addStringProperty("include", self -> self.wrapped.getInclude(), (self, value) -> self.wrapped.setInclude(value))
+                .setMetaData(Janitor.MetaData.HELP, "include: A comma-separated list of additional information to return with the envelope, e.g. \"recipients,documents\"; writable.");
+        DISPATCH.addStringProperty("includeAnchorTabLocations", self -> self.wrapped.getIncludeAnchorTabLocations(), (self, value) -> self.wrapped.setIncludeAnchorTabLocations(value))
+                .setMetaData(Janitor.MetaData.HELP, "includeAnchorTabLocations: \"true\" to include the locations of anchor tabs; writable.");
     }
 
     public DocusignGetEnvelopeOptions(final EnvelopesApi.GetEnvelopeOptions wrapped) {

@@ -161,9 +161,9 @@ string
 <!-- generated:begin modules/janitor -->
 | Member | Kind | Description |
 | --- | --- | --- |
-| `args` | property, list, read-only |  |
-| `host` | property, string, read-only |  |
-| `revision` | property, string, read-only |  |
+| `args` | property, list, read-only | List of the command line arguments as strings; empty if there are none; read-only. |
+| `host` | property, string, read-only | Name of the host application that runs the script, e.g. "standalone" or "maven", or "unknown"; read-only. |
+| `revision` | property, string, read-only | The revision (version) of the Janitor runtime; read-only. |
 <!-- generated:end -->
 
 <a id="module-generator"></a>
@@ -192,7 +192,7 @@ Generator
 <!-- generated:begin modules/generator -->
 | Member | Kind | Description |
 | --- | --- | --- |
-| `Generator(...)` | method |  |
+| `Generator(properties)` | method | Creates a new Java code generator; an optional map argument is applied to its properties. |
 | `apply(map)` | method | Assigns each entry of the map to the property of the same name, and returns the object itself. |
 <!-- generated:end -->
 
@@ -269,8 +269,8 @@ brrr.send({title: "Backup", message: "The nightly backup has finished."});
 <!-- generated:begin modules/brrr -->
 | Member | Kind | Description |
 | --- | --- | --- |
-| `Message(...)` | method |  |
-| `send(...)` | method |  |
+| `Message(properties)` | method | Creates a new push notification message; an optional map argument is applied to its properties. |
+| `send(url, message)` | method | Sends a message, given as a Message, a map of its properties or a string with the text, and returns null; the URL is optional and defaults to the BRRR_URL environment variable. |
 <!-- generated:end -->
 
 <a id="module-files"></a>
@@ -315,20 +315,20 @@ print(files.list(folder));
 <!-- generated:begin modules/files -->
 | Member | Kind | Description |
 | --- | --- | --- |
-| `Zip(...)` | method |  |
-| `copy(...)` | method |  |
-| `delete(...)` | method |  |
-| `exists(...)` | method |  |
-| `lastmod(...)` | method |  |
-| `list(...)` | method |  |
-| `mkdirs(...)` | method |  |
-| `move(...)` | method |  |
-| `normalize(...)` | method |  |
-| `read(...)` | method |  |
-| `readBinary(...)` | method |  |
-| `readXml(...)` | method |  |
-| `write(...)` | method |  |
-| `writeBinary(...)` | method |  |
+| `Zip(path)` | method | Creates a new ZIP file at the path and returns it for adding entries; it is closed when the script ends. |
+| `copy(source, target)` | method | Copies a file; fails if the target already exists. |
+| `delete(path)` | method | Deletes a file or an empty folder; returns true if it was deleted. |
+| `exists(path)` | method | Returns true if a file or folder exists at the path. |
+| `lastmod(path)` | method | Returns the last modification time of a file as a date-time, or null if it does not exist. |
+| `list(folder)` | method | Returns a list of the names of the entries in a folder; empty if the folder does not exist. |
+| `mkdirs(folder)` | method | Creates a folder including missing parent folders; returns true if it was created. |
+| `move(source, target)` | method | Moves a file; fails if the target already exists. |
+| `normalize(path)` | method | Returns the canonical absolute form of the path. |
+| `read(path, charset)` | method | Returns the contents of a file as text; charset defaults to UTF-8. |
+| `readBinary(path)` | method | Returns the contents of a file as binary data. |
+| `readXml(path, charset)` | method | Reads an XML file and returns its root element; charset defaults to UTF-8. |
+| `write(path, text, charset)` | method | Writes the text to a file, replacing its contents; charset defaults to UTF-8. Returns null. |
+| `writeBinary(path, data)` | method | Writes binary data to a file, replacing its contents. Returns null. |
 <!-- generated:end -->
 
 <a id="module-os"></a>
@@ -352,8 +352,8 @@ print(os.getenv("HOME") or "no HOME variable");
 <!-- generated:begin modules/os -->
 | Member | Kind | Description |
 | --- | --- | --- |
-| `exec(...)` | method |  |
-| `getenv(...)` | method |  |
+| `exec(command)` | method | Runs an operating system command, given as a string or as a list of program and arguments, waits for it to finish and returns its exit code; the output is discarded. |
+| `getenv(name)` | method | Returns the value of the environment variable, or null if it is not set. |
 <!-- generated:end -->
 
 <a id="module-commonmark"></a>
@@ -388,27 +388,27 @@ Some emphasis.
 <!-- generated:begin modules/commonmark -->
 | Member | Kind | Description |
 | --- | --- | --- |
-| `BlockQuote(...)` | method |  |
-| `BulletList(...)` | method |  |
-| `Document(...)` | method |  |
-| `Emphasis(...)` | method |  |
-| `FencedCodeBlock(...)` | method |  |
-| `HardLineBreak(...)` | method |  |
-| `Heading(...)` | method |  |
-| `HtmlBlock(...)` | method |  |
-| `HtmlInline(...)` | method |  |
-| `Image(...)` | method |  |
-| `IndentedCodeBlock(...)` | method |  |
-| `Link(...)` | method |  |
-| `LinkReferenceDefinition(...)` | method |  |
-| `ListItem(...)` | method |  |
-| `OrderedList(...)` | method |  |
-| `Paragraph(...)` | method |  |
-| `SoftLineBreak(...)` | method |  |
-| `StrongEmphasis(...)` | method |  |
-| `Text(...)` | method |  |
-| `ThematicBreak(...)` | method |  |
-| `parse(...)` | method |  |
+| `BlockQuote(properties)` | method | Creates a new, empty block quote node; an optional map argument is applied to its properties. |
+| `BulletList(properties)` | method | Creates a new, empty bullet list node; an optional map argument is applied to its properties. |
+| `Document(properties)` | method | Creates a new, empty document node; an optional map argument is applied to its properties. |
+| `Emphasis(properties)` | method | Creates a new, empty emphasis node; an optional map argument is applied to its properties. |
+| `FencedCodeBlock(properties)` | method | Creates a new, empty fenced code block node; an optional map argument is applied to its properties. |
+| `HardLineBreak(properties)` | method | Creates a new, empty hard line break node; an optional map argument is applied to its properties. |
+| `Heading(properties)` | method | Creates a new, empty heading node; an optional map argument is applied to its properties. |
+| `HtmlBlock(properties)` | method | Creates a new, empty HTML block node; an optional map argument is applied to its properties. |
+| `HtmlInline(properties)` | method | Creates a new, empty inline HTML node; an optional map argument is applied to its properties. |
+| `Image(properties)` | method | Creates a new, empty image node; an optional map argument is applied to its properties. |
+| `IndentedCodeBlock(properties)` | method | Creates a new, empty indented code block node; an optional map argument is applied to its properties. |
+| `Link(properties)` | method | Creates a new, empty link node; an optional map argument is applied to its properties. |
+| `LinkReferenceDefinition(properties)` | method | Creates a new, empty link reference definition node; an optional map argument is applied to its properties. |
+| `ListItem(properties)` | method | Creates a new, empty list item node; an optional map argument is applied to its properties. |
+| `OrderedList(properties)` | method | Creates a new, empty ordered list node; an optional map argument is applied to its properties. |
+| `Paragraph(properties)` | method | Creates a new, empty paragraph node; an optional map argument is applied to its properties. |
+| `SoftLineBreak(properties)` | method | Creates a new, empty soft line break node; an optional map argument is applied to its properties. |
+| `StrongEmphasis(properties)` | method | Creates a new, empty strong emphasis node; an optional map argument is applied to its properties. |
+| `Text(properties)` | method | Creates a new, empty text node; an optional map argument is applied to its properties. |
+| `ThematicBreak(properties)` | method | Creates a new, empty thematic break node; an optional map argument is applied to its properties. |
+| `parse(markdown)` | method | Parses the Markdown text and returns the document node of the resulting tree. |
 <!-- generated:end -->
 
 <a id="module-pdf"></a>
@@ -439,52 +439,52 @@ doc.close();
 <!-- generated:begin modules/pdf -->
 | Member | Kind | Description |
 | --- | --- | --- |
-| `ALIGN_BOTTOM` | property, int, read-only |  |
-| `ALIGN_CENTER` | property, int, read-only |  |
-| `ALIGN_JUSTIFIED` | property, int, read-only |  |
-| `ALIGN_LEFT` | property, int, read-only |  |
-| `ALIGN_MIDDLE` | property, int, read-only |  |
-| `ALIGN_RIGHT` | property, int, read-only |  |
-| `ALIGN_TOP` | property, int, read-only |  |
-| `Anchor(...)` | method |  |
-| `Annotation(...)` | method |  |
-| `BOLD` | property, int, read-only |  |
-| `BOLDITALIC` | property, int, read-only |  |
-| `BORDER_BOTTOM` | property, int, read-only |  |
-| `BORDER_BOX` | property, int, read-only |  |
-| `BORDER_LEFT` | property, int, read-only |  |
-| `BORDER_NONE` | property, int, read-only |  |
-| `BORDER_RIGHT` | property, int, read-only |  |
-| `BORDER_TOP` | property, int, read-only |  |
-| `BaseFont(...)` | method |  |
-| `COURIER` | property, int, read-only |  |
-| `Chapter(...)` | method |  |
-| `Chunk(...)` | method |  |
-| `Color(...)` | method |  |
-| `Document(...)` | method |  |
-| `Font(...)` | method |  |
-| `HELVETICA` | property, int, read-only |  |
-| `HeaderFooter(...)` | method |  |
-| `ITALIC` | property, int, read-only |  |
-| `Image(...)` | method |  |
-| `List(...)` | method |  |
-| `ListItem(...)` | method |  |
-| `Meta(...)` | method |  |
-| `NORMAL` | property, int, read-only |  |
-| `PCell(...)` | method |  |
-| `PTable(...)` | method |  |
-| `PageSize(...)` | method |  |
-| `Paragraph(...)` | method |  |
-| `Phrase(...)` | method |  |
-| `Reader(...)` | method |  |
-| `Rectangle(...)` | method |  |
-| `STRIKETHRU` | property, int, read-only |  |
-| `SYMBOL` | property, int, read-only |  |
-| `TIMES_ROMAN` | property, int, read-only |  |
-| `UNDERLINE` | property, int, read-only |  |
-| `Writer(...)` | method |  |
-| `ZAPFDINGBATS` | property, int, read-only |  |
-| `concat(...)` | method |  |
+| `ALIGN_BOTTOM` | property, int, read-only | Vertical alignment constant: bottom. |
+| `ALIGN_CENTER` | property, int, read-only | Horizontal alignment constant: centered. |
+| `ALIGN_JUSTIFIED` | property, int, read-only | Horizontal alignment constant: justified. |
+| `ALIGN_LEFT` | property, int, read-only | Horizontal alignment constant: left. |
+| `ALIGN_MIDDLE` | property, int, read-only | Vertical alignment constant: middle. |
+| `ALIGN_RIGHT` | property, int, read-only | Horizontal alignment constant: right. |
+| `ALIGN_TOP` | property, int, read-only | Vertical alignment constant: top. |
+| `Anchor(text, font)` | method | Creates an Anchor, a phrase that can be a link or a named destination; text and font are optional. |
+| `Annotation(title, text)` | method | Creates a popup text note; Annotation(llx, lly, urx, ury, url) instead creates a link to the URL over the given area. |
+| `BOLD` | property, int, read-only | Font style flag for bold text; combine flags with \|. |
+| `BOLDITALIC` | property, int, read-only | Font style constant for bold italic text, the same as BOLD \| ITALIC. |
+| `BORDER_BOTTOM` | property, int, read-only | Border flag for the bottom side; combine flags with \|. |
+| `BORDER_BOX` | property, int, read-only | Border constant for all four sides. |
+| `BORDER_LEFT` | property, int, read-only | Border flag for the left side; combine flags with \|. |
+| `BORDER_NONE` | property, int, read-only | Border constant: no border. |
+| `BORDER_RIGHT` | property, int, read-only | Border flag for the right side; combine flags with \|. |
+| `BORDER_TOP` | property, int, read-only | Border flag for the top side; combine flags with \|. |
+| `BaseFont(name, encoding, embedded)` | method | Creates a BaseFont from a standard font name or a TrueType/OpenType file path; encoding defaults to Cp1252 (WinAnsi), embedded to false. |
+| `COURIER` | property, int, read-only | Font family constant for Courier. |
+| `Chapter(title, number)` | method | Creates a chapter with the chapter number; the title is optional. |
+| `Chunk(text, font)` | method | Creates a Chunk, the smallest piece of text with a Font; text and font are optional. |
+| `Color(red, green, blue, alpha)` | method | Creates a Color from components 0 to 255; alpha is optional. |
+| `Document(pageSize, marginLeft, marginRight, marginTop, marginBottom)` | method | Creates a new PDF document; pageSize (a Rectangle) and the margins in points are optional, but the margins only together with a page size. |
+| `Font(family, size, style, color)` | method | Creates a Font; all arguments are optional, e.g. pdf.Font(pdf.HELVETICA, 12, pdf.BOLD, pdf.Color(0, 0, 255)). |
+| `HELVETICA` | property, int, read-only | Font family constant for Helvetica. |
+| `HeaderFooter(before, numberedOrAfter)` | method | Creates a page header or footer from the Phrase before and either a boolean (show the page number after it) or a Phrase shown after the page number. |
+| `ITALIC` | property, int, read-only | Font style flag for italic text; combine flags with \|. |
+| `Image(source)` | method | Loads an Image from a local file path or from binary data. |
+| `List(numbered, lettered)` | method | Creates a List of ListItems; both arguments are optional booleans, without them the list is bulleted. |
+| `ListItem(text, font)` | method | Creates a ListItem for a List; text and font are optional. |
+| `Meta(tag, content)` | method | Creates a piece of document meta-information. |
+| `NORMAL` | property, int, read-only | Font style constant for normal text. |
+| `PCell(content)` | method | Creates a table cell; content is optional and can be a Phrase, an Image or a nested PTable. |
+| `PTable(columns)` | method | Creates a table with the given number of columns, or with one column per entry of a list of relative column widths. |
+| `PageSize(name)` | method | Returns the read-only Rectangle of a standard page size like "A4", "A5", "LETTER" or "LEGAL" (case-insensitive); unknown names are an error. |
+| `Paragraph(text, font)` | method | Creates a Paragraph, a phrase with alignment, indentation and spacing; text and font are optional. |
+| `Phrase(text, font)` | method | Creates a Phrase, a series of chunks; text and font are optional. |
+| `Reader(source)` | method | Reads an existing PDF from a file path or from binary data. |
+| `Rectangle(width, height)` | method | Creates a Rectangle of the size in points; Rectangle(llx, lly, urx, ury) instead takes the lower left and upper right corners. |
+| `STRIKETHRU` | property, int, read-only | Font style flag for struck-through text; combine flags with \|. |
+| `SYMBOL` | property, int, read-only | Font family constant for the Symbol font. |
+| `TIMES_ROMAN` | property, int, read-only | Font family constant for Times Roman. |
+| `UNDERLINE` | property, int, read-only | Font style flag for underlined text; combine flags with \|. |
+| `Writer(document, path)` | method | Creates a writer that writes the document to the file path; without a path, the PDF is kept in memory and available as writer.bytes after closing the document. |
+| `ZAPFDINGBATS` | property, int, read-only | Font family constant for ZapfDingbats. |
+| `concat(targetFile, sourceFiles)` | method | Concatenates the pages of the PDF files in the list sourceFiles into the new file targetFile. |
 <!-- generated:end -->
 
 <a id="module-mustang"></a>
@@ -509,23 +509,23 @@ The objects mirror the classes of the Mustang library, and their properties are 
 <!-- generated:begin modules/mustang -->
 | Member | Kind | Description |
 | --- | --- | --- |
-| `Allowance(...)` | method |  |
-| `BankDetails(...)` | method |  |
-| `CashDiscount(...)` | method |  |
-| `Charge(...)` | method |  |
-| `Contact(...)` | method |  |
-| `DirectDebit(...)` | method |  |
-| `Exporter(...)` | method |  |
-| `FileAttachment(...)` | method |  |
-| `IncludedNote(...)` | method |  |
-| `Invoice(...)` | method |  |
-| `Item(...)` | method |  |
-| `LegalOrganisation(...)` | method |  |
-| `PaymentTerms(...)` | method |  |
-| `Product(...)` | method |  |
-| `ReferencedDocument(...)` | method |  |
-| `SchemedID(...)` | method |  |
-| `TradeParty(...)` | method |  |
+| `Allowance()` | method | Creates a new, empty allowance (discount) on item or document level. |
+| `BankDetails()` | method | Creates new, empty bank details of a trade party. |
+| `CashDiscount()` | method | Creates a new, empty early-payment discount. |
+| `Charge()` | method | Creates a new, empty charge (surcharge) on item or document level. |
+| `Contact()` | method | Creates a new, empty contact person of a trade party. |
+| `DirectDebit()` | method | Creates new, empty SEPA direct debit details. |
+| `Exporter()` | method | Creates a new exporter, which embeds invoice data into PDF files. |
+| `FileAttachment()` | method | Creates a new, empty file attachment for an invoice. |
+| `IncludedNote()` | method | Creates a new, empty free-text note for an invoice or item. |
+| `Invoice()` | method | Creates a new, empty electronic invoice (ZUGFeRD/Factur-X). |
+| `Item()` | method | Creates a new, empty invoice item (line). |
+| `LegalOrganisation()` | method | Creates a new, empty legal registration of a trade party. |
+| `PaymentTerms()` | method | Creates new, empty payment terms. |
+| `Product()` | method | Creates a new, empty product for an invoice item. |
+| `ReferencedDocument()` | method | Creates a new, empty reference to another document. |
+| `SchemedID()` | method | Creates a new, empty scheme-qualified identifier. |
+| `TradeParty()` | method | Creates a new, empty trade party, i.e. the sender or recipient of an invoice. |
 <!-- generated:end -->
 
 <a id="module-docusign"></a>
@@ -546,15 +546,15 @@ recipients = docusign.Recipients();
 <!-- generated:begin modules/docusign -->
 | Member | Kind | Description |
 | --- | --- | --- |
-| `CarbonCopy(...)` | method |  |
-| `Client(...)` | method |  |
-| `Document(...)` | method |  |
-| `EnvelopeDefinition(...)` | method |  |
-| `Recipients(...)` | method |  |
-| `SignHere(...)` | method |  |
-| `Signer(...)` | method |  |
-| `Tabs(...)` | method |  |
-| `TemplateRole(...)` | method |  |
+| `CarbonCopy(properties)` | method | Creates a new carbon copy recipient; an optional map argument is applied to its properties. |
+| `Client(properties)` | method | Creates a new DocuSign API client; an optional map argument is applied to its properties. |
+| `Document(properties)` | method | Creates a new document for an envelope; an optional map argument is applied to its properties. |
+| `EnvelopeDefinition(properties)` | method | Creates a new envelope definition; an optional map argument is applied to its properties. |
+| `Recipients(properties)` | method | Creates a new, empty set of recipients; an optional map argument is applied to its properties. |
+| `SignHere(properties)` | method | Creates a new sign here tab; an optional map argument is applied to its properties. |
+| `Signer(properties)` | method | Creates a new signer recipient; an optional map argument is applied to its properties. |
+| `Tabs(properties)` | method | Creates a new, empty set of tabs; an optional map argument is applied to its properties. |
+| `TemplateRole(properties)` | method | Creates a new template role; an optional map argument is applied to its properties. |
 <!-- generated:end -->
 
 <a id="module-msgraph"></a>
@@ -594,7 +594,7 @@ for (message in graph.messages("support@example.com", "inbox")) {
 <!-- generated:begin modules/msgraph -->
 | Member | Kind | Description |
 | --- | --- | --- |
-| `connect(...)` | method |  |
+| `connect(clientId, clientSecret, tenantId, options)` | method | Returns a Microsoft Graph client that authenticates with the client secret; options is an optional map with baseUrl, proxyHost, proxyPort, tokenCache, timeoutSeconds and maxRetries. |
 <!-- generated:end -->
 
 <a id="module-mcp"></a>
@@ -624,7 +624,7 @@ print(result.text);
 <!-- generated:begin modules/mcp -->
 | Member | Kind | Description |
 | --- | --- | --- |
-| `connect(...)` | method |  |
+| `connect(url, options)` | method | Connects to the MCP server at the URL and returns the connection; options is an optional map with headers, timeoutSeconds, clientName, clientVersion, transport and throwOnError. |
 <!-- generated:end -->
 
 <a id="host-modules"></a>

@@ -22,7 +22,8 @@ public class DocusignEnvelopesApi extends JanitorComposed<DocusignEnvelopesApi> 
     static {
         // EnvelopesApi.CreateEnvelopeOptions
         DISPATCHER.addMethod("CreateEnvelopeOptions", (self, process, arguments) ->
-                DocusignModule.enableApply(process, new DocusignCreateEnvelopeOptions(self.getCreateEnvelopeOptions()), arguments));
+                DocusignModule.enableApply(process, new DocusignCreateEnvelopeOptions(self.getCreateEnvelopeOptions()), arguments))
+                .setMetaData(Janitor.MetaData.HELP, "CreateEnvelopeOptions(properties): Creates a new set of options for creating an envelope; an optional map argument is applied to its properties.");
         DISPATCHER.addMethod("createEnvelope", (self, process, arguments) -> {
             final String accountId = arguments.getRequiredStringValue(0);
             final DocusignEnvelopeDefinition envDef = arguments.getRequired(1, DocusignEnvelopeDefinition.class);
@@ -34,7 +35,8 @@ public class DocusignEnvelopesApi extends JanitorComposed<DocusignEnvelopesApi> 
                 throw new JanitorNativeException(process, "Failed to create envelope", e);
             }
 
-        });
+        })
+                .setMetaData(Janitor.MetaData.HELP, "createEnvelope(accountId, envelopeDefinition): Creates an envelope in the account from the envelope definition and returns the envelope summary.");
 
         DISPATCHER.addMethod("getEnvelope", (self, process, arguments) -> {
             final String accountId = arguments.getRequiredStringValue(0);
@@ -51,7 +53,8 @@ public class DocusignEnvelopesApi extends JanitorComposed<DocusignEnvelopesApi> 
             } catch (Exception e) {
                 throw new JanitorNativeException(process, "Failed to get document", e);
             }
-        });
+        })
+                .setMetaData(Janitor.MetaData.HELP, "getEnvelope(accountId, envelopeId, options): Fetches the envelope from the account and returns it; options is an optional map with the get envelope options, e.g. include.");
 
 
         DISPATCHER.addMethod("getDocumentWithHttpInfo", (self, process, arguments) -> {
@@ -71,7 +74,8 @@ public class DocusignEnvelopesApi extends JanitorComposed<DocusignEnvelopesApi> 
             } catch (Exception e) {
                 throw new JanitorNativeException(process, "Failed to get document", e);
             }
-        });
+        })
+                .setMetaData(Janitor.MetaData.HELP, "getDocumentWithHttpInfo(accountId, envelopeId, documentId, options): Downloads a document of the envelope and returns its content as binary, or null; options is an optional map with the get document options, e.g. certificate.");
 
     }
 

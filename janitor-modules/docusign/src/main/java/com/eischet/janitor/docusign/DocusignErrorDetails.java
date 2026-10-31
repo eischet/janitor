@@ -4,6 +4,7 @@
 package com.eischet.janitor.docusign;
 
 import com.docusign.esign.model.ErrorDetails;
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 
@@ -14,8 +15,10 @@ public class DocusignErrorDetails extends JanitorComposed<DocusignErrorDetails> 
 
     static {
         // String properties
-        DISPATCHER.addStringProperty("errorCode", self -> self.wrapped.getErrorCode(), (self, value) -> self.wrapped.setErrorCode(value));
-        DISPATCHER.addStringProperty("message", self -> self.wrapped.getMessage(), (self, value) -> self.wrapped.setMessage(value));
+        DISPATCHER.addStringProperty("errorCode", self -> self.wrapped.getErrorCode(), (self, value) -> self.wrapped.setErrorCode(value))
+                .setMetaData(Janitor.MetaData.HELP, "errorCode: The code of the error; writable.");
+        DISPATCHER.addStringProperty("message", self -> self.wrapped.getMessage(), (self, value) -> self.wrapped.setMessage(value))
+                .setMetaData(Janitor.MetaData.HELP, "message: The description of the error; writable.");
     }
 
     private final ErrorDetails wrapped;

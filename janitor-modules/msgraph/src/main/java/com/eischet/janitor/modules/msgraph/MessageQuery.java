@@ -3,6 +3,7 @@
 
 package com.eischet.janitor.modules.msgraph;
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import org.jetbrains.annotations.NotNull;
@@ -22,11 +23,16 @@ public class MessageQuery extends JanitorComposed<MessageQuery> {
     public static final DispatchTable<MessageQuery> DISPATCH = new DispatchTable<>(MessageQuery::new);
 
     static {
-        DISPATCH.addListOfStringsProperty("select", MessageQuery::getSelect, MessageQuery::setSelect);
-        DISPATCH.addIntegerProperty("top", MessageQuery::getTop, MessageQuery::setTop);
-        DISPATCH.addStringProperty("orderBy", MessageQuery::getOrderBy, MessageQuery::setOrderBy);
-        DISPATCH.addStringProperty("filter", MessageQuery::getFilter, MessageQuery::setFilter);
-        DISPATCH.addStringProperty("bodyType", MessageQuery::getBodyType, MessageQuery::setBodyType);
+        DISPATCH.addListOfStringsProperty("select", MessageQuery::getSelect, MessageQuery::setSelect)
+                .setMetaData(Janitor.MetaData.HELP, "select: List of the message properties to load ($select); null or empty means id, subject, sender and categories; writable.");
+        DISPATCH.addIntegerProperty("top", MessageQuery::getTop, MessageQuery::setTop)
+                .setMetaData(Janitor.MetaData.HELP, "top: The page size ($top, default 10); all pages are read regardless; writable.");
+        DISPATCH.addStringProperty("orderBy", MessageQuery::getOrderBy, MessageQuery::setOrderBy)
+                .setMetaData(Janitor.MetaData.HELP, "orderBy: The sort order ($orderby), default \"receivedDateTime asc\"; writable.");
+        DISPATCH.addStringProperty("filter", MessageQuery::getFilter, MessageQuery::setFilter)
+                .setMetaData(Janitor.MetaData.HELP, "filter: An OData filter ($filter), e.g. \"isRead eq false\", or null for none; writable.");
+        DISPATCH.addStringProperty("bodyType", MessageQuery::getBodyType, MessageQuery::setBodyType)
+                .setMetaData(Janitor.MetaData.HELP, "bodyType: \"text\" or \"html\" to get body and unique body in that format; null leaves the default, HTML; writable.");
     }
 
     private @NotNull List<String> select = DEFAULT_SELECT;

@@ -10,6 +10,7 @@ import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.JBinary;
 import com.eischet.janitor.api.types.functions.JCallArgs;
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import org.jetbrains.annotations.NotNull;
@@ -36,15 +37,17 @@ public class JPDFWriter extends JanitorWrapper<PdfWriter> {
     public static final WrapperDispatchTable<PdfWriter> DISPATCH_TABLE = new WrapperDispatchTable<>();
 
     static {
-        DISPATCH_TABLE.addVoidMethod("close", (self, process, args) -> self.janitorGetHostValue().close());
-        DISPATCH_TABLE.addBuilderMethod("addJavaScript", (self, process, args) -> self.janitorGetHostValue().addJavaScript(args.getRequiredStringValue(0)));
+        DISPATCH_TABLE.addVoidMethod("close", (self, process, args) -> self.janitorGetHostValue().close())
+                .setMetaData(Janitor.MetaData.HELP, "close(): Closes the writer.");
+        DISPATCH_TABLE.addBuilderMethod("addJavaScript", (self, process, args) -> self.janitorGetHostValue().addJavaScript(args.getRequiredStringValue(0)))
+                .setMetaData(Janitor.MetaData.HELP, "addJavaScript(code): Adds document-level JavaScript code to the PDF; returns the writer.");
         DISPATCH_TABLE.addObjectProperty("bytes", self -> {
             if (!(self instanceof JPDFWriter jpdfWriter)) {
                 return null;
             }
             final byte[] bytes = jpdfWriter.getBufferedBytes();
             return bytes == null ? null : com.eischet.janitor.api.Janitor.binary(bytes);
-        });
+        }).setMetaData(Janitor.MetaData.HELP, "bytes: The finished PDF as binary for a writer created without a path, available once the document has been closed; null for a writer that writes to a file; read-only.");
         // TODO: getDirectContent()/getDirectContentUnder() -- would need a PdfContentByte wrapper for low-level canvas drawing (lines, shapes, raw text positioning). Not mapped yet.
         // TODO: setPageEvent(PdfPageEvent) -- would need a script-side callback bridge. Not mapped yet.
         // TODO: encryption (setEncryption), PDF/A, digital signatures -- not mapped yet.

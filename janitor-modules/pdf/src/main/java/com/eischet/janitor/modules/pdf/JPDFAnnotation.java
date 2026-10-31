@@ -7,6 +7,7 @@ import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.functions.JCallArgs;
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import org.jetbrains.annotations.NotNull;
@@ -23,14 +24,21 @@ public class JPDFAnnotation extends JanitorWrapper<Annotation> {
     public static final WrapperDispatchTable<Annotation> DISPATCH_TABLE = new WrapperDispatchTable<>();
 
     static {
-        DISPATCH_TABLE.addStringProperty("title", self -> self.janitorGetHostValue().title());
-        DISPATCH_TABLE.addStringProperty("content", self -> self.janitorGetHostValue().content());
-        DISPATCH_TABLE.addDoubleProperty("llx", self -> self.janitorGetHostValue().llx());
-        DISPATCH_TABLE.addDoubleProperty("lly", self -> self.janitorGetHostValue().lly());
-        DISPATCH_TABLE.addDoubleProperty("urx", self -> self.janitorGetHostValue().urx());
-        DISPATCH_TABLE.addDoubleProperty("ury", self -> self.janitorGetHostValue().ury());
+        DISPATCH_TABLE.addStringProperty("title", self -> self.janitorGetHostValue().title())
+                .setMetaData(Janitor.MetaData.HELP, "title: The title of the annotation; read-only.");
+        DISPATCH_TABLE.addStringProperty("content", self -> self.janitorGetHostValue().content())
+                .setMetaData(Janitor.MetaData.HELP, "content: The text content of the annotation; read-only.");
+        DISPATCH_TABLE.addDoubleProperty("llx", self -> self.janitorGetHostValue().llx())
+                .setMetaData(Janitor.MetaData.HELP, "llx: The x coordinate of the lower left corner of the annotation area; read-only, see setDimensions().");
+        DISPATCH_TABLE.addDoubleProperty("lly", self -> self.janitorGetHostValue().lly())
+                .setMetaData(Janitor.MetaData.HELP, "lly: The y coordinate of the lower left corner of the annotation area; read-only, see setDimensions().");
+        DISPATCH_TABLE.addDoubleProperty("urx", self -> self.janitorGetHostValue().urx())
+                .setMetaData(Janitor.MetaData.HELP, "urx: The x coordinate of the upper right corner of the annotation area; read-only, see setDimensions().");
+        DISPATCH_TABLE.addDoubleProperty("ury", self -> self.janitorGetHostValue().ury())
+                .setMetaData(Janitor.MetaData.HELP, "ury: The y coordinate of the upper right corner of the annotation area; read-only, see setDimensions().");
         DISPATCH_TABLE.addBuilderMethod("setDimensions", (self, process, args) -> self.janitorGetHostValue().setDimensions(
-                PdfElements.floatArg(process, args, 0), PdfElements.floatArg(process, args, 1), PdfElements.floatArg(process, args, 2), PdfElements.floatArg(process, args, 3)));
+                PdfElements.floatArg(process, args, 0), PdfElements.floatArg(process, args, 1), PdfElements.floatArg(process, args, 2), PdfElements.floatArg(process, args, 3)))
+                .setMetaData(Janitor.MetaData.HELP, "setDimensions(llx, lly, urx, ury): Sets the area of the annotation by its lower left and upper right corners; returns the annotation.");
     }
 
     public JPDFAnnotation(final @NotNull Annotation annotation) {

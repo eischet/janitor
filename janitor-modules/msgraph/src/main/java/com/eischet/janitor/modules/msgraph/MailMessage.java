@@ -3,6 +3,7 @@
 
 package com.eischet.janitor.modules.msgraph;
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import org.jetbrains.annotations.Nullable;
@@ -20,15 +21,24 @@ public class MailMessage extends JanitorComposed<MailMessage> {
     public static final DispatchTable<MailMessage> DISPATCH = new DispatchTable<>(MailMessage::new);
 
     static {
-        DISPATCH.addStringProperty("id", MailMessage::getId, MailMessage::setId);
-        DISPATCH.addStringProperty("subject", MailMessage::getSubject, MailMessage::setSubject);
-        DISPATCH.addObjectProperty("sender", MailMessage::getSender, MailMessage::setSender, Recipient::new);
-        DISPATCH.addListOfStringsProperty("categories", MailMessage::getCategories, MailMessage::setCategories);
-        DISPATCH.addNullableBooleanProperty("isRead", MailMessage::getIsRead, MailMessage::setIsRead);
-        DISPATCH.addStringProperty("internetMessageId", MailMessage::getInternetMessageId, MailMessage::setInternetMessageId);
-        DISPATCH.addStringProperty("parentFolderId", MailMessage::getParentFolderId, MailMessage::setParentFolderId);
-        DISPATCH.addObjectProperty("uniqueBody", MailMessage::getUniqueBody, MailMessage::setUniqueBody, ItemBody::new);
-        DISPATCH.addObjectProperty("body", MailMessage::getBody, MailMessage::setBody, ItemBody::new);
+        DISPATCH.addStringProperty("id", MailMessage::getId, MailMessage::setId)
+                .setMetaData(Janitor.MetaData.HELP, "id: The Graph ID of the message; writable.");
+        DISPATCH.addStringProperty("subject", MailMessage::getSubject, MailMessage::setSubject)
+                .setMetaData(Janitor.MetaData.HELP, "subject: The subject of the message, or null if not selected; writable.");
+        DISPATCH.addObjectProperty("sender", MailMessage::getSender, MailMessage::setSender, Recipient::new)
+                .setMetaData(Janitor.MetaData.HELP, "sender: The sender as a recipient with an emailAddress, or null if not selected; writable.");
+        DISPATCH.addListOfStringsProperty("categories", MailMessage::getCategories, MailMessage::setCategories)
+                .setMetaData(Janitor.MetaData.HELP, "categories: List of the category names of the message, or null if not selected; writable.");
+        DISPATCH.addNullableBooleanProperty("isRead", MailMessage::getIsRead, MailMessage::setIsRead)
+                .setMetaData(Janitor.MetaData.HELP, "isRead: True if the message has been read, or null if not selected; writable.");
+        DISPATCH.addStringProperty("internetMessageId", MailMessage::getInternetMessageId, MailMessage::setInternetMessageId)
+                .setMetaData(Janitor.MetaData.HELP, "internetMessageId: The Message-ID header of the message, or null if not selected; writable.");
+        DISPATCH.addStringProperty("parentFolderId", MailMessage::getParentFolderId, MailMessage::setParentFolderId)
+                .setMetaData(Janitor.MetaData.HELP, "parentFolderId: The Graph ID of the folder that contains the message, or null if not selected; writable.");
+        DISPATCH.addObjectProperty("uniqueBody", MailMessage::getUniqueBody, MailMessage::setUniqueBody, ItemBody::new)
+                .setMetaData(Janitor.MetaData.HELP, "uniqueBody: The part of the body that is unique to this message, without quoted earlier messages, or null if not selected; writable.");
+        DISPATCH.addObjectProperty("body", MailMessage::getBody, MailMessage::setBody, ItemBody::new)
+                .setMetaData(Janitor.MetaData.HELP, "body: The body of the message, or null if not selected; writable.");
     }
 
     private @Nullable String id;

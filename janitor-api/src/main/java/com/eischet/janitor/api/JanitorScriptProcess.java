@@ -363,6 +363,19 @@ public interface JanitorScriptProcess {
         return this;
     }
 
+    /**
+     * Binds a global function of the script with a HELP text, before it runs.
+     *
+     * @param functionName the function name
+     * @param help         the HELP text, starting with the call form, e.g. "send(text): Sends the text."
+     * @param function     the function
+     * @return this process, for chained calls
+     */
+    default JanitorScriptProcess bindF(final String functionName, final @Nullable String help, final JCallable function) {
+        getMainScope().bindF(functionName, help, function);
+        return this;
+    }
+
     @FunctionalInterface
     interface ProtectedCall {
         /**

@@ -3,6 +3,7 @@
 
 package com.eischet.janitor.modules.msgraph;
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import org.jetbrains.annotations.Nullable;
@@ -13,9 +14,12 @@ public class ItemBody extends JanitorComposed<ItemBody> {
     public static final DispatchTable<ItemBody> DISPATCH = new DispatchTable<>(ItemBody::new);
 
     static {
-        DISPATCH.addStringProperty("contentType", ItemBody::getContentType, ItemBody::setContentType);
-        DISPATCH.addStringProperty("content", ItemBody::getContent, ItemBody::setContent);
-        DISPATCH.addBooleanProperty("html", ItemBody::isHtml);
+        DISPATCH.addStringProperty("contentType", ItemBody::getContentType, ItemBody::setContentType)
+                .setMetaData(Janitor.MetaData.HELP, "contentType: The type of the content, \"html\" or \"text\"; writable.");
+        DISPATCH.addStringProperty("content", ItemBody::getContent, ItemBody::setContent)
+                .setMetaData(Janitor.MetaData.HELP, "content: The content as HTML or plain text, depending on contentType; writable.");
+        DISPATCH.addBooleanProperty("html", ItemBody::isHtml)
+                .setMetaData(Janitor.MetaData.HELP, "html: True if the content type is \"html\"; read-only.");
     }
 
     private @Nullable String contentType;

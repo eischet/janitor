@@ -3,6 +3,7 @@
 
 package com.eischet.janitor.generator;
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import com.eischet.janitor.generator.writing.CodeOutputStream;
@@ -17,7 +18,8 @@ public class GeneratedField extends JanitorComposed<GeneratedField> {
     public static final DispatchTable<GeneratedField> DISPATCH = new DispatchTable<>();
 
     static {
-        DISPATCH.addStringProperty("name", GeneratedField::getName);
+        DISPATCH.addStringProperty("name", GeneratedField::getName)
+                .setMetaData(Janitor.MetaData.HELP, "name: The name of the field; read-only.");
     }
 
     private final @NotNull GeneratedClass parent;

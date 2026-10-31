@@ -3,6 +3,7 @@
 
 package com.eischet.janitor.modules.commonmark;
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import org.commonmark.node.OrderedList;
@@ -16,15 +17,18 @@ public class CMOrderedList extends CMListBlock {
         dispatch.addNullableIntegerProperty("markerStartNumber",
             node -> node.janitorGetHostValue().getMarkerStartNumber(),
             (self, value) -> self.janitorGetHostValue().setMarkerStartNumber(value)
-        );
+        )
+                .setMetaData(Janitor.MetaData.HELP, "markerStartNumber: The number of the first item of the list; writable, may be null.");
         dispatch.addStringProperty("markerDelimiter",
             node -> node.janitorGetHostValue().getMarkerDelimiter(),
             (self, value) -> self.janitorGetHostValue().setMarkerDelimiter(value)
-        );
+        )
+                .setMetaData(Janitor.MetaData.HELP, "markerDelimiter: The delimiter after the item numbers, \".\" or \")\"; writable.");
         dispatch.addIntegerProperty("startNumber",
             node -> node.janitorGetHostValue().getStartNumber(),
             (self, value) -> self.janitorGetHostValue().setStartNumber(value)
-        );
+        )
+                .setMetaData(Janitor.MetaData.HELP, "startNumber: The number of the first item of the list; writable.");
         // TODO: property delimiter
     }
 

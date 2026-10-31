@@ -3,6 +3,7 @@
 
 package com.eischet.janitor.modules.commonmark;
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import org.commonmark.node.Emphasis;
@@ -14,9 +15,11 @@ public class CMEmphasis extends CMNode {
     static {
         // TODO: method accept
         dispatch.addStringProperty("openingDelimiter",
-            node -> node.janitorGetHostValue().getOpeningDelimiter());
+            node -> node.janitorGetHostValue().getOpeningDelimiter())
+                .setMetaData(Janitor.MetaData.HELP, "openingDelimiter: The delimiter that opens the emphasis, \"*\" or \"_\"; read-only.");
         dispatch.addStringProperty("closingDelimiter",
-            node -> node.janitorGetHostValue().getClosingDelimiter());
+            node -> node.janitorGetHostValue().getClosingDelimiter())
+                .setMetaData(Janitor.MetaData.HELP, "closingDelimiter: The delimiter that closes the emphasis, \"*\" or \"_\"; read-only.");
     }
 
     public CMEmphasis(final Emphasis node) {

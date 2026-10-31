@@ -3,6 +3,7 @@
 
 package com.eischet.janitor.modules.mustang;
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import org.mustangproject.IncludedNote;
@@ -18,14 +19,18 @@ public class MustangIncludedNote extends JanitorWrapper<IncludedNote> {
     public static final WrapperDispatchTable<IncludedNote> DISPATCH = new WrapperDispatchTable<>(MustangIncludedNote::new);
 
     static {
-        DISPATCH.addBuilderMethod("setContent", (self, process, args) -> self.janitorGetHostValue().setContent(args.getRequiredStringValue(0)));
+        DISPATCH.addBuilderMethod("setContent", (self, process, args) -> self.janitorGetHostValue().setContent(args.getRequiredStringValue(0)))
+                .setMetaData(Janitor.MetaData.HELP, "setContent(text): Sets the text of the note. Returns this note.");
         DISPATCH.addBuilderMethod("setSubjectCode", (self, process, args) ->
-            self.janitorGetHostValue().setSubjectCode(toSubjectCode(args.getOptionalStringValue(0, null))));
+            self.janitorGetHostValue().setSubjectCode(toSubjectCode(args.getOptionalStringValue(0, null))))
+                .setMetaData(Janitor.MetaData.HELP, "setSubjectCode(code): Sets the UNTDID 4451 subject code, e.g. \"AAI\" or \"REG\" (case-insensitive); without a code or with a blank one, removes it. Returns this note.");
 
-        DISPATCH.addStringProperty("content", self -> self.janitorGetHostValue().getContent(), (self, value) -> self.janitorGetHostValue().setContent(value));
+        DISPATCH.addStringProperty("content", self -> self.janitorGetHostValue().getContent(), (self, value) -> self.janitorGetHostValue().setContent(value))
+                .setMetaData(Janitor.MetaData.HELP, "content: The text of the note; writable.");
         DISPATCH.addStringProperty("subjectCode",
             self -> self.janitorGetHostValue().getSubjectCode() == null ? null : self.janitorGetHostValue().getSubjectCode().name(),
-            (self, value) -> self.janitorGetHostValue().setSubjectCode(toSubjectCode(value)));
+            (self, value) -> self.janitorGetHostValue().setSubjectCode(toSubjectCode(value)))
+                .setMetaData(Janitor.MetaData.HELP, "subjectCode: The UNTDID 4451 subject code, e.g. \"AAI\" or \"REG\", or null; writable, case-insensitive.");
     }
 
     private static SubjectCode toSubjectCode(final String value) {

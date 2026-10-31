@@ -3,6 +3,7 @@
 
 package com.eischet.janitor.modules.mcp;
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.JList;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
@@ -20,10 +21,14 @@ public class McpToolResult extends JanitorComposed<McpToolResult> {
     public static final DispatchTable<McpToolResult> DISPATCH = new DispatchTable<>();
 
     static {
-        DISPATCH.addBooleanProperty("isError", McpToolResult::isError);
-        DISPATCH.addStringProperty("text", McpToolResult::getText);
-        DISPATCH.addObjectProperty("content", McpToolResult::getContent);
-        DISPATCH.addObjectProperty("structured", McpToolResult::getStructured);
+        DISPATCH.addBooleanProperty("isError", McpToolResult::isError)
+                .setMetaData(Janitor.MetaData.HELP, "isError: True if the server flagged the result as an error, e.g. because the tool failed; read-only.");
+        DISPATCH.addStringProperty("text", McpToolResult::getText)
+                .setMetaData(Janitor.MetaData.HELP, "text: All text parts of the content, joined by newlines; empty if there are none; read-only.");
+        DISPATCH.addObjectProperty("content", McpToolResult::getContent)
+                .setMetaData(Janitor.MetaData.HELP, "content: List of all parts of the content as maps, e.g. {\"type\": \"text\", \"text\": \"...\"}; read-only.");
+        DISPATCH.addObjectProperty("structured", McpToolResult::getStructured)
+                .setMetaData(Janitor.MetaData.HELP, "structured: The structured content of the result, or null if the tool returned none; read-only.");
     }
 
     private final @NotNull McpSchema.CallToolResult result;

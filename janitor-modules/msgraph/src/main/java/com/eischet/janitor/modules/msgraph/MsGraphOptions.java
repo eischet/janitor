@@ -3,6 +3,7 @@
 
 package com.eischet.janitor.modules.msgraph;
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import org.jetbrains.annotations.NotNull;
@@ -19,12 +20,18 @@ public class MsGraphOptions extends JanitorComposed<MsGraphOptions> {
     public static final DispatchTable<MsGraphOptions> DISPATCH = new DispatchTable<>(MsGraphOptions::new);
 
     static {
-        DISPATCH.addStringProperty("baseUrl", MsGraphOptions::getBaseUrl, MsGraphOptions::setBaseUrl);
-        DISPATCH.addStringProperty("proxyHost", MsGraphOptions::getProxyHost, MsGraphOptions::setProxyHost);
-        DISPATCH.addIntegerProperty("proxyPort", MsGraphOptions::getProxyPort, MsGraphOptions::setProxyPort);
-        DISPATCH.addBooleanProperty("tokenCache", MsGraphOptions::isTokenCache, MsGraphOptions::setTokenCache);
-        DISPATCH.addIntegerProperty("timeoutSeconds", MsGraphOptions::getTimeoutSeconds, MsGraphOptions::setTimeoutSeconds);
-        DISPATCH.addIntegerProperty("maxRetries", MsGraphOptions::getMaxRetries, MsGraphOptions::setMaxRetries);
+        DISPATCH.addStringProperty("baseUrl", MsGraphOptions::getBaseUrl, MsGraphOptions::setBaseUrl)
+                .setMetaData(Janitor.MetaData.HELP, "baseUrl: The Graph endpoint including the API version (default https://graph.microsoft.com/v1.0; blank restores it); writable.");
+        DISPATCH.addStringProperty("proxyHost", MsGraphOptions::getProxyHost, MsGraphOptions::setProxyHost)
+                .setMetaData(Janitor.MetaData.HELP, "proxyHost: Host name of the HTTP proxy; null or blank means no proxy; writable.");
+        DISPATCH.addIntegerProperty("proxyPort", MsGraphOptions::getProxyPort, MsGraphOptions::setProxyPort)
+                .setMetaData(Janitor.MetaData.HELP, "proxyPort: Port of the HTTP proxy; writable.");
+        DISPATCH.addBooleanProperty("tokenCache", MsGraphOptions::isTokenCache, MsGraphOptions::setTokenCache)
+                .setMetaData(Janitor.MetaData.HELP, "tokenCache: If true, tokens are also stored on disk in the operating system's secure store, so they survive restarts (default false); writable.");
+        DISPATCH.addIntegerProperty("timeoutSeconds", MsGraphOptions::getTimeoutSeconds, MsGraphOptions::setTimeoutSeconds)
+                .setMetaData(Janitor.MetaData.HELP, "timeoutSeconds: Timeout for requests in seconds (default 60); writable.");
+        DISPATCH.addIntegerProperty("maxRetries", MsGraphOptions::getMaxRetries, MsGraphOptions::setMaxRetries)
+                .setMetaData(Janitor.MetaData.HELP, "maxRetries: How often a throttled (429) or unavailable (503, 504) request is retried (default 4); writable.");
     }
 
     private @NotNull String baseUrl = DEFAULT_BASE_URL;

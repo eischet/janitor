@@ -69,8 +69,10 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
     private final Scope builtinScope = Scope.createBuiltinScope(this, Location.virtual(ScriptSource.builtin()));
 
     {
-        builtinScope.bindF("print", (rs, args) -> rs.getRuntime().print(rs, args));
-        builtinScope.bindF("assert", JanitorDefaultEnvironment::doAssert);
+        builtinScope.bindF("print", "print(values...): Prints the values, separated by spaces; where the output goes is up to the host, e.g. the console or a log.",
+                (rs, args) -> rs.getRuntime().print(rs, args));
+        builtinScope.bindF("assert", "assert(condition, message): Fails the script with an assertion error unless the condition is truthy; the message is optional. Returns the condition.",
+                JanitorDefaultEnvironment::doAssert);
         builtinScope.bind("__builtin__", builtinScope); // not sure if this is actually a good idea, because that's a perfect circle of references.
 
         // Very experimental... and will not yet work like it does in Python, if ever.
@@ -78,7 +80,7 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
         // That's because we're using "unpack()" all over the place to get to the innermost value, which is
         // what we want in most cases, but maybe not here. I'm not sure if it's worth making things more complicated
         // just for this feature, though.
-        builtinScope.bindF("help", (rs, args) -> {
+        builtinScope.bindF("help", "help(value): Returns the HELP text of the value, e.g. of a function or method, or null if it has none.", (rs, args) -> {
             final JanitorObject subject = args.get(0);
             if (subject instanceof HasMetaData hasMetaData) {
                 return getBuiltinTypes().nullableString(hasMetaData.getMetaData(Janitor.MetaData.HELP));
@@ -88,7 +90,7 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
             }
             return JNull.NULL;
         });
-        builtinScope.bindF("dir", (rs, args) -> {
+        builtinScope.bindF("dir", "dir(value): Returns the sorted names of the value's properties and methods as a list of strings.", (rs, args) -> {
             final JanitorObject subject = args.get(0);
             if (subject instanceof HasDispatcher<?> hasDispatcher) {
                 return deduplicatedListOfStrings(hasDispatcher.getDispatcher().streamAttributeNames());

@@ -3,6 +3,7 @@
 
 package com.eischet.janitor.modules.mustang;
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import org.mustangproject.LegalOrganisation;
@@ -16,16 +17,20 @@ public class MustangLegalOrganisation extends JanitorWrapper<LegalOrganisation> 
 
     static {
         DISPATCH.addBuilderMethod("setSchemedID", (self, process, args) ->
-            self.janitorGetHostValue().setSchemedID(args.getRequired(0, MustangSchemedID.class).janitorGetHostValue()));
+            self.janitorGetHostValue().setSchemedID(args.getRequired(0, MustangSchemedID.class).janitorGetHostValue()))
+            .setMetaData(Janitor.MetaData.HELP, "setSchemedID(schemedID): Sets the registration ID (a SchemedID) of the organisation; returns the organisation.");
         DISPATCH.addBuilderMethod("setTradingBusinessName", (self, process, args) ->
-            self.janitorGetHostValue().setTradingBusinessName(args.getRequiredStringValue(0)));
+            self.janitorGetHostValue().setTradingBusinessName(args.getRequiredStringValue(0)))
+            .setMetaData(Janitor.MetaData.HELP, "setTradingBusinessName(name): Sets the trading business name; returns the organisation.");
 
         DISPATCH.addObjectProperty("schemedID",
             self -> self.janitorGetHostValue().getSchemedID() == null ? null : new MustangSchemedID(self.janitorGetHostValue().getSchemedID()),
             (self, value) -> self.janitorGetHostValue().setSchemedID(value == null ? null : value.janitorGetHostValue()),
-            MustangSchemedID::new);
+            MustangSchemedID::new)
+            .setMetaData(Janitor.MetaData.HELP, "schemedID: The registration ID of the organisation as a SchemedID, or null; writable.");
         DISPATCH.addStringProperty("tradingBusinessName", self -> self.janitorGetHostValue().getTradingBusinessName(),
-            (self, value) -> self.janitorGetHostValue().setTradingBusinessName(value));
+            (self, value) -> self.janitorGetHostValue().setTradingBusinessName(value))
+            .setMetaData(Janitor.MetaData.HELP, "tradingBusinessName: The trading business name of the organisation; writable.");
     }
 
     public MustangLegalOrganisation() {

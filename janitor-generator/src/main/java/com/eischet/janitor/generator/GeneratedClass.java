@@ -3,6 +3,7 @@
 
 package com.eischet.janitor.generator;
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import com.eischet.janitor.generator.types.SimpleBuiltinType;
@@ -21,7 +22,8 @@ public class GeneratedClass extends JanitorComposed<GeneratedClass> implements J
     public static final DispatchTable<GeneratedClass> DISPATCH = new DispatchTable<>();
 
     static {
-        DISPATCH.addStringProperty("name", GeneratedClass::getName);
+        DISPATCH.addStringProperty("name", GeneratedClass::getName)
+                .setMetaData(Janitor.MetaData.HELP, "name: The name of the class to generate; read-only.");
     }
 
 

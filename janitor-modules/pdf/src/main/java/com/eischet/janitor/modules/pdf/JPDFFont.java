@@ -3,6 +3,7 @@
 
 package com.eischet.janitor.modules.pdf;
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import org.jetbrains.annotations.NotNull;
@@ -22,22 +23,32 @@ public class JPDFFont extends JanitorWrapper<Font> {
     public static final WrapperDispatchTable<Font> DISPATCH_TABLE = new WrapperDispatchTable<>();
 
     static {
-        DISPATCH_TABLE.addIntegerProperty("family", self -> self.janitorGetHostValue().getFamily(), (self, value) -> self.janitorGetHostValue().setFamily(familyName(value)));
-        DISPATCH_TABLE.addDoubleProperty("size", self -> self.janitorGetHostValue().getSize(), (self, value) -> self.janitorGetHostValue().setSize((float) value));
-        DISPATCH_TABLE.addIntegerProperty("style", self -> self.janitorGetHostValue().getStyle(), (self, value) -> self.janitorGetHostValue().setStyle(value));
-        DISPATCH_TABLE.addStringProperty("familyname", self -> self.janitorGetHostValue().getFamilyname());
-        DISPATCH_TABLE.addDoubleProperty("calculatedSize", self -> self.janitorGetHostValue().getCalculatedSize());
-        DISPATCH_TABLE.addBooleanProperty("bold", self -> self.janitorGetHostValue().isBold());
-        DISPATCH_TABLE.addBooleanProperty("italic", self -> self.janitorGetHostValue().isItalic());
-        DISPATCH_TABLE.addBooleanProperty("underlined", self -> self.janitorGetHostValue().isUnderlined());
-        DISPATCH_TABLE.addBooleanProperty("strikethru", self -> self.janitorGetHostValue().isStrikethru());
+        DISPATCH_TABLE.addIntegerProperty("family", self -> self.janitorGetHostValue().getFamily(), (self, value) -> self.janitorGetHostValue().setFamily(familyName(value)))
+                .setMetaData(Janitor.MetaData.HELP, "family: The font family as one of pdf.COURIER, HELVETICA, TIMES_ROMAN, SYMBOL or ZAPFDINGBATS; writable, other values set Helvetica.");
+        DISPATCH_TABLE.addDoubleProperty("size", self -> self.janitorGetHostValue().getSize(), (self, value) -> self.janitorGetHostValue().setSize((float) value))
+                .setMetaData(Janitor.MetaData.HELP, "size: The font size in points; writable.");
+        DISPATCH_TABLE.addIntegerProperty("style", self -> self.janitorGetHostValue().getStyle(), (self, value) -> self.janitorGetHostValue().setStyle(value))
+                .setMetaData(Janitor.MetaData.HELP, "style: The font style as bit flags, e.g. pdf.BOLD | pdf.ITALIC; writable.");
+        DISPATCH_TABLE.addStringProperty("familyname", self -> self.janitorGetHostValue().getFamilyname())
+                .setMetaData(Janitor.MetaData.HELP, "familyname: The name of the font family; read-only.");
+        DISPATCH_TABLE.addDoubleProperty("calculatedSize", self -> self.janitorGetHostValue().getCalculatedSize())
+                .setMetaData(Janitor.MetaData.HELP, "calculatedSize: The effective font size in points, with the default size if none is set; read-only.");
+        DISPATCH_TABLE.addBooleanProperty("bold", self -> self.janitorGetHostValue().isBold())
+                .setMetaData(Janitor.MetaData.HELP, "bold: True if the font is bold; read-only, see style.");
+        DISPATCH_TABLE.addBooleanProperty("italic", self -> self.janitorGetHostValue().isItalic())
+                .setMetaData(Janitor.MetaData.HELP, "italic: True if the font is italic; read-only, see style.");
+        DISPATCH_TABLE.addBooleanProperty("underlined", self -> self.janitorGetHostValue().isUnderlined())
+                .setMetaData(Janitor.MetaData.HELP, "underlined: True if the font is underlined; read-only, see style.");
+        DISPATCH_TABLE.addBooleanProperty("strikethru", self -> self.janitorGetHostValue().isStrikethru())
+                .setMetaData(Janitor.MetaData.HELP, "strikethru: True if the font is struck through; read-only, see style.");
         DISPATCH_TABLE.addObjectProperty("color",
                 self -> {
                     final Color c = self.janitorGetHostValue().getColor();
                     return c == null ? null : new JPDFColor(c);
                 },
                 (self, value) -> self.janitorGetHostValue().setColor(value == null ? null : value.getColor()),
-                () -> new JPDFColor(0, 0, 0));
+                () -> new JPDFColor(0, 0, 0))
+                .setMetaData(Janitor.MetaData.HELP, "color: The Color of the font, or null; writable.");
         // TODO: getBaseFont()/setBaseFont() -- would require wrapping org.openpdf.text.pdf.BaseFont (see JPDFBaseFont) as a Font constructor argument.
         // TODO: compareTo(Object), difference(Font) -- not mapped, unclear how useful these are from scripts.
     }

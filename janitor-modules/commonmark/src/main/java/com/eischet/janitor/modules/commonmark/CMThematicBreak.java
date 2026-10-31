@@ -3,6 +3,7 @@
 
 package com.eischet.janitor.modules.commonmark;
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import org.commonmark.node.ThematicBreak;
@@ -16,7 +17,8 @@ public class CMThematicBreak extends CMNode {
         dispatch.addStringProperty("literal",
             node -> node.janitorGetHostValue().getLiteral(),
             (self, value) -> self.janitorGetHostValue().setLiteral(value)
-        );
+        )
+                .setMetaData(Janitor.MetaData.HELP, "literal: The source characters of the thematic break, e.g. \"---\"; writable.");
     }
 
     public CMThematicBreak(final ThematicBreak node) {

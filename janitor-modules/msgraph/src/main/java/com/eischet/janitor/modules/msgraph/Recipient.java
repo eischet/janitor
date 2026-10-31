@@ -3,6 +3,7 @@
 
 package com.eischet.janitor.modules.msgraph;
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import org.jetbrains.annotations.Nullable;
@@ -13,7 +14,8 @@ public class Recipient extends JanitorComposed<Recipient> {
     public static final DispatchTable<Recipient> DISPATCH = new DispatchTable<>(Recipient::new);
 
     static {
-        DISPATCH.addObjectProperty("emailAddress", Recipient::getEmailAddress, Recipient::setEmailAddress, EmailAddress::new);
+        DISPATCH.addObjectProperty("emailAddress", Recipient::getEmailAddress, Recipient::setEmailAddress, EmailAddress::new)
+                .setMetaData(Janitor.MetaData.HELP, "emailAddress: The recipient's email address, with address and name; writable.");
     }
 
     private @Nullable EmailAddress emailAddress;

@@ -172,10 +172,14 @@ public class AssociatedList<T extends OrmEntity, U extends Uplink> implements As
     protected static class JanitorAssociatedList extends JanitorComposed<JanitorAssociatedList> implements JIterable {
         public static DispatchTable<JanitorAssociatedList> DISPATCH = new DispatchTable<>();
         static {
-            DISPATCH.addBuilderMethod("add", (self, process, args) -> self.parent.addGeneric(args.get(0)));
-            DISPATCH.addMethod("size", (self, process, args) -> Janitor.integer(self.parent.size()));
-            DISPATCH.addBuilderMethod("clear", (self, process, args) -> self.parent.clear());
-            DISPATCH.addMethod("asList", (self, process, args) -> Janitor.list(self.parent.readList()));
+            DISPATCH.addBuilderMethod("add", (self, process, args) -> self.parent.addGeneric(args.get(0)))
+                    .setMetaData(Janitor.MetaData.HELP, "add(entity): Adds the entity to the list in memory without saving it in the database; returns the list.");
+            DISPATCH.addMethod("size", (self, process, args) -> Janitor.integer(self.parent.size()))
+                    .setMetaData(Janitor.MetaData.HELP, "size(): Returns the number of entities currently in the list.");
+            DISPATCH.addBuilderMethod("clear", (self, process, args) -> self.parent.clear())
+                    .setMetaData(Janitor.MetaData.HELP, "clear(): Removes all entities from the list in memory without deleting them in the database; returns the list.");
+            DISPATCH.addMethod("asList", (self, process, args) -> Janitor.list(self.parent.readList()))
+                    .setMetaData(Janitor.MetaData.HELP, "asList(): Returns a copy of the entities currently in the list as a plain list.");
         }
         protected final @NotNull AssociatedList<?, ?> parent;
 

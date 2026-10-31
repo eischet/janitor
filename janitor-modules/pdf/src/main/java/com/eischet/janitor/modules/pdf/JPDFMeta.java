@@ -3,6 +3,7 @@
 
 package com.eischet.janitor.modules.pdf;
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import org.jetbrains.annotations.NotNull;
@@ -18,8 +19,10 @@ public class JPDFMeta extends JanitorWrapper<Meta> {
     public static final WrapperDispatchTable<Meta> DISPATCH_TABLE = new WrapperDispatchTable<>();
 
     static {
-        DISPATCH_TABLE.addStringProperty("name", self -> self.janitorGetHostValue().getName());
-        DISPATCH_TABLE.addStringProperty("content", self -> self.janitorGetHostValue().getContent());
+        DISPATCH_TABLE.addStringProperty("name", self -> self.janitorGetHostValue().getName())
+                .setMetaData(Janitor.MetaData.HELP, "name: The name (tag) of the meta-information, e.g. title or author; read-only.");
+        DISPATCH_TABLE.addStringProperty("content", self -> self.janitorGetHostValue().getContent())
+                .setMetaData(Janitor.MetaData.HELP, "content: The value of the meta-information; read-only.");
     }
 
     public JPDFMeta(final @NotNull Meta meta) {

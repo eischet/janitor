@@ -3,6 +3,7 @@
 
 package com.eischet.janitor.modules.files;
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
 import com.eischet.janitor.api.types.JanitorCleanupRequired;
 import com.eischet.janitor.api.types.builtin.JBinary;
@@ -38,7 +39,7 @@ public class ZipFile extends JanitorComposed<ZipFile> implements JanitorCleanupR
                 throw new JanitorNativeException(process, "error adding file to zip " + self.filename, e);
             }
             return self;
-        });
+        }).setMetaData(Janitor.MetaData.HELP, "addFile(path, entryName): Adds a file from the file system; without an entry name, the file's name is used. Returns this ZIP file.");
         dispatcher.addMethod("addText", (self, process, arguments) -> {
             arguments.require(2, 3);
             final String text = arguments.getRequiredStringValue(0);
@@ -50,7 +51,7 @@ public class ZipFile extends JanitorComposed<ZipFile> implements JanitorCleanupR
                 throw new JanitorNativeException(process, "error adding file to zip " + self.filename, e);
             }
             return self;
-        });
+        }).setMetaData(Janitor.MetaData.HELP, "addText(text, entryName, charset): Adds the text as an entry; charset defaults to UTF-8. Returns this ZIP file.");
         dispatcher.addMethod("addBinary", (self, process, arguments) -> {
             final JBinary bytes = arguments.getRequired(0, JBinary.class);
             final String zipEntryName = arguments.getRequiredStringValue(1);
@@ -60,7 +61,7 @@ public class ZipFile extends JanitorComposed<ZipFile> implements JanitorCleanupR
                 throw new JanitorNativeException(process, "error adding file to zip " + self.filename, e);
             }
             return self;
-        });
+        }).setMetaData(Janitor.MetaData.HELP, "addBinary(data, entryName): Adds binary data as an entry. Returns this ZIP file.");
 
         dispatcher.addVoidMethod("close", (self, process, arguments) -> {
             try {
@@ -68,23 +69,23 @@ public class ZipFile extends JanitorComposed<ZipFile> implements JanitorCleanupR
             } catch (IOException e) {
                 throw new JanitorNativeException(process, "error closing zip file " + self.filename, e);
             }
-        });
+        }).setMetaData(Janitor.MetaData.HELP, "close(): Finishes and closes the ZIP file; no entries can be added afterwards. Calling it twice is harmless.");
 
         dispatcher.addMethod("setLevel", (self, process, arguments) -> {
             self.zos.setLevel(arguments.getRequiredIntValue(0));
             return self;
-        });
+        }).setMetaData(Janitor.MetaData.HELP, "setLevel(level): Sets the compression level (0-9) for the following entries. Returns this ZIP file.");
 
         dispatcher.addMethod("setMethod", (self, process, arguments) -> {
             self.zos.setMethod(arguments.getRequiredIntValue(0));
             // LATER: we should map levels from string or something like that!
             return self;
-        });
+        }).setMetaData(Janitor.MetaData.HELP, "setMethod(method): Sets the compression method for the following entries as a number (8 = deflated, 0 = stored). Returns this ZIP file.");
 
         dispatcher.addMethod("setComment", (self, process, arguments) -> {
             self.zos.setComment(arguments.getRequiredStringValue(0));
             return self;
-        });
+        }).setMetaData(Janitor.MetaData.HELP, "setComment(comment): Sets the comment of the ZIP file. Returns this ZIP file.");
 
     }
 

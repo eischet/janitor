@@ -61,7 +61,7 @@ public class McpModule extends JanitorComposed<McpModule> implements JanitorModu
             // close the connection when the script ends, even if it never lands in a variable
             process.registerCleanable(connection);
             return connection;
-        });
+        }).setMetaData(Janitor.MetaData.HELP, "connect(url, options): Connects to the MCP server at the URL and returns the connection; options is an optional map with headers, timeoutSeconds, clientName, clientVersion, transport and throwOnError.");
     }
 
     private final @NotNull Supplier<McpOptions> defaults;

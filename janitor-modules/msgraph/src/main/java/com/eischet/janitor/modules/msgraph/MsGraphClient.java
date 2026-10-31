@@ -78,18 +78,18 @@ public class MsGraphClient extends JanitorComposed<MsGraphClient> {
             final String user = args.getRequiredStringValue(0);
             final String folderId = args.getRequiredStringValue(1);
             return call(process, () -> self.getFolder(user, folderId));
-        });
+        }).setMetaData(Janitor.MetaData.HELP, "folder(user, folderId): Returns a mail folder of the user's mailbox, including its item counts; folderId may be a well-known name such as \"inbox\".");
         DISPATCH.addMethod("folders", (self, process, args) -> {
             args.require(1, 2);
             final String user = args.getRequiredStringValue(0);
             final String parentId = args.getOptionalStringValue(1, null);
             return Janitor.list(call(process, () -> self.listFolders(user, parentId)));
-        });
+        }).setMetaData(Janitor.MetaData.HELP, "folders(user, parentId): Returns a list of the mail folders directly below the parent folder; without a parent, the top-level folders.");
         DISPATCH.addMethod("allFolders", (self, process, args) -> {
             args.require(1);
             final String user = args.getRequiredStringValue(0);
             return Janitor.list(call(process, () -> self.listAllFolders(user)));
-        });
+        }).setMetaData(Janitor.MetaData.HELP, "allFolders(user): Returns a list of all mail folders of the user's mailbox, each folder directly followed by its subfolders.");
         DISPATCH.addMethod("findFolder", (self, process, args) -> {
             args.require(2, 3);
             final String user = args.getRequiredStringValue(0);
@@ -97,14 +97,14 @@ public class MsGraphClient extends JanitorComposed<MsGraphClient> {
             final String parentId = args.getOptionalStringValue(2, null);
             final MailFolder folder = call(process, () -> self.findFolder(user, displayName, parentId));
             return folder == null ? Janitor.NULL : folder;
-        });
+        }).setMetaData(Janitor.MetaData.HELP, "findFolder(user, displayName, parentId): Returns the first folder with that name (case-insensitive) below the parent folder, or null; without a parent, searches the top level.");
         DISPATCH.addMethod("createFolder", (self, process, args) -> {
             args.require(2, 3);
             final String user = args.getRequiredStringValue(0);
             final String displayName = args.getRequiredStringValue(1);
             final String parentId = args.getOptionalStringValue(2, null);
             return call(process, () -> self.createFolder(user, displayName, parentId));
-        });
+        }).setMetaData(Janitor.MetaData.HELP, "createFolder(user, displayName, parentId): Creates a visible folder below the parent folder (without a parent, at the top level) and returns it.");
         DISPATCH.addVoidMethod("deleteFolder", (self, process, args) -> {
             args.require(2);
             final String user = args.getRequiredStringValue(0);
@@ -113,7 +113,7 @@ public class MsGraphClient extends JanitorComposed<MsGraphClient> {
                 self.deleteFolder(user, folderId);
                 return null;
             });
-        });
+        }).setMetaData(Janitor.MetaData.HELP, "deleteFolder(user, folderId): Deletes a folder; Graph moves it to \"Deleted Items\".");
         DISPATCH.addMethod("messages", (self, process, args) -> {
             args.require(1, 3);
             final String user = args.getRequiredStringValue(0);
@@ -123,20 +123,20 @@ public class MsGraphClient extends JanitorComposed<MsGraphClient> {
                 args.getRequired(2, JMap.class).applyTo(process, query);
             }
             return Janitor.list(call(process, () -> self.listMessages(user, folderId, query)));
-        });
+        }).setMetaData(Janitor.MetaData.HELP, "messages(user, folderId, query): Returns a list of all messages in the folder (default \"inbox\"), reading all pages; query is an optional map with select, top, orderBy, filter and bodyType.");
         DISPATCH.addMethod("mime", (self, process, args) -> {
             args.require(2);
             final String user = args.getRequiredStringValue(0);
             final String messageId = args.getRequiredStringValue(1);
             return Janitor.getBuiltins().string(new String(call(process, () -> self.getMimeContent(user, messageId)), StandardCharsets.UTF_8));
-        });
+        }).setMetaData(Janitor.MetaData.HELP, "mime(user, messageId): Returns the complete message in MIME format (RFC 822) as a string.");
         DISPATCH.addMethod("move", (self, process, args) -> {
             args.require(3);
             final String user = args.getRequiredStringValue(0);
             final String messageId = args.getRequiredStringValue(1);
             final String destinationId = args.getRequiredStringValue(2);
             return Janitor.getBuiltins().nullableString(call(process, () -> self.moveMessage(user, messageId, destinationId)));
-        });
+        }).setMetaData(Janitor.MetaData.HELP, "move(user, messageId, destinationId): Moves a message to another folder and returns its new ID, which Graph changes when moving.");
         DISPATCH.addVoidMethod("update", (self, process, args) -> {
             args.require(3);
             final String user = args.getRequiredStringValue(0);
@@ -147,7 +147,7 @@ public class MsGraphClient extends JanitorComposed<MsGraphClient> {
                 self.updateMessage(user, messageId, update);
                 return null;
             });
-        });
+        }).setMetaData(Janitor.MetaData.HELP, "update(user, messageId, changes): Changes a message; changes is a map with subject, categories and/or isRead, and only the given values are sent.");
     }
 
     private final TokenCredential credential;

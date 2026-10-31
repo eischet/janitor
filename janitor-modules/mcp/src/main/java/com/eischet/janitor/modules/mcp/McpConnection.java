@@ -73,11 +73,16 @@ public class McpConnection extends JanitorComposed<McpConnection> implements Jan
     public static final DispatchTable<McpConnection> DISPATCH = new DispatchTable<>();
 
     static {
-        DISPATCH.addStringProperty("serverName", McpConnection::getServerName);
-        DISPATCH.addStringProperty("serverVersion", McpConnection::getServerVersion);
-        DISPATCH.addStringProperty("instructions", McpConnection::getInstructions);
-        DISPATCH.addStringProperty("protocolVersion", McpConnection::getProtocolVersion);
-        DISPATCH.addObjectProperty("capabilities", self -> toJanitor(Janitor.current(), self.initResult.capabilities()));
+        DISPATCH.addStringProperty("serverName", McpConnection::getServerName)
+                .setMetaData(Janitor.MetaData.HELP, "serverName: The server's name as reported when connecting, or null; read-only.");
+        DISPATCH.addStringProperty("serverVersion", McpConnection::getServerVersion)
+                .setMetaData(Janitor.MetaData.HELP, "serverVersion: The server's version as reported when connecting, or null; read-only.");
+        DISPATCH.addStringProperty("instructions", McpConnection::getInstructions)
+                .setMetaData(Janitor.MetaData.HELP, "instructions: The server's instructions on how to use it, or null; read-only.");
+        DISPATCH.addStringProperty("protocolVersion", McpConnection::getProtocolVersion)
+                .setMetaData(Janitor.MetaData.HELP, "protocolVersion: The MCP protocol version agreed on with the server; read-only.");
+        DISPATCH.addObjectProperty("capabilities", self -> toJanitor(Janitor.current(), self.initResult.capabilities()))
+                .setMetaData(Janitor.MetaData.HELP, "capabilities: The server's capabilities as a map, as received in JSON, or null; read-only.");
         DISPATCH.addMethod("tools", (self, process, args) -> {
             args.require(0);
             final List<McpSchema.Tool> tools = call(process, self::listTools);
@@ -86,7 +91,7 @@ public class McpConnection extends JanitorComposed<McpConnection> implements Jan
                 list.add(toJanitor(process.getEnvironment(), tool));
             }
             return list;
-        });
+        }).setMetaData(Janitor.MetaData.HELP, "tools(): Returns a list of all tools of the server, each a map with name, description, inputSchema and so on.");
         DISPATCH.addMethod("call", (self, process, args) -> {
             args.require(1, 2);
             final String name = args.getRequiredStringValue(0);
@@ -102,11 +107,11 @@ public class McpConnection extends JanitorComposed<McpConnection> implements Jan
                         new McpException("tool '" + name + "' returned an error"));
             }
             return toolResult;
-        });
+        }).setMetaData(Janitor.MetaData.HELP, "call(name, arguments): Calls a tool with a map of arguments (none if omitted or null) and returns its result; a tool error is a script error if the option throwOnError is set.");
         DISPATCH.addVoidMethod("close", (self, process, args) -> {
             args.require(0);
             self.close();
-        });
+        }).setMetaData(Janitor.MetaData.HELP, "close(): Closes the connection; further calls fail, closing again does nothing. Happens automatically when the script ends.");
     }
 
     private final @NotNull McpSyncClient client;

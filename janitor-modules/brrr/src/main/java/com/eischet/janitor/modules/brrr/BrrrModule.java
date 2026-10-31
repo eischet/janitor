@@ -34,7 +34,8 @@ public class BrrrModule extends JanitorComposed<BrrrModule> implements JanitorMo
             } else {
                 throw new JanitorArgumentException(process, "send requires at least 1 argument: send([url], message)");
             }
-        });
+        })
+                .setMetaData(Janitor.MetaData.HELP, "send(url, message): Sends a message, given as a Message, a map of its properties or a string with the text, and returns null; the URL is optional and defaults to the BRRR_URL environment variable.");
         DISPATCH.addMethod("Message", (self, process, args) -> {
             final BrrrMessage message = new BrrrMessage();
             if (args.size() > 0) {
@@ -42,7 +43,8 @@ public class BrrrModule extends JanitorComposed<BrrrModule> implements JanitorMo
                 map.applyTo(process, message);
             }
             return message;
-        });
+        })
+                .setMetaData(Janitor.MetaData.HELP, "Message(properties): Creates a new push notification message; an optional map argument is applied to its properties.");
     }
 
     /**

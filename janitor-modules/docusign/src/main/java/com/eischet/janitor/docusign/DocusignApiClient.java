@@ -27,11 +27,13 @@ public class DocusignApiClient extends JanitorComposed<DocusignApiClient> {
     public static DispatchTable<DocusignApiClient> DISPATCHER = new DispatchTable<DocusignApiClient>();
 
     static {
-        DISPATCHER.addStringProperty("basePath", self -> self.wrapped.getBasePath(), (self, value) -> self.wrapped.setBasePath(value));
+        DISPATCHER.addStringProperty("basePath", self -> self.wrapped.getBasePath(), (self, value) -> self.wrapped.setBasePath(value))
+                .setMetaData(Janitor.MetaData.HELP, "basePath: The base path of the DocuSign REST API that the client calls; writable.");
         DISPATCHER.addStringProperty("oauthBasePath", self -> {
             log.debug("oAuthBasePath is write-only in the ApiClient."); // for whatever reason
             return "";
-        }, (self, value) -> self.wrapped.setOAuthBasePath(value));
+        }, (self, value) -> self.wrapped.setOAuthBasePath(value))
+                .setMetaData(Janitor.MetaData.HELP, "oauthBasePath: The base path of the DocuSign authentication server; write-only, reading it returns an empty string.");
 
         DISPATCHER.addMethod("getUserInfo", (self, process, args) -> {
             try {
@@ -42,7 +44,8 @@ public class DocusignApiClient extends JanitorComposed<DocusignApiClient> {
                 throw new JanitorNativeException(process, "error getting user information from token", e);
             }
             // String accountId = userInfo.getAccounts().get(0).getAccountId();
-        });
+        })
+                .setMetaData(Janitor.MetaData.HELP, "getUserInfo(token): Returns the information about the user that the OAuth token belongs to, including their accounts.");
 
         DISPATCHER.addMethod("requestJWTUserToken", (self, process, arguments) -> {
             arguments.require(4, 5);
@@ -62,7 +65,8 @@ public class DocusignApiClient extends JanitorComposed<DocusignApiClient> {
             } catch (Exception e) {
                 throw new JanitorNativeException(process, "error getting oauth token", e);
             }
-        });
+        })
+                .setMetaData(Janitor.MetaData.HELP, "requestJWTUserToken(clientId, userId, scopes, privateKey, expiresIn): Requests an OAuth token for the user via JWT grant, with the scopes as a list and the private key as a string, and returns it; expiresIn is optional and defaults to 3600 seconds.");
         DISPATCHER.addVoidMethod("setAccessToken", (self, process, arguments) -> {
             final JanitorObject arg = arguments.get(0);
             if (arg instanceof JString string) {
@@ -70,7 +74,8 @@ public class DocusignApiClient extends JanitorComposed<DocusignApiClient> {
             } else if (arg instanceof DocusignOAuthToken oAuthToken) {
                 self.wrapped.addDefaultHeader("Authorization", "Bearer " + oAuthToken.getWrapped().getAccessToken());
             }
-        });
+        })
+                .setMetaData(Janitor.MetaData.HELP, "setAccessToken(token): Makes the client authenticate its requests with the token, given as an OAuth token or as an access token string; other values are ignored.");
         // Convenience method: simply log in instead of fetch+setAccessToken.
         DISPATCHER.addMethod("login", (self, process, arguments) -> {
             arguments.require(4, 5);
@@ -91,8 +96,10 @@ public class DocusignApiClient extends JanitorComposed<DocusignApiClient> {
             } catch (Exception e) {
                 throw new JanitorNativeException(process, "error getting oauth token", e);
             }
-        });
-        DISPATCHER.addMethod("envelopes", (self, process, arguments) -> new DocusignEnvelopesApi(self.wrapped));
+        })
+                .setMetaData(Janitor.MetaData.HELP, "login(clientId, userId, scopes, privateKey, expiresIn): Like requestJWTUserToken, but also makes the client use the new token; returns the OAuth token, expiresIn is optional and defaults to 3600 seconds.");
+        DISPATCHER.addMethod("envelopes", (self, process, arguments) -> new DocusignEnvelopesApi(self.wrapped))
+                .setMetaData(Janitor.MetaData.HELP, "envelopes(): Returns the envelopes API, which uses this client.");
     }
 
     protected final ApiClient wrapped = new ApiClient();

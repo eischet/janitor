@@ -72,24 +72,36 @@ public class JanitorHttpClient extends JanitorComposed<JanitorHttpClient> implem
     protected static final JanitorLogger log = JanitorLogger.getLogger(JanitorHttpClient.class);
 
     static {
-        DISPATCH.addBuilderMethod("proxy", (self, process, args) -> self.setProxy(args.getString(0).janitorGetHostValue(), args.getInt(1).getAsInt()));
-        DISPATCH.addBuilderMethod("allowCookies", (self, process, args) -> self.allowCookies());
-        DISPATCH.addBuilderMethod("basic", (self, process, args) -> self.basic(args.getRequiredStringValue(0), args.getRequiredStringValue(1)));
-        DISPATCH.addBuilderMethod("verbose", (self, process, args) -> self.verbose());
-        DISPATCH.addBuilderMethod("setTimeout", (self, process, args) -> self.setConnectTimeoutSeconds(args.getInt(0).getAsInt()));
-        DISPATCH.addBuilderMethod("setRequestTimeout", (self, process, args) -> self.requestTimeoutSeconds = args.getInt(0).getAsInt());
+        DISPATCH.addBuilderMethod("proxy", (self, process, args) -> self.setProxy(args.getString(0).janitorGetHostValue(), args.getInt(1).getAsInt()))
+                .setMetaData(Janitor.MetaData.HELP, "proxy(host, port): Sends requests through the given HTTP proxy. Returns this client.");
+        DISPATCH.addBuilderMethod("allowCookies", (self, process, args) -> self.allowCookies())
+                .setMetaData(Janitor.MetaData.HELP, "allowCookies(): Makes the client remember cookies set by servers and send them with later requests. Returns this client.");
+        DISPATCH.addBuilderMethod("basic", (self, process, args) -> self.basic(args.getRequiredStringValue(0), args.getRequiredStringValue(1)))
+                .setMetaData(Janitor.MetaData.HELP, "basic(username, password): Enables HTTP basic authentication; an empty user name disables it. Returns this client.");
+        DISPATCH.addBuilderMethod("verbose", (self, process, args) -> self.verbose())
+                .setMetaData(Janitor.MetaData.HELP, "verbose(): Logs every request and response in detail. Returns this client.");
+        DISPATCH.addBuilderMethod("setTimeout", (self, process, args) -> self.setConnectTimeoutSeconds(args.getInt(0).getAsInt()))
+                .setMetaData(Janitor.MetaData.HELP, "setTimeout(seconds): Sets the timeout for connecting (default 60 seconds). Returns this client.");
+        DISPATCH.addBuilderMethod("setRequestTimeout", (self, process, args) -> self.requestTimeoutSeconds = args.getInt(0).getAsInt())
+                .setMetaData(Janitor.MetaData.HELP, "setRequestTimeout(seconds): Sets the timeout for a whole request (default 300 seconds). Returns this client.");
         DISPATCH.addBuilderMethod("ignoreSecurityIssues", (self, process, args) -> {
             if (!ALLOW_IGNORE_SECURITY_ISSUES) {
                 throw new JanitorArgumentException(process, "ignoreSecurityIssues is not allowed");
             }
             self.ignoreSecurityIssues(args.get(0).janitorIsTrue());
-        });
-        DISPATCH.addBuilderMethod("addHeader", (self, process, args) -> self.addHeader(args.getRequiredStringValue(0), args.getRequiredStringValue(1)));
-        DISPATCH.addBuilderMethod("setBearerToken", (self, process, args) -> self.setBearerToken(args.getRequiredStringValue(0)));
-        DISPATCH.addBuilderMethod("setPrettyJson", (self, process, args) -> self.prettyJson = args.get(0).janitorIsTrue());
-        DISPATCH.addBuilderMethod("convertJsonToPureAscii", (self, process, args) -> self.convertJsonToPureAscii = args.get(0).janitorIsTrue());
-        DISPATCH.addBooleanProperty("prettyJson", self -> self.prettyJson, (self, value) -> self.prettyJson = value);
-        DISPATCH.addVoidMethod("close", (self, process, args) -> self.close());
+        }).setMetaData(Janitor.MetaData.HELP, "ignoreSecurityIssues(yes): Accepts invalid certificates and host names when true; insecure, and an error unless the host application allows it. Returns this client.");
+        DISPATCH.addBuilderMethod("addHeader", (self, process, args) -> self.addHeader(args.getRequiredStringValue(0), args.getRequiredStringValue(1)))
+                .setMetaData(Janitor.MetaData.HELP, "addHeader(name, value): Adds a header that is sent with every request. Returns this client.");
+        DISPATCH.addBuilderMethod("setBearerToken", (self, process, args) -> self.setBearerToken(args.getRequiredStringValue(0)))
+                .setMetaData(Janitor.MetaData.HELP, "setBearerToken(token): Sends the token as \"Authorization: Bearer\" header with every request. Returns this client.");
+        DISPATCH.addBuilderMethod("setPrettyJson", (self, process, args) -> self.prettyJson = args.get(0).janitorIsTrue())
+                .setMetaData(Janitor.MetaData.HELP, "setPrettyJson(yes): Indents JSON that the client creates from script values when true. Returns this client.");
+        DISPATCH.addBuilderMethod("convertJsonToPureAscii", (self, process, args) -> self.convertJsonToPureAscii = args.get(0).janitorIsTrue())
+                .setMetaData(Janitor.MetaData.HELP, "convertJsonToPureAscii(yes): Escapes all non-ASCII characters in JSON request bodies as \\uXXXX when true. Returns this client.");
+        DISPATCH.addBooleanProperty("prettyJson", self -> self.prettyJson, (self, value) -> self.prettyJson = value)
+                .setMetaData(Janitor.MetaData.HELP, "prettyJson: Whether JSON that the client creates from script values is indented; writable.");
+        DISPATCH.addVoidMethod("close", (self, process, args) -> self.close())
+                .setMetaData(Janitor.MetaData.HELP, "close(): Closes the underlying connection; the client can still be used and opens a new one when needed.");
 
         DISPATCH.addVoidMethod("delete", (self, process, args) -> {
             try {
@@ -97,14 +109,14 @@ public class JanitorHttpClient extends JanitorComposed<JanitorHttpClient> implem
             } catch (HttpException e) {
                 throw new JanitorNativeException(process, e.getMessage(), e);
             }
-        });
+        }).setMetaData(Janitor.MetaData.HELP, "delete(url): Sends a DELETE request; a failed request is an error.");
         DISPATCH.addMethod("getString", (self, process, args) -> {
             try {
                 return process.getBuiltins().nullableString(self.getString(args.getRequiredStringValue(0)));
             } catch (HttpException e) {
                 throw new JanitorNativeException(process, e.getMessage(), e);
             }
-        });
+        }).setMetaData(Janitor.MetaData.HELP, "getString(url): Sends a GET request and returns the response body as a string; a failed request is an error.");
         DISPATCH.addMethod("getBinary", (self, process, args) -> {
             try {
                 final byte[] bytes = self.getBinary(args.getRequiredStringValue(0));
@@ -116,7 +128,7 @@ public class JanitorHttpClient extends JanitorComposed<JanitorHttpClient> implem
             } catch (HttpException e) {
                 throw new JanitorNativeException(process, e.getMessage(), e);
             }
-        });
+        }).setMetaData(Janitor.MetaData.HELP, "getBinary(url): Sends a GET request and returns the response body as binary data, or null if it is empty; a failed request is an error.");
 
         DISPATCH.addMethod("getJson", (self, process, args) -> {
             try {
@@ -124,35 +136,35 @@ public class JanitorHttpClient extends JanitorComposed<JanitorHttpClient> implem
             } catch (HttpException e) {
                 throw new JanitorNativeException(process, e.getMessage(), e);
             }
-        });
+        }).setMetaData(Janitor.MetaData.HELP, "getJson(url): Sends a GET request that accepts JSON and returns the response body as a string; a failed request is an error.");
         DISPATCH.addMethod("postForm", (self, process, args) -> {
             try {
                 return process.getBuiltins().nullableString(self.postForm(args.getRequiredStringValue(0), convertToStringStringMap(args.get(1))));
             } catch (HttpException e) {
                 throw new JanitorNativeException(process, e.getMessage(), e);
             }
-        });
+        }).setMetaData(Janitor.MetaData.HELP, "postForm(url, fields): Sends a POST request with the map of fields as URL-encoded form data and returns the response body as a string; a failed request is an error.");
         DISPATCH.addMethod("postJson", (self, process, args) -> {
             try {
                 return process.getBuiltins().nullableString(self.postJson(args.getRequiredStringValue(0), self.convertToValidJson(process, args.get(1))));
             } catch (HttpException e) {
                 throw new JanitorNativeException(process, e.getMessage(), e);
             }
-        });
+        }).setMetaData(Janitor.MetaData.HELP, "postJson(url, body): Sends a POST request with a JSON body (a JSON string or a value that can be written as JSON) and returns the response body as a string; a failed request is an error.");
         DISPATCH.addMethod("putJson", (self, process, args) -> {
             try {
                 return process.getBuiltins().nullableString(self.putJson(args.getRequiredStringValue(0), self.convertToValidJson(process, args.get(1))));
             } catch (HttpException e) {
                 throw new JanitorNativeException(process, e.getMessage(), e);
             }
-        });
+        }).setMetaData(Janitor.MetaData.HELP, "putJson(url, body): Sends a PUT request with a JSON body (a JSON string or a value that can be written as JSON) and returns the response body as a string; a failed request is an error.");
         DISPATCH.addMethod("patchJson", (self, process, args) -> {
             try {
                 return process.getBuiltins().nullableString(self.patchJson(args.getRequiredStringValue(0), self.convertToValidJson(process, args.get(1))));
             } catch (HttpException e) {
                 throw new JanitorNativeException(process, e.getMessage(), e);
             }
-        });
+        }).setMetaData(Janitor.MetaData.HELP, "patchJson(url, body): Sends a PATCH request with a JSON body (a JSON string or a value that can be written as JSON) and returns the response body as a string; a failed request is an error.");
     }
 
     private final Map<String, String> additionalHeaders = new HashMap<>();

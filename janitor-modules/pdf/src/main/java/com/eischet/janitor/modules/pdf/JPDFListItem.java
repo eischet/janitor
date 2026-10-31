@@ -7,6 +7,7 @@ import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.functions.JCallArgs;
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import org.jetbrains.annotations.NotNull;
@@ -21,13 +22,17 @@ public class JPDFListItem extends JanitorWrapper<ListItem> {
 
     static {
         JPDFPhrase.addCommonPhraseAttributes(DISPATCH_TABLE);
-        DISPATCH_TABLE.addIntegerProperty("alignment", self -> self.janitorGetHostValue().getAlignment(), (self, value) -> self.janitorGetHostValue().setAlignment(value));
-        DISPATCH_TABLE.addDoubleProperty("indentationLeft", self -> self.janitorGetHostValue().getIndentationLeft(), (self, value) -> self.janitorGetHostValue().setIndentationLeft((float) value));
-        DISPATCH_TABLE.addDoubleProperty("indentationRight", self -> self.janitorGetHostValue().getIndentationRight(), (self, value) -> self.janitorGetHostValue().setIndentationRight((float) value));
+        DISPATCH_TABLE.addIntegerProperty("alignment", self -> self.janitorGetHostValue().getAlignment(), (self, value) -> self.janitorGetHostValue().setAlignment(value))
+                .setMetaData(Janitor.MetaData.HELP, "alignment: The horizontal alignment, one of pdf.ALIGN_LEFT, ALIGN_CENTER, ALIGN_RIGHT or ALIGN_JUSTIFIED; writable.");
+        DISPATCH_TABLE.addDoubleProperty("indentationLeft", self -> self.janitorGetHostValue().getIndentationLeft(), (self, value) -> self.janitorGetHostValue().setIndentationLeft((float) value))
+                .setMetaData(Janitor.MetaData.HELP, "indentationLeft: The left indentation in points; writable.");
+        DISPATCH_TABLE.addDoubleProperty("indentationRight", self -> self.janitorGetHostValue().getIndentationRight(), (self, value) -> self.janitorGetHostValue().setIndentationRight((float) value))
+                .setMetaData(Janitor.MetaData.HELP, "indentationRight: The right indentation in points; writable.");
         DISPATCH_TABLE.addObjectProperty("listSymbol",
                 self -> new JPDFChunk(self.janitorGetHostValue().getListSymbol()),
                 (self, value) -> self.janitorGetHostValue().setListSymbol(value.getChunk()),
-                JPDFChunk::new);
+                JPDFChunk::new)
+                .setMetaData(Janitor.MetaData.HELP, "listSymbol: The symbol (bullet or number) in front of the item, as a Chunk; writable.");
     }
 
     public JPDFListItem(final @NotNull ListItem listItem) {

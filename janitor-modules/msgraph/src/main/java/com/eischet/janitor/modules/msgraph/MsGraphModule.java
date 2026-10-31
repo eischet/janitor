@@ -3,6 +3,7 @@
 
 package com.eischet.janitor.modules.msgraph;
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.modules.JanitorModule;
 import com.eischet.janitor.api.modules.JanitorModuleRegistration;
 import com.eischet.janitor.api.types.builtin.JMap;
@@ -34,7 +35,7 @@ public class MsGraphModule extends JanitorComposed<MsGraphModule> implements Jan
                 args.getRequired(3, JMap.class).applyTo(process, options);
             }
             return MsGraphClient.forClientSecret(args.getRequiredStringValue(0), args.getRequiredStringValue(1), args.getRequiredStringValue(2), options);
-        });
+        }).setMetaData(Janitor.MetaData.HELP, "connect(clientId, clientSecret, tenantId, options): Returns a Microsoft Graph client that authenticates with the client secret; options is an optional map with baseUrl, proxyHost, proxyPort, tokenCache, timeoutSeconds and maxRetries.");
     }
 
     private final @NotNull Supplier<MsGraphOptions> defaults;

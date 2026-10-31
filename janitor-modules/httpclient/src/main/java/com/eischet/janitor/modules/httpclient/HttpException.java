@@ -155,15 +155,19 @@ public class HttpException extends JanitorException implements JanitorAware {
         private static final WrapperDispatchTable<HttpException> DISPATCHER = new WrapperDispatchTable<>();
 
         static {
-            DISPATCHER.addStringProperty("url", self -> self.janitorGetHostValue().getUrl());
-            DISPATCHER.addStringProperty("method", self -> self.janitorGetHostValue().getMethod());
-            DISPATCHER.addStringProperty("body", self -> self.janitorGetHostValue().getBody());
-            DISPATCHER.addIntegerProperty("code", self -> self.janitorGetHostValue().getCode());
+            DISPATCHER.addStringProperty("url", self -> self.janitorGetHostValue().getUrl())
+                    .setMetaData(Janitor.MetaData.HELP, "url: The URL of the failed request; read-only.");
+            DISPATCHER.addStringProperty("method", self -> self.janitorGetHostValue().getMethod())
+                    .setMetaData(Janitor.MetaData.HELP, "method: The HTTP method of the failed request, e.g. GET; read-only.");
+            DISPATCHER.addStringProperty("body", self -> self.janitorGetHostValue().getBody())
+                    .setMetaData(Janitor.MetaData.HELP, "body: The body of the server's response, or null if there is none; read-only.");
+            DISPATCHER.addIntegerProperty("code", self -> self.janitorGetHostValue().getCode())
+                    .setMetaData(Janitor.MetaData.HELP, "code: The HTTP status code, or 0 if there was no response; read-only.");
             DISPATCHER.addObjectProperty("headers", self -> {
                 final @NotNull JMap map = Janitor.map();
                 self.janitorGetHostValue().getHeaders().forEach(map::put);
                 return map;
-            });
+            }).setMetaData(Janitor.MetaData.HELP, "headers: The headers of the server's response as a map; empty if there was no response; read-only.");
             // DISPATCHER.addMapProperty("headers", self -> self.janitorGetHostValue().getHeaders(), null);
 
         }

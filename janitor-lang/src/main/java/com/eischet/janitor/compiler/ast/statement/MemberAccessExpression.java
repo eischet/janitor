@@ -78,7 +78,7 @@ public class MemberAccessExpression extends AstNode implements Expression {
                 return Janitor.NULL;
             }
         }
-        throw new JanitorNameException(process, "member not found: " + identifier + "; guarded: " + guarded +"; on: " + object + " [" + simpleClassNameOf(object) + "]");
+        throw new JanitorNameException(process, "member not found: " + identifier + "; on: " + object + " [" + simpleClassNameOf(object) + "]");
     }
 
     @Override

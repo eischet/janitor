@@ -3,6 +3,7 @@
 
 package com.eischet.janitor.modules.os;
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
@@ -38,8 +39,10 @@ public class OperatingSystemModule extends JanitorComposed<OperatingSystemModule
     public static final JanitorModuleRegistration REGISTRATION = new JanitorModuleRegistration("os", OperatingSystemModule::new);
 
     static {
-        dispatcher.addMethod("exec", OperatingSystemModule::exec);
-        dispatcher.addMethod("getenv", OperatingSystemModule::getenv);
+        dispatcher.addMethod("exec", OperatingSystemModule::exec)
+            .setMetaData(Janitor.MetaData.HELP, "exec(command): Runs an operating system command, given as a string or as a list of program and arguments, waits for it to finish and returns its exit code; the output is discarded.");
+        dispatcher.addMethod("getenv", OperatingSystemModule::getenv)
+            .setMetaData(Janitor.MetaData.HELP, "getenv(name): Returns the value of the environment variable, or null if it is not set.");
     }
 
     public OperatingSystemModule() {

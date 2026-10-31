@@ -3,6 +3,7 @@
 
 package com.eischet.janitor.docusign;
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
@@ -22,15 +23,24 @@ public class DocusignModule extends JanitorComposed<DocusignModule> implements J
     private static final DispatchTable<DocusignModule> DISPATCHER = new DispatchTable<>(DocusignModule::new, false);
 
     static {
-        DISPATCHER.addMethod("Signer", (self, process, args) -> enableApply(process, new DocusignSigner(), args));
-        DISPATCHER.addMethod("CarbonCopy", (self, process, args) -> enableApply(process, new DocusignCarbonCopy(), args)    );
-        DISPATCHER.addMethod("Tabs", (self, process, args) -> enableApply(process, new DocusignTabs(), args));
-        DISPATCHER.addMethod("SignHere", (self, process, args) -> enableApply(process, new DocusignSignHere(), args));
-        DISPATCHER.addMethod("Document", (self, process, args) -> enableApply(process, new DocusignDocument(), args));
-        DISPATCHER.addMethod("Recipients", (self, process, args) -> enableApply(process, new DocusignRecipients(), args));
-        DISPATCHER.addMethod("EnvelopeDefinition", (self, process, args) -> enableApply(process, new DocusignEnvelopeDefinition(), args));
-        DISPATCHER.addMethod("Client", (self, process, args) -> enableApply(process, new DocusignApiClient(), args));
-        DISPATCHER.addMethod("TemplateRole", (self, process, args) -> enableApply(process, new DocusignTemplateRole(), args));
+        DISPATCHER.addMethod("Signer", (self, process, args) -> enableApply(process, new DocusignSigner(), args))
+                .setMetaData(Janitor.MetaData.HELP, "Signer(properties): Creates a new signer recipient; an optional map argument is applied to its properties.");
+        DISPATCHER.addMethod("CarbonCopy", (self, process, args) -> enableApply(process, new DocusignCarbonCopy(), args)    )
+                .setMetaData(Janitor.MetaData.HELP, "CarbonCopy(properties): Creates a new carbon copy recipient; an optional map argument is applied to its properties.");
+        DISPATCHER.addMethod("Tabs", (self, process, args) -> enableApply(process, new DocusignTabs(), args))
+                .setMetaData(Janitor.MetaData.HELP, "Tabs(properties): Creates a new, empty set of tabs; an optional map argument is applied to its properties.");
+        DISPATCHER.addMethod("SignHere", (self, process, args) -> enableApply(process, new DocusignSignHere(), args))
+                .setMetaData(Janitor.MetaData.HELP, "SignHere(properties): Creates a new sign here tab; an optional map argument is applied to its properties.");
+        DISPATCHER.addMethod("Document", (self, process, args) -> enableApply(process, new DocusignDocument(), args))
+                .setMetaData(Janitor.MetaData.HELP, "Document(properties): Creates a new document for an envelope; an optional map argument is applied to its properties.");
+        DISPATCHER.addMethod("Recipients", (self, process, args) -> enableApply(process, new DocusignRecipients(), args))
+                .setMetaData(Janitor.MetaData.HELP, "Recipients(properties): Creates a new, empty set of recipients; an optional map argument is applied to its properties.");
+        DISPATCHER.addMethod("EnvelopeDefinition", (self, process, args) -> enableApply(process, new DocusignEnvelopeDefinition(), args))
+                .setMetaData(Janitor.MetaData.HELP, "EnvelopeDefinition(properties): Creates a new envelope definition; an optional map argument is applied to its properties.");
+        DISPATCHER.addMethod("Client", (self, process, args) -> enableApply(process, new DocusignApiClient(), args))
+                .setMetaData(Janitor.MetaData.HELP, "Client(properties): Creates a new DocuSign API client; an optional map argument is applied to its properties.");
+        DISPATCHER.addMethod("TemplateRole", (self, process, args) -> enableApply(process, new DocusignTemplateRole(), args))
+                .setMetaData(Janitor.MetaData.HELP, "TemplateRole(properties): Creates a new template role; an optional map argument is applied to its properties.");
     }
 
     /**

@@ -34,7 +34,8 @@ public class FilterExpression extends JanitorComposed<FilterExpression> {
 
     static {
         DISPATCH.setMetaData(Janitor.MetaData.CLASS, FilterExpression.class.getSimpleName());
-        DISPATCH.addStringProperty("logic", FilterExpression::getLogicString, FilterExpression::setLogicString);
+        DISPATCH.addStringProperty("logic", FilterExpression::getLogicString, FilterExpression::setLogicString)
+                .setMetaData(Janitor.MetaData.HELP, "logic: For a group of filters, how they are combined, \"and\" or \"or\"; null for a single condition; writable.");
         DISPATCH.addListProperty("filters", filterExpression -> {
             // log.info("property 'filters' is being read on filterExpression={}", filterExpression);
             return Janitor.responsiveList(
@@ -45,16 +46,25 @@ public class FilterExpression extends JanitorComposed<FilterExpression> {
                         filterExpression.setFilters(update.stream().map(FilterExpression.class::cast).toList());
                     }
             );
-        });
-        DISPATCH.addStringProperty("field", FilterExpression::getField, FilterExpression::setField);
-        DISPATCH.addStringProperty("operator", FilterExpression::getOperatorString, FilterExpression::setOperatorString);
-        DISPATCH.addNullableBooleanProperty("ignoreCase", FilterExpression::getIgnoreCase, FilterExpression::setIgnoreCase);
-        DISPATCH.addStringProperty("valueString", FilterExpression::getValueString, FilterExpression::setValueString);
-        DISPATCH.addNullableBooleanProperty("valueBoolean", FilterExpression::getValueBoolean, FilterExpression::setValueBoolean);
-        DISPATCH.addNullableDoubleProperty("valueDouble", FilterExpression::getValueDouble, FilterExpression::setValueDouble);
-        DISPATCH.addNullableLongProperty("valueLong", FilterExpression::getValueLong, FilterExpression::setValueLong);
-        DISPATCH.addDateProperty("valueDate", FilterExpression::getValueDate, FilterExpression::setValueDate);
-        DISPATCH.addDateTimeProperty("valueDateTime", FilterExpression::getValueDateTime, FilterExpression::setValueDateTime);
+        }).setMetaData(Janitor.MetaData.HELP, "filters: The filter expressions of a group, combined according to logic, as a list; changes to the returned list are applied to the group.");
+        DISPATCH.addStringProperty("field", FilterExpression::getField, FilterExpression::setField)
+                .setMetaData(Janitor.MetaData.HELP, "field: The name of the field a single condition tests; writable.");
+        DISPATCH.addStringProperty("operator", FilterExpression::getOperatorString, FilterExpression::setOperatorString)
+                .setMetaData(Janitor.MetaData.HELP, "operator: The comparison of a single condition, e.g. \"eq\", \"neq\", \"lt\", \"gte\", \"contains\", \"startswith\" or \"isnull\"; writable, unknown codes are an error.");
+        DISPATCH.addNullableBooleanProperty("ignoreCase", FilterExpression::getIgnoreCase, FilterExpression::setIgnoreCase)
+                .setMetaData(Janitor.MetaData.HELP, "ignoreCase: True if a string comparison ignores case, or null; writable.");
+        DISPATCH.addStringProperty("valueString", FilterExpression::getValueString, FilterExpression::setValueString)
+                .setMetaData(Janitor.MetaData.HELP, "valueString: The value to compare with, if it is a string; writable.");
+        DISPATCH.addNullableBooleanProperty("valueBoolean", FilterExpression::getValueBoolean, FilterExpression::setValueBoolean)
+                .setMetaData(Janitor.MetaData.HELP, "valueBoolean: The value to compare with, if it is a boolean, or null; writable.");
+        DISPATCH.addNullableDoubleProperty("valueDouble", FilterExpression::getValueDouble, FilterExpression::setValueDouble)
+                .setMetaData(Janitor.MetaData.HELP, "valueDouble: The value to compare with, if it is a floating point number, or null; writable.");
+        DISPATCH.addNullableLongProperty("valueLong", FilterExpression::getValueLong, FilterExpression::setValueLong)
+                .setMetaData(Janitor.MetaData.HELP, "valueLong: The value to compare with, if it is an integer, or null; writable.");
+        DISPATCH.addDateProperty("valueDate", FilterExpression::getValueDate, FilterExpression::setValueDate)
+                .setMetaData(Janitor.MetaData.HELP, "valueDate: The value to compare with, if it is a date, or null; writable.");
+        DISPATCH.addDateTimeProperty("valueDateTime", FilterExpression::getValueDateTime, FilterExpression::setValueDateTime)
+                .setMetaData(Janitor.MetaData.HELP, "valueDateTime: The value to compare with, if it is a date and time, or null; writable.");
     }
 
     // For logical groups

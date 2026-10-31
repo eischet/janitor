@@ -82,28 +82,47 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
     private static final Predicate<String> INVALID_FIELD = Pattern.compile("[a-zA-Z0-9_@-]+(\\.[a-zA-Z0-9_@-]+)*").asMatchPredicate().negate(); // a field, or a path through references like "product.shortCode"
 
     static {
-        DISPATCH.addBooleanProperty("verbose", GenericDao::isVerbose, GenericDao::setVerbose);
-        DISPATCH.addStringProperty("tableName", dao -> dao.tableName);
-        DISPATCH.addStringProperty("idColumn", dao -> dao.idColumn);
-        DISPATCH.addListProperty("columns", dao -> Janitor.list(dao.columns.stream().map(Janitor::string)));
-        DISPATCH.addStringProperty("keyColumn", dao -> dao.keyColumn);
-        DISPATCH.addStringProperty("className", dao -> dao.className);
+        DISPATCH.addBooleanProperty("verbose", GenericDao::isVerbose, GenericDao::setVerbose)
+                .setMetaData(Janitor.MetaData.HELP, "verbose: True if the DAO logs what it does in detail; writable.");
+        DISPATCH.addStringProperty("tableName", dao -> dao.tableName)
+                .setMetaData(Janitor.MetaData.HELP, "tableName: The name of the database table; read-only.");
+        DISPATCH.addStringProperty("idColumn", dao -> dao.idColumn)
+                .setMetaData(Janitor.MetaData.HELP, "idColumn: The name of the ID column of the table; read-only.");
+        DISPATCH.addListProperty("columns", dao -> Janitor.list(dao.columns.stream().map(Janitor::string)))
+                .setMetaData(Janitor.MetaData.HELP, "columns: The names of the database columns the DAO reads and writes, as a list of strings; read-only.");
+        DISPATCH.addStringProperty("keyColumn", dao -> dao.keyColumn)
+                .setMetaData(Janitor.MetaData.HELP, "keyColumn: The name of the key column used by findByKey(), or null if the table has none; read-only.");
+        DISPATCH.addStringProperty("className", dao -> dao.className)
+                .setMetaData(Janitor.MetaData.HELP, "className: The class name of the entities; read-only.");
         // should columnForField and fieldForColumn be made public as well!?
 
-        DISPATCH.addMethod("insert", (self, process, arguments) -> self.insertForScript(process, arguments.require(1).get(0)));
-        DISPATCH.addVoidMethod("update", (self, process, arguments) -> self.updateForScript(process, arguments.require(1).get(0)));
-        DISPATCH.addMethod("findAll", GenericDao::scriptFindAll);
-        DISPATCH.addMethod("getById", GenericDao::scriptFindById);
-        DISPATCH.addMethod("getByKey", GenericDao::scriptFindByKey);
-        DISPATCH.addMethod("getAll", GenericDao::scriptFindAll);
-        DISPATCH.addMethod("findById", GenericDao::scriptFindById);
-        DISPATCH.addMethod("findByKey", GenericDao::scriptFindByKey);
-        DISPATCH.addMethod("findByIds", GenericDao::scriptFindByIds);
-        DISPATCH.addMethod("queryForEach", GenericDao::scriptQueryForEach);
-        DISPATCH.addMethod("select", GenericDao::scriptSelect);
-        DISPATCH.addMethod("count", GenericDao::scriptCount);
+        DISPATCH.addMethod("insert", (self, process, arguments) -> self.insertForScript(process, arguments.require(1).get(0)))
+                .setMetaData(Janitor.MetaData.HELP, "insert(entity): Inserts the entity, or a new entity filled from a map, into the database and returns it.");
+        DISPATCH.addVoidMethod("update", (self, process, arguments) -> self.updateForScript(process, arguments.require(1).get(0)))
+                .setMetaData(Janitor.MetaData.HELP, "update(entity): Updates the entity, or a new entity filled from a map, in the database.");
+        DISPATCH.addMethod("findAll", GenericDao::scriptFindAll)
+                .setMetaData(Janitor.MetaData.HELP, "findAll(): Returns all entities as a list.");
+        DISPATCH.addMethod("getById", GenericDao::scriptFindById)
+                .setMetaData(Janitor.MetaData.HELP, "getById(id): Returns the entity with the ID, or null if there is none; same as findById(id).");
+        DISPATCH.addMethod("getByKey", GenericDao::scriptFindByKey)
+                .setMetaData(Janitor.MetaData.HELP, "getByKey(key): Returns the entity with the key, or null if there is none; same as findByKey(key).");
+        DISPATCH.addMethod("getAll", GenericDao::scriptFindAll)
+                .setMetaData(Janitor.MetaData.HELP, "getAll(): Returns all entities as a list; same as findAll().");
+        DISPATCH.addMethod("findById", GenericDao::scriptFindById)
+                .setMetaData(Janitor.MetaData.HELP, "findById(id): Returns the entity with the ID, or null if there is none.");
+        DISPATCH.addMethod("findByKey", GenericDao::scriptFindByKey)
+                .setMetaData(Janitor.MetaData.HELP, "findByKey(key): Returns the entity with the key (see keyColumn), or null if there is none.");
+        DISPATCH.addMethod("findByIds", GenericDao::scriptFindByIds)
+                .setMetaData(Janitor.MetaData.HELP, "findByIds(ids): Returns the entities for a list or set of IDs, in the order of their IDs; missing IDs, duplicates and nulls are skipped.");
+        DISPATCH.addMethod("queryForEach", GenericDao::scriptQueryForEach)
+                .setMetaData(Janitor.MetaData.HELP, "queryForEach(sql, callback): Runs the SQL query, which must return entity IDs, calls callback(entity, id) for each entity found and returns how many there were.");
+        DISPATCH.addMethod("select", GenericDao::scriptSelect)
+                .setMetaData(Janitor.MetaData.HELP, "select(condition): Returns the entities for which a lambda like item -> item.code == \"FOO\" holds, running it as a database query.");
+        DISPATCH.addMethod("count", GenericDao::scriptCount)
+                .setMetaData(Janitor.MetaData.HELP, "count(condition): Returns the number of entities for which a lambda like item -> item.code == \"FOO\" holds, running it as a database query.");
 
-        DISPATCH.addStringProperty("jsonSchema", self -> Janitor.current().writeJson(self.entityDispatchTable::writeSchemaToJson));
+        DISPATCH.addStringProperty("jsonSchema", self -> Janitor.current().writeJson(self.entityDispatchTable::writeSchemaToJson))
+                .setMetaData(Janitor.MetaData.HELP, "jsonSchema: The JSON schema of the entities as a string; read-only.");
     }
 
     /** How many entities {@link #scriptQueryForEach} loads in one transaction before it runs the callbacks for them. */

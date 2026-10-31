@@ -3,6 +3,7 @@
 
 package com.eischet.janitor.modules.commonmark;
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import org.commonmark.node.IndentedCodeBlock;
@@ -16,7 +17,8 @@ public class CMIndentedCodeBlock extends CMNode {
         dispatch.addStringProperty("literal",
             node -> node.janitorGetHostValue().getLiteral(),
             (self, value) -> self.janitorGetHostValue().setLiteral(value)
-        );
+        )
+                .setMetaData(Janitor.MetaData.HELP, "literal: The code inside the block; writable.");
     }
 
     public CMIndentedCodeBlock(final IndentedCodeBlock node) {

@@ -49,22 +49,36 @@ public class FilesModule extends JanitorComposed<FilesModule> implements Janitor
     public static final JanitorModuleRegistration REGISTRATION = new JanitorModuleRegistration("files", FilesModule::new);
 
     static {
-        dispatcher.addMethod("exists", FilesModule::fileExists);
-        dispatcher.addMethod("write", FilesModule::writeString);
-        dispatcher.addMethod("read", FilesModule::readString);
-        dispatcher.addMethod("readXml", FilesModule::readXml);
-        dispatcher.addMethod("writeBinary", FilesModule::writeBinary);
-        dispatcher.addMethod("readBinary", FilesModule::readBinary);
-        dispatcher.addMethod("list", FilesModule::list);
-        dispatcher.addMethod("mkdirs", FilesModule::mkdir);
-        dispatcher.addMethod("normalize", FilesModule::normalize);
-        dispatcher.addMethod("lastmod", FilesModule::lastMod);
+        dispatcher.addMethod("exists", FilesModule::fileExists)
+                .setMetaData(Janitor.MetaData.HELP, "exists(path): Returns true if a file or folder exists at the path.");
+        dispatcher.addMethod("write", FilesModule::writeString)
+                .setMetaData(Janitor.MetaData.HELP, "write(path, text, charset): Writes the text to a file, replacing its contents; charset defaults to UTF-8. Returns null.");
+        dispatcher.addMethod("read", FilesModule::readString)
+                .setMetaData(Janitor.MetaData.HELP, "read(path, charset): Returns the contents of a file as text; charset defaults to UTF-8.");
+        dispatcher.addMethod("readXml", FilesModule::readXml)
+                .setMetaData(Janitor.MetaData.HELP, "readXml(path, charset): Reads an XML file and returns its root element; charset defaults to UTF-8.");
+        dispatcher.addMethod("writeBinary", FilesModule::writeBinary)
+                .setMetaData(Janitor.MetaData.HELP, "writeBinary(path, data): Writes binary data to a file, replacing its contents. Returns null.");
+        dispatcher.addMethod("readBinary", FilesModule::readBinary)
+                .setMetaData(Janitor.MetaData.HELP, "readBinary(path): Returns the contents of a file as binary data.");
+        dispatcher.addMethod("list", FilesModule::list)
+                .setMetaData(Janitor.MetaData.HELP, "list(folder): Returns a list of the names of the entries in a folder; empty if the folder does not exist.");
+        dispatcher.addMethod("mkdirs", FilesModule::mkdir)
+                .setMetaData(Janitor.MetaData.HELP, "mkdirs(folder): Creates a folder including missing parent folders; returns true if it was created.");
+        dispatcher.addMethod("normalize", FilesModule::normalize)
+                .setMetaData(Janitor.MetaData.HELP, "normalize(path): Returns the canonical absolute form of the path.");
+        dispatcher.addMethod("lastmod", FilesModule::lastMod)
+                .setMetaData(Janitor.MetaData.HELP, "lastmod(path): Returns the last modification time of a file as a date-time, or null if it does not exist.");
 
-        dispatcher.addMethod("delete", FilesModule::delete);
-        dispatcher.addVoidMethod("move", FilesModule::move);
-        dispatcher.addVoidMethod("copy", FilesModule::copy);
+        dispatcher.addMethod("delete", FilesModule::delete)
+                .setMetaData(Janitor.MetaData.HELP, "delete(path): Deletes a file or an empty folder; returns true if it was deleted.");
+        dispatcher.addVoidMethod("move", FilesModule::move)
+                .setMetaData(Janitor.MetaData.HELP, "move(source, target): Moves a file; fails if the target already exists.");
+        dispatcher.addVoidMethod("copy", FilesModule::copy)
+                .setMetaData(Janitor.MetaData.HELP, "copy(source, target): Copies a file; fails if the target already exists.");
 
-        dispatcher.addMethod("Zip", FilesModule::zip);
+        dispatcher.addMethod("Zip", FilesModule::zip)
+                .setMetaData(Janitor.MetaData.HELP, "Zip(path): Creates a new ZIP file at the path and returns it for adding entries; it is closed when the script ends.");
 
     }
 
@@ -126,7 +140,7 @@ public class FilesModule extends JanitorComposed<FilesModule> implements Janitor
             return runningScript.getBuiltins().nullableString(
                     Files.readString(
                             Path.of(arguments.require(1, 2).getString(0).janitorGetHostValue()),
-                            Charset.forName(arguments.getOptionalStringValue(2, "UTF-8"))
+                            Charset.forName(arguments.getOptionalStringValue(1, "UTF-8"))
                     )
             );
         } catch (IOException e) {
@@ -145,7 +159,7 @@ public class FilesModule extends JanitorComposed<FilesModule> implements Janitor
         try {
             final String contents = Files.readString(
                 Path.of(arguments.require(1, 2).getString(0).janitorGetHostValue()),
-                Charset.forName(arguments.getOptionalStringValue(2, "UTF-8"))
+                Charset.forName(arguments.getOptionalStringValue(1, "UTF-8"))
             );
             return JanitorXmlParser.parseXml(contents);
         } catch (IOException | XMLStreamException e) {

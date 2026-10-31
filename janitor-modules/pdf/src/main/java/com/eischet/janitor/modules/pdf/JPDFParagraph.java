@@ -7,6 +7,7 @@ import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.functions.JCallArgs;
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import org.jetbrains.annotations.NotNull;
@@ -21,15 +22,23 @@ public class JPDFParagraph extends JanitorWrapper<Paragraph> {
 
     static {
         JPDFPhrase.addCommonPhraseAttributes(DISPATCH_TABLE);
-        DISPATCH_TABLE.addIntegerProperty("alignment", self -> self.janitorGetHostValue().getAlignment(), (self, value) -> self.janitorGetHostValue().setAlignment(value));
-        DISPATCH_TABLE.addBooleanProperty("keepTogether", self -> self.janitorGetHostValue().getKeepTogether(), (self, value) -> self.janitorGetHostValue().setKeepTogether(value));
-        DISPATCH_TABLE.addDoubleProperty("indentationLeft", self -> self.janitorGetHostValue().getIndentationLeft(), (self, value) -> self.janitorGetHostValue().setIndentationLeft((float) value));
-        DISPATCH_TABLE.addDoubleProperty("indentationRight", self -> self.janitorGetHostValue().getIndentationRight(), (self, value) -> self.janitorGetHostValue().setIndentationRight((float) value));
-        DISPATCH_TABLE.addDoubleProperty("firstLineIndent", self -> self.janitorGetHostValue().getFirstLineIndent(), (self, value) -> self.janitorGetHostValue().setFirstLineIndent((float) value));
-        DISPATCH_TABLE.addDoubleProperty("spacingBefore", self -> self.janitorGetHostValue().getSpacingBefore(), (self, value) -> self.janitorGetHostValue().setSpacingBefore((float) value));
-        DISPATCH_TABLE.addDoubleProperty("spacingAfter", self -> self.janitorGetHostValue().getSpacingAfter(), (self, value) -> self.janitorGetHostValue().setSpacingAfter((float) value));
+        DISPATCH_TABLE.addIntegerProperty("alignment", self -> self.janitorGetHostValue().getAlignment(), (self, value) -> self.janitorGetHostValue().setAlignment(value))
+                .setMetaData(Janitor.MetaData.HELP, "alignment: The horizontal alignment, one of pdf.ALIGN_LEFT, ALIGN_CENTER, ALIGN_RIGHT or ALIGN_JUSTIFIED; writable.");
+        DISPATCH_TABLE.addBooleanProperty("keepTogether", self -> self.janitorGetHostValue().getKeepTogether(), (self, value) -> self.janitorGetHostValue().setKeepTogether(value))
+                .setMetaData(Janitor.MetaData.HELP, "keepTogether: True if the paragraph should not be split across pages; writable.");
+        DISPATCH_TABLE.addDoubleProperty("indentationLeft", self -> self.janitorGetHostValue().getIndentationLeft(), (self, value) -> self.janitorGetHostValue().setIndentationLeft((float) value))
+                .setMetaData(Janitor.MetaData.HELP, "indentationLeft: The left indentation in points; writable.");
+        DISPATCH_TABLE.addDoubleProperty("indentationRight", self -> self.janitorGetHostValue().getIndentationRight(), (self, value) -> self.janitorGetHostValue().setIndentationRight((float) value))
+                .setMetaData(Janitor.MetaData.HELP, "indentationRight: The right indentation in points; writable.");
+        DISPATCH_TABLE.addDoubleProperty("firstLineIndent", self -> self.janitorGetHostValue().getFirstLineIndent(), (self, value) -> self.janitorGetHostValue().setFirstLineIndent((float) value))
+                .setMetaData(Janitor.MetaData.HELP, "firstLineIndent: The extra indentation of the first line in points; writable.");
+        DISPATCH_TABLE.addDoubleProperty("spacingBefore", self -> self.janitorGetHostValue().getSpacingBefore(), (self, value) -> self.janitorGetHostValue().setSpacingBefore((float) value))
+                .setMetaData(Janitor.MetaData.HELP, "spacingBefore: The space before the paragraph in points; writable.");
+        DISPATCH_TABLE.addDoubleProperty("spacingAfter", self -> self.janitorGetHostValue().getSpacingAfter(), (self, value) -> self.janitorGetHostValue().setSpacingAfter((float) value))
+                .setMetaData(Janitor.MetaData.HELP, "spacingAfter: The space after the paragraph in points; writable.");
         DISPATCH_TABLE.addDoubleProperty("extraParagraphSpace", self -> self.janitorGetHostValue().getExtraParagraphSpace(), (self, value) -> self.janitorGetHostValue().setExtraParagraphSpace((float) value));
-        DISPATCH_TABLE.addDoubleProperty("multipliedLeading", self -> self.janitorGetHostValue().getMultipliedLeading(), (self, value) -> self.janitorGetHostValue().setMultipliedLeading((float) value));
+        DISPATCH_TABLE.addDoubleProperty("multipliedLeading", self -> self.janitorGetHostValue().getMultipliedLeading(), (self, value) -> self.janitorGetHostValue().setMultipliedLeading((float) value))
+                .setMetaData(Janitor.MetaData.HELP, "multipliedLeading: The line spacing as a factor of the font size; writable.");
         DISPATCH_TABLE.addIntegerProperty("runDirection", self -> self.janitorGetHostValue().getRunDirection(), (self, value) -> self.janitorGetHostValue().setRunDirection(value));
     }
 

@@ -4,6 +4,7 @@
 package com.eischet.janitor.docusign;
 
 import com.docusign.esign.model.Recipients;
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 
@@ -17,13 +18,15 @@ public class DocusignRecipients extends JanitorComposed<DocusignRecipients> {
             DocusignSigner signer = args.getRequired(0, DocusignSigner.class);
             self.wrapped.addSignersItem(signer.getWrapped());
             return self;
-        });
+        })
+                .setMetaData(Janitor.MetaData.HELP, "addSigner(signer): Adds the signer and returns the recipients.");
 
         DISPATCHER.addMethod("addCarbonCopy", (self, process, args) -> {
             DocusignCarbonCopy carbonCopy = args.getRequired(0, DocusignCarbonCopy.class);
             self.wrapped.addCarbonCopiesItem(carbonCopy.getWrapped());
             return self;
-        });
+        })
+                .setMetaData(Janitor.MetaData.HELP, "addCarbonCopy(carbonCopy): Adds the carbon copy recipient and returns the recipients.");
     }
 
     private final Recipients wrapped;

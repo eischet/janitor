@@ -7,6 +7,7 @@ import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.functions.JCallArgs;
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import org.jetbrains.annotations.NotNull;
@@ -22,8 +23,10 @@ public class JPDFAnchor extends JanitorWrapper<Anchor> {
 
     static {
         JPDFPhrase.addCommonPhraseAttributes(DISPATCH_TABLE);
-        DISPATCH_TABLE.addStringProperty("name", self -> self.janitorGetHostValue().getName(), (self, value) -> self.janitorGetHostValue().setName(value));
-        DISPATCH_TABLE.addStringProperty("reference", self -> self.janitorGetHostValue().getReference(), (self, value) -> self.janitorGetHostValue().setReference(value));
+        DISPATCH_TABLE.addStringProperty("name", self -> self.janitorGetHostValue().getName(), (self, value) -> self.janitorGetHostValue().setName(value))
+                .setMetaData(Janitor.MetaData.HELP, "name: The name of the anchor as a named destination, the target of e.g. Chunk.setLocalGoto(name); writable.");
+        DISPATCH_TABLE.addStringProperty("reference", self -> self.janitorGetHostValue().getReference(), (self, value) -> self.janitorGetHostValue().setReference(value))
+                .setMetaData(Janitor.MetaData.HELP, "reference: The URL the anchor links to; writable.");
     }
 
     public JPDFAnchor(final @NotNull Anchor anchor) {

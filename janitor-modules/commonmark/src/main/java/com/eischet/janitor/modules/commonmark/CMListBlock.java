@@ -3,6 +3,7 @@
 
 package com.eischet.janitor.modules.commonmark;
 
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import org.commonmark.node.ListBlock;
@@ -15,7 +16,8 @@ public abstract class CMListBlock extends CMNode {
         dispatch.addBooleanProperty("tight",
             node -> node.janitorGetHostValue().isTight(),
             (self, value) -> self.janitorGetHostValue().setTight(value)
-        );
+        )
+                .setMetaData(Janitor.MetaData.HELP, "tight: True if the list is tight, i.e. its items are not separated by blank lines; writable.");
     }
 
     public CMListBlock(final ListBlock node) {

@@ -14,12 +14,18 @@ public class DocusignUserInfo extends JanitorComposed<DocusignUserInfo> {
     public static final DispatchTable<DocusignUserInfo> DISPATCH =  new DispatchTable();
 
     static {
-        DISPATCH.addStringProperty("sub", self -> self.userInfo.getSub());
-        DISPATCH.addStringProperty("email", self -> self.userInfo.getEmail());
-        DISPATCH.addStringProperty("name", self -> self.userInfo.getName());
-        DISPATCH.addStringProperty("givenName", self -> self.userInfo.getGivenName());
-        DISPATCH.addStringProperty("familyName", self -> self.userInfo.getFamilyName());
-        DISPATCH.addListProperty("accounts", self -> Janitor.list(self.userInfo.getAccounts().stream().map(DocusignAccount::new)));
+        DISPATCH.addStringProperty("sub", self -> self.userInfo.getSub())
+                .setMetaData(Janitor.MetaData.HELP, "sub: The user's ID (the OAuth subject); read-only.");
+        DISPATCH.addStringProperty("email", self -> self.userInfo.getEmail())
+                .setMetaData(Janitor.MetaData.HELP, "email: The user's email address; read-only.");
+        DISPATCH.addStringProperty("name", self -> self.userInfo.getName())
+                .setMetaData(Janitor.MetaData.HELP, "name: The user's full name; read-only.");
+        DISPATCH.addStringProperty("givenName", self -> self.userInfo.getGivenName())
+                .setMetaData(Janitor.MetaData.HELP, "givenName: The user's given name; read-only.");
+        DISPATCH.addStringProperty("familyName", self -> self.userInfo.getFamilyName())
+                .setMetaData(Janitor.MetaData.HELP, "familyName: The user's family name; read-only.");
+        DISPATCH.addListProperty("accounts", self -> Janitor.list(self.userInfo.getAccounts().stream().map(DocusignAccount::new)))
+                .setMetaData(Janitor.MetaData.HELP, "accounts: List of the DocuSign accounts the user can access; read-only.");
     }
 
     protected final OAuth.UserInfo userInfo;

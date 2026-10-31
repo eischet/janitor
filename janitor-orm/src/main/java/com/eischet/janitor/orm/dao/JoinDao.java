@@ -62,15 +62,24 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
     public static final DispatchTable<JoinDao<?>> DISPATCH = new DispatchTable<>();
 
     static {
-        DISPATCH.addBooleanProperty("verbose", JoinDao::isVerbose, JoinDao::setVerbose);
-        DISPATCH.addStringProperty("tableName", dao -> dao.tableName);
-        DISPATCH.addListProperty("columns", dao -> Janitor.list(dao.columns.stream().map(Janitor::string)));
-        DISPATCH.addStringProperty("className", dao -> dao.className);
-        DISPATCH.addMethod("insert", JoinDao::insertForScript);
-        DISPATCH.addMethod("update", JoinDao::updateForScript);
-        DISPATCH.addMethod("merge", JoinDao::mergeForScript);
-        DISPATCH.addVoidMethod("delete", JoinDao::deleteForScript);
-        DISPATCH.addStringProperty("jsonSchema", self -> Janitor.current().writeJson(self.entityDispatchTable::writeSchemaToJson));
+        DISPATCH.addBooleanProperty("verbose", JoinDao::isVerbose, JoinDao::setVerbose)
+                .setMetaData(Janitor.MetaData.HELP, "verbose: True if the DAO logs what it does in detail; writable.");
+        DISPATCH.addStringProperty("tableName", dao -> dao.tableName)
+                .setMetaData(Janitor.MetaData.HELP, "tableName: The name of the join table; read-only.");
+        DISPATCH.addListProperty("columns", dao -> Janitor.list(dao.columns.stream().map(Janitor::string)))
+                .setMetaData(Janitor.MetaData.HELP, "columns: The names of the database columns the DAO reads and writes, as a list of strings; read-only.");
+        DISPATCH.addStringProperty("className", dao -> dao.className)
+                .setMetaData(Janitor.MetaData.HELP, "className: The class name of the join records; read-only.");
+        DISPATCH.addMethod("insert", JoinDao::insertForScript)
+                .setMetaData(Janitor.MetaData.HELP, "insert(record): Inserts a join record, given as a record or a map, into the database and returns it.");
+        DISPATCH.addMethod("update", JoinDao::updateForScript)
+                .setMetaData(Janitor.MetaData.HELP, "update(record): Updates a join record, given as a record or a map, in the database and returns it.");
+        DISPATCH.addMethod("merge", JoinDao::mergeForScript)
+                .setMetaData(Janitor.MetaData.HELP, "merge(record): Updates a join record, given as a record or a map, or inserts it if it does not exist yet; returns it.");
+        DISPATCH.addVoidMethod("delete", JoinDao::deleteForScript)
+                .setMetaData(Janitor.MetaData.HELP, "delete(record): Deletes a join record, given as a record or a map, from the database.");
+        DISPATCH.addStringProperty("jsonSchema", self -> Janitor.current().writeJson(self.entityDispatchTable::writeSchemaToJson))
+                .setMetaData(Janitor.MetaData.HELP, "jsonSchema: The JSON schema of the join records as a string; read-only.");
     }
 
     protected final ListenerSet<EntityChangeListener<T>> entityChangeListeners= new ListenerSetStandard<>();

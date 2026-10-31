@@ -32,18 +32,29 @@ public class BrrrMessage extends JanitorComposed<BrrrMessage> {
     public static final DispatchTable<BrrrMessage> DISPATCHER = new DispatchTable<>();
 
     static {
-        DISPATCHER.addStringProperty("title", BrrrMessage::getTitle, BrrrMessage::setTitle);
-        DISPATCHER.addStringProperty("subtitle", BrrrMessage::getSubtitle, BrrrMessage::setSubtitle);
-        DISPATCHER.addStringProperty("message", BrrrMessage::getMessage, (self, value) -> self.setMessage(value == null ? "" : value));
-        DISPATCHER.addStringProperty("thread_id", BrrrMessage::getThreadId, BrrrMessage::setThreadId);
-        DISPATCHER.addStringProperty("open_url", BrrrMessage::getOpenUrl, BrrrMessage::setOpenUrl);
-        DISPATCHER.addStringProperty("image_url", BrrrMessage::getImageUrl, BrrrMessage::setImageUrl);
-        DISPATCHER.addDateTimeProperty("expiration_date", BrrrMessage::getExpirationDate, BrrrMessage::setExpirationDate);
-        DISPATCHER.addStringProperty("filter_criteria", BrrrMessage::getFilterCriteria, BrrrMessage::setFilterCriteria);
-        DISPATCHER.addStringProperty("sound", BrrrMessage::getSoundAsString, BrrrMessage::setSoundAsString);
-        DISPATCHER.addStringProperty("interruption_level", BrrrMessage::getInterruptionLevelAsString, BrrrMessage::setInterruptionLevelAsString);
+        DISPATCHER.addStringProperty("title", BrrrMessage::getTitle, BrrrMessage::setTitle)
+                .setMetaData(Janitor.MetaData.HELP, "title: The title of the notification; writable.");
+        DISPATCHER.addStringProperty("subtitle", BrrrMessage::getSubtitle, BrrrMessage::setSubtitle)
+                .setMetaData(Janitor.MetaData.HELP, "subtitle: The subtitle of the notification; writable.");
+        DISPATCHER.addStringProperty("message", BrrrMessage::getMessage, (self, value) -> self.setMessage(value == null ? "" : value))
+                .setMetaData(Janitor.MetaData.HELP, "message: The text of the notification; writable, null is stored as an empty string.");
+        DISPATCHER.addStringProperty("thread_id", BrrrMessage::getThreadId, BrrrMessage::setThreadId)
+                .setMetaData(Janitor.MetaData.HELP, "thread_id: The ID of the thread that the notification belongs to; writable.");
+        DISPATCHER.addStringProperty("open_url", BrrrMessage::getOpenUrl, BrrrMessage::setOpenUrl)
+                .setMetaData(Janitor.MetaData.HELP, "open_url: The URL that opens when the notification is tapped; writable.");
+        DISPATCHER.addStringProperty("image_url", BrrrMessage::getImageUrl, BrrrMessage::setImageUrl)
+                .setMetaData(Janitor.MetaData.HELP, "image_url: The URL of an image to show in the notification; writable.");
+        DISPATCHER.addDateTimeProperty("expiration_date", BrrrMessage::getExpirationDate, BrrrMessage::setExpirationDate)
+                .setMetaData(Janitor.MetaData.HELP, "expiration_date: The datetime after which the notification expires; writable.");
+        DISPATCHER.addStringProperty("filter_criteria", BrrrMessage::getFilterCriteria, BrrrMessage::setFilterCriteria)
+                .setMetaData(Janitor.MetaData.HELP, "filter_criteria: The filter criteria sent with the notification; writable.");
+        DISPATCHER.addStringProperty("sound", BrrrMessage::getSoundAsString, BrrrMessage::setSoundAsString)
+                .setMetaData(Janitor.MetaData.HELP, "sound: The name of the notification sound, e.g. \"default\", \"brrr\" or \"cat_meow\"; writable, unknown or blank names select \"default\".");
+        DISPATCHER.addStringProperty("interruption_level", BrrrMessage::getInterruptionLevelAsString, BrrrMessage::setInterruptionLevelAsString)
+                .setMetaData(Janitor.MetaData.HELP, "interruption_level: The interruption level, \"passive\", \"active\" or \"time-sensitive\"; writable, unknown values clear it.");
 
-        DISPATCHER.addMethod("send", (BrrrMessage::send));
+        DISPATCHER.addMethod("send", (BrrrMessage::send))
+                .setMetaData(Janitor.MetaData.HELP, "send(url): Sends the message to the Brrr webhook URL and returns null; without a URL, the BRRR_URL environment variable is used, and the URL \"disabled\" only logs a warning.");
     }
 
     /**

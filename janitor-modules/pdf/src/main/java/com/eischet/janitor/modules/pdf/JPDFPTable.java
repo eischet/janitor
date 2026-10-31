@@ -8,6 +8,7 @@ import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.functions.JCallArgs;
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import org.jetbrains.annotations.NotNull;
@@ -28,20 +29,33 @@ public class JPDFPTable extends JanitorWrapper<PdfPTable> {
             final JanitorObjectOrCell value = JanitorObjectOrCell.of(process, args, 0);
             self.janitorGetHostValue().addCell(value.cell);
             return self;
-        });
-        DISPATCH_TABLE.addIntegerProperty("numberOfColumns", self -> self.janitorGetHostValue().getNumberOfColumns());
-        DISPATCH_TABLE.addIntegerProperty("size", self -> self.janitorGetHostValue().size());
-        DISPATCH_TABLE.addIntegerProperty("headerRows", self -> self.janitorGetHostValue().getHeaderRows(), (self, value) -> self.janitorGetHostValue().setHeaderRows(value));
-        DISPATCH_TABLE.addDoubleProperty("widthPercentage", self -> self.janitorGetHostValue().getWidthPercentage(), (self, value) -> self.janitorGetHostValue().setWidthPercentage((float) value));
-        DISPATCH_TABLE.addDoubleProperty("totalWidth", self -> self.janitorGetHostValue().getTotalWidth());
-        DISPATCH_TABLE.addBuilderMethod("setTotalWidth", (self, process, args) -> self.janitorGetHostValue().setTotalWidth(PdfElements.floatArg(process, args, 0)));
-        DISPATCH_TABLE.addIntegerProperty("horizontalAlignment", self -> self.janitorGetHostValue().getHorizontalAlignment(), (self, value) -> self.janitorGetHostValue().setHorizontalAlignment(value));
-        DISPATCH_TABLE.addBooleanProperty("lockedWidth", self -> self.janitorGetHostValue().isLockedWidth(), (self, value) -> self.janitorGetHostValue().setLockedWidth(value));
-        DISPATCH_TABLE.addBooleanProperty("splitRows", self -> self.janitorGetHostValue().isSplitRows(), (self, value) -> self.janitorGetHostValue().setSplitRows(value));
-        DISPATCH_TABLE.addBooleanProperty("skipFirstHeader", self -> self.janitorGetHostValue().isSkipFirstHeader(), (self, value) -> self.janitorGetHostValue().setSkipFirstHeader(value));
-        DISPATCH_TABLE.addBooleanProperty("skipLastFooter", self -> self.janitorGetHostValue().isSkipLastFooter(), (self, value) -> self.janitorGetHostValue().setSkipLastFooter(value));
-        DISPATCH_TABLE.addBuilderMethod("setSpacingBefore", (self, process, args) -> self.janitorGetHostValue().setSpacingBefore(PdfElements.floatArg(process, args, 0)));
-        DISPATCH_TABLE.addBuilderMethod("setSpacingAfter", (self, process, args) -> self.janitorGetHostValue().setSpacingAfter(PdfElements.floatArg(process, args, 0)));
+        }).setMetaData(Janitor.MetaData.HELP, "addCell(cell): Adds the next cell, given as a PCell, Phrase or string; returns the table.");
+        DISPATCH_TABLE.addIntegerProperty("numberOfColumns", self -> self.janitorGetHostValue().getNumberOfColumns())
+                .setMetaData(Janitor.MetaData.HELP, "numberOfColumns: The number of columns of the table; read-only.");
+        DISPATCH_TABLE.addIntegerProperty("size", self -> self.janitorGetHostValue().size())
+                .setMetaData(Janitor.MetaData.HELP, "size: The number of complete rows in the table; read-only.");
+        DISPATCH_TABLE.addIntegerProperty("headerRows", self -> self.janitorGetHostValue().getHeaderRows(), (self, value) -> self.janitorGetHostValue().setHeaderRows(value))
+                .setMetaData(Janitor.MetaData.HELP, "headerRows: The number of leading rows that are repeated as a header on every page; writable.");
+        DISPATCH_TABLE.addDoubleProperty("widthPercentage", self -> self.janitorGetHostValue().getWidthPercentage(), (self, value) -> self.janitorGetHostValue().setWidthPercentage((float) value))
+                .setMetaData(Janitor.MetaData.HELP, "widthPercentage: The width of the table as a percentage of the available width; writable.");
+        DISPATCH_TABLE.addDoubleProperty("totalWidth", self -> self.janitorGetHostValue().getTotalWidth())
+                .setMetaData(Janitor.MetaData.HELP, "totalWidth: The absolute width of the table in points; read-only, see setTotalWidth().");
+        DISPATCH_TABLE.addBuilderMethod("setTotalWidth", (self, process, args) -> self.janitorGetHostValue().setTotalWidth(PdfElements.floatArg(process, args, 0)))
+                .setMetaData(Janitor.MetaData.HELP, "setTotalWidth(width): Sets the absolute width of the table in points, used when lockedWidth is true; returns the table.");
+        DISPATCH_TABLE.addIntegerProperty("horizontalAlignment", self -> self.janitorGetHostValue().getHorizontalAlignment(), (self, value) -> self.janitorGetHostValue().setHorizontalAlignment(value))
+                .setMetaData(Janitor.MetaData.HELP, "horizontalAlignment: The horizontal alignment of the table on the page, e.g. pdf.ALIGN_LEFT, ALIGN_CENTER or ALIGN_RIGHT; writable.");
+        DISPATCH_TABLE.addBooleanProperty("lockedWidth", self -> self.janitorGetHostValue().isLockedWidth(), (self, value) -> self.janitorGetHostValue().setLockedWidth(value))
+                .setMetaData(Janitor.MetaData.HELP, "lockedWidth: True if the table uses its totalWidth instead of widthPercentage; writable.");
+        DISPATCH_TABLE.addBooleanProperty("splitRows", self -> self.janitorGetHostValue().isSplitRows(), (self, value) -> self.janitorGetHostValue().setSplitRows(value))
+                .setMetaData(Janitor.MetaData.HELP, "splitRows: True if a row may be split across pages; writable.");
+        DISPATCH_TABLE.addBooleanProperty("skipFirstHeader", self -> self.janitorGetHostValue().isSkipFirstHeader(), (self, value) -> self.janitorGetHostValue().setSkipFirstHeader(value))
+                .setMetaData(Janitor.MetaData.HELP, "skipFirstHeader: True if the header rows are not shown on the first page of the table; writable.");
+        DISPATCH_TABLE.addBooleanProperty("skipLastFooter", self -> self.janitorGetHostValue().isSkipLastFooter(), (self, value) -> self.janitorGetHostValue().setSkipLastFooter(value))
+                .setMetaData(Janitor.MetaData.HELP, "skipLastFooter: True if the footer rows are not shown on the last page of the table; writable.");
+        DISPATCH_TABLE.addBuilderMethod("setSpacingBefore", (self, process, args) -> self.janitorGetHostValue().setSpacingBefore(PdfElements.floatArg(process, args, 0)))
+                .setMetaData(Janitor.MetaData.HELP, "setSpacingBefore(spacing): Sets the space before the table in points; returns the table.");
+        DISPATCH_TABLE.addBuilderMethod("setSpacingAfter", (self, process, args) -> self.janitorGetHostValue().setSpacingAfter(PdfElements.floatArg(process, args, 0)))
+                .setMetaData(Janitor.MetaData.HELP, "setSpacingAfter(spacing): Sets the space after the table in points; returns the table.");
         DISPATCH_TABLE.addBuilderMethod("setWidths", (self, process, args) -> {
             final float[] widths = PdfElements.floatArrayArg(process, args.get(0));
             try {
@@ -49,11 +63,15 @@ public class JPDFPTable extends JanitorWrapper<PdfPTable> {
             } catch (DocumentException e) {
                 throw new JanitorNativeException(process, "error setting column widths", e);
             }
-        });
-        DISPATCH_TABLE.addMethod("deleteRow", (self, process, args) -> com.eischet.janitor.api.Janitor.toBool(self.janitorGetHostValue().deleteRow(args.getRequiredIntValue(0))));
-        DISPATCH_TABLE.addMethod("deleteLastRow", (self, process, args) -> com.eischet.janitor.api.Janitor.toBool(self.janitorGetHostValue().deleteLastRow()));
-        DISPATCH_TABLE.addVoidMethod("deleteBodyRows", (self, process, args) -> self.janitorGetHostValue().deleteBodyRows());
-        DISPATCH_TABLE.addVoidMethod("completeRow", (self, process, args) -> self.janitorGetHostValue().completeRow());
+        }).setMetaData(Janitor.MetaData.HELP, "setWidths(widths): Sets the relative widths of the columns from a list of numbers, one per column; returns the table.");
+        DISPATCH_TABLE.addMethod("deleteRow", (self, process, args) -> com.eischet.janitor.api.Janitor.toBool(self.janitorGetHostValue().deleteRow(args.getRequiredIntValue(0))))
+                .setMetaData(Janitor.MetaData.HELP, "deleteRow(index): Deletes the row with the zero-based index; returns true if a row was deleted.");
+        DISPATCH_TABLE.addMethod("deleteLastRow", (self, process, args) -> com.eischet.janitor.api.Janitor.toBool(self.janitorGetHostValue().deleteLastRow()))
+                .setMetaData(Janitor.MetaData.HELP, "deleteLastRow(): Deletes the last row; returns true if a row was deleted.");
+        DISPATCH_TABLE.addVoidMethod("deleteBodyRows", (self, process, args) -> self.janitorGetHostValue().deleteBodyRows())
+                .setMetaData(Janitor.MetaData.HELP, "deleteBodyRows(): Deletes all rows except the header rows.");
+        DISPATCH_TABLE.addVoidMethod("completeRow", (self, process, args) -> self.janitorGetHostValue().completeRow())
+                .setMetaData(Janitor.MetaData.HELP, "completeRow(): Fills the current, incomplete row with empty default cells.");
         // TODO: writeSelectedRows/getRowHeight/setTableEvent/getAbsoluteRowHeight -- low-level PdfContentByte APIs, not mapped yet.
     }
 
