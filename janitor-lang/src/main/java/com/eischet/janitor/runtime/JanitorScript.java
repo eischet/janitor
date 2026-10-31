@@ -8,7 +8,9 @@ import com.eischet.janitor.api.JanitorRuntime;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.RunnableScript;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
+import com.eischet.janitor.api.errors.compiler.ScriptDiagnostic;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
+import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.api.scopes.ResultAndScope;
 import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.scopes.ScriptSource;
@@ -28,6 +30,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -40,6 +43,7 @@ public class JanitorScript implements RunnableScript, JsonExportableObject {
     private final @NotNull ScriptSource module;
     private final @Nullable Script scriptObject;
     private final @NotNull List<String> issues;
+    private final @NotNull List<ScriptDiagnostic> diagnostics = new ArrayList<>();
     private @Nullable Exception compilerException;
 
 
@@ -66,6 +70,7 @@ public class JanitorScript implements RunnableScript, JsonExportableObject {
             throw new JanitorCompilerException(e);
         }
         issues = recorder.getIssues();
+        diagnostics.addAll(recorder.getDiagnostics());
 
 
 
@@ -88,6 +93,10 @@ public class JanitorScript implements RunnableScript, JsonExportableObject {
             } catch (RuntimeException compilerException) {
                 this.compilerException = compilerException;
                 log.info("compiler check error in script {}", moduleName, compilerException);
+                // after syntax errors, the compiler mostly trips over what the parser made of them
+                if (diagnostics.isEmpty()) {
+                    diagnostics.add(diagnosticOf(compilerException));
+                }
             }
             scriptObject = myScript;
         }
@@ -105,6 +114,21 @@ public class JanitorScript implements RunnableScript, JsonExportableObject {
      */
     public static @Nullable String hostString(final JanitorObject obj) {
         return obj == null || obj == JNull.NULL ? null : obj.janitorToString();
+    }
+
+    private static ScriptDiagnostic diagnosticOf(final RuntimeException e) {
+        if (e instanceof CompilerError error && error.getLocation() != null) {
+            final Location at = error.getLocation();
+            // the location ends at the start of the last token, so the marker covers at least one character
+            final int endColumn = at.getEndLine() == at.getLine() ? Math.max(at.getEndColumn(), at.getColumn()) + 1 : at.getEndColumn() + 1;
+            return ScriptDiagnostic.error(at.getLine(), at.getColumn(), at.getEndLine(), endColumn, error.getDetail());
+        }
+        return ScriptDiagnostic.error(e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage());
+    }
+
+    @Override
+    public @NotNull @Unmodifiable List<ScriptDiagnostic> getDiagnostics() {
+        return List.copyOf(diagnostics);
     }
 
     @Override

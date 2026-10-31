@@ -33,6 +33,7 @@ import com.eischet.janitor.compiler.ast.statement.specops.PostfixIncrement;
 import com.eischet.janitor.compiler.ast.statement.specops.PrefixDecrement;
 import com.eischet.janitor.compiler.ast.statement.specops.PrefixIncrement;
 import com.eischet.janitor.lang.JanitorBaseVisitor;
+import org.antlr.v4.runtime.ParserRuleContext;
 import com.eischet.janitor.lang.JanitorLexer;
 import com.eischet.janitor.lang.JanitorParser;
 import com.eischet.janitor.logging.JanitorLogger;
@@ -73,6 +74,23 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
         this.verbose = verbose;
         this.source = source;
         this.builtinTypes = env.getBuiltinTypes();
+    }
+
+    /**
+     * Visits a node and attaches its location to compiler errors that do not know where they are, so that tools can show
+     * them at the right place (see {@link com.eischet.janitor.api.RunnableScript#getDiagnostics()}). The innermost node
+     * wins, because it sees the error first. Invalid literals (IllegalArgumentException) become compiler errors.
+     */
+    @Override
+    public Ast visit(final ParseTree tree) {
+        try {
+            return super.visit(tree);
+        } catch (CompilerError e) {
+            throw tree instanceof ParserRuleContext ctx ? e.locatedAt(location(ctx.start, ctx.stop)) : e;
+        } catch (IllegalArgumentException e) {
+            final CompilerError error = new CompilerError(e.getMessage(), e);
+            throw tree instanceof ParserRuleContext ctx ? error.locatedAt(location(ctx.start, ctx.stop)) : error;
+        }
     }
 
     /**
@@ -209,8 +227,8 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
             } else {
                 final String where = blockStatementContext.getText();
                 throw new CompilerError("this expression has no effect: " + where
-                        + "; inside a block, a statement must be a call, an assignment or ++/--"
-                        + at(location(blockStatementContext.start, blockStatementContext.stop)));
+                        + "; inside a block, a statement must be a call, an assignment or ++/--",
+                        location(blockStatementContext.start, blockStatementContext.stop), null);
             }
 
 
@@ -322,12 +340,12 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
                 if (kind == 'b') {
                     return Long.parseUnsignedLong(digits.substring(2), 2);
                 }
-                throw new CompilerError("integer literals must not start with 0, and octal literals are not supported: " + text
-                        + "; write " + stripLeadingZeros(digits) + ", or use 0x for hex and 0b for binary" + at(location));
+                throw located("integer literals must not start with 0, and octal literals are not supported: " + text
+                        + "; write " + stripLeadingZeros(digits) + ", or use 0x for hex and 0b for binary", location, null);
             }
             return Long.parseLong(digits);
         } catch (NumberFormatException e) {
-            throw new CompilerError("integer literal out of range: " + text + at(location), e);
+            throw located("integer literal out of range: " + text, location, e);
         }
     }
 
@@ -336,8 +354,8 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
         return stripped.isEmpty() ? "0" : stripped;
     }
 
-    private static String at(final @Nullable Location location) {
-        return location == null ? "" : " at " + location;
+    private static CompilerError located(final String detail, final @Nullable Location location, final @Nullable Throwable cause) {
+        return location == null ? new CompilerError(detail, cause) : new CompilerError(detail, location, cause);
     }
 
     @Override
@@ -356,8 +374,8 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
         try {
             litConst = env.getBuiltinTypes().nullableDateFromLiteral(text);
         } catch (DateTimeException e) {
-            throw new CompilerError("invalid date literal: @" + text + ", there is no such date; write @YYYY-MM-DD with an existing date"
-                    + at(location(ctx.start, ctx.stop)), e);
+            throw located("invalid date literal: @" + text + ", there is no such date; write @YYYY-MM-DD with an existing date",
+                    location(ctx.start, ctx.stop), e);
         }
         if (litConst instanceof JDate date) {
             return new DateLiteral(location(ctx.start, ctx.stop), date);
@@ -376,9 +394,9 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
         try {
             literalValue = env.getBuiltinTypes().nullableDateTimeFromLiteral(text);
         } catch (DateTimeException e) {
-            throw new CompilerError("invalid datetime literal: @" + text
-                    + ", there is no such date or time; write @YYYY-MM-DD-HH:MM or @YYYY-MM-DD-HH:MM:SS with an existing date and a time up to 23:59"
-                    + at(location(ctx.start, ctx.stop)), e);
+            throw located("invalid datetime literal: @" + text
+                    + ", there is no such date or time; write @YYYY-MM-DD-HH:MM or @YYYY-MM-DD-HH:MM:SS with an existing date and a time up to 23:59",
+                    location(ctx.start, ctx.stop), e);
         }
         if (literalValue instanceof JDateTime dt) {
             return new DateTimeLiteral(location(ctx.start, ctx.stop), dt);

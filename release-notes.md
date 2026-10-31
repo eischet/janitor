@@ -1,5 +1,10 @@
 # 0.9.72, not released yet
 
+- tooling: `RunnableScript.getDiagnostics()` lists the syntax and compiler errors of a script compiled with `checkCompile`
+  as `ScriptDiagnostic`s with line, column and end, e.g. for marking them in an editor. Compiler errors now know where they
+  are (`CompilerError.getLocation()`), also those that had no position in their message before, like invalid literals.
+- Syntax error messages no longer list dozens of expected tokens ("expecting {REGEX_LITERAL, 'function', ...}"), and line
+  breaks in the quoted input are shown as a space instead of `\n` followed by the indentation.
 - lambdas: script functions and lambdas now also implement `JInspectableFunction`, so a host method that receives one
   can look at its code as a tree (`getExpressionTree()`, package `com.eischet.janitor.api.types.functions.tree`) instead
   of only calling it, and compute the parts that do not depend on the parameters, like captured variables

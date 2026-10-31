@@ -3,6 +3,7 @@
 
 package com.eischet.janitor.api;
 
+import com.eischet.janitor.api.errors.compiler.ScriptDiagnostic;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.ResultAndScope;
 import com.eischet.janitor.api.scopes.Scope;
@@ -84,6 +85,15 @@ public interface RunnableScript {
      * @return a compiler exception, usually null
      */
     @Nullable Exception getCompilerException();
+
+    /**
+     * Get the problems found during compilation, with their positions, e.g. for marking them in an editor.
+     * Compile with {@link JanitorRuntime#checkCompile(String, String)} to get them instead of an exception.
+     * @return syntax and compiler errors, empty if the script compiled
+     */
+    default @NotNull List<ScriptDiagnostic> getDiagnostics() {
+        return List.of();
+    }
 
     /**
      * Experimental method for JSR223, because that needs a way of retrieving stuff from the original scope.
