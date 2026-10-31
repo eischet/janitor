@@ -33,6 +33,11 @@ public class DateLiteralsTestCase extends JanitorTest {
         assertEquals("@2024-03-05-14:30:00", run("@2024-03-05-14:30").janitorToString());
         assertEquals("@2024-03-05-23:59:59", run("@2024-03-05-23:59:59").janitorToString());
         assertEquals("@0001-01-01", run("@0001-01-01").janitorToString());
+        // month and day with one digit
+        assertEquals("@2026-01-05", run("@2026-1-5").janitorToString());
+        assertEquals("@2026-11-05", run("@2026-11-5").janitorToString());
+        assertEquals("@2026-03-05-09:30:00", run("@2026-3-05-09:30").janitorToString());
+        assertEquals("@2026-03-05-09:30:07", run("@2026-03-5-09:30:07").janitorToString());
         assertEquals("date", run("@today.class").janitorToString());
         assertEquals("datetime", run("@now.class").janitorToString());
     }
@@ -44,6 +49,7 @@ public class DateLiteralsTestCase extends JanitorTest {
         assertInvalid("@2024-04-31", "invalid date literal");
         assertInvalid("@2024-13-01", "invalid date literal");
         assertInvalid("@0000-01-01", "invalid date literal");
+        assertInvalid("@2024-2-30", "invalid date literal: @2024-2-30");
         assertInvalid("x = 1;\nd = @2024-02-30;", "line 2");
     }
 
@@ -52,6 +58,7 @@ public class DateLiteralsTestCase extends JanitorTest {
         assertInvalid("@2024-02-30-10:00", "invalid datetime literal");
         assertInvalid("@2024-01-01-24:00", "invalid datetime literal");
         assertInvalid("@2024-01-01-23:60", "invalid datetime literal");
+        assertInvalid("@2024-01-01-9:30", "invalid datetime literal"); // the hour needs two digits
     }
 
     @Test

@@ -84,7 +84,7 @@
 		},
 		{
 			"name": "constant.other.datetime.janitor",
-			"match": "@\\d{4}-\\d?\\d-\\d?\\d(?:-\\d?\\d:\\d\\d(?::\\d\\d)?)?|@(?:today|now)\\b"
+			"match": "@\\d{4}-\\d?\\d-\\d?\\d(?:-\\d\\d:\\d\\d(?::\\d\\d)?)?|@(?:today|now)\\b"
 		},
 		{
 			"name": "constant.other.duration.janitor",

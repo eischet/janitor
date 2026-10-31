@@ -321,9 +321,9 @@ Janitor has literals for points in time, which start with `@`:
 | `@today` | `date` | the current date, when the expression is evaluated |
 | `@now` | `datetime` | the current date and time, when the expression is evaluated |
 
-Month, day and hour must have two digits: `@2024-3-5` and `@2024-03-05-9:30` are errors, and so is the ISO form
-`@2024-03-05T14:30`. A literal must name a date and time that exist: `@2024-02-30`, `@2023-02-29`, `@2024-01-01-24:00`
-and `@0000-01-01` are compile errors. Years range from 0001 to 9999; there are no negative years. (`parseDate` and
+Month and day may have one or two digits: `@2024-3-5` is the same as `@2024-03-05`. The hour needs two digits:
+`@2024-03-05-9:30` is an error, and so is the ISO form `@2024-03-05T14:30`. A literal must name a date and time that
+exist: `@2024-02-30`, `@2023-02-29`, `@2024-01-01-24:00` and `@0000-01-01` are compile errors. Years range from 0001 to 9999; there are no negative years. (`parseDate` and
 `parseDateTime`, which read text at runtime, are lenient instead: they turn the 30th of February into the last day of
 February.)
 

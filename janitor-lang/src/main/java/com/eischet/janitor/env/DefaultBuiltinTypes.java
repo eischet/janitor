@@ -407,10 +407,11 @@ public class DefaultBuiltinTypes implements BuiltinTypes {
      * Literals are read strictly: a date that does not exist, like 2024-02-30, or a time like 24:00, is an error. The default
      * ResolverStyle.SMART would silently turn them into 2024-02-29 and midnight of the next day. STRICT needs "uuuu" (the
      * proleptic year) instead of "yyyy" (the year of an era), and would accept the year 0, which is excluded separately.
+     * Month and day may have one or two digits (M and d read both); hours, minutes and seconds need two.
      */
-    private static final DateTimeFormatter LITERAL_DATE = DateTimeFormatter.ofPattern("uuuu-MM-dd").withResolverStyle(ResolverStyle.STRICT);
-    private static final DateTimeFormatter LITERAL_DATE_TIME_SHORT = DateTimeFormatter.ofPattern("uuuu-MM-dd-HH:mm").withResolverStyle(ResolverStyle.STRICT);
-    private static final DateTimeFormatter LITERAL_DATE_TIME_LONG = DateTimeFormatter.ofPattern("uuuu-MM-dd-HH:mm:ss").withResolverStyle(ResolverStyle.STRICT);
+    private static final DateTimeFormatter LITERAL_DATE = DateTimeFormatter.ofPattern("uuuu-M-d").withResolverStyle(ResolverStyle.STRICT);
+    private static final DateTimeFormatter LITERAL_DATE_TIME_SHORT = DateTimeFormatter.ofPattern("uuuu-M-d-HH:mm").withResolverStyle(ResolverStyle.STRICT);
+    private static final DateTimeFormatter LITERAL_DATE_TIME_LONG = DateTimeFormatter.ofPattern("uuuu-M-d-HH:mm:ss").withResolverStyle(ResolverStyle.STRICT);
 
     private static void requirePositiveYear(final int year, final String text) {
         if (year < 1) {

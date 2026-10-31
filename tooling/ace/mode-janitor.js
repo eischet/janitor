@@ -52,7 +52,7 @@ ace.define("ace/mode/janitor_highlight_rules",
                     {token: "string.regexp", regex: "re\\/(?:\\\\\\/|[^\\r\\n])*?\\/"},
 
                     // dates, times and durations; the longer forms first
-                    {token: "constant.numeric", regex: "@\\d{4}-\\d?\\d-\\d?\\d-\\d?\\d:\\d\\d(?::\\d\\d)?"},
+                    {token: "constant.numeric", regex: "@\\d{4}-\\d?\\d-\\d?\\d-\\d\\d:\\d\\d(?::\\d\\d)?"},
                     {token: "constant.numeric", regex: "@\\d{4}-\\d?\\d-\\d?\\d"},
                     {token: "constant.numeric", regex: "@\\d+(?:y|mo|w|d|h|mi|s)"},
                     {token: "constant.numeric", regex: "@(?:today|now)\\b"},

@@ -317,8 +317,8 @@ this expression has no effect
 
 ## Dates and durations
 
-- Dates are literals: `@2024-03-05`, `@2024-03-05-14:30`, `@today`, `@now`. Month, day and hour need two digits, and
-  the date and time must exist (`@2024-02-30` is a compile error).
+- Dates are literals: `@2024-03-05`, `@2024-03-05-14:30`, `@today`, `@now`. The hour needs two digits (month and day
+  may have one), and the date and time must exist (`@2024-02-30` is a compile error).
 - Minutes are `@15mi`, months are `@3mo`. `@15m` is not a duration.
 - `date.year` is a property, `datetime.year()` a method.
 

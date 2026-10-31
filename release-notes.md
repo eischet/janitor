@@ -3,6 +3,8 @@
 - tooling: `RunnableScript.getDiagnostics()` lists the syntax and compiler errors of a script compiled with `checkCompile`
   as `ScriptDiagnostic`s with line, column and end, e.g. for marking them in an editor. Compiler errors now know where they
   are (`CompilerError.getLocation()`), also those that had no position in their message before, like invalid literals.
+- Date and datetime literals accept one-digit months and days, e.g. `@2026-1-5` for `@2026-01-05`; the grammar always let them
+  through, but the compiler rejected them as "no such date". The hour still needs two digits.
 - Syntax error messages no longer list dozens of expected tokens ("expecting {REGEX_LITERAL, 'function', ...}"), and line
   breaks in the quoted input are shown as a space instead of `\n` followed by the indentation.
 - lambdas: script functions and lambdas now also implement `JInspectableFunction`, so a host method that receives one
