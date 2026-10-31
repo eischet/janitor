@@ -1331,10 +1331,8 @@ public class FirstParserTestCase extends JanitorTest {
         );
         Assertions.assertEquals(
                 """
-                        found 2 issues compiling invalid_string_literal:\s
-                          line 1:10 --> invalid string at: '"foo\\x'\s
-                            failure = "foo\\xbar";
-                          line 1:19 --> invalid string at: '";'\s
+                        found 1 issues compiling invalid_string_literal:\s
+                          line 1:10 --> invalid escape sequence '\\x' in a string; write '\\\\' for a backslash\s
                             failure = "foo\\xbar";"""
                 , thrown.getMessage());
 
@@ -1343,10 +1341,8 @@ public class FirstParserTestCase extends JanitorTest {
         });
         Assertions.assertEquals(
                 """
-                        found 2 issues compiling invalid_string_literal:\s
-                          line 1:10 --> invalid string at: ''foo\\x'\s
-                            failure = 'foo\\xbar';
-                          line 1:19 --> invalid string at: '';'\s
+                        found 1 issues compiling invalid_string_literal:\s
+                          line 1:10 --> invalid escape sequence '\\x' in a string; write '\\\\' for a backslash\s
                             failure = 'foo\\xbar';"""
                 , thrown2.getMessage());
 

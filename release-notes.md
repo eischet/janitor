@@ -9,8 +9,13 @@
   are (`CompilerError.getLocation()`), also those that had no position in their message before, like invalid literals.
 - Date and datetime literals accept one-digit months and days, e.g. `@2026-1-5` for `@2026-01-05`; the grammar always let them
   through, but the compiler rejected them as "no such date". The hour still needs two digits.
-- Syntax error messages no longer list dozens of expected tokens ("expecting {REGEX_LITERAL, 'function', ...}"), and line
-  breaks in the quoted input are shown as a space instead of `\n` followed by the indentation.
+- Syntax error messages are written for people who do not know the grammar: "unexpected 'bar' after '2'; is an operator,
+  a comma or a line break missing before it?" instead of "no viable alternative at input 'foo(1, 2 bar'", expected tokens
+  as "a name" or "a number" (and left out if there are more than six), "string not closed", "invalid escape sequence
+  '\x' in a string", "unknown character '#'". Brackets that are not closed or closed by the wrong one are named with
+  their position (`'(' is not closed`), even if the parser only stumbles lines later. Only the first problem of each line
+  is reported, as the others are mostly consequences of it. The parser's own texts no longer appear, e.g. "rule
+  stmtTerminator failed predicate: ...".
 - lambdas: script functions and lambdas now also implement `JInspectableFunction`, so a host method that receives one
   can look at its code as a tree (`getExpressionTree()`, package `com.eischet.janitor.api.types.functions.tree`) instead
   of only calling it, and compute the parts that do not depend on the parameters, like captured variables
