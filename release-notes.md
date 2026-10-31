@@ -11,6 +11,19 @@
   with simple globs), `startsWith`, `endsWith`, `contains`, `containsIgnoreCase`, `and`, `or` and `not`; anything else,
   including fields of related entities, is an error instead of a full scan. For Java: `GenericDao.filterFromLambda(...)`
   and `LambdaFilter`.
+- orm: filter expressions can use paths through references, e.g. the field `product.shortCode` or `product.vendor.name`.
+  `GenericDao` turns them into sub-queries on the referenced entity's table (`product_id in (select product_id from ...
+  where ...)`), built by that entity's DAO. Entities without a referenced entity never match such a condition, not even
+  "is null". New `GenericDao.isFilterField(path)`. The REST API (janitor-orm-rest) refuses paths in client filters for now.
+- orm: `dao.select`/`dao.count` also accept paths (`i -> i.product.shortCode == "BAZ"`), references compared with an
+  entity or an ID (`i.product == p`, `i.product == 42`), `startsWithIgnoreCase`/`endsWithIgnoreCase`, and
+  `f == null or f == ""` / `f != null and f != ""` as "is (not) empty".
+- orm: new `FilterExpressionCode.toLambda(expression, "item")` writes a filter expression as Janitor code, which
+  `LambdaFilter` reads back into an equivalent expression (`FilterExpressionCode.normalize` shows which). So filters can
+  go from code to a filter UI and back.
+- strings: new methods `startsWithIgnoreCase(text)` and `endsWithIgnoreCase(text)`.
+- lambdas: a negated value like `-5` or `-limit` in a lambda can now be evaluated by the host (`OpaqueNode` that does
+  not use the parameters).
 
 # 0.9.71, 2026-10-29 (internal release only)
 

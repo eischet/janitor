@@ -178,6 +178,7 @@ public class OrmRestHandlerTestCase extends JanitorTest {
         assertEquals(400, get("/items", "filter", "{\"field\":\"secret\",\"operator\":\"eq\",\"valueString\":\"x\"}").status(), "hidden");
         assertEquals(400, get("/items", "filter", "{\"field\":\"nope\",\"operator\":\"eq\",\"valueString\":\"x\"}").status(), "unknown");
         assertEquals(400, get("/items", "filter", "{\"field\":\"name\",\"operator\":\"eq\"}").status(), "incomplete");
+        assertEquals(400, get("/items", "filter", "{\"field\":\"owner.name\",\"operator\":\"eq\",\"valueString\":\"x\"}").status(), "path through a reference");
         assertEquals(400, get("/items", "filter", "not json").status(), "malformed");
         assertEquals(400, get("/items", "sort", "secret").status(), "hidden sort");
         assertEquals(400, get("/items", "sort", "nope").status(), "unknown sort");

@@ -451,6 +451,36 @@ public class JStringClass {
     }
 
     /**
+     * Script method {@code string.startsWithIgnoreCase(text)}: like startsWith, but ignoring upper and lower case.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return true if the string starts with the text
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
+    public static JBool startsWithIgnoreCase(final JString self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+        final JString with = arguments.require(1).getString(0);
+        final String string = self.janitorGetHostValue();
+        return Janitor.toBool(!with.isEmpty() && string != null
+                              && string.toLowerCase(Locale.GERMANY).startsWith(with.janitorGetHostValue().toLowerCase(Locale.GERMANY)));
+    }
+
+    /**
+     * Script method {@code string.endsWithIgnoreCase(text)}: like endsWith, but ignoring upper and lower case.
+     * @param self the object that the method is called on
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return true if the string ends with the text
+     * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
+     */
+    public static JBool endsWithIgnoreCase(final JString self, final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+        final JString with = arguments.require(1).getString(0);
+        final String string = self.janitorGetHostValue();
+        return Janitor.toBool(!with.isEmpty() && string != null
+                              && string.toLowerCase(Locale.GERMANY).endsWith(with.janitorGetHostValue().toLowerCase(Locale.GERMANY)));
+    }
+
+    /**
      * Script method {@code string.indexOf(text)}: finds the first occurrence of a text.
      * @param self the object that the method is called on
      * @param process the running script process
@@ -713,6 +743,10 @@ public class JStringClass {
                 .setMetaData(Janitor.MetaData.HELP, "empty(): Returns true if the string has no characters.");
         stringDispatcher.addMethod("startsWith", JStringClass::startsWith)
                 .setMetaData(Janitor.MetaData.HELP, "startsWith(text): Returns true if the string starts with the text. An empty text never matches.");
+        stringDispatcher.addMethod("startsWithIgnoreCase", JStringClass::startsWithIgnoreCase)
+                .setMetaData(Janitor.MetaData.HELP, "startsWithIgnoreCase(text): Returns true if the string starts with the text, ignoring upper and lower case. An empty text never matches.");
+        stringDispatcher.addMethod("endsWithIgnoreCase", JStringClass::endsWithIgnoreCase)
+                .setMetaData(Janitor.MetaData.HELP, "endsWithIgnoreCase(text): Returns true if the string ends with the text, ignoring upper and lower case. An empty text never matches.");
         stringDispatcher.addMethod("endsWith", JStringClass::endsWith)
                 .setMetaData(Janitor.MetaData.HELP, "endsWith(text): Returns true if the string ends with the text. An empty text never matches.");
         stringDispatcher.addMethod("removeLeadingZeros", JStringClass::removeLeadingZeros)

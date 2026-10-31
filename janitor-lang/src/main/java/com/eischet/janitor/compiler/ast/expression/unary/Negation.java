@@ -50,4 +50,9 @@ public class Negation extends AstNode implements Expression {
 
     }
 
+
+    /** @return the negated expression */
+    public Expression getExpression() {
+        return expr;
+    }
 }

@@ -8,10 +8,15 @@ import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.*;
 import com.eischet.janitor.api.types.functions.tree.*;
+import com.eischet.janitor.orm.entity.OrmEntity;
+import com.eischet.janitor.orm.ref.ForeignKey;
+import com.eischet.janitor.orm.ref.ForeignKeyNull;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Predicate;
 
 import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
@@ -30,13 +35,17 @@ import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
  *     order; comparisons of text are exact, as in scripts; {@code == null} and {@code != null} test for null</li>
  *     <li>{@code item.f ~= v}: equality ignoring case</li>
  *     <li>{@code item.f in [a, b]}, {@code item.f not in list}</li>
- *     <li>{@code item.f.startsWith(v)}, {@code endsWith(v)}, {@code contains(v)}, {@code containsIgnoreCase(v)}</li>
+ *     <li>{@code item.f.startsWith(v)}, {@code endsWith(v)}, {@code contains(v)} and their variants ending in
+ *     {@code IgnoreCase}</li>
  *     <li>{@code item.f ~ "A*"}, {@code "*A"}, {@code "*A*"} and {@code !~}: glob patterns with leading and/or trailing {@code *}</li>
  *     <li>{@code item.f} and {@code not item.f}: a boolean property is true / false</li>
+ *     <li>{@code item.f == null or item.f == ""}, {@code item.f != null and item.f != ""}: is (not) empty</li>
+ *     <li>{@code item.ref == entity} or {@code item.ref == 42}: a reference to an entity, compared by its ID</li>
+ *     <li>{@code item.ref.f == v} etc.: a field of a referenced entity, through any number of references</li>
  * </ul>
  * <p>
- * Anything else, including properties of related entities ({@code item.customer.name}), is rejected with a
- * {@link MalformedExpression}, instead of being evaluated in memory.
+ * Anything else is rejected with a {@link MalformedExpression}, instead of being evaluated in memory.
+ * {@link FilterExpressionCode} turns a filter expression back into such a lambda.
  * Note that the query follows the rules of SQL for null: e.g. {@code item.code != "FOO"} does not find items without a code.
  * </p>
  */
@@ -82,6 +91,10 @@ public final class LambdaFilter {
                 final List<FilterExpression> parts = new ArrayList<>();
                 addFlattened(parts, convert(logic.left(), negated), and);
                 addFlattened(parts, convert(logic.right(), negated), and);
+                final @Nullable FilterExpression emptiness = emptiness(parts, and);
+                if (emptiness != null) {
+                    yield emptiness;
+                }
                 yield and ? FilterExpression.and(parts) : FilterExpression.or(parts);
             }
             case ComparisonNode comparison -> comparison(comparison, negated);
@@ -199,20 +212,38 @@ public final class LambdaFilter {
         return switch (call.name()) {
             case "contains" -> text(field, negated ? FilterOperator.DOESNOTCONTAIN : FilterOperator.CONTAINS, text, false);
             case "containsIgnoreCase" -> text(field, negated ? FilterOperator.DOESNOTCONTAIN : FilterOperator.CONTAINS, text, true);
-            case "startsWith" -> {
+            case "startsWith", "startsWithIgnoreCase", "endsWith", "endsWithIgnoreCase" -> {
                 if (negated) {
-                    throw unsupported(call, "there is no negated form of 'startsWith' in a filter");
+                    throw unsupported(call, "there is no negated form of '" + call.name() + "' in a filter");
                 }
-                yield text(field, FilterOperator.STARTSWITH, text, false);
-            }
-            case "endsWith" -> {
-                if (negated) {
-                    throw unsupported(call, "there is no negated form of 'endsWith' in a filter");
-                }
-                yield text(field, FilterOperator.ENDSWITH, text, false);
+                final FilterOperator operator = call.name().startsWith("startsWith") ? FilterOperator.STARTSWITH : FilterOperator.ENDSWITH;
+                yield text(field, operator, text, call.name().endsWith("IgnoreCase"));
             }
             default -> throw unsupported(call, "the method '" + call.name() + "' cannot be used in a filter");
         };
+    }
+
+    /**
+     * Recognizes the script forms of "is empty", {@code item.f == null or item.f == ""}, and of "is not empty",
+     * {@code item.f != null and item.f != ""}, which a filter has operators for.
+     */
+    private static @Nullable FilterExpression emptiness(final List<FilterExpression> parts, final boolean and) {
+        if (parts.size() != 2 || !parts.get(0).isExpression() || !parts.get(1).isExpression()) {
+            return null;
+        }
+        final FilterExpression nullTest = parts.get(0);
+        final FilterExpression emptyTest = parts.get(1);
+        if (!Objects.equals(nullTest.getField(), emptyTest.getField()) || !"".equals(emptyTest.getValueString())
+            || Boolean.TRUE.equals(emptyTest.getIgnoreCase())) {
+            return null;
+        }
+        if (!and && nullTest.getOperator() == FilterOperator.ISNULL && emptyTest.getOperator() == FilterOperator.EQ) {
+            return new FilterExpression(nullTest.getField(), FilterOperator.ISEMPTY);
+        }
+        if (and && nullTest.getOperator() == FilterOperator.ISNOTNULL && emptyTest.getOperator() == FilterOperator.NEQ) {
+            return new FilterExpression(nullTest.getField(), FilterOperator.ISNOTEMPTY);
+        }
+        return null;
     }
 
     private static @NotNull FilterExpression text(final String field, final FilterOperator operator, final String text, final boolean ignoreCase) {
@@ -223,7 +254,7 @@ public final class LambdaFilter {
 
     private @NotNull FilterExpression compare(final String field, final FilterOperator operator, final JanitorObject value,
                                               final boolean ignoreCase, final ExpressionNode node) {
-        if (value == JNull.NULL) {
+        if (value == JNull.NULL || value instanceof ForeignKeyNull<?>) {
             return switch (operator) {
                 case EQ -> new FilterExpression(field, FilterOperator.ISNULL);
                 case NEQ -> new FilterExpression(field, FilterOperator.ISNOTNULL);
@@ -241,19 +272,31 @@ public final class LambdaFilter {
             case JBool bool -> result.setValueBoolean(bool.janitorIsTrue());
             case JDate date -> result.setValueDate(date.janitorGetHostValue());
             case JDateTime dateTime -> result.setValueDateTime(dateTime.janitorGetHostValue());
+            // a reference is compared by the ID of the entity, like a lookup field in a filter UI:
+            case OrmEntity entity -> result.setValueLong(entity.getId());
+            case ForeignKey<?> reference -> result.setValueLong(reference.getId());
             default -> throw unsupported(node, "a " + simpleClassNameOf(value) + " cannot be used as a value in a filter");
         }
         return result;
     }
 
+    /**
+     * Returns the field, or the path through references, e.g. "product.shortCode" for {@code item.product.shortCode}.
+     */
     private @NotNull String field(final @NotNull MemberNode member) {
-        if (!(member.target() instanceof ParameterNode)) {
-            throw unsupported(member, "only direct properties of the parameter can be used in a filter, like 'item.code'");
+        final String path = path(member);
+        if (!isField.test(path)) {
+            throw unsupported(member, "'" + path + "' is not a field that can be used in a filter");
         }
-        if (!isField.test(member.name())) {
-            throw unsupported(member, "'" + member.name() + "' is not a field that can be used in a filter");
-        }
-        return member.name();
+        return path;
+    }
+
+    private @NotNull String path(final @NotNull MemberNode member) {
+        return switch (member.target()) {
+            case ParameterNode ignored -> member.name();
+            case MemberNode parent -> path(parent) + "." + member.name();
+            default -> throw unsupported(member, "expected a property of the parameter, like 'item.code' or 'item.product.code'");
+        };
     }
 
     private @NotNull JanitorObject value(final @NotNull ExpressionNode node) throws JanitorRuntimeException {

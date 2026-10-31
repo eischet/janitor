@@ -186,6 +186,7 @@ print("1.2.3".replaceAll("\\.", "-"));
 | `empty()` | method | Returns true if the string has no characters. |
 | `encode(charset)` | method | Encodes the string with the named character set, UTF-8 if none is given, and returns the bytes as a binary value. |
 | `endsWith(text)` | method | Returns true if the string ends with the text. An empty text never matches. |
+| `endsWithIgnoreCase(text)` | method | Returns true if the string ends with the text, ignoring upper and lower case. An empty text never matches. |
 | `expand(map)` | method | Replaces placeholders like ${name} or ${a.b} by values from the map. |
 | `format(args...)` | method | Uses the string as a Java format string (%s, %d, %.2f, ...) and fills in the arguments. |
 | `get(index)` | method | Same as string[index]; get(from, to) and get(from, to, step) are the same as string[from:to] and string[from:to:step]. |
@@ -203,6 +204,7 @@ print("1.2.3".replaceAll("\\.", "-"));
 | `split(separator)` | method | Splits the string into a list. The separator is a literal string or a regex literal; an empty string splits into single characters. |
 | `splitLines()` | method | Splits the string into a list of lines; accepts both Unix and Windows line breaks. |
 | `startsWith(text)` | method | Returns true if the string starts with the text. An empty text never matches. |
+| `startsWithIgnoreCase(text)` | method | Returns true if the string starts with the text, ignoring upper and lower case. An empty text never matches. |
 | `startsWithNumbers()` | method | Returns true if the string starts with a digit. |
 | `substring(from, to)` | method | Returns the characters from index from (inclusive) to index to (exclusive); without to, up to the end. |
 | `toBinaryUtf8()` | method | Encodes the string as UTF-8 and returns the bytes as a binary value. |

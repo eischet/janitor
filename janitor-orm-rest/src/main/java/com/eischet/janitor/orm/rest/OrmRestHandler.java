@@ -498,6 +498,11 @@ public final class OrmRestHandler<U> {
             }
             return;
         }
+        if (filter.getField() != null && filter.getField().contains(".")) {
+            // Paths through references ("product.shortCode") would let clients filter by, and so probe, fields of entities that
+            // the API may not expose, so they are not allowed here for now.
+            throw new RestException(400, "Cannot filter by '" + filter.getField() + "': fields of related entities cannot be used in filters.");
+        }
         final ApiField field = filter.getField() == null ? null : entity.field(filter.getField());
         if (field == null || !field.filterable() || denied.contains(field.name())) {
             throw new RestException(400, "Cannot filter by '" + filter.getField() + "'.");

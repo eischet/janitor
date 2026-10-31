@@ -11,6 +11,7 @@ import com.eischet.janitor.compiler.ast.expression.Identifier;
 import com.eischet.janitor.compiler.ast.expression.binary.*;
 import com.eischet.janitor.compiler.ast.expression.literal.*;
 import com.eischet.janitor.compiler.ast.expression.unary.LogicalNot;
+import com.eischet.janitor.compiler.ast.expression.unary.Negation;
 import com.eischet.janitor.compiler.ast.statement.FunctionCallStatement;
 import com.eischet.janitor.compiler.ast.statement.MemberAccessExpression;
 import com.eischet.janitor.compiler.ast.statement.MemberCallExpression;
@@ -102,6 +103,8 @@ public final class ExpressionTreeBuilder {
             case LogicAnd op -> new LogicNode(location, LogicOperator.AND, convert(op.getLeft()), convert(op.getRight()));
             case LogicOr op -> new LogicNode(location, LogicOperator.OR, convert(op.getLeft()), convert(op.getRight()));
             case LogicalNot op -> new NotNode(location, convert(op.getParameter()));
+            // e.g. "-5" or "-limit": its value is computed when its operand does not use the parameters
+            case Negation op -> new OpaqueNode(location, simpleClassNameOf(expression), convert(op.getExpression()).usesParameters());
             case Addition op -> arithmetic(op, ArithmeticOperator.ADD);
             case Subtraction op -> arithmetic(op, ArithmeticOperator.SUBTRACT);
             case Multiplication op -> arithmetic(op, ArithmeticOperator.MULTIPLY);

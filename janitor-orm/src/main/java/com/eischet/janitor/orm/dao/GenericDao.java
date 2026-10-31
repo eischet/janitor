@@ -79,7 +79,7 @@ import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection<U>> extends JanitorComposed<GenericDao<?, ?>> implements Dao<T>, JCallable {
 
     public static final DispatchTable<GenericDao<?, ?>> DISPATCH = new DispatchTable<>();
-    private static final Predicate<String> INVALID_FIELD = Pattern.compile("[a-zA-Z0-9_@-]+").asMatchPredicate().negate();
+    private static final Predicate<String> INVALID_FIELD = Pattern.compile("[a-zA-Z0-9_@-]+(\\.[a-zA-Z0-9_@-]+)*").asMatchPredicate().negate(); // a field, or a path through references like "product.shortCode"
 
     static {
         DISPATCH.addBooleanProperty("verbose", GenericDao::isVerbose, GenericDao::setVerbose);
@@ -824,6 +824,8 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
                     prepperConsumer.accept(prepper.getPrepper(filterExpression));
                 }
                 return customExpressionHandler.getSqlFragment();
+            } else if (filterExpression.getField().contains(".")) {
+                return pathToSql(filterExpression, prepperConsumer);
             } else {
                 final String namedField = filterExpression.getField();
                 final String column = columnForField.get(namedField);
@@ -858,6 +860,69 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
             }
         } else {
             throw new MalformedExpression("part is neither group nor expression");
+        }
+    }
+
+    /**
+     * Converts a filter expression on a path like "product.shortCode", i.e. on a field of a referenced entity, to a sub-query on
+     * the referenced entity's table: {@code product_id in (select product_id from product where short_code = ?)}. The referenced
+     * DAO builds the inner condition, so its own column types, letter cases and custom expression handlers apply, and longer
+     * paths are resolved one step per DAO.
+     * Following the rules of SQL, entities without a referenced entity never match, not even for "is null".
+     * @param filterExpression an expression whose field is a path
+     * @param prepperConsumer receives the preppers, in the order of the parameters in the SQL
+     * @return the SQL condition
+     * @throws MalformedExpression if the path cannot be resolved
+     */
+    protected String pathToSql(final FilterExpression filterExpression, final Consumer<Prepper> prepperConsumer) throws MalformedExpression {
+        final String path = filterExpression.getField();
+        final int dot = path.indexOf('.');
+        final GenericDao<?, ?> referencedDao = referencedDao(path.substring(0, dot), path);
+        final FilterExpression inner = filterExpression.deepCopy();
+        inner.setField(path.substring(dot + 1));
+        final DatabaseDialect dialect = getDialect();
+        return dialect.quoteColumn(columnForField.get(path.substring(0, dot)))
+               + " in (select " + dialect.quoteColumn(referencedDao.idColumn) + " from " + referencedDao.tableName
+               + " where " + referencedDao.expressionToSql(inner, prepperConsumer) + ")";
+    }
+
+    /**
+     * Finds the DAO of the entities that a field refers to.
+     * @param field the field, which holds a reference
+     * @param path the whole path, for error messages
+     * @return the DAO
+     * @throws MalformedExpression if the field does not exist or does not hold a reference to an entity of a GenericDao
+     */
+    private @NotNull GenericDao<?, ?> referencedDao(final String field, final String path) throws MalformedExpression {
+        final String column = columnForField.get(field);
+        if (column == null) {
+            throw new MalformedExpression("missing column for field '" + field + "' of path '" + path + "'");
+        }
+        final @Nullable ColumnMapping<T> mapping = mappingForColumn.get(column);
+        final @Nullable String referenceType = mapping == null ? null : mapping.referenceType();
+        if (referenceType == null) {
+            throw new MalformedExpression("field '" + field + "' does not refer to another entity, so the path '" + path + "' is invalid");
+        }
+        if (!(collection.getDao(referenceType) instanceof GenericDao<?, ?> referencedDao)) {
+            throw new MalformedExpression("cannot filter by '" + path + "', because there is no DAO for " + referenceType + " that supports filters");
+        }
+        return referencedDao;
+    }
+
+    /**
+     * Checks whether a field, or a path like "product.shortCode" through referenced entities, can be used in a filter expression.
+     * @param path the field or path
+     * @return true if the field exists
+     */
+    public boolean isFilterField(final @NotNull String path) {
+        final int dot = path.indexOf('.');
+        if (dot < 0) {
+            return columnForField.containsKey(path);
+        }
+        try {
+            return referencedDao(path.substring(0, dot), path).isFilterField(path.substring(dot + 1));
+        } catch (MalformedExpression e) {
+            return false;
         }
     }
 
@@ -1555,7 +1620,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
      * @throws JanitorRuntimeException if evaluating a value of the lambda fails
      */
     public @NotNull FilterExpression filterFromLambda(final @NotNull JanitorScriptProcess process, final @NotNull JInspectableFunction function) throws JanitorRuntimeException {
-        return LambdaFilter.toFilter(process, function, columnForField::containsKey);
+        return LambdaFilter.toFilter(process, function, this::isFilterField);
     }
 
     private @NotNull FilterExpression scriptFilter(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
