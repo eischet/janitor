@@ -60,4 +60,9 @@ public class ListLiteral extends Literal {
         producer.endObject();
 
     }
+
+    /** @return the elements */
+    public List<Expression> getElements() {
+        return elements;
+    }
 }

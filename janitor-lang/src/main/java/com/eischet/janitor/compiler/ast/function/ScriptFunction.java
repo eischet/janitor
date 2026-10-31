@@ -17,7 +17,9 @@ import com.eischet.janitor.api.types.builtin.JList;
 import com.eischet.janitor.api.types.builtin.JMap;
 import com.eischet.janitor.api.types.builtin.JNull;
 import com.eischet.janitor.api.types.functions.JCallArgs;
-import com.eischet.janitor.api.types.functions.JCallable;
+import com.eischet.janitor.api.types.functions.tree.ConstantNode;
+import com.eischet.janitor.api.types.functions.tree.ExpressionNode;
+import com.eischet.janitor.api.types.functions.tree.JInspectableFunction;
 import com.eischet.janitor.compiler.FormalParameter;
 import com.eischet.janitor.compiler.FormalParameters;
 import com.eischet.janitor.compiler.ast.AstNode;
@@ -29,6 +31,11 @@ import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonExportableObject;
 import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
+
+import java.util.List;
+import java.util.Optional;
 
 import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
@@ -57,6 +64,8 @@ public class ScriptFunction extends AstNode implements Expression, JsonExportabl
     private final FormalParameters formalParameters;
     private final Block block;
     private Scope moduleScope;
+    private ExpressionTreeBuilder.Result expressionTree; // built on first request, see expressionTree()
+    private boolean expressionTreeBuilt;
 
     /**
      * Constructor.
@@ -107,18 +116,81 @@ public class ScriptFunction extends AstNode implements Expression, JsonExportabl
     }
 
     /**
+     * Returns the tree of the expression this function returns, if its body is a single return statement, which is
+     * always the case for expression lambdas like "x -> x * 2". The tree belongs to the code, not to a closure, so it
+     * is built once and shared by all closures of this literal.
+     *
+     * @return the tree, or null if the body is anything else
+     */
+    private synchronized @Nullable ExpressionTreeBuilder.Result expressionTree() {
+        if (!expressionTreeBuilt) {
+            if (block.getStatements().size() == 1
+                && block.getStatements().getFirst() instanceof ReturnStatement returnStatement
+                && returnStatement.getExpression() != null) {
+                expressionTree = ExpressionTreeBuilder.build(returnStatement.getExpression(), parameterNames());
+            }
+            expressionTreeBuilt = true;
+        }
+        return expressionTree;
+    }
+
+    private @NotNull @Unmodifiable List<String> parameterNames() {
+        return formalParameters.getParameters().stream().map(FormalParameter::getName).toList();
+    }
+
+    /**
      * One specific closure value produced by evaluating this function/lambda literal: the shared
      * code from the enclosing ScriptFunction, plus the scope that was active at the moment this
      * particular closure was created. Every evaluation of the same literal produces its own Closure
      * instance, so closures created at different times (e.g. by separate calls to an outer function)
      * no longer alias each other's captured scope.
      */
-    public final class Closure implements JanitorObject, JCallable {
+    public final class Closure implements JanitorObject, JInspectableFunction {
 
         private final Scope closureScope;
 
         private Closure(final Scope closureScope) {
             this.closureScope = closureScope;
+        }
+
+        @Override
+        public @NotNull @Unmodifiable List<String> getParameterNames() {
+            return parameterNames();
+        }
+
+        @Override
+        public @NotNull Optional<ExpressionNode> getExpressionTree() {
+            return Optional.ofNullable(expressionTree()).map(ExpressionTreeBuilder.Result::root);
+        }
+
+        @Override
+        public @NotNull JanitorObject evaluate(final @NotNull JanitorScriptProcess process, final @NotNull ExpressionNode node) throws JanitorRuntimeException {
+            final ExpressionTreeBuilder.Result tree = expressionTree();
+            final Expression expression = tree == null ? null : tree.sources().get(node);
+            if (expression == null) {
+                throw new IllegalArgumentException("the node does not belong to the expression tree of " + janitorToString() + ": " + node);
+            }
+            if (node.usesParameters()) {
+                throw new IllegalArgumentException("the node uses the parameters of " + janitorToString() + ": " + node);
+            }
+            if (node instanceof ConstantNode constant) {
+                return constant.value();
+            }
+            // Same scopes as in call(), but without binding any parameters, which the node does not use anyway.
+            if (moduleScope != null) {
+                process.pushModuleScope(moduleScope);
+            }
+            process.enterBlock(null);
+            process.pushClosureScope(closureScope);
+            try {
+                return expression.evaluate(process).janitorUnpack();
+            } finally {
+                process.popClosureScope(closureScope);
+                process.exitBlock();
+                if (moduleScope != null) {
+                    process.popModuleScope(moduleScope);
+                }
+            }
         }
 
         @Override

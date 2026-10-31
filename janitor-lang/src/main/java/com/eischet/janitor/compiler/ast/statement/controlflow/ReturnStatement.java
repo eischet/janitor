@@ -82,4 +82,9 @@ public class ReturnStatement extends Statement implements JsonExportableObject {
                 .endObject();
     }
 
+
+    /** @return the returned expression, or null for a plain {@code return} */
+    public Expression getExpression() {
+        return expression;
+    }
 }

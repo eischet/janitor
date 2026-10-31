@@ -124,4 +124,14 @@ public class FunctionCallStatement extends Statement implements Expression, Json
                 .optional("expressionList", expressionList)
                 .endObject();
     }
+
+    /** @return the object the function is called on, or null for a function called by name */
+    public Expression getOnExpression() {
+        return onExpression;
+    }
+
+    /** @return the arguments, or null if there are none */
+    public ArgumentList getExpressionList() {
+        return expressionList;
+    }
 }

@@ -27,6 +27,7 @@ import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.types.functions.JCallable;
+import com.eischet.janitor.api.types.functions.tree.JInspectableFunction;
 import com.eischet.janitor.logging.JanitorLogger;
 import com.eischet.janitor.orm.meta.OrmPropertyHandle;
 import com.eischet.janitor.orm.JanitorOrm;
@@ -40,6 +41,7 @@ import com.eischet.janitor.orm.entity.HasModifiedDate;
 import com.eischet.janitor.orm.entity.OrmEntity;
 import com.eischet.janitor.orm.entity.Versioned;
 import com.eischet.janitor.orm.filter.FilterOperator;
+import com.eischet.janitor.orm.filter.LambdaFilter;
 import com.eischet.janitor.orm.filter.MalformedExpression;
 import com.eischet.janitor.orm.meta.EntityDispatchTable;
 import com.eischet.janitor.orm.sql.ColumnCase;
@@ -98,6 +100,8 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
         DISPATCH.addMethod("findByKey", GenericDao::scriptFindByKey);
         DISPATCH.addMethod("findByIds", GenericDao::scriptFindByIds);
         DISPATCH.addMethod("queryForEach", GenericDao::scriptQueryForEach);
+        DISPATCH.addMethod("select", GenericDao::scriptSelect);
+        DISPATCH.addMethod("count", GenericDao::scriptCount);
 
         DISPATCH.addStringProperty("jsonSchema", self -> Janitor.current().writeJson(self.entityDispatchTable::writeSchemaToJson));
     }
@@ -1515,6 +1519,55 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
      */
     public JanitorObject scriptFindAll(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         return callScriptTransaction(process, conn -> Janitor.list(findAll(conn, null).stream().map(this::forScript)));
+    }
+
+    /**
+     * Script method {@code dao.select(item -> condition)}: finds the entities for which the condition holds, by running it as a query.
+     * See {@link LambdaFilter} for the conditions that can be used.
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return a list of the entities
+     * @throws JanitorRuntimeException if the condition cannot be used as a query, or the query fails
+     */
+    public JanitorObject scriptSelect(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+        final FilterExpression filter = scriptFilter(process, arguments);
+        return callScriptTransaction(process, conn -> Janitor.list(findByFilter(conn, FilterQuery.from(filter)).stream().map(this::forScript)));
+    }
+
+    /**
+     * Script method {@code dao.count(item -> condition)}: counts the entities for which the condition holds, like {@link #scriptSelect}.
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return the number of entities
+     * @throws JanitorRuntimeException if the condition cannot be used as a query, or the query fails
+     */
+    public JanitorObject scriptCount(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+        final FilterExpression filter = scriptFilter(process, arguments);
+        return Janitor.integer(callScriptTransaction(process, conn -> countByFilter(conn, filter)));
+    }
+
+    /**
+     * Converts a script lambda to a filter expression on this DAO's fields, see {@link LambdaFilter}.
+     * @param process the running script process
+     * @param function the lambda
+     * @return the filter expression
+     * @throws MalformedExpression if the lambda cannot be used as a filter
+     * @throws JanitorRuntimeException if evaluating a value of the lambda fails
+     */
+    public @NotNull FilterExpression filterFromLambda(final @NotNull JanitorScriptProcess process, final @NotNull JInspectableFunction function) throws JanitorRuntimeException {
+        return LambdaFilter.toFilter(process, function, columnForField::containsKey);
+    }
+
+    private @NotNull FilterExpression scriptFilter(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+        final JanitorObject argument = arguments.require(1).get(0).janitorUnpack();
+        if (!(argument instanceof JInspectableFunction function)) {
+            throw new JanitorArgumentException(process, arguments.getFunctionName() + ": expecting a lambda like 'item -> item.code == \"FOO\"', but found " + simpleClassNameOf(argument));
+        }
+        try {
+            return filterFromLambda(process, function);
+        } catch (MalformedExpression e) {
+            throw new JanitorArgumentException(process, arguments.getFunctionName() + ": " + e.getMessage(), e);
+        }
     }
 
     /**

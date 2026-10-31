@@ -91,4 +91,19 @@ public class MemberAccessExpression extends AstNode implements Expression {
                 .endObject();
     }
 
+
+    /** @return the object whose member is accessed */
+    public Expression getExpression() {
+        return expression;
+    }
+
+    /** @return the name of the member */
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    /** @return true for the guarded form, {@code foo?.bar} */
+    public boolean isGuarded() {
+        return guarded;
+    }
 }

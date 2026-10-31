@@ -88,4 +88,24 @@ public class MemberCallExpression extends Statement implements Expression {
                 .endObject();
     }
 
+
+    /** @return the object whose method is called */
+    public Expression getExpression() {
+        return expression;
+    }
+
+    /** @return the name of the method */
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    /** @return the arguments, or null if there are none */
+    public ArgumentList getArgs() {
+        return args;
+    }
+
+    /** @return true for the guarded form, {@code foo?.bar()} */
+    public boolean isGuarded() {
+        return guarded;
+    }
 }

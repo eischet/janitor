@@ -1,3 +1,17 @@
+# 0.9.72, not released yet
+
+- lambdas: script functions and lambdas now also implement `JInspectableFunction`, so a host method that receives one
+  can look at its code as a tree (`getExpressionTree()`, package `com.eischet.janitor.api.types.functions.tree`) instead
+  of only calling it, and compute the parts that do not depend on the parameters, like captured variables
+  (`evaluate(process, node)`). This works for lambdas and for functions that consist of a single `return`. Calling them
+  works as before. See "Inspecting lambdas" in `docs/reference/hosting.md`.
+- orm: new script methods `dao.select(item -> condition)` and `dao.count(item -> condition)`, which turn the lambda into
+  a `FilterExpression` and run it as a query, e.g. `articles.select(a -> a.shortCode == "GAD" and a.stock > min)`. They
+  accept comparisons of the entity's fields with values (`==`, `!=`, `<`, `<=`, `>`, `>=`, `~=`, `in`, `not in`, `~`
+  with simple globs), `startsWith`, `endsWith`, `contains`, `containsIgnoreCase`, `and`, `or` and `not`; anything else,
+  including fields of related entities, is an error instead of a full scan. For Java: `GenericDao.filterFromLambda(...)`
+  and `LambdaFilter`.
+
 # 0.9.71, 2026-10-29 (internal release only)
 
 - orm: `JoinedList.lazyLoad()` and `load(connection)` are now safe to call from several threads at once. Before, threads that

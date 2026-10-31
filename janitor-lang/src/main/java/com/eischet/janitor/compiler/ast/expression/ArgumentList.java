@@ -134,4 +134,9 @@ public class ArgumentList extends AstNode implements JsonExportableObject {
 
     }
 
+
+    /** @return the arguments, in order */
+    public List<Argument> getArguments() {
+        return Collections.unmodifiableList(arguments);
+    }
 }

@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Janitor ACE mode</title>
+    <style>
+        body { margin: 0; font-family: sans-serif; }
+        header { padding: 8px 12px; }
+        #editor { position: absolute; top: 40px; bottom: 0; left: 0; right: 0; }
+    </style>
+</head>
+<body>
+<header>
+    Janitor ACE mode, ACE <span id="version"></span>.
+    Other versions: <code>demo.html?ace=1.4.7</code>, theme: <code>&amp;theme=monokai</code>
+</header>
+<div id="editor">#!/usr/bin/env janitor
+// Every token type the mode knows about; see Janitor.g4.
+import json, 'https://example.com/lib.jan' as lib
+
+/* a block comment
+   spanning lines */
+function greet(name, greeting = "Hello", *rest, **options) {
+    if (name == null or name == "") {
+        throw "no name";
+    } else if (not name ~ re/^[A-Z]\w*\/?$/ &amp;&amp; name !~ re/x/) {
+        return greeting + ", " + name.toUpperCase() + "!\n";
+    }
+    return if options.loud then 'LOUD A \x' else '''quiet
+        and $not interpolated'''
+}
+
+for (i from 1 to 10) { total += i ** 2; count++; }
+for (key in {a: 1, "b": 2, from: 3}) { print(key in ["a"], key not in ["b"]) }
+do { n--; } while (n &gt;= 0 || n &lt;&gt; -1 &amp;&amp; n != 2)
+
+numbers = [0, 42, 1_000_000, 0x1F_FF, 0b1010, 3.14, .5, 1e10, 2.5e-3d, 7f, 017];
+dates = [@today, @now, @2026-10-31, @2026-1-5, @2026-10-31-12:30, @2026-10-31-12:30:59, @3y, @2mo, @1w, @5d, @12h, @30mi, @10s, @bogus];
+value = obj?.member?.call()?.to;
+x = list[1:3]; y = list[::2]; z = flag ? a : b; s ~= "ci"; t = !done;
+square = (v) -&gt; v * v; half = v -&gt; v / 2; rest = 10 % 3;
+try { risky() } catch (e) { print("failed: " + e) } finally { cleanup() }
+unicodeNäme = "ünicode";
+</div>
+
+<script>
+    (function () {
+        var params = new URLSearchParams(location.search);
+        var version = params.get("ace") || "1.43.4";
+        var theme = params.get("theme") || "eclipse";
+        var base = "https://cdnjs.cloudflare.com/ajax/libs/ace/" + version + "/";
+        document.getElementById("version").textContent = version;
+
+        function load(src, then) {
+            var script = document.createElement("script");
+            script.src = src;
+            script.onload = then;
+            document.head.appendChild(script);
+        }
+
+        load(base + "ace.js", function () {
+            ace.config.set("basePath", base);
+            load("mode-janitor.js", function () {
+                var editor = ace.edit("editor");
+                editor.setTheme("ace/theme/" + theme);
+                editor.session.setMode("ace/mode/janitor");
+                window.editor = editor;
+            });
+        });
+    })();
+</script>
+</body>
+</html>

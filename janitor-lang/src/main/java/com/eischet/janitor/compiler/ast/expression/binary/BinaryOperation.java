@@ -77,4 +77,14 @@ public abstract class BinaryOperation extends AstNode implements Expression {
                 .endObject();
         // there's no need to emit the functor because the class name of "this" implies it.
     }
+
+    /** @return the left operand */
+    public Expression getLeft() {
+        return left;
+    }
+
+    /** @return the right operand */
+    public Expression getRight() {
+        return right;
+    }
 }

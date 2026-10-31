@@ -60,4 +60,14 @@ public class LogicAnd extends AstNode implements Expression, JsonExportableObjec
                 .endObject();
     }
 
+
+    /** @return the left operand */
+    public Expression getLeft() {
+        return left;
+    }
+
+    /** @return the right operand */
+    public Expression getRight() {
+        return right;
+    }
 }

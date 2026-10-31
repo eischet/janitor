@@ -51,4 +51,9 @@ public abstract class UnaryOperation extends AstNode implements Expression {
 
     }
 
+
+    /** @return the operand */
+    public Expression getParameter() {
+        return parameter;
+    }
 }

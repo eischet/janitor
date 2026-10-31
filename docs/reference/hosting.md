@@ -119,6 +119,26 @@ There are two places for globals:
 Host objects become usable in scripts when they are `JanitorObject`s, typically `JanitorComposed` subclasses with a
 dispatch table, or wrapped with `JanitorWrapper`. Give their members HELP texts, too.
 
+<a id="inspecting-lambdas"></a>
+
+## Inspecting lambdas
+
+A host method that receives a function can call it, as a `JCallable`. Script functions and lambdas are also
+`JInspectableFunction`s (package `com.eischet.janitor.api.types.functions.tree`), so the host can look at their code
+instead, e.g. to run `items.select(item -> item.code == "FOO")` as a database query rather than calling the lambda for
+every item:
+
+- `getExpressionTree()` returns the expression the function returns as a tree of `ExpressionNode` records, such as
+  `ComparisonNode`, `MemberNode`, `ParameterNode`, `ConstantNode` or `LogicNode`. It is available for lambdas like
+  `x -> x * 2` and for functions whose body is a single `return` statement, and empty for all others. Expressions the
+  tree does not describe in detail are `OpaqueNode`s.
+- `node.usesParameters()` tells whether a part of the tree depends on the parameters. A part that does not, such as a
+  captured variable in `item -> item.code == code` or `limit + 1`, can be computed with `evaluate(process, node)`, in
+  the scope the function captured.
+
+Calling such a function works as before; the tree is an addition. The ORM's `dao.select(lambda)` and
+`dao.count(lambda)` use it, see `LambdaFilter` for the conditions they accept.
+
 <a id="limits"></a>
 
 ## Limiting scripts
