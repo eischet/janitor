@@ -1,4 +1,4 @@
-# 0.9.72, not released yet
+# 0.9.72,2026-11-04 (internal release only)
 
 - tooling: `JanitorCompletions` (package `com.eischet.janitor.tooling`) suggests what may be written at a position, for
   editors: keywords, the environment's global functions and the script's own names, and after a dot the members of the
