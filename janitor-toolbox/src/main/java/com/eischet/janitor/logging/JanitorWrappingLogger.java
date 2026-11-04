@@ -13,9 +13,6 @@ import org.slf4j.event.Level;
 import org.slf4j.helpers.MessageFormatter;
 import org.slf4j.spi.LoggingEventBuilder;
 
-import java.util.Collections;
-import java.util.IdentityHashMap;
-import java.util.Set;
 import java.util.function.Consumer;
 
 /**
@@ -90,55 +87,12 @@ public class JanitorWrappingLogger implements JanitorLogger {
      * @param arguments the arguments of the format, perhaps with the exception at the end
      */
     private void logExplained(final Runnable regular, final Consumer<String> condensed, final String format, final Object... arguments) {
-        if (arguments != null && arguments.length > 0 && arguments[arguments.length - 1] instanceof Throwable thrown && explainsItself(thrown)) {
-            final String text = withMessages(MessageFormatter.arrayFormat(format, arguments).getMessage(), thrown);
+        if (arguments != null && arguments.length > 0 && arguments[arguments.length - 1] instanceof Throwable thrown && SelfExplanatory.coversChain(thrown)) {
+            final String text = SelfExplanatory.describe(MessageFormatter.arrayFormat(format, arguments).getMessage(), thrown);
             withEntity(() -> condensed.accept(text));
         } else {
             withEntity(regular);
         }
-    }
-
-    private static boolean explainsItself(final Throwable thrown) {
-        final Set<Throwable> seen = Collections.newSetFromMap(new IdentityHashMap<>());
-        for (Throwable t = thrown; t != null && seen.add(t); t = t.getCause()) {
-            if (!(t instanceof SelfExplanatory explanatory) || !explanatory.isSelfExplanatory() || t.getSuppressed().length > 0) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Wrapping exceptions and script errors usually repeat the messages of their causes, so each message is written only if it is not
-     * part of the text yet.
-     */
-    private static String withMessages(final String where, final Throwable thrown) {
-        final StringBuilder out = new StringBuilder(where == null ? "" : where);
-        final int start = out.length();
-        boolean hasMessage = false;
-        final Set<Throwable> seen = Collections.newSetFromMap(new IdentityHashMap<>());
-        for (Throwable t = thrown; t != null && seen.add(t); t = t.getCause()) {
-            final String message = t.getMessage();
-            if (message != null && !message.isBlank()) {
-                hasMessage = true;
-                if (out.indexOf(message.strip()) < 0) {
-                    appendPart(out, start, message.strip());
-                }
-            }
-        }
-        if (!hasMessage) {
-            appendPart(out, start, thrown.getClass().getName());
-        }
-        return out.toString();
-    }
-
-    private static void appendPart(final StringBuilder out, final int start, final String part) {
-        if (out.length() > start) {
-            out.append('\n');
-        } else if (start > 0) {
-            out.append(":\n");
-        }
-        out.append(part);
     }
 
     @Override

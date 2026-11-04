@@ -6,7 +6,8 @@
   suppressed exceptions, the logger appends their messages to the log message, each only once, and passes no exception on
   to SLF4J. Anything else in the chain, e.g. a Java exception below a `JanitorNativeException`, keeps the stack trace. A
   host can implement the interface on its own exceptions, e.g. on one that wraps a script error. The fluent API
-  (`atError()` etc.) is not affected.
+  (`atError()` etc.) is not affected. `SelfExplanatory.coversChain` and `describe` make the same decision and text available
+  to hosts that report errors in other ways than through a logger.
 
 # 0.9.72,2026-11-04 (internal release only)
 

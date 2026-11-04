@@ -183,6 +183,15 @@ class SelfExplanatoryLoggingTestCase {
     }
 
     @Test
+    void hostsCanAskAndDescribeWithoutLogging() {
+        final JanitorRuntimeException e = scriptError();
+        final Wrapper wrapper = new Wrapper("error running script", e);
+        assertTrue(SelfExplanatory.coversChain(wrapper));
+        assertEquals("error running script\n" + e.getMessage().strip(), SelfExplanatory.describe(null, wrapper));
+        assertFalse(SelfExplanatory.coversChain(new RuntimeException("wrapped", e)));
+    }
+
+    @Test
     void messagesWithoutExceptionStayFormats() {
         log.error("value {}", 1);
         assertEquals("value 1", recorder.message);
