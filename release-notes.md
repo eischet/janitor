@@ -1,3 +1,13 @@
+# 0.9.73 (in development)
+
+- logging: a `JanitorLogger` no longer writes a Java stack trace for errors that lie in a script. The new interface
+  `SelfExplanatory` (package `com.eischet.janitor.logging`) marks exceptions whose message says it all; `JanitorException`
+  implements it, `JanitorInternalException` opts out. If all exceptions of a chain are self-explanatory and none has
+  suppressed exceptions, the logger appends their messages to the log message, each only once, and passes no exception on
+  to SLF4J. Anything else in the chain, e.g. a Java exception below a `JanitorNativeException`, keeps the stack trace. A
+  host can implement the interface on its own exceptions, e.g. on one that wraps a script error. The fluent API
+  (`atError()` etc.) is not affected.
+
 # 0.9.72,2026-11-04 (internal release only)
 
 - tooling: `JanitorCompletions` (package `com.eischet.janitor.tooling`) suggests what may be written at a position, for

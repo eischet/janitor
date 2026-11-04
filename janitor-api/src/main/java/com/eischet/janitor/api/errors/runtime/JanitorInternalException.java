@@ -19,4 +19,13 @@ public class JanitorInternalException extends JanitorRuntimeException {
     public JanitorInternalException(final JanitorScriptProcess process, final String message, final JanitorControlFlowException cause) {
         super(process, message, cause, JanitorInternalException.class);
     }
+
+    /**
+     * The interpreter itself failed, so the Java stack trace is what the reader needs.
+     * @return false
+     */
+    @Override
+    public boolean isSelfExplanatory() {
+        return false;
+    }
 }

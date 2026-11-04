@@ -3,10 +3,12 @@
 
 package com.eischet.janitor.api.errors;
 
+import com.eischet.janitor.logging.SelfExplanatory;
+
 /**
  * This is the base class for all Janitor exceptions.
  */
-public abstract class JanitorException extends Exception {
+public abstract class JanitorException extends Exception implements SelfExplanatory {
     // Yes, this is a checked exception. No, I'm not going to change this.
 
     /**
