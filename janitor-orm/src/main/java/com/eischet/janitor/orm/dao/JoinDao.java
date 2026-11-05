@@ -449,6 +449,7 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
      */
     public T insertForScript(final @NotNull JanitorScriptProcess process,
                                 final @NotNull JCallArgs arguments) throws JanitorRuntimeException {
+        collection.checkScriptWrite(process);
         final JanitorObject param = arguments.require(1).get(0);
         if (param instanceof JMap map) {
             final T instance = newValue.get();
@@ -482,6 +483,7 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
      */
     public T updateForScript(final @NotNull JanitorScriptProcess process,
                                    final @NotNull JCallArgs arguments) throws JanitorRuntimeException {
+        collection.checkScriptWrite(process);
         final JanitorObject param = arguments.require(1).get(0);
         if (param instanceof JMap map) {
             final T instance = newValue.get();
@@ -515,6 +517,7 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
      */
     public T mergeForScript(final @NotNull JanitorScriptProcess process,
                                 final @NotNull JCallArgs arguments) throws JanitorRuntimeException {
+        collection.checkScriptWrite(process);
         final JanitorObject param = arguments.require(1).get(0);
         if (param instanceof JMap map) {
             final T instance = newValue.get();
@@ -547,6 +550,7 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
      * @throws JanitorRuntimeException if the argument is invalid or the delete fails
      */
     public void deleteForScript(final @NotNull JanitorScriptProcess process, final @NotNull JCallArgs arguments) throws JanitorRuntimeException {
+        collection.checkScriptWrite(process);
         final JanitorObject param = arguments.require(1).get(0);
         if (param instanceof JMap map) {
             final T instance = newValue.get();

@@ -7,6 +7,8 @@ import com.eischet.dbxs.DataManager;
 import com.eischet.dbxs.dialects.DatabaseDialect;
 import com.eischet.dbxs.metadata.DatabaseVersion;
 import com.eischet.janitor.api.Janitor;
+import com.eischet.janitor.api.JanitorScriptProcess;
+import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
@@ -95,6 +97,17 @@ public abstract class OrmDaoCollection<S extends OrmDaoCollection<S>> extends Ja
      * @return the data manager
      */
     public abstract DataManager getDataManager();
+
+    /**
+     * Called before a script writes through a DAO of this collection, and only then: Java code that calls the DAOs directly is not checked.
+     * By default, every script may write; a host overrides this to refuse with an exception, e.g. with
+     * {@link JanitorScriptProcess#require(com.eischet.janitor.api.metadata.MetaDataKey)}.
+     *
+     * @param process the running script process
+     * @throws JanitorRuntimeException if the script must not write
+     */
+    public void checkScriptWrite(final @NotNull JanitorScriptProcess process) throws JanitorRuntimeException {
+    }
 
     /**
      * The dialect of the database that this collection, and therefore all of its DAOs, work against. DAOs take the dialect from here and

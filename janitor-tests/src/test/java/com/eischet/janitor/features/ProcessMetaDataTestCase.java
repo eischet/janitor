@@ -28,6 +28,7 @@ public class ProcessMetaDataTestCase extends JanitorTest {
 
     private static final MetaDataKey<String> KEY = new MetaDataKey<>("key", String.class);
     private static final MetaDataKey<Integer> OTHER_KEY = new MetaDataKey<>("otherKey", Integer.class);
+    private static final MetaDataKey<Boolean> RIGHT = new MetaDataKey<>("right", Boolean.class);
 
     /** Runs a script whose native function reads the key from the process that calls it. */
     private static String seenByNativeCode(final OutputCatchingTestRuntime runtime, final Consumer<JanitorScriptProcess> setup) throws Exception {
@@ -37,6 +38,52 @@ public class ProcessMetaDataTestCase extends JanitorTest {
                     process.bindF("read", (p, args) -> p.getBuiltins().nullableString(p.getMetaData(KEY)));
                 })
                 .janitorToString();
+    }
+
+    /** Runs a script whose native function requires the right, and returns what the script saw. */
+    private static String requireSeenByScript(final OutputCatchingTestRuntime runtime, final Consumer<JanitorScriptProcess> setup) throws Exception {
+        return runtime.compile("test", """
+                        try {
+                            guarded();
+                            return "allowed";
+                        } catch (e) {
+                            return e.type + ": " + e.message;
+                        }""")
+                .run(process -> {
+                    setup.accept(process);
+                    process.bindF("guarded", (p, args) -> {
+                        p.require(RIGHT);
+                        return Janitor.NULL;
+                    });
+                })
+                .janitorToString();
+    }
+
+    private static final String REFUSED = "JanitorPermissionException: requires right";
+
+    @Test
+    void requireRefusesAMissingRight() throws Exception {
+        assertEquals(REFUSED, requireSeenByScript(OutputCatchingTestRuntime.fresh(), process -> { }));
+    }
+
+    @Test
+    void requireRefusesARightSetToFalse() throws Exception {
+        assertEquals(REFUSED, requireSeenByScript(OutputCatchingTestRuntime.fresh(), process -> process.setMetaData(RIGHT, false)));
+    }
+
+    @Test
+    void requireAllowsARightOfTheProcess() throws Exception {
+        assertEquals("allowed", requireSeenByScript(OutputCatchingTestRuntime.fresh(), process -> process.setMetaData(RIGHT, true)));
+    }
+
+    @Test
+    void requireAllowsARightOfTheEnvironment() throws Exception {
+        assertEquals("allowed", requireSeenByScript(OutputCatchingTestRuntime.fresh(env -> env.setMetaData(RIGHT, true)), process -> { }));
+    }
+
+    @Test
+    void falseOnTheProcessOverridesTrueInTheEnvironment() throws Exception {
+        assertEquals(REFUSED, requireSeenByScript(OutputCatchingTestRuntime.fresh(env -> env.setMetaData(RIGHT, true)), process -> process.setMetaData(RIGHT, false)));
     }
 
     @Test

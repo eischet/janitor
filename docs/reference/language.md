@@ -1158,6 +1158,7 @@ These are the runtime errors of the language itself; modules and hosts can add t
 | `JanitorNotImplementedException` | values that cannot be compared, e.g. `1 < "2"` |
 | `JanitorArithmeticException` | division by zero |
 | `JanitorAssertionException` | a failed `assert(...)` |
+| `JanitorPermissionException` | a method that the host reserves for scripts with a certain right |
 | `JanitorScriptThrownException` | a value thrown with `throw` |
 | `JanitorNativeException` | an error inside a built-in method or module, e.g. an index out of range |
 | `JanitorInstructionLimitExceededException` | the script ran more instructions than the host allows; it cannot be caught |

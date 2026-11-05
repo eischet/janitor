@@ -3,6 +3,7 @@
 
 package com.eischet.janitor.api;
 
+import com.eischet.janitor.api.errors.runtime.JanitorPermissionException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.i18n.JanitorFormatting;
 import com.eischet.janitor.api.metadata.MetaDataKey;
@@ -105,6 +106,19 @@ public interface JanitorScriptProcess {
      * @param parent the process to inherit from
      */
     void inheritMetaData(final @NotNull JanitorScriptProcess parent);
+
+    /**
+     * Refuses to go on unless the meta-data says so: hosts call this at the start of a script method, like
+     * {@code arguments.require(...)}, to reserve the method for processes with a certain right.
+     * A missing value counts as false; a false on this process overrides a true in the environment.
+     * @param key the key of the right
+     * @throws JanitorPermissionException if the value of the key is not true
+     */
+    default void require(final @NotNull MetaDataKey<Boolean> key) throws JanitorPermissionException {
+        if (!Boolean.TRUE.equals(getMetaData(key))) {
+            throw new JanitorPermissionException(this, "requires " + key.getName());
+        }
+    }
 
     /**
      * Enters a block of code, which gets its own scope.

@@ -1490,6 +1490,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
     }
 
     private T insertForScript(final @NotNull JanitorScriptProcess process, final @NotNull JanitorObject janitorObject) throws JanitorRuntimeException {
+        collection.checkScriptWrite(process);
         for (final JanitorObject object : janitorObject.janitorUnpackAll()) {
             if (object instanceof JMap janitorMap) {
                 final T instance = entityDispatchTable.getConstructor().call(process, JCallArgs.empty("constructor", process));
@@ -1515,6 +1516,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
     }
 
     private T updateForScript(final @NotNull JanitorScriptProcess process, final @NotNull JanitorObject janitorObject) throws JanitorRuntimeException {
+        collection.checkScriptWrite(process);
         for (final JanitorObject object : janitorObject.janitorUnpackAll()) {
             if (object instanceof JMap janitorMap) {
                 final T instance = entityDispatchTable.getConstructor().call(process, JCallArgs.empty("constructor", process));
