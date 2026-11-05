@@ -14,6 +14,7 @@ import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -59,7 +60,22 @@ public interface JanitorRuntime {
      * @param args arguments to be passed to the callable
      * @return whatever the callable chooses to return
      */
-    JanitorObject executeCallback(Scope scope, JCallable callable, List<JanitorObject> args) throws JanitorRuntimeException;
+    default JanitorObject executeCallback(Scope scope, JCallable callable, List<JanitorObject> args) throws JanitorRuntimeException {
+        return executeCallback(scope, callable, args, process -> { });
+    }
+
+    /**
+     * Run a callback function in a new process, which the setup callback can configure before the function runs.
+     * The new process does not inherit anything from the script that the callback came from; to keep its meta-data,
+     * call {@link JanitorScriptProcess#inheritMetaData(JanitorScriptProcess)} in the setup.
+     *
+     * @param scope a suitable scope that contains e.g. globals used by the callable
+     * @param callable the callable
+     * @param args arguments to be passed to the callable
+     * @param setup receives the process before the function runs
+     * @return whatever the callable chooses to return
+     */
+    JanitorObject executeCallback(Scope scope, JCallable callable, List<JanitorObject> args, @NotNull Consumer<JanitorScriptProcess> setup) throws JanitorRuntimeException;
 
 
     /**

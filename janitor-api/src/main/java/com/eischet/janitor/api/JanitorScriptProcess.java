@@ -6,6 +6,7 @@ package com.eischet.janitor.api;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.i18n.JanitorFormatting;
 import com.eischet.janitor.api.metadata.MetaDataKey;
+import com.eischet.janitor.api.metadata.MetaDataMap;
 import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.api.scopes.ResultAndScope;
 import com.eischet.janitor.api.scopes.Scope;
@@ -89,6 +90,21 @@ public interface JanitorScriptProcess {
      * @param <K> the type of the value
      */
     <K> void setMetaData(final @NotNull MetaDataKey<K> key, final @Nullable K value);
+
+    /**
+     * Copies this process's own meta-data, without the values of the environment.
+     * @return a new map, which is not connected to this process
+     */
+    @NotNull MetaDataMap copyMetaData();
+
+    /**
+     * Takes over the parent's own meta-data, replacing this process's values for the same keys. A new process does not
+     * inherit anything by itself: whoever starts a script on behalf of another one decides, usually in the setup callback
+     * of the run method. This is a one-time copy: later changes to either process do not reach the other, and the parent
+     * may already have ended.
+     * @param parent the process to inherit from
+     */
+    void inheritMetaData(final @NotNull JanitorScriptProcess parent);
 
     /**
      * Enters a block of code, which gets its own scope.

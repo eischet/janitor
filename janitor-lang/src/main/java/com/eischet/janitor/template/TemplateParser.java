@@ -172,6 +172,7 @@ public class TemplateParser {
 
 
             script.runInScope(g -> {
+                        g.inheritMetaData(process); // a template is code of the calling script, which merely runs in a process of its own
                         g.bind("__POP__", popper.asObject("__POP__"));
                         g.bind("__OUT__", writer.asObject("__OUT__"));
                         if (values != null) {

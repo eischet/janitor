@@ -26,6 +26,14 @@ public class MetaDataMap {
     }
 
     /**
+     * Stores all entries of the other map, replacing the values of keys that exist in both.
+     * @param other the map to copy from
+     */
+    public void putAll(final MetaDataMap other) {
+        storage.putAll(other.storage);
+    }
+
+    /**
      * Retrieves the value stored under the given key.
      * @param key the key
      * @param <T> the value type

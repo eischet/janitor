@@ -36,6 +36,11 @@ public class ScriptModule extends JanitorModuleRegistration {
 
     /**
      * Compiles and runs the given source code, and turns the resulting top-level scope into a module.
+     * <p>
+     * The module's top-level code does not inherit the meta-data of the importing process: hosts may keep a module once it
+     * has run, and what it does must not depend on who imported it first. It sees the environment's values and what the
+     * bindings callback sets. Functions of the module run later in the process that calls them, with that process's meta-data.
+     * </p>
      * @param process the running script process
      * @param qualifiedName the qualified name of the module
      * @param source the source code of the module

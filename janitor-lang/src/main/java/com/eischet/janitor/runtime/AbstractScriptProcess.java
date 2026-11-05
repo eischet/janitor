@@ -70,6 +70,18 @@ public abstract class AbstractScriptProcess implements JanitorScriptProcess {
     }
 
     @Override
+    public @NotNull MetaDataMap copyMetaData() {
+        final MetaDataMap copy = new MetaDataMap();
+        copy.putAll(metaData);
+        return copy;
+    }
+
+    @Override
+    public void inheritMetaData(final @NotNull JanitorScriptProcess parent) {
+        metaData.putAll(parent.copyMetaData());
+    }
+
+    @Override
     public JString expandTemplate(final JString template, final JCallArgs arguments) throws JanitorRuntimeException {
         return TemplateParser.expand(getRuntime(), this, template, arguments);
         // return runningScript.getRuntime().expand(runningScript, self, arguments);

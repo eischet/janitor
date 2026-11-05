@@ -4,11 +4,17 @@
 package com.eischet.janitor.features;
 
 import com.eischet.janitor.JanitorTest;
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.metadata.MetaDataKey;
+import com.eischet.janitor.api.modules.ScriptModule;
+import com.eischet.janitor.api.scopes.ResultAndScope;
+import com.eischet.janitor.api.types.JanitorObject;
+import com.eischet.janitor.api.types.functions.JCallable;
 import com.eischet.janitor.runtime.OutputCatchingTestRuntime;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
@@ -82,6 +88,101 @@ public class ProcessMetaDataTestCase extends JanitorTest {
         final AtomicReference<Integer> seen = new AtomicReference<>();
         assertEquals("null", seenByNativeCode(runtime, process -> seen.set(process.getMetaData(OTHER_KEY))));
         assertEquals(42, seen.get());
+    }
+
+    /** Runs a script just to get a process with the given value; the process has ended when this returns. */
+    private static JanitorScriptProcess endedProcessWith(final OutputCatchingTestRuntime runtime, final String value) throws Exception {
+        final AtomicReference<JanitorScriptProcess> parent = new AtomicReference<>();
+        runtime.compile("parent", "return 1;").run(process -> {
+            process.setMetaData(KEY, value);
+            parent.set(process);
+        });
+        return parent.get();
+    }
+
+    @Test
+    void newProcessesDoNotInheritByThemselves() throws Exception {
+        final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
+        endedProcessWith(runtime, "parent");
+        assertEquals("null", seenByNativeCode(runtime, process -> { }));
+    }
+
+    @Test
+    void inheritFromAParentThatHasEnded() throws Exception {
+        final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
+        final JanitorScriptProcess parent = endedProcessWith(runtime, "parent");
+        assertEquals("parent", seenByNativeCode(runtime, process -> process.inheritMetaData(parent)));
+    }
+
+    @Test
+    void childCanOverrideWithoutChangingTheParent() throws Exception {
+        final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
+        final JanitorScriptProcess parent = endedProcessWith(runtime, "parent");
+        assertEquals("child", seenByNativeCode(runtime, process -> {
+            process.inheritMetaData(parent);
+            process.setMetaData(KEY, "child");
+        }));
+        assertEquals("parent", parent.getMetaData(KEY));
+    }
+
+    @Test
+    void laterChangesOfTheParentDoNotReachTheChild() throws Exception {
+        final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
+        final JanitorScriptProcess parent = endedProcessWith(runtime, "parent");
+        assertEquals("parent", seenByNativeCode(runtime, process -> {
+            process.inheritMetaData(parent);
+            parent.setMetaData(KEY, "changed");
+        }));
+    }
+
+    @Test
+    void inheritingKeepsTheFallbackToTheEnvironment() throws Exception {
+        final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh(env -> env.setMetaData(KEY, "environment"));
+        final AtomicReference<JanitorScriptProcess> parent = new AtomicReference<>();
+        runtime.compile("parent", "return 1;").run(parent::set);
+        assertEquals("environment", seenByNativeCode(runtime, process -> process.inheritMetaData(parent.get())));
+    }
+
+    @Test
+    void callbackInheritsOnlyThroughTheSetup() throws Exception {
+        final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
+        final AtomicReference<JanitorScriptProcess> parent = new AtomicReference<>();
+        final ResultAndScope result = runtime.compile("parent", "callback = it -> read();").runAndKeepGlobals(process -> {
+            process.setMetaData(KEY, "parent");
+            process.bindF("read", (p, args) -> p.getBuiltins().nullableString(p.getMetaData(KEY)));
+            parent.set(process);
+        });
+        final JCallable callback = (JCallable) result.getScope().retrieveLocal("callback");
+        final List<JanitorObject> args = List.of(Janitor.integer(1));
+
+        assertEquals("null", runtime.executeCallback(result.getScope(), callback, args).janitorToString());
+        assertEquals("parent", runtime.executeCallback(result.getScope(), callback, args, p -> p.inheritMetaData(parent.get())).janitorToString());
+        assertEquals("explicit", runtime.executeCallback(result.getScope(), callback, args, p -> p.setMetaData(KEY, "explicit")).janitorToString());
+    }
+
+    @Test
+    void templateSeesTheMetaDataOfTheCaller() throws Exception {
+        final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
+        final String result = runtime.compile("test", "return \"${read()}\".expand();")
+                .run(process -> {
+                    process.setMetaData(KEY, "caller");
+                    process.bindF("read", (p, args) -> p.getBuiltins().nullableString(p.getMetaData(KEY)));
+                })
+                .janitorToString();
+        assertEquals("caller", result);
+    }
+
+    @Test
+    void moduleCodeDoesNotInheritButItsFunctionsRunInTheCallingProcess() throws Exception {
+        final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh(env -> env.addModuleResolver((process, name) ->
+                "base".equals(name)
+                        ? ScriptModule.moduleFromScript(process, name, "atImport = read(); function later() { return read(); }",
+                                p -> p.bindF("read", (rs, args) -> rs.getBuiltins().nullableString(rs.getMetaData(KEY))))
+                        : null));
+        final String result = runtime.compile("test", "import \"base\" as base; return \"\" + base.atImport + \"/\" + base.later();")
+                .run(process -> process.setMetaData(KEY, "importer"))
+                .janitorToString();
+        assertEquals("null/importer", result);
     }
 
 }
