@@ -110,6 +110,18 @@ public abstract class OrmDaoCollection<S extends OrmDaoCollection<S>> extends Ja
     }
 
     /**
+     * Called before a DAO of this collection runs SQL that a script supplied. Whatever the JDBC call is named, such SQL can write as well:
+     * {@code delete from x output deleted.id} is a query that returns IDs on SQL Server. So by default, this asks {@link #checkScriptWrite}.
+     * A host overrides this if, for example, these queries run with a login that can only read.
+     *
+     * @param process the running script process
+     * @throws JanitorRuntimeException if the script must not run its own SQL
+     */
+    public void checkScriptSql(final @NotNull JanitorScriptProcess process) throws JanitorRuntimeException {
+        checkScriptWrite(process);
+    }
+
+    /**
      * The dialect of the database that this collection, and therefore all of its DAOs, work against. DAOs take the dialect from here and
      * nowhere else.
      *

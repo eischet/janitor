@@ -1675,6 +1675,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
      * @throws JanitorRuntimeException if the arguments are invalid or the query fails
      */
     public JanitorObject scriptQueryForEach(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+        collection.checkScriptSql(process);
         try {
             @Language("SQL") final String sql = arguments.require(2).getString(0).janitorGetHostValue();
             final JCallable callback = (JCallable) arguments.get(1);

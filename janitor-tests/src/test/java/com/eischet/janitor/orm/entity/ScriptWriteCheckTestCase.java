@@ -174,6 +174,29 @@ class ScriptWriteCheckTestCase {
         assertEquals(List.of("ALICE"), members());
     }
 
+    private static final String QUERY_FOR_EACH = "assert(teamDao.queryForEach(\"select team_id from s_team\", (t, id) -> null) == 1);";
+
+    @Test
+    void sqlFromTheScriptIsRefusedLikeAWrite() {
+        assertRefused(QUERY_FOR_EACH);
+    }
+
+    @Test
+    void sqlFromTheScriptWorksWithTheRight() throws Exception {
+        run(QUERY_FOR_EACH, process -> process.setMetaData(WRITER, true));
+    }
+
+    @Test
+    void aCollectionCanAllowSqlFromTheScriptButNotWrites() throws Exception {
+        teams = new GuardedTeams(manager) {
+            @Override
+            public void checkScriptSql(final @NotNull JanitorScriptProcess process) {
+            }
+        };
+        run(QUERY_FOR_EACH, process -> process.setMetaData(WRITER, false));
+        assertRefused("teamDao.insert(newTeam);");
+    }
+
     @Test
     void readingIsNotRefused() throws Exception {
         run("assert(teamDao.findByKey(\"T1\") != null);", process -> process.setMetaData(WRITER, false));
