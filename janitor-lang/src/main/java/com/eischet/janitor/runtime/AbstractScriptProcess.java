@@ -9,6 +9,8 @@ import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.types.JanitorCleanupRequired;
 import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
+import com.eischet.janitor.api.metadata.MetaDataKey;
+import com.eischet.janitor.api.metadata.MetaDataMap;
 import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.api.scopes.ResultAndScope;
 import com.eischet.janitor.api.scopes.Scope;
@@ -18,6 +20,7 @@ import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.logging.JanitorLogger;
 import com.eischet.janitor.template.TemplateParser;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -32,6 +35,7 @@ public abstract class AbstractScriptProcess implements JanitorScriptProcess {
     private final Scope mainScope;
     private final List<Scope> closureScopes = new LinkedList<>();
     private final @NotNull String processName;
+    private final MetaDataMap metaData = new MetaDataMap();
     private Scope currentScope;
     private final LinkedList<JanitorCleanupRequired> cleanupList = new LinkedList<>();
 
@@ -52,6 +56,17 @@ public abstract class AbstractScriptProcess implements JanitorScriptProcess {
     @Override
     public @NotNull String getProcessName() {
         return processName;
+    }
+
+    @Override
+    public <K> @Nullable K getMetaData(final @NotNull MetaDataKey<K> key) {
+        final K value = metaData.get(key);
+        return value != null ? value : getEnvironment().getMetaData(key);
+    }
+
+    @Override
+    public <K> void setMetaData(final @NotNull MetaDataKey<K> key, final @Nullable K value) {
+        metaData.put(key, value);
     }
 
     @Override

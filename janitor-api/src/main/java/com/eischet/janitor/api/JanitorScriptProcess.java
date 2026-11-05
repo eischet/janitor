@@ -5,6 +5,7 @@ package com.eischet.janitor.api;
 
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.i18n.JanitorFormatting;
+import com.eischet.janitor.api.metadata.MetaDataKey;
 import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.api.scopes.ResultAndScope;
 import com.eischet.janitor.api.scopes.Scope;
@@ -70,6 +71,24 @@ public interface JanitorScriptProcess {
      * @return the runtime that this process runs in
      */
     JanitorRuntime getRuntime();
+
+    /**
+     * Gets host-defined meta-data of this process or, if it has no value of its own, of the {@link #getEnvironment() environment}.
+     * Scripts cannot access it.
+     * @param key the key
+     * @param <K> the type of the value
+     * @return the value, or null if there is none
+     */
+    <K> @Nullable K getMetaData(final @NotNull MetaDataKey<K> key);
+
+    /**
+     * Stores host-defined meta-data on this process only. It takes precedence over a value in the environment;
+     * other processes, including those started from this one, do not see it.
+     * @param key the key
+     * @param value the value, or null to remove this process's own entry, which makes the environment's value visible again
+     * @param <K> the type of the value
+     */
+    <K> void setMetaData(final @NotNull MetaDataKey<K> key, final @Nullable K value);
 
     /**
      * Enters a block of code, which gets its own scope.

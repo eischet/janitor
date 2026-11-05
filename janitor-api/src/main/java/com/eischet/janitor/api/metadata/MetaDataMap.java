@@ -3,22 +3,26 @@
 
 package com.eischet.janitor.api.metadata;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-/** A simple type-safe map for meta-data, keyed by {@link MetaDataKey}. */
+/** A simple type-safe map for meta-data, keyed by {@link MetaDataKey}. It is safe to use from several threads. */
 public class MetaDataMap {
 
-    private final Map<MetaDataKey<?>, Object> storage = new HashMap<>();
+    private final Map<MetaDataKey<?>, Object> storage = new ConcurrentHashMap<>();
 
     /**
      * Stores a value under the given key, replacing any previous value.
      * @param key the key
-     * @param value the value to store
+     * @param value the value to store, or null to remove the entry
      * @param <T> the value type
      */
     public <T> void put(final MetaDataKey<T> key, final T value) {
-        storage.put(key, value);
+        if (value == null) {
+            storage.remove(key);
+        } else {
+            storage.put(key, value);
+        }
     }
 
     /**

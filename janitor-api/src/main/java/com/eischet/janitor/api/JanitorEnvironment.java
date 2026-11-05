@@ -5,6 +5,7 @@ package com.eischet.janitor.api;
 
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.i18n.JanitorFormatting;
+import com.eischet.janitor.api.metadata.MetaDataKey;
 import com.eischet.janitor.api.modules.JanitorModule;
 import com.eischet.janitor.api.modules.JanitorModuleRegistration;
 import com.eischet.janitor.api.modules.ModuleResolver;
@@ -48,6 +49,23 @@ public interface JanitorEnvironment extends JsonOutputSupport {
      * @return the formatting object
      */
     @NotNull JanitorFormatting getFormatting();
+
+    /**
+     * Gets host-defined meta-data of this environment. Scripts cannot access it.
+     * @param key the key
+     * @param <K> the type of the value
+     * @return the value, or null if there is none
+     */
+    <K> @Nullable K getMetaData(final @NotNull MetaDataKey<K> key);
+
+    /**
+     * Stores host-defined meta-data on this environment. Every script process sees it, unless it has a value of its own;
+     * see {@link JanitorScriptProcess#getMetaData(MetaDataKey)}.
+     * @param key the key
+     * @param value the value, or null to remove the entry
+     * @param <K> the type of the value
+     */
+    <K> void setMetaData(final @NotNull MetaDataKey<K> key, final @Nullable K value);
 
     /**
      * Add a module.

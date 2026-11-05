@@ -7,6 +7,8 @@ import com.eischet.janitor.api.FilterPredicate;
 import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.metadata.HasMetaData;
+import com.eischet.janitor.api.metadata.MetaDataKey;
+import com.eischet.janitor.api.metadata.MetaDataMap;
 import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.modules.DiscoverableModules;
 import com.eischet.janitor.api.types.dispatch.HasDispatcher;
@@ -65,6 +67,7 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
     private final List<ModuleResolver> resolvers = new ArrayList<>();
     protected @Nullable Scope.ImplicitObjectProvider implicitTemplateObjectProvider = null;
     private volatile @Nullable JsonStreamFactory jsonStreams = null;
+    private final MetaDataMap metaData = new MetaDataMap();
 
     private final Scope builtinScope = Scope.createBuiltinScope(this, Location.virtual(ScriptSource.builtin()));
 
@@ -159,6 +162,16 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
      */
     public void setupBuiltinScope(final Consumer<Scope> consumer) {
         consumer.accept(builtinScope);
+    }
+
+    @Override
+    public <K> @Nullable K getMetaData(final @NotNull MetaDataKey<K> key) {
+        return metaData.get(key);
+    }
+
+    @Override
+    public <K> void setMetaData(final @NotNull MetaDataKey<K> key, final @Nullable K value) {
+        metaData.put(key, value);
     }
 
     @Override
