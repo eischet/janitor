@@ -26,12 +26,18 @@ import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.types.functions.JCallable;
+import com.eischet.janitor.api.types.functions.tree.JInspectableFunction;
 import com.eischet.janitor.logging.JanitorLogger;
 import com.eischet.janitor.orm.meta.OrmPropertyHandle;
 import com.eischet.janitor.orm.JanitorOrm;
 import com.eischet.janitor.orm.entity.OrmEntity;
 import com.eischet.janitor.orm.entity.OrmJoined;
+import com.eischet.janitor.orm.filter.FilterExpression;
+import com.eischet.janitor.orm.filter.FilterOperator;
+import com.eischet.janitor.orm.filter.LambdaFilter;
+import com.eischet.janitor.orm.filter.MalformedExpression;
 import com.eischet.janitor.orm.ref.ForeignKey;
+import com.eischet.janitor.orm.sql.ColumnCase;
 import com.eischet.janitor.orm.sql.ColumnTypeHint;
 import com.eischet.janitor.orm.sql.StatementCreator;
 import com.eischet.janitor.toolbox.json.api.JsonException;
@@ -40,6 +46,7 @@ import com.eischet.janitor.toolbox.listeners.ListenerSet;
 import com.eischet.janitor.toolbox.listeners.ListenerSetStandard;
 import com.eischet.janitor.versioning.Version;
 import com.eischet.janitor.versioning.VersionRange;
+import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
@@ -47,7 +54,9 @@ import org.jetbrains.annotations.Unmodifiable;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
@@ -80,6 +89,10 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
                 .setMetaData(Janitor.MetaData.HELP, "delete(record): Deletes a join record, given as a record or a map, from the database.");
         DISPATCH.addStringProperty("jsonSchema", self -> Janitor.current().writeJson(self.entityDispatchTable::writeSchemaToJson))
                 .setMetaData(Janitor.MetaData.HELP, "jsonSchema: The JSON schema of the join records as a string; read-only.");
+        DISPATCH.addMethod("select", JoinDao::scriptSelect)
+                .setMetaData(Janitor.MetaData.HELP, "select(condition): Returns the list of the join records for which the condition, a lambda like 'link -> link.reason.key == \"A\" and link.ticket.status == \"o\"', holds; runs it as a query.");
+        DISPATCH.addMethod("count", JoinDao::scriptCount)
+                .setMetaData(Janitor.MetaData.HELP, "count(condition): Returns the number of the join records for which the condition, a lambda like for select, holds; runs it as a query.");
     }
 
     protected final ListenerSet<EntityChangeListener<T>> entityChangeListeners= new ListenerSetStandard<>();
@@ -106,6 +119,9 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
     private final @Nullable UpdateStatement updateStatement;
     private final @NotNull UpdateStatement deleteStatement;
     private final @NotNull SelectStatement countStatement;
+    private final @NotNull String selectAllSql;
+    private final @NotNull String countAllSql;
+    private final @NotNull String orderByPrimaryKey;
     private final Map<String, SelectStatement> selectByColumn = new ConcurrentHashMap<>();
     private final @NotNull @Unmodifiable Map<String, ColumnMapping<T>> mappingForColumn;
     /** The mappings of {@link #columns}, in that order. */
@@ -213,6 +229,9 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
         this.updateStatement = updateColumns.isEmpty() ? null : UpdateStatement.of(creator.createUpdateStatement(tableName, updateColumns, primaryKeyColumns));
         this.deleteStatement = UpdateStatement.of(creator.createDeleteStatement(tableName, primaryKeyColumns));
         this.countStatement = SelectStatement.of(creator.createCountStatement(tableName, columns));
+        this.selectAllSql = creator.createSelectAllStatement(tableName, columns);
+        this.countAllSql = creator.createCountStatement(tableName);
+        this.orderByPrimaryKey = "order by " + String.join(", ", primaryKeyColumns.stream().map(getDialect()::quoteColumn).toList());
 
         collection.registerJoinDao(this);
 
@@ -285,6 +304,178 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
      */
     public @NotNull @Unmodifiable List<T> findByColumnValue(final @NotNull DatabaseConnection conn, final @NotNull String columnName, final long id) throws DatabaseError {
         return List.copyOf(findByColumn(conn, columnName, id));
+    }
+
+    /**
+     * Finds the join records that match a filter expression, ordered by the primary key. Fields of the join records are compared directly,
+     * paths like "ticket.status" through a reference with a sub-query on the referenced entity's table, as in {@link GenericDao}.
+     * @param conn the database connection
+     * @param filterExpression the filter
+     * @param queryTimeout the query timeout in seconds, or null for no timeout
+     * @return the join records
+     * @throws DatabaseError on database errors, including a query that ran into its timeout
+     * @throws MalformedExpression if the filter names unknown fields or cannot be turned into SQL
+     */
+    public @NotNull @Unmodifiable List<T> findByFilter(final @NotNull DatabaseConnection conn, final @NotNull FilterExpression filterExpression,
+                                                       final @Nullable Integer queryTimeout) throws DatabaseError {
+        final List<Prepper> preppers = new ArrayList<>();
+        @Language("SQL") final String sql = selectAllSql + "\nWHERE\n  " + expressionToSql(filterExpression, preppers::add) + "\n" + orderByPrimaryKey;
+        if (verbose) {
+            log.info("findByFilter, sql: {}, preppers: {}", sql, preppers);
+        }
+        return List.copyOf(conn.queryForList(new SelectStatement(sql), prepare(conn, preppers, queryTimeout), rs -> readAllProperties(conn, rs)));
+    }
+
+    /**
+     * Counts the join records that match a filter expression, like {@link #findByFilter}.
+     * @param conn the database connection
+     * @param filterExpression the filter
+     * @param queryTimeout the query timeout in seconds, or null for no timeout
+     * @return the number of join records
+     * @throws DatabaseError on database errors, including a query that ran into its timeout
+     * @throws MalformedExpression if the filter names unknown fields or cannot be turned into SQL
+     */
+    public int countByFilter(final @NotNull DatabaseConnection conn, final @NotNull FilterExpression filterExpression,
+                             final @Nullable Integer queryTimeout) throws DatabaseError {
+        final List<Prepper> preppers = new ArrayList<>();
+        @Language("SQL") final String sql = countAllSql + "\nWHERE\n  " + expressionToSql(filterExpression, preppers::add);
+        if (verbose) {
+            log.info("countByFilter, sql: {}, preppers: {}", sql, preppers);
+        }
+        return conn.queryForInt(new SelectStatement(sql), prepare(conn, preppers, queryTimeout));
+    }
+
+    private static @NotNull StatementConfigurator prepare(final @NotNull DatabaseConnection conn, final @NotNull List<Prepper> preppers,
+                                                          final @Nullable Integer queryTimeout) {
+        return stmt -> {
+            if (queryTimeout != null) {
+                stmt.setQueryTimeout(queryTimeout);
+            }
+            for (final Prepper prepper : preppers) {
+                prepper.prepare(conn, stmt);
+            }
+        };
+    }
+
+    /**
+     * Converts a filter expression to an SQL condition on the join table, collecting the preppers that bind its values.
+     * @param filterExpression the expression
+     * @param prepperConsumer receives the preppers, in the order of the parameters in the SQL
+     * @return the SQL condition
+     * @throws MalformedExpression if the expression is invalid
+     */
+    protected String expressionToSql(final @NotNull FilterExpression filterExpression, final @NotNull Consumer<Prepper> prepperConsumer) throws MalformedExpression {
+        final @Nullable String field = filterExpression.getField();
+        if (field != null && FilterSql.INVALID_FIELD.test(field)) {
+            throw new MalformedExpression("invalid field '" + field + "'");
+        }
+        if (filterExpression.isGroup()) {
+            return filterExpression.getFilters().stream()
+                    .map((FilterExpression element) -> expressionToSql(element, prepperConsumer))
+                    .collect(Collectors.joining(" " + filterExpression.getLogic() + " ", "(", ")"));
+        }
+        if (!filterExpression.isExpression() || field == null) {
+            throw new MalformedExpression("part is neither group nor expression");
+        }
+        final int dot = field.indexOf('.');
+        if (dot >= 0) {
+            final String reference = field.substring(0, dot);
+            final GenericDao<?, ?> referencedDao = FilterSql.referencedDao(collection, columnForField, mappingForColumn, reference, field);
+            return FilterSql.pathToSql(getDialect(), columnForField.get(reference), referencedDao, filterExpression, prepperConsumer);
+        }
+        final String column = columnForField.get(field);
+        if (column == null) {
+            throw new MalformedExpression("missing column for field '" + field + "'");
+        }
+        final @Nullable FilterOperator operator = filterExpression.getOperator();
+        if (operator == null) {
+            throw new MalformedExpression("missing operator in expression " + filterExpression);
+        }
+        final ColumnMapping<T> mapping = Objects.requireNonNull(mappingForColumn.get(column));
+        final String quotedColumn = getDialect().quoteColumn(column);
+        final @Nullable String nullReferenceCondition = FilterSql.nullReferenceCondition(operator, quotedColumn, mapping.nullReferenceId());
+        if (nullReferenceCondition != null) {
+            return nullReferenceCondition;
+        }
+        final @Nullable ColumnCase columnCase = entityDispatchTable.getMetaData(field, JanitorOrm.MetaData.COLUMN_CASE);
+        return FilterSql.applyToColumn(getDialect(), filterExpression, quotedColumn, mapping.type(), columnCase, FilterSql::prepperFor, prepperConsumer);
+    }
+
+    /**
+     * Checks whether a field of the join records, or a path like "ticket.status" through a reference, can be used in a filter expression.
+     * @param path the field or path
+     * @return true if the field exists
+     */
+    public boolean isFilterField(final @NotNull String path) {
+        final int dot = path.indexOf('.');
+        if (dot < 0) {
+            return columnForField.containsKey(path);
+        }
+        try {
+            return FilterSql.referencedDao(collection, columnForField, mappingForColumn, path.substring(0, dot), path).isFilterField(path.substring(dot + 1));
+        } catch (MalformedExpression e) {
+            return false;
+        }
+    }
+
+    /**
+     * Converts a script lambda to a filter expression on the fields of the join records, see {@link LambdaFilter}.
+     * @param process the running script process
+     * @param function the lambda, whose parameter is the join record
+     * @return the filter expression
+     * @throws MalformedExpression if the lambda cannot be used as a filter
+     * @throws JanitorRuntimeException if evaluating a value of the lambda fails
+     */
+    public @NotNull FilterExpression filterFromLambda(final @NotNull JanitorScriptProcess process, final @NotNull JInspectableFunction function) throws JanitorRuntimeException {
+        return LambdaFilter.toFilter(process, function, this::isFilterField);
+    }
+
+    /**
+     * Script method {@code dao.select(link -> condition)}: finds the join records for which the condition holds, by running it as a query.
+     * See {@link LambdaFilter} for the conditions that can be used.
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return a list of the join records
+     * @throws JanitorRuntimeException if the condition cannot be used as a query, or the query fails
+     */
+    public JanitorObject scriptSelect(final @NotNull JanitorScriptProcess process, final @NotNull JCallArgs arguments) throws JanitorRuntimeException {
+        final FilterExpression filter = scriptFilter(process, arguments);
+        final Integer queryTimeout = GenericDao.queryTimeoutFor(process);
+        try {
+            final List<T> found = getDataManager().callTransaction(conn -> findByFilter(conn, filter, queryTimeout));
+            return Janitor.list(found);
+        } catch (DatabaseError e) {
+            throw new JanitorNativeException(process, e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Script method {@code dao.count(link -> condition)}: counts the join records for which the condition holds, like {@link #scriptSelect}.
+     * @param process the running script process
+     * @param arguments the call arguments
+     * @return the number of join records
+     * @throws JanitorRuntimeException if the condition cannot be used as a query, or the query fails
+     */
+    public JanitorObject scriptCount(final @NotNull JanitorScriptProcess process, final @NotNull JCallArgs arguments) throws JanitorRuntimeException {
+        final FilterExpression filter = scriptFilter(process, arguments);
+        final Integer queryTimeout = GenericDao.queryTimeoutFor(process);
+        try {
+            return Janitor.integer(getDataManager().callTransaction(conn -> countByFilter(conn, filter, queryTimeout)));
+        } catch (DatabaseError e) {
+            throw new JanitorNativeException(process, e.getMessage(), e);
+        }
+    }
+
+    private @NotNull FilterExpression scriptFilter(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+        final JanitorObject argument = arguments.require(1).get(0).janitorUnpack();
+        if (!(argument instanceof JInspectableFunction function)) {
+            throw new JanitorArgumentException(process, arguments.getFunctionName() + ": expecting a lambda like 'link -> link.reason.key == \"A\"', but found " + simpleClassNameOf(argument));
+        }
+        try {
+            return filterFromLambda(process, function);
+        } catch (MalformedExpression e) {
+            throw new JanitorArgumentException(process, arguments.getFunctionName() + ": " + e.getMessage(), e);
+        }
     }
 
     /**

@@ -138,8 +138,9 @@ every item:
 
 Calling such a function works as before; the tree is an addition. The ORM's `dao.select(lambda)` and
 `dao.count(lambda)` use it, see `LambdaFilter` for the conditions they accept, including fields of referenced
-entities like `item.product.shortCode`. `FilterExpressionCode` goes the other way and writes a filter expression as
-such a lambda.
+entities like `item.product.shortCode`. Join DAOs offer the same two methods for the records of a join table, whose
+lambda gets the join record: `memberships.select(m -> m.role == "lead" and m.team.key == "RED")`.
+`FilterExpressionCode` goes the other way and writes a filter expression as such a lambda.
 
 <a id="limits"></a>
 

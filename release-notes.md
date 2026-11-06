@@ -1,5 +1,12 @@
 # 0.9.73 (in development)
 
+- orm: join DAOs can filter, too. `JoinDao.findByFilter` and `countByFilter` take a `FilterExpression` on the fields of the
+  join records, including paths through their references like `ticket.status`, which become sub-queries on the referenced
+  entity's table as in `GenericDao`; the records come ordered by the primary key. Scripts get `dao.select(lambda)` and
+  `dao.count(lambda)` on join DAOs, with the conditions of `LambdaFilter` and the query timeout from the run time limit,
+  e.g. `memberships.select(m -> m.role == "lead" and m.team.key == "RED")`. `JoinDao.isFilterField` and
+  `filterFromLambda` work like their counterparts in `GenericDao`. The SQL for one column, references to nothing and
+  paths is now shared by both kinds of DAO (`FilterSql`); entity DAOs behave as before.
 - logging: a `JanitorLogger` no longer writes a Java stack trace for errors that lie in a script. The new interface
   `SelfExplanatory` (package `com.eischet.janitor.logging`) marks exceptions whose message says it all; `JanitorException`
   implements it, `JanitorInternalException` opts out. If all exceptions of a chain are self-explanatory and none has

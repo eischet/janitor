@@ -80,7 +80,6 @@ import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection<U>> extends JanitorComposed<GenericDao<?, ?>> implements Dao<T>, JCallable {
 
     public static final DispatchTable<GenericDao<?, ?>> DISPATCH = new DispatchTable<>();
-    private static final Predicate<String> INVALID_FIELD = Pattern.compile("[a-zA-Z0-9_@-]+(\\.[a-zA-Z0-9_@-]+)*").asMatchPredicate().negate(); // a field, or a path through references like "product.shortCode"
 
     static {
         DISPATCH.addBooleanProperty("verbose", GenericDao::isVerbose, GenericDao::setVerbose)
@@ -816,19 +815,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
      * synthetic/non-entity column), which falls back to the same behavior as {@link #getPrepper(FilterExpression)}.
      */
     protected @NotNull Prepper getPrepper(final FilterExpression filterExpression, final @Nullable ColumnTypeHint columnTypeHint) {
-        if (filterExpression.isDate()) {
-            return PREP_DATE.getPrepper(filterExpression);
-        } else if (filterExpression.isDateTime()) {
-            return PREP_DATETIME.getPrepper(filterExpression);
-        } else if (filterExpression.isDouble()) {
-            return PREP_DOUBLE.getPrepper(filterExpression);
-        } else if (filterExpression.isBoolean()) {
-            return columnTypeHint == ColumnTypeHint.BOOL_CHAR ? PREP_BOOL_CHAR.getPrepper(filterExpression) : PREP_BOOLEAN.getPrepper(filterExpression);
-        } else if (filterExpression.isLong()) {
-            return PREP_LONG.getPrepper(filterExpression);
-        } else {
-            return PREP_STRING.getPrepper(filterExpression);
-        }
+        return FilterSql.prepperFor(filterExpression, columnTypeHint);
     }
 
     /**
@@ -840,7 +827,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
      */
     protected String expressionToSql(final FilterExpression filterExpression, final Consumer<Prepper> prepperConsumer) throws MalformedExpression {
         @NotNull final DatabaseDialect dialect = getDialect();
-        if (filterExpression.getField() != null && INVALID_FIELD.test(filterExpression.getField())) {
+        if (filterExpression.getField() != null && FilterSql.INVALID_FIELD.test(filterExpression.getField())) {
             throw new MalformedExpression("invalid field '" + filterExpression.getField() + "'");
         }
         if (filterExpression.isGroup()) {
@@ -874,18 +861,9 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
                 final String quotedColumn = dialect.quoteColumn(column);
                 final @Nullable ColumnMapping<T> mapping = mappingForColumn.get(column);
                 final @Nullable Long nullReferenceId = mapping == null ? null : mapping.nullReferenceId();
-                if (nullReferenceId != null) {
-                    // a reference to nothing can be NULL or the configured id, see JanitorOrm.MetaData.NULL_REFERENCE_ID
-                    switch (filterExpression.getOperator()) {
-                        case ISNULL -> {
-                            return "(" + quotedColumn + " is null or " + quotedColumn + " = " + nullReferenceId + ")";
-                        }
-                        case ISNOTNULL -> {
-                            return "(" + quotedColumn + " is not null and " + quotedColumn + " <> " + nullReferenceId + ")";
-                        }
-                        default -> {
-                        }
-                    }
+                final @Nullable String nullReferenceCondition = FilterSql.nullReferenceCondition(filterExpression.getOperator(), quotedColumn, nullReferenceId);
+                if (nullReferenceCondition != null) {
+                    return nullReferenceCondition;
                 }
                 return applyExpressionToColumn(filterExpression, quotedColumn, columnTypeHint, columnCase, prepperConsumer);
             }
@@ -907,14 +885,8 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
      */
     protected String pathToSql(final FilterExpression filterExpression, final Consumer<Prepper> prepperConsumer) throws MalformedExpression {
         final String path = filterExpression.getField();
-        final int dot = path.indexOf('.');
-        final GenericDao<?, ?> referencedDao = referencedDao(path.substring(0, dot), path);
-        final FilterExpression inner = filterExpression.deepCopy();
-        inner.setField(path.substring(dot + 1));
-        final DatabaseDialect dialect = getDialect();
-        return dialect.quoteColumn(columnForField.get(path.substring(0, dot)))
-               + " in (select " + dialect.quoteColumn(referencedDao.idColumn) + " from " + referencedDao.tableName
-               + " where " + referencedDao.expressionToSql(inner, prepperConsumer) + ")";
+        final String field = path.substring(0, path.indexOf('.'));
+        return FilterSql.pathToSql(getDialect(), columnForField.get(field), referencedDao(field, path), filterExpression, prepperConsumer);
     }
 
     /**
@@ -925,19 +897,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
      * @throws MalformedExpression if the field does not exist or does not hold a reference to an entity of a GenericDao
      */
     private @NotNull GenericDao<?, ?> referencedDao(final String field, final String path) throws MalformedExpression {
-        final String column = columnForField.get(field);
-        if (column == null) {
-            throw new MalformedExpression("missing column for field '" + field + "' of path '" + path + "'");
-        }
-        final @Nullable ColumnMapping<T> mapping = mappingForColumn.get(column);
-        final @Nullable String referenceType = mapping == null ? null : mapping.referenceType();
-        if (referenceType == null) {
-            throw new MalformedExpression("field '" + field + "' does not refer to another entity, so the path '" + path + "' is invalid");
-        }
-        if (!(collection.getDao(referenceType) instanceof GenericDao<?, ?> referencedDao)) {
-            throw new MalformedExpression("cannot filter by '" + path + "', because there is no DAO for " + referenceType + " that supports filters");
-        }
-        return referencedDao;
+        return FilterSql.referencedDao(collection, columnForField, mappingForColumn, field, path);
     }
 
     /**
@@ -990,78 +950,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
      * </p>
      */
     protected String applyExpressionToColumn(final FilterExpression original, final String quotedColumn, final @Nullable ColumnTypeHint columnTypeHint, final @Nullable ColumnCase columnCase, final Consumer<Prepper> prepperConsumer) throws MalformedExpression {
-        @Nullable final FilterOperator op = original.getOperator();
-        final DatabaseDialect dialect = getDialect();
-        final boolean textMatch = switch (op) {
-            case STARTSWITH, ENDSWITH, CONTAINS, DOESNOTCONTAIN -> true;
-            default -> false;
-        };
-        final boolean ignoreCase;
-        if (textMatch) {
-            ignoreCase = !Boolean.FALSE.equals(original.getIgnoreCase()); // text searches ignore case unless asked otherwise
-        } else {
-            ignoreCase = original.isString() && Boolean.TRUE.equals(original.getIgnoreCase()); // comparisons only on request
-        }
-        // For uniformly cased columns, adjust the value to the column and leave the column itself alone.
-        final boolean normalizeValue = ignoreCase && original.isString() && ColumnCase.isUniform(columnCase);
-        final boolean foldColumn = ignoreCase && !normalizeValue;
-        final FilterExpression filterExpression;
-        if (normalizeValue) {
-            filterExpression = original.deepCopy();
-            filterExpression.setValueString(columnCase.normalize(original.getValueString()));
-        } else {
-            filterExpression = original;
-        }
-        final Prepper simpleEquality = getPrepper(filterExpression, columnTypeHint);
-        final String left = foldColumn ? dialect.foldCase(quotedColumn) : quotedColumn;
-        final String right = foldColumn ? dialect.foldCase("?") : "?";
-        return switch (op) {
-            case EQ -> {
-                prepperConsumer.accept(simpleEquality);
-                yield left + " = " + right;
-            }
-            case NEQ -> {
-                prepperConsumer.accept(simpleEquality);
-                yield left + " != " + right;
-            }
-            case LT -> {
-                prepperConsumer.accept(simpleEquality);
-                yield left + " < " + right;
-            }
-            case LTE -> {
-                prepperConsumer.accept(simpleEquality);
-                yield left + " <= " + right;
-            }
-            case GT -> {
-                prepperConsumer.accept(simpleEquality);
-                yield left + " > " + right;
-            }
-            case GTE -> {
-                prepperConsumer.accept(simpleEquality);
-                yield left + " >= " + right;
-            }
-            case STARTSWITH -> {
-                prepperConsumer.accept(PREP_STARTS_WITH_STRING.getPrepper(filterExpression));
-                yield dialect.likeCondition(quotedColumn, false, foldColumn);
-            }
-            case ENDSWITH -> {
-                prepperConsumer.accept(PREP_ENDS_WITH_STRING.getPrepper(filterExpression));
-                yield dialect.likeCondition(quotedColumn, false, foldColumn);
-            }
-            case CONTAINS -> {
-                prepperConsumer.accept(PREP_CONTAINS_STRING.getPrepper(filterExpression));
-                yield dialect.likeCondition(quotedColumn, false, foldColumn);
-            }
-            case DOESNOTCONTAIN -> {
-                prepperConsumer.accept(PREP_CONTAINS_STRING.getPrepper(filterExpression));
-                yield dialect.likeCondition(quotedColumn, true, foldColumn);
-            }
-            case ISNULL -> quotedColumn + " is null";
-            case ISNOTNULL -> quotedColumn + " is not null";
-            case ISEMPTY -> dialect.isEmptyCondition(quotedColumn);
-            case ISNOTEMPTY -> dialect.isNotEmptyCondition(quotedColumn);
-        };
-
+        return FilterSql.applyToColumn(getDialect(), original, quotedColumn, columnTypeHint, columnCase, this::getPrepper, prepperConsumer);
     }
 
     @Override
@@ -1677,7 +1566,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
      * The query timeout for a query that a script runs, from the time its run time limit leaves it: whole seconds, rounded up and at
      * least 1, because JDBC reads 0 as no timeout. Without a limit, null.
      */
-    private static @Nullable Integer queryTimeoutFor(final @NotNull JanitorScriptProcess process) {
+    static @Nullable Integer queryTimeoutFor(final @NotNull JanitorScriptProcess process) {
         final Duration remaining = process.getRemainingRunTime();
         return remaining == null ? null : (int) Math.max(1, Math.min(Integer.MAX_VALUE, (remaining.toMillis() + 999) / 1000));
     }
