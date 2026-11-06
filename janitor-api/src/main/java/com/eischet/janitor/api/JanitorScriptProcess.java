@@ -283,6 +283,15 @@ public interface JanitorScriptProcess {
     void setMaxRunTime(final @Nullable Duration maxRunTime);
 
     /**
+     * The time that the running script may still take before it exceeds its {@linkplain #setMaxRunTime run time limit}. Native
+     * methods that block, e.g. a database query, cannot be stopped by that limit; they derive their own timeout from this value.
+     * @return the remaining time, zero once the limit is reached, or null if the script runs without a limit
+     */
+    default @Nullable Duration getRemainingRunTime() {
+        return null;
+    }
+
+    /**
      * The options for JSON that the script creates, e.g. with {@code toJson()} or as a request body.
      * Every process starts with {@link JanitorEnvironment#getJsonWriteOptions()}.
      * @return the options

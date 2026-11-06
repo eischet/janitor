@@ -84,6 +84,15 @@ public class RunningScriptProcess extends AbstractScriptProcess {
         this.maxRunTime = maxRunTime;
     }
 
+    @Override
+    public @Nullable Duration getRemainingRunTime() {
+        if (deadlineLimit == null) {
+            return null;
+        }
+        final long left = deadline - System.nanoTime();
+        return left > 0 ? Duration.ofNanos(left) : Duration.ZERO;
+    }
+
     /**
      * @return the maximum time that the script may run, or null or zero if there is no limit
      */

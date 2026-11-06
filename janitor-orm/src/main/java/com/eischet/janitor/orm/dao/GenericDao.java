@@ -59,6 +59,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.sql.SQLException;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -1065,6 +1066,18 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
 
     @Override
     public int countByFilter(@NotNull final DatabaseConnection conn, @Nullable final FilterExpression filterExpression) throws DatabaseError {
+        return countByFilter(conn, filterExpression, null);
+    }
+
+    /**
+     * Counts the entities that match a filter expression, like {@link #countByFilter(DatabaseConnection, FilterExpression)}.
+     * @param conn the database connection
+     * @param filterExpression the filter, or null to count all entities
+     * @param queryTimeout the query timeout in seconds, or null for no timeout
+     * @return the number of entities
+     * @throws DatabaseError on database errors, including a query that ran into its timeout
+     */
+    public int countByFilter(@NotNull final DatabaseConnection conn, @Nullable final FilterExpression filterExpression, @Nullable final Integer queryTimeout) throws DatabaseError {
                 final List<Prepper> preppers = new LinkedList<>();
         @Language("SQL") final String sql = where(countAllSql, filterExpression == null ? null : expressionToSql(filterExpression, preppers::add));
         if (verbose) {
@@ -1073,6 +1086,9 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
         return conn.queryForInt(
                 new SelectStatement(sql),
                 stmt -> {
+                    if (queryTimeout != null) {
+                        stmt.setQueryTimeout(queryTimeout);
+                    }
                     for (final Prepper prepper : preppers) {
                         prepper.prepare(conn, stmt);
                     }
@@ -1628,7 +1644,8 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
      */
     public JanitorObject scriptSelect(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         final FilterExpression filter = scriptFilter(process, arguments);
-        return callScriptTransaction(process, conn -> Janitor.list(findByFilter(conn, FilterQuery.from(filter)).stream().map(this::forScript)));
+        final FilterQuery query = FilterQuery.from(filter).withQueryTimeout(queryTimeoutFor(process));
+        return callScriptTransaction(process, conn -> Janitor.list(findByFilter(conn, query).stream().map(this::forScript)));
     }
 
     /**
@@ -1640,7 +1657,8 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
      */
     public JanitorObject scriptCount(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         final FilterExpression filter = scriptFilter(process, arguments);
-        return Janitor.integer(callScriptTransaction(process, conn -> countByFilter(conn, filter)));
+        final Integer queryTimeout = queryTimeoutFor(process);
+        return Janitor.integer(callScriptTransaction(process, conn -> countByFilter(conn, filter, queryTimeout)));
     }
 
     /**
@@ -1653,6 +1671,15 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
      */
     public @NotNull FilterExpression filterFromLambda(final @NotNull JanitorScriptProcess process, final @NotNull JInspectableFunction function) throws JanitorRuntimeException {
         return LambdaFilter.toFilter(process, function, this::isFilterField);
+    }
+
+    /**
+     * The query timeout for a query that a script runs, from the time its run time limit leaves it: whole seconds, rounded up and at
+     * least 1, because JDBC reads 0 as no timeout. Without a limit, null.
+     */
+    private static @Nullable Integer queryTimeoutFor(final @NotNull JanitorScriptProcess process) {
+        final Duration remaining = process.getRemainingRunTime();
+        return remaining == null ? null : (int) Math.max(1, Math.min(Integer.MAX_VALUE, (remaining.toMillis() + 999) / 1000));
     }
 
     private @NotNull FilterExpression scriptFilter(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
@@ -1679,7 +1706,12 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
         try {
             @Language("SQL") final String sql = arguments.require(2).getString(0).janitorGetHostValue();
             final JCallable callback = (JCallable) arguments.get(1);
-            final List<Long> identifiers = getDataManager().callTransaction(conn -> conn.queryForList(new SelectStatement(sql), SimpleResultSet::getLong));
+            final Integer queryTimeout = queryTimeoutFor(process);
+            final List<Long> identifiers = getDataManager().callTransaction(conn -> conn.queryForList(new SelectStatement(sql), stmt -> {
+                if (queryTimeout != null) {
+                    stmt.setQueryTimeout(queryTimeout);
+                }
+            }, SimpleResultSet::getLong));
             long count = 0;
             // Load the entities chunk-wise: one transaction (one connection checkout and commit) and one query per chunk instead of per entity. The callbacks
             // run outside of these transactions, as they always did, so whatever a script writes from within its callback is committed on its own,
