@@ -1,3 +1,11 @@
+# 0.9.74 (in development)
+
+- orm: `dao.select(condition)` and `dao.count(condition)` take a filter map as well as a lambda, on entity and join DAOs,
+  in the JSON form of a filter expression as used by the REST API, e.g.
+  `articles.select({field: "shortCode", operator: "eq", valueString: "GAD"})` or `{logic: "and", filters: [...]}`, and a
+  `FilterExpression` object, too. Maps and expressions must be complete and may only use fields, or paths through
+  references, that the DAO can filter by; anything else is an argument error. `ScriptFilter` does the conversion.
+
 # 0.9.73,2026-11-06 (internal release only)
 
 - orm: join DAOs can filter, too. `JoinDao.findByFilter` and `countByFilter` take a `FilterExpression` on the fields of the

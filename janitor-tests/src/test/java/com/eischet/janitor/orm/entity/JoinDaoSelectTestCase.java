@@ -285,6 +285,16 @@ class JoinDaoSelectTestCase extends JanitorTest {
     }
 
     @Test
+    void selectsAndCountsByFilterMap() throws Exception {
+        assertEquals(List.of("BLUE/BOB"), pairs(run("""
+                return memberships.select({logic: "and", filters: [
+                    {field: "member.key", operator: "eq", valueString: "BOB"},
+                    {field: "role", operator: "eq", valueString: "lead"}
+                ]});""")));
+        assertEquals(2L, run("return memberships.count({field: \"team.key\", operator: \"eq\", valueString: \"BLUE\"});").janitorGetHostValue());
+    }
+
+    @Test
     void findsByFilterExpressionInJava() throws Exception {
         final List<Membership> found = teams.getDataManager().callTransaction(conn -> teams.getMembershipDao().findByFilter(conn,
                 FilterExpression.from("member.key", FilterOperator.STARTSWITH, "c"), null));

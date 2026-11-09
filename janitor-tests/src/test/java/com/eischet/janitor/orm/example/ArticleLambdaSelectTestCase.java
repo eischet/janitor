@@ -113,6 +113,25 @@ public class ArticleLambdaSelectTestCase extends JanitorTest {
     }
 
     @Test
+    void filterMap() throws Exception {
+        assertEquals(List.of("Gadget"), keys("return articles.select({field: \"shortCode\", operator: \"eq\", valueString: \"GAD\"})"));
+        assertEquals(List.of("Gadget", "Widget-A"), keys("""
+                min = 4;
+                return articles.select({logic: "and", filters: [
+                    {field: "active", operator: "eq", valueBoolean: true},
+                    {field: "stock", operator: "gt", valueLong: min}
+                ]})"""));
+        assertEquals(2L, evaluate("return articles.count({field: \"description\", operator: \"isnotnull\"})", g -> g.bind("articles", dao)).janitorGetHostValue());
+    }
+
+    @Test
+    void rejectsFilterMapsThatCannotBeAQuery() {
+        assertRejected("return articles.select({field: \"unknown\", operator: \"eq\", valueLong: 1})", "'unknown' is not a field");
+        assertRejected("return articles.select({field: \"stock\", operator: \"gt\"})", "incomplete");
+        assertRejected("return articles.select({field: \"stock\", operator: \"nonsense\", valueLong: 1})", "select:");
+    }
+
+    @Test
     void rejectsWhatCannotBeAQuery() {
         assertRejected("return articles.select(a -> a.unknown == 1)", "'unknown' is not a field");
         assertRejected("return articles.select(a -> a.stock * 2 > 4)", "expected a property of the parameter");

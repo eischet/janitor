@@ -140,6 +140,9 @@ Calling such a function works as before; the tree is an addition. The ORM's `dao
 `dao.count(lambda)` use it, see `LambdaFilter` for the conditions they accept, including fields of referenced
 entities like `item.product.shortCode`. Join DAOs offer the same two methods for the records of a join table, whose
 lambda gets the join record: `memberships.select(m -> m.role == "lead" and m.team.key == "RED")`.
+Instead of a lambda, both methods also take a filter map in the JSON form of a filter expression, e.g.
+`items.select({field: "code", operator: "eq", valueString: "FOO"})` or `{logic: "and", filters: [...]}`, or a
+`FilterExpression` object; it must be complete and use only fields that the DAO can filter by (see `ScriptFilter`).
 `FilterExpressionCode` goes the other way and writes a filter expression as such a lambda.
 
 <a id="limits"></a>

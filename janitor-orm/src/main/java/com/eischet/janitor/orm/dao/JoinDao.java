@@ -36,6 +36,7 @@ import com.eischet.janitor.orm.filter.FilterExpression;
 import com.eischet.janitor.orm.filter.FilterOperator;
 import com.eischet.janitor.orm.filter.LambdaFilter;
 import com.eischet.janitor.orm.filter.MalformedExpression;
+import com.eischet.janitor.orm.filter.ScriptFilter;
 import com.eischet.janitor.orm.ref.ForeignKey;
 import com.eischet.janitor.orm.sql.ColumnCase;
 import com.eischet.janitor.orm.sql.ColumnTypeHint;
@@ -90,9 +91,9 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
         DISPATCH.addStringProperty("jsonSchema", self -> Janitor.current().writeJson(self.entityDispatchTable::writeSchemaToJson))
                 .setMetaData(Janitor.MetaData.HELP, "jsonSchema: The JSON schema of the join records as a string; read-only.");
         DISPATCH.addMethod("select", JoinDao::scriptSelect)
-                .setMetaData(Janitor.MetaData.HELP, "select(condition): Returns the list of the join records for which the condition, a lambda like 'link -> link.reason.key == \"A\" and link.ticket.status == \"o\"', holds; runs it as a query.");
+                .setMetaData(Janitor.MetaData.HELP, "select(condition): Returns the list of the join records for which the condition, a lambda like 'link -> link.reason.key == \"A\" and link.ticket.status == \"o\"' or a filter map like {field: \"reason.key\", operator: \"eq\", valueString: \"A\"}, holds; runs it as a query.");
         DISPATCH.addMethod("count", JoinDao::scriptCount)
-                .setMetaData(Janitor.MetaData.HELP, "count(condition): Returns the number of the join records for which the condition, a lambda like for select, holds; runs it as a query.");
+                .setMetaData(Janitor.MetaData.HELP, "count(condition): Returns the number of the join records for which the condition, a lambda or a filter map like for select, holds; runs it as a query.");
     }
 
     protected final ListenerSet<EntityChangeListener<T>> entityChangeListeners= new ListenerSetStandard<>();
@@ -432,7 +433,7 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
 
     /**
      * Script method {@code dao.select(link -> condition)}: finds the join records for which the condition holds, by running it as a query.
-     * See {@link LambdaFilter} for the conditions that can be used.
+     * The condition is a lambda (see {@link LambdaFilter}), a filter map or a filter expression, see {@link ScriptFilter}.
      * @param process the running script process
      * @param arguments the call arguments
      * @return a list of the join records
@@ -468,11 +469,8 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
 
     private @NotNull FilterExpression scriptFilter(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         final JanitorObject argument = arguments.require(1).get(0).janitorUnpack();
-        if (!(argument instanceof JInspectableFunction function)) {
-            throw new JanitorArgumentException(process, arguments.getFunctionName() + ": expecting a lambda like 'link -> link.reason.key == \"A\"', but found " + simpleClassNameOf(argument));
-        }
         try {
-            return filterFromLambda(process, function);
+            return ScriptFilter.toFilter(process, argument, this::isFilterField, "link -> link.reason.key == \"A\"");
         } catch (MalformedExpression e) {
             throw new JanitorArgumentException(process, arguments.getFunctionName() + ": " + e.getMessage(), e);
         }

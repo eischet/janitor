@@ -43,6 +43,7 @@ import com.eischet.janitor.orm.entity.Versioned;
 import com.eischet.janitor.orm.filter.FilterOperator;
 import com.eischet.janitor.orm.filter.LambdaFilter;
 import com.eischet.janitor.orm.filter.MalformedExpression;
+import com.eischet.janitor.orm.filter.ScriptFilter;
 import com.eischet.janitor.orm.meta.EntityDispatchTable;
 import com.eischet.janitor.orm.sql.ColumnCase;
 import com.eischet.janitor.orm.sql.ColumnTypeHint;
@@ -117,9 +118,9 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
         DISPATCH.addMethod("queryForEach", GenericDao::scriptQueryForEach)
                 .setMetaData(Janitor.MetaData.HELP, "queryForEach(sql, callback): Runs the SQL query, which must return entity IDs, calls callback(entity, id) for each entity found and returns how many there were.");
         DISPATCH.addMethod("select", GenericDao::scriptSelect)
-                .setMetaData(Janitor.MetaData.HELP, "select(condition): Returns the entities for which a lambda like item -> item.code == \"FOO\" holds, running it as a database query.");
+                .setMetaData(Janitor.MetaData.HELP, "select(condition): Returns the entities for which the condition holds, running it as a database query; the condition is a lambda like item -> item.code == \"FOO\" or a filter map like {field: \"code\", operator: \"eq\", valueString: \"FOO\"}.");
         DISPATCH.addMethod("count", GenericDao::scriptCount)
-                .setMetaData(Janitor.MetaData.HELP, "count(condition): Returns the number of entities for which a lambda like item -> item.code == \"FOO\" holds, running it as a database query.");
+                .setMetaData(Janitor.MetaData.HELP, "count(condition): Returns the number of entities for which the condition, a lambda or a filter map like for select, holds, running it as a database query.");
 
         DISPATCH.addStringProperty("jsonSchema", self -> Janitor.current().writeJson(self.entityDispatchTable::writeSchemaToJson))
                 .setMetaData(Janitor.MetaData.HELP, "jsonSchema: The JSON schema of the entities as a string; read-only.");
@@ -1525,7 +1526,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
 
     /**
      * Script method {@code dao.select(item -> condition)}: finds the entities for which the condition holds, by running it as a query.
-     * See {@link LambdaFilter} for the conditions that can be used.
+     * The condition is a lambda (see {@link LambdaFilter}), a filter map or a filter expression, see {@link ScriptFilter}.
      * @param process the running script process
      * @param arguments the call arguments
      * @return a list of the entities
@@ -1573,11 +1574,8 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
 
     private @NotNull FilterExpression scriptFilter(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         final JanitorObject argument = arguments.require(1).get(0).janitorUnpack();
-        if (!(argument instanceof JInspectableFunction function)) {
-            throw new JanitorArgumentException(process, arguments.getFunctionName() + ": expecting a lambda like 'item -> item.code == \"FOO\"', but found " + simpleClassNameOf(argument));
-        }
         try {
-            return filterFromLambda(process, function);
+            return ScriptFilter.toFilter(process, argument, this::isFilterField, "item -> item.code == \"FOO\"");
         } catch (MalformedExpression e) {
             throw new JanitorArgumentException(process, arguments.getFunctionName() + ": " + e.getMessage(), e);
         }
