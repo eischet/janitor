@@ -245,6 +245,7 @@ public class PathFilterTestCase extends JanitorTest {
         assertEquals(List.of("I1"), select("return items.select(i -> i.product.shortCode == \"BAZ\")"));
         assertEquals(List.of("I2"), select("return items.select(i -> i.product.vendor.name.startsWithIgnoreCase(\"glob\"))"));
         assertEquals(List.of("I1", "I2"), select("return items.select(i -> i.product.vendor != null)"));
+        assertEquals(List.of("I1"), select("return items.select(i -> [\"BAZ\", \"NONE\"].contains(i.product.shortCode))"));
     }
 
     private String read(final String script) throws Exception {

@@ -91,6 +91,13 @@ public class ArticleLambdaSelectTestCase extends JanitorTest {
     }
 
     @Test
+    void listContainsProperty() throws Exception {
+        assertEquals(List.of("Gadget", "widget-b"), keys("return articles.select(a -> [\"GAD\", \"WID-B\"].contains(a.shortCode))"));
+        assertEquals(List.of("Widget-A"), keys("codes = [\"GAD\", \"WID-B\"]; return articles.select(a -> not codes.contains(a.shortCode))"));
+        assertRejected("return articles.select(a -> \"GAD\".contains(a.shortCode))", "needs a list of values");
+    }
+
+    @Test
     void textInProperty() throws Exception {
         assertEquals(List.of("Widget-A", "widget-b"), keys("return articles.select(a -> \"idget\" in a.name)"));
         assertEquals(List.of("Gadget"), keys("return articles.select(a -> \"idget\" not in a.name)"));

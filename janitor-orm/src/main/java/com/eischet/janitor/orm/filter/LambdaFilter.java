@@ -34,7 +34,7 @@ import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
  *     <li>{@code item.f == v}, {@code !=}, {@code <}, {@code <=}, {@code >}, {@code >=}, with the operands in either
  *     order; comparisons of text are exact, as in scripts; {@code == null} and {@code != null} test for null</li>
  *     <li>{@code item.f ~= v}: equality ignoring case</li>
- *     <li>{@code item.f in [a, b]}, {@code item.f not in list}</li>
+ *     <li>{@code item.f in [a, b]}, {@code item.f not in list}, and in method form {@code [a, b].contains(item.f)}</li>
  *     <li>{@code v in item.f}, {@code v not in item.f}: the text contains (not) {@code v}, like {@code item.f.contains(v)}</li>
  *     <li>{@code item.f.startsWith(v)}, {@code endsWith(v)}, {@code contains(v)} and their variants ending in
  *     {@code IgnoreCase}</li>
@@ -234,6 +234,11 @@ public final class LambdaFilter {
     }
 
     private @NotNull FilterExpression methodCall(final @NotNull MethodCallNode call, final boolean negated) throws JanitorRuntimeException {
+        if (call.name().equals("contains") && !call.target().usesParameters() && call.arguments().size() == 1
+            && call.arguments().getFirst().name() == null && call.arguments().getFirst().value() instanceof MemberNode member) {
+            // ["A", "B"].contains(item.code) is the method form of item.code in ["A", "B"]
+            return in(field(member), value(call.target()), negated, call);
+        }
         if (!(call.target() instanceof MemberNode member)) {
             throw unsupported(call, "expected a method call on a property of the parameter, like 'item.name.startsWith(\"A\")'");
         }

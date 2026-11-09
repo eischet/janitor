@@ -7,6 +7,8 @@
   references, that the DAO can filter by; anything else is an argument error. `ScriptFilter` does the conversion.
 - orm: a lambda filter accepts `"text" in item.f` and `"text" not in item.f`, the script form of `item.f.contains("text")`,
   which was rejected with "the property must be on the left side of 'IN'". `item.f in [a, b]` stays a test against a list.
+- orm: a lambda filter accepts `[a, b].contains(item.f)` and `not list.contains(item.f)`, also through references, the
+  method form of `item.f in [a, b]`; it was rejected with "expected a method call on a property of the parameter".
 - orm: pseudo fields. A `FilterRewrite` turns a condition on a name without a column into a condition on real fields;
   `GenericDao` and `JoinDao` apply it right before they build the SQL, so search masks, filter maps, lambdas and paths
   through references (`link.ticket.open`) all accept them. Properties get one with the meta-data key
