@@ -10,6 +10,7 @@ import com.eischet.janitor.api.metadata.ScriptType;
 import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.modules.JanitorModuleRegistration;
 import com.eischet.janitor.api.modules.ModuleResolver;
+import com.eischet.janitor.api.scopes.NameDoc;
 import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.scopes.ScriptBindings;
 import com.eischet.janitor.api.types.JanitorObject;
@@ -17,7 +18,6 @@ import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.api.types.dispatch.HasDispatcher;
 import com.eischet.janitor.api.types.functions.JCallable;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
-import com.eischet.janitor.compiler.DocComments;
 import com.eischet.janitor.lang.JanitorLexer;
 import com.eischet.janitor.logging.JanitorLogger;
 import org.antlr.v4.runtime.CharStreams;
@@ -28,7 +28,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -171,10 +170,7 @@ public final class JanitorCompletions {
         if (last >= 0 && isDot(before.get(last))) {
             final Expression receiver = last > 0 ? new Inference(before, declared).expressionEndingAt(last - 1, 0) : null;
             final List<Completion> known = receiver == null ? null : membersOf(receiver.type());
-            if (known != null) {
-                return known;
-            }
-            return members(last > 0 ? before.get(last - 1) : null);
+            return withDocumentedMembers(source, before, last - 1, known != null ? known : members(last > 0 ? before.get(last - 1) : null));
         }
         final List<Completion> result = new ArrayList<>(keywords);
         final Set<String> declaredNames = declared.stream().map(ScriptBindings.Declaration::name).collect(Collectors.toSet());
@@ -621,12 +617,44 @@ public final class JanitorCompletions {
                 .toList();
     }
 
+    /**
+     * Puts the members that the script documents for a name path, e.g. the keys of the map literal assigned to
+     * {@code config}, in front of the other suggestions after {@code config.}.
+     */
+    private static List<Completion> withDocumentedMembers(final String source, final List<Token> before, final int end, final List<Completion> others) {
+        final List<String> path = new ArrayList<>();
+        int i = end;
+        while (i >= 0 && before.get(i).getType() == JanitorLexer.IDENTIFIER) {
+            path.addFirst(before.get(i).getText());
+            if (i >= 2 && isDot(before.get(i - 1))) {
+                i -= 2;
+            } else {
+                break;
+            }
+        }
+        if (path.isEmpty() || i < 0 || before.get(i).getType() != JanitorLexer.IDENTIFIER) {
+            return others;
+        }
+        final NameDoc doc = ScriptDocs.lookup(ScriptDocs.of(source), path);
+        if (doc == null || doc.members().isEmpty()) {
+            return others;
+        }
+        final String owner = String.join(".", path);
+        final List<Completion> result = new ArrayList<>();
+        doc.members().forEach((name, member) -> result.add(new Completion(name,
+                member.signature() != null ? Kind.METHOD : Kind.PROPERTY,
+                member.signature() != null ? member.signature() : name,
+                member.text() == null ? "" : member.text(), owner)));
+        final Set<String> documented = doc.members().keySet();
+        others.stream().filter(c -> !documented.contains(c.name())).forEach(result::add);
+        return result;
+    }
+
     // the names declared or used in the script, except the word at the cursor and member names, with their doc comments
     private static List<Completion> namesIn(final String source, final int offset) {
         final List<Token> all = tokens(source);
-        final DocComments docComments = DocComments.of(source);
+        final Map<String, NameDoc> docs = ScriptDocs.of(source);
         final Map<String, Kind> names = new TreeMap<>();
-        final Map<String, String> docs = new HashMap<>();
         for (int i = 0; i < all.size(); i++) {
             final Token token = all.get(i);
             if (token.getType() != JanitorLexer.IDENTIFIER) {
@@ -641,15 +669,15 @@ public final class JanitorCompletions {
             }
             final boolean function = previous != null && previous.getType() == JanitorLexer.FUNCTION;
             names.merge(token.getText(), function ? Kind.FUNCTION : Kind.VARIABLE, (a, b) -> a == Kind.FUNCTION ? a : b);
-            final Token next = i + 1 < all.size() ? all.get(i + 1) : null;
-            final String doc = function ? docComments.before(previous)
-                    : next != null && next.getType() == JanitorLexer.ASSIGN ? docComments.before(token) : null;
-            if (doc != null) {
-                docs.put(token.getText(), doc);
-            }
         }
         final List<Completion> result = new ArrayList<>();
-        names.forEach((name, kind) -> result.add(new Completion(name, kind, kind == Kind.FUNCTION ? name + "(...)" : name, docs.getOrDefault(name, ""), "")));
+        names.forEach((name, kind) -> {
+            final NameDoc doc = docs.get(name);
+            final String signature = doc == null ? null : doc.signature();
+            final Kind shown = signature != null ? Kind.FUNCTION : kind;
+            result.add(new Completion(name, shown, signature != null ? signature : shown == Kind.FUNCTION ? name + "(...)" : name,
+                    doc == null || doc.text() == null ? "" : doc.text(), ""));
+        });
         return result;
     }
 

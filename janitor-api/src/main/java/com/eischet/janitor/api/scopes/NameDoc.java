@@ -112,7 +112,7 @@ public record NameDoc(@Nullable String text, @Nullable String signature, @NotNul
             out.append(text);
         }
         for (final Param parameter : parameters) {
-            out.append("\n    ").append(parameter.name()).append(": ").append(parameter.text());
+            out.append("\n    ").append(parameter.name()).append(": ").append(parameter.text().replace("\n", "\n        "));
         }
         return out.toString();
     }

@@ -26,6 +26,10 @@ public class BrrrModule extends JanitorComposed<BrrrModule> implements JanitorMo
     public static final DispatchTable<BrrrModule> DISPATCH = new DispatchTable<>(BrrrModule::new, false);
 
     static {
+        DISPATCH.setMetaData(com.eischet.janitor.api.Janitor.MetaData.HELP, "Sends push notifications through the Brrr service.");
+    }
+
+    static {
         DISPATCH.addMethod("send", (self, process, args) -> {
             if (args.size() == 2) {
                 return self.sendMessage(process, args.getRequiredStringValue(0), args.get(1));

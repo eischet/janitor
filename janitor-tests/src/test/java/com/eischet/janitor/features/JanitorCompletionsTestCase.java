@@ -237,6 +237,31 @@ public class JanitorCompletionsTestCase extends JanitorTest {
     }
 
     @Test
+    void documentedSignaturesAndMembers() {
+        final String head = String.join("\n",
+                "/** Finds a customer. */",
+                "function find(/** the number */ id, timeout = 30) { return id; }",
+                "/** Doubles */ twice = x -> x * 2;",
+                "/** Settings */",
+                "config = {",
+                "    /** Timeout in seconds */ timeout: 30,",
+                "    /** Handlers */ handlers: { /** After saving */ onSave: (row) -> row }",
+                "};",
+                "");
+        final List<Completion> names = suggestions.complete(head + "fi", 9, 2);
+        assertEquals("find(id, timeout = 30)", find(names, "find").orElseThrow().signature());
+        assertEquals("twice(x)", find(names, "twice").orElseThrow().signature());
+        assertEquals(Kind.FUNCTION, find(names, "twice").orElseThrow().kind());
+        final List<Completion> members = suggestions.complete(head + "config.", 9, 7);
+        assertEquals("Timeout in seconds", find(members, "timeout").orElseThrow().description());
+        assertEquals(Kind.PROPERTY, find(members, "timeout").orElseThrow().kind());
+        assertTrue(find(members, "size").isPresent(), "the members of the map stay");
+        final List<Completion> nested = suggestions.complete(head + "config.handlers.", 9, 16);
+        assertEquals("onSave(row)", find(nested, "onSave").orElseThrow().signature());
+        assertEquals("After saving", find(nested, "onSave").orElseThrow().description());
+    }
+
+    @Test
     void globalsHaveTheirHelpTexts() {
         final Completion print = find(suggestions.complete("pri", 1, 3), "print").orElseThrow();
         assertEquals("print(values...)", print.signature());

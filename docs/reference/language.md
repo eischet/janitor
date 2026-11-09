@@ -79,7 +79,12 @@ members of the built-in types have.
 A block comment that starts with `/*!` documents the script itself, i.e. the [module](modules.md) made from it, wherever
 it stands; the texts of several such comments are joined. `import` stores it as the documentation of the name it binds,
 so `help(tools)` returns it, also after `import tools as t` as `help(t)`. Hosts read it with
-`RunnableScript.getDocumentation()`.
+`RunnableScript.getDocumentation()`. The standard modules written in Java describe themselves the same way, e.g.
+`help(collections)`.
+
+Editor suggestions show the documentation, too: the call form and doc comment of the script's own functions and
+variables, after a dot the documented keys and members (`config.` offers `timeout`), and the doc comments of the
+functions and values of an imported script module.
 
 ```janitor compile-only
 /*!

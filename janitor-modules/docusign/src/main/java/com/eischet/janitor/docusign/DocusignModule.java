@@ -23,6 +23,10 @@ public class DocusignModule extends JanitorComposed<DocusignModule> implements J
     private static final DispatchTable<DocusignModule> DISPATCHER = new DispatchTable<>(DocusignModule::new, false);
 
     static {
+        DISPATCHER.setMetaData(com.eischet.janitor.api.Janitor.MetaData.HELP, "Sends documents for electronic signature through DocuSign.");
+    }
+
+    static {
         DISPATCHER.addMethod("Signer", (self, process, args) -> enableApply(process, new DocusignSigner(), args))
                 .setMetaData(Janitor.MetaData.HELP, "Signer(properties): Creates a new signer recipient; an optional map argument is applied to its properties.");
         DISPATCHER.addMethod("CarbonCopy", (self, process, args) -> enableApply(process, new DocusignCarbonCopy(), args)    )

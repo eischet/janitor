@@ -15,6 +15,10 @@ public class CommonMarkModule extends JanitorComposed<CommonMarkModule> implemen
 
     private static final DispatchTable<CommonMarkModule> dispatch = new DispatchTable<>(CommonMarkModule::new, false);
 
+    static {
+        dispatch.setMetaData(com.eischet.janitor.api.Janitor.MetaData.HELP, "Reads, changes and writes Markdown documents (CommonMark).");
+    }
+
     public static final JanitorModuleRegistration REGISTRATION = new JanitorModuleRegistration("commonmark", CommonMarkModule::new).withDispatcher(() -> CommonMarkModule.dispatch);
 
     static {

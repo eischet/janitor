@@ -33,6 +33,10 @@ public class McpModule extends JanitorComposed<McpModule> implements JanitorModu
     private static final DispatchTable<McpModule> DISPATCH = new DispatchTable<>(() -> new McpModule(), false);
 
     static {
+        DISPATCH.setMetaData(com.eischet.janitor.api.Janitor.MetaData.HELP, "A client for servers of the Model Context Protocol (MCP), which offer tools that can be called.");
+    }
+
+    static {
         DISPATCH.addMethod("connect", (self, process, args) -> {
             args.require(1, 2);
             final McpOptions options = self.defaults.get();

@@ -28,6 +28,10 @@ public class MsGraphModule extends JanitorComposed<MsGraphModule> implements Jan
     private static final DispatchTable<MsGraphModule> DISPATCH = new DispatchTable<>(() -> new MsGraphModule(), false);
 
     static {
+        DISPATCH.setMetaData(com.eischet.janitor.api.Janitor.MetaData.HELP, "Reads and organizes e-mail in Microsoft 365 mailboxes through Microsoft Graph.");
+    }
+
+    static {
         DISPATCH.addMethod("connect", (self, process, args) -> {
             args.require(3, 4);
             final MsGraphOptions options = self.defaults.get();

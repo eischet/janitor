@@ -46,6 +46,10 @@ public class FilesModule extends JanitorComposed<FilesModule> implements Janitor
 
     private static final DispatchTable<FilesModule> dispatcher = new DispatchTable<>(FilesModule::new, false);
 
+    static {
+        dispatcher.setMetaData(com.eischet.janitor.api.Janitor.MetaData.HELP, "Access to the file system.");
+    }
+
     public static final JanitorModuleRegistration REGISTRATION = new JanitorModuleRegistration("files", FilesModule::new).withDispatcher(() -> FilesModule.dispatcher);
 
     static {

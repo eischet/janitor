@@ -17,6 +17,10 @@ public class MustangModule extends JanitorComposed<MustangModule> implements Jan
     public static final DispatchTable<MustangModule> DISPATCH = new DispatchTable<>(MustangModule::new, false);
 
     static {
+        DISPATCH.setMetaData(com.eischet.janitor.api.Janitor.MetaData.HELP, "Creates electronic invoices in the ZUGFeRD / Factur-X / XRechnung formats, based on the Mustang project.");
+    }
+
+    static {
         DISPATCH.addConstructor("BankDetails", MustangBankDetails::new)
             .setMetaData(Janitor.MetaData.HELP, "BankDetails(): Creates new, empty bank details of a trade party.");
         DISPATCH.addConstructor("Invoice", MustangInvoice::new)

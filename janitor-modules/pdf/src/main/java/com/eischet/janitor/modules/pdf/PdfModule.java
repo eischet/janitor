@@ -48,6 +48,10 @@ public class PdfModule extends JanitorComposed<PdfModule> implements JanitorModu
 
     public static final DispatchTable<PdfModule> dispatcher = new DispatchTable<>(PdfModule::new, false);
 
+    static {
+        dispatcher.setMetaData(com.eischet.janitor.api.Janitor.MetaData.HELP, "Creates and reads PDF documents, based on the OpenPDF library.");
+    }
+
     public static final JanitorModuleRegistration REGISTRATION = new JanitorModuleRegistration("pdf", PdfModule::new).withDispatcher(() -> PdfModule.dispatcher);
 
     static {

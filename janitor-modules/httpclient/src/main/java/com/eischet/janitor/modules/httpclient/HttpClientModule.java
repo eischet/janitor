@@ -18,6 +18,10 @@ public class HttpClientModule extends JanitorComposed<HttpClientModule> implemen
     private static final DispatchTable<HttpClientModule> DISPATCH = new DispatchTable<>(HttpClientModule::new, false);
 
     static {
+        DISPATCH.setMetaData(com.eischet.janitor.api.Janitor.MetaData.HELP, "HTTP requests.");
+    }
+
+    static {
         // Every HELP text starts with the call form, "name(arguments): ", which the language reference relies on.
         DISPATCH.addMethod("fetch", (self, process, arguments) -> {
             final String url = arguments.require(1).getRequiredStringValue(0);

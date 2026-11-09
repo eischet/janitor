@@ -9,7 +9,12 @@
   completions show the doc comments of the script's own names. Other comments are no documentation.
 - Module documentation: a comment that starts with `/*!` documents the script itself (`RunnableScript.getDocumentation()`).
   For modules made from scripts, `import` stores it as the documentation of the bound name, so `help(module)` returns it,
-  also under an alias. `JanitorModule.getDocumentation()` lets other modules provide documentation, too.
+  also under an alias. `JanitorModule.getDocumentation()` lets other modules provide documentation, too; by default it is
+  the HELP text of the module's dispatch table, which the standard modules now set (`help(collections)`).
+- Completions use the documentation: the script's own functions and lambdas show their call form
+  (`find(id, timeout = 30)`), after a dot the documented map keys and members come first (`config.` offers `timeout`
+  with its doc comment), and the members of imported script modules (`ScopeDescription`) carry their doc comments and
+  signatures. Multi-line parameter documentation is indented in `help()`.
 
 - orm: `dao.select(condition)` and `dao.count(condition)` take a filter map as well as a lambda, on entity and join DAOs,
   in the JSON form of a filter expression as used by the REST API, e.g.

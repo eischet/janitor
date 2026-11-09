@@ -20,6 +20,10 @@ public class CollectionsModule extends JanitorComposed<CollectionsModule> implem
     private static final DispatchTable<CollectionsModule> DISPATCH = new DispatchTable<>(CollectionsModule::new, false);
 
     static {
+        DISPATCH.setMetaData(com.eischet.janitor.api.Janitor.MetaData.HELP, "Factory functions for collections.");
+    }
+
+    static {
         // Every HELP text starts with the call form, "name(arguments): ", which the language reference relies on.
         DISPATCH.addMethod("Set", (self, process, arguments) -> Janitor.set(arguments.getList().stream()))
                 .setMetaData(Janitor.MetaData.HELP, "Set(values...): Returns a new set with the values. Also available as set(...).");

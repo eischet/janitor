@@ -14,6 +14,10 @@ public class GeneratorModule extends JanitorComposed<GeneratorModule> implements
 
     public static final DispatchTable<GeneratorModule> DISPATCH = new DispatchTable<>(GeneratorModule::new);
 
+    static {
+        DISPATCH.setMetaData(com.eischet.janitor.api.Janitor.MetaData.HELP, "Generates Java source code, e.g. entity classes with their dispatch tables, from a description written in a script.");
+    }
+
     public static final JanitorModuleRegistration REGISTRATION = new JanitorModuleRegistration("generator", GeneratorModule::new).withDispatcher(() -> GeneratorModule.DISPATCH);
 
     static {

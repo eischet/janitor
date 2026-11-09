@@ -7,6 +7,7 @@ import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.metadata.HasMetaData;
 import com.eischet.janitor.api.metadata.ScriptType;
 import com.eischet.janitor.api.modules.ScriptModule;
+import com.eischet.janitor.api.scopes.NameDoc;
 import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
@@ -41,11 +42,15 @@ public final class ScopeDescription {
             if (value == null || !ScriptModule.isExported(member)) {
                 continue;
             }
-            final String help = value instanceof HasMetaData hasMetaData ? hasMetaData.getMetaData(Janitor.MetaData.HELP) : null;
+            final NameDoc doc = scope.getNameDoc(member);
+            final String documented = doc == null || doc.text() == null ? null : doc.render();
+            final String help = documented != null ? documented
+                    : value instanceof HasMetaData hasMetaData ? hasMetaData.getMetaData(Janitor.MetaData.HELP) : null;
             if (value instanceof JCallable) {
                 final String parameters = value instanceof JInspectableFunction function ? String.join(", ", function.getParameterNames()) : "...";
+                final String signature = doc != null && doc.signature() != null ? doc.signature() : member + "(" + parameters + ")";
                 table.addMethod(member, (self, process, arguments) -> Janitor.NULL)
-                        .setMetaData(Janitor.MetaData.HELP, help != null ? help : member + "(" + parameters + "): A function of the module " + name + ".");
+                        .setMetaData(Janitor.MetaData.HELP, help != null ? help : signature + ": A function of the module " + name + ".");
             } else {
                 final Dispatcher<?> dispatcher = dispatcherOf(value);
                 table.addObjectProperty(member, self -> Janitor.NULL)

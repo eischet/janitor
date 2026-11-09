@@ -16,6 +16,10 @@ public class JanitorInternalsModule extends JanitorComposed<JanitorInternalsModu
 
     public static final DispatchTable<JanitorInternalsModule> dispatcher = new DispatchTable<>(JanitorInternalsModule::new, false);
 
+    static {
+        dispatcher.setMetaData(com.eischet.janitor.api.Janitor.MetaData.HELP, "Information about the Janitor runtime.");
+    }
+
     public static final JanitorModuleRegistration REGISTRATION = new JanitorModuleRegistration("janitor", JanitorInternalsModule::new).withDispatcher(() -> JanitorInternalsModule.dispatcher);
 
     /**

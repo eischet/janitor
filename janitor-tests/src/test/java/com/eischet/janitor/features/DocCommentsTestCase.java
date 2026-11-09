@@ -6,7 +6,12 @@ package com.eischet.janitor.features;
 import com.eischet.janitor.JanitorTest;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
+import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.modules.ScriptModule;
+import com.eischet.janitor.api.scopes.Scope;
+import com.eischet.janitor.api.types.dispatch.Dispatcher;
+import com.eischet.janitor.runtime.modules.CollectionsModule;
+import com.eischet.janitor.tooling.ScopeDescription;
 import com.eischet.janitor.runtime.OutputCatchingTestRuntime;
 import org.junit.jupiter.api.Test;
 
@@ -127,6 +132,40 @@ public class DocCommentsTestCase extends JanitorTest {
                 """, null);
         assertEquals("greet(name): Greets someone.\n    name: who to greet",
                 evaluate("import tools; return help(tools.greet);", env -> env.addModule(tools), g -> {}).janitorToString());
+    }
+
+    @Test
+    void multiLineParameterDocumentation() throws Exception {
+        assertEquals("f(a)\n    a: first line\n        second line", run("""
+                function f(
+                    /**
+                     * first line
+                     * second line
+                     */
+                    a) { return a; }
+                return help(f);
+                """));
+    }
+
+    @Test
+    void javaModulesDocumentThemselves() throws Exception {
+        assertEquals("Factory functions for collections.",
+                evaluate("import collections; return help(collections);", env -> env.addModule(CollectionsModule.REGISTRATION), g -> {}).janitorToString());
+    }
+
+    @Test
+    void scopeDescriptionsUseTheDocumentation() throws Exception {
+        final Scope scope = OutputCatchingTestRuntime.fresh().compile("tools", """
+                /** Greets someone. */
+                function greet(name) { return name; }
+                function plain(a, b) { return a; }
+                /** The default greeting */
+                greeting = "Hello";
+                """).runAndKeepGlobals().getScope();
+        final Dispatcher<?> description = ScopeDescription.of("tools", scope);
+        assertEquals("greet(name): Greets someone.", description.getMetaData("greet", Janitor.MetaData.HELP));
+        assertEquals("plain(a, b): A function of the module tools.", description.getMetaData("plain", Janitor.MetaData.HELP));
+        assertEquals("The default greeting", description.getMetaData("greeting", Janitor.MetaData.HELP));
     }
 
     @Test
