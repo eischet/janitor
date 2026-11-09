@@ -7,6 +7,7 @@ import com.eischet.janitor.JanitorTest;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -95,14 +96,36 @@ public class FilterExpressionTestCase extends JanitorTest {
     }
 
     @Test
-    void prefixesPaths() {
-        final FilterExpression filter = FilterExpression.and(List.of(
-                FilterExpression.from("status", FilterOperator.EQ, "o"),
-                FilterExpression.from("team.key", FilterOperator.EQ, "RED")));
-        final FilterExpression prefixed = filter.withPathPrefix("ticket.");
-        assertEquals("ticket.status", prefixed.getFilters().get(0).getField());
-        assertEquals("ticket.team.key", prefixed.getFilters().get(1).getField());
-        assertEquals("status", filter.getFilters().get(0).getField());
+    void knowsWhatABooleanConditionTestsFor() {
+        assertTrue(FilterExpression.from("open", FilterOperator.EQ, "").withValueBoolean(true).testsForTrue());
+        assertTrue(new FilterExpression("open", FilterOperator.NEQ).withValueBoolean(false).testsForTrue());
+        assertFalse(new FilterExpression("open", FilterOperator.EQ).withValueBoolean(false).testsForTrue());
+        assertThrows(MalformedExpression.class, () -> FilterExpression.from("open", FilterOperator.EQ, "x").testsForTrue());
+    }
+
+    @Test
+    void rewritesShorthandsAliasesAndDates() {
+        final FilterRewrite open = FilterRewrite.flag(FilterExpression.from("status", FilterOperator.EQ, "o"));
+        assertEquals(FilterOperator.EQ, open.rewrite(new FilterExpression("open", FilterOperator.EQ).withValueBoolean(true)).getOperator());
+        assertEquals(FilterOperator.NEQ, open.rewrite(new FilterExpression("open", FilterOperator.EQ).withValueBoolean(false)).getOperator());
+
+        final FilterExpression section = FilterRewrite.alias("department.section").rewrite(FilterExpression.from("section", FilterOperator.EQ, 7L));
+        assertEquals("department.section", section.getField());
+        assertEquals(7L, section.getValueLong());
+
+        final FilterRewrite date = FilterRewrite.dateOf("createdDate");
+        final LocalDate day = LocalDate.of(2026, 11, 9);
+        final FilterExpression sameDay = date.rewrite(FilterExpression.from("createdDate@date", FilterOperator.EQ, day));
+        assertEquals(FilterLogic.AND, sameDay.getLogic());
+        assertEquals(day.atStartOfDay(), sameDay.getFilters().get(0).getValueDateTime());
+        assertEquals(FilterOperator.GTE, sameDay.getFilters().get(0).getOperator());
+        assertEquals(day.plusDays(1).atStartOfDay(), sameDay.getFilters().get(1).getValueDateTime());
+        assertEquals(FilterOperator.LT, sameDay.getFilters().get(1).getOperator());
+        final FilterExpression after = date.rewrite(FilterExpression.from("createdDate@date", FilterOperator.GT, day));
+        assertEquals(FilterOperator.GTE, after.getOperator());
+        assertEquals(day.plusDays(1).atStartOfDay(), after.getValueDateTime());
+        assertEquals(FilterOperator.ISNULL, date.rewrite(new FilterExpression("createdDate@date", FilterOperator.ISEMPTY)).getOperator());
+        assertThrows(MalformedExpression.class, () -> date.rewrite(FilterExpression.from("createdDate@date", FilterOperator.CONTAINS, "2026")));
     }
 
 }

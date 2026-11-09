@@ -43,6 +43,8 @@ import com.eischet.janitor.orm.entity.Versioned;
 import com.eischet.janitor.orm.filter.FilterOperator;
 import com.eischet.janitor.orm.filter.LambdaFilter;
 import com.eischet.janitor.orm.filter.MalformedExpression;
+import com.eischet.janitor.orm.filter.FilterFields;
+import com.eischet.janitor.orm.filter.FilterRewrite;
 import com.eischet.janitor.orm.filter.ScriptFilter;
 import com.eischet.janitor.orm.meta.EntityDispatchTable;
 import com.eischet.janitor.orm.sql.ColumnCase;
@@ -820,7 +822,8 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
     }
 
     /**
-     * Converts a filter expression to an SQL condition, collecting the preppers that bind its values.
+     * Converts a filter expression to an SQL condition, collecting the preppers that bind its values. Conditions on pseudo fields
+     * are rewritten first, see {@link FilterRewrite}; paths are handled by the referenced DAOs, which rewrite their own.
      * @param filterExpression the expression
      * @param prepperConsumer receives the preppers, in the order of the parameters in the SQL
      * @return the SQL condition
@@ -836,6 +839,10 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
                     .map((FilterExpression element) -> expressionToSql(element, prepperConsumer))
                     .collect(Collectors.joining(" " + filterExpression.getLogic() + " ", "(", ")"));
         } else if (filterExpression.isExpression()) {
+            final @Nullable FilterRewrite rewrite = FilterFields.find(entityDispatchTable, filterExpression.getField());
+            if (rewrite != null) {
+                return expressionToSql(rewrite.rewrite(filterExpression), prepperConsumer);
+            }
             @Nullable final ExpressionHandler customExpressionHandler = getCustomExpressionHandler(filterExpression);
             if (customExpressionHandler != null) {
                 @Nullable final ExpressionPrepperBuilder prepper = customExpressionHandler.buildPrepper();
@@ -902,40 +909,20 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
     }
 
     /**
-     * Checks whether a field, or a path like "product.shortCode" through referenced entities, can be used in a filter expression.
+     * Checks whether a field, or a path like "product.shortCode" through referenced entities, can be used in a filter expression;
+     * pseudo fields (see {@link FilterRewrite}) can.
      * @param path the field or path
      * @return true if the field exists
      */
     public boolean isFilterField(final @NotNull String path) {
         final int dot = path.indexOf('.');
         if (dot < 0) {
-            return columnForField.containsKey(path);
+            return columnForField.containsKey(path) || FilterFields.find(entityDispatchTable, path) != null;
         }
         try {
             return referencedDao(path.substring(0, dot), path).isFilterField(path.substring(dot + 1));
         } catch (MalformedExpression e) {
             return false;
-        }
-    }
-
-    /**
-     * Returns the filter that a property stands for, which has no column of its own, see {@link JanitorOrm.MetaData#DERIVED_FILTER};
-     * for a path like "ticket.open" through referenced entities, the filter of the referenced entity's property on the paths
-     * through the references.
-     * @param path the property or path
-     * @return a new filter expression, or null if the property does not stand for a filter
-     */
-    public @Nullable FilterExpression derivedFilter(final @NotNull String path) {
-        final int dot = path.indexOf('.');
-        if (dot < 0) {
-            final FilterExpression filter = entityDispatchTable.getMetaData(path, JanitorOrm.MetaData.DERIVED_FILTER);
-            return filter == null ? null : filter.deepCopy();
-        }
-        try {
-            final FilterExpression filter = referencedDao(path.substring(0, dot), path).derivedFilter(path.substring(dot + 1));
-            return filter == null ? null : filter.withPathPrefix(path.substring(0, dot + 1));
-        } catch (MalformedExpression e) {
-            return null;
         }
     }
 
@@ -1581,7 +1568,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
      * @throws JanitorRuntimeException if evaluating a value of the lambda fails
      */
     public @NotNull FilterExpression filterFromLambda(final @NotNull JanitorScriptProcess process, final @NotNull JInspectableFunction function) throws JanitorRuntimeException {
-        return LambdaFilter.toFilter(process, function, this::isFilterField, this::derivedFilter);
+        return LambdaFilter.toFilter(process, function, this::isFilterField);
     }
 
     /**
@@ -1596,7 +1583,9 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
     private @NotNull FilterExpression scriptFilter(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         final JanitorObject argument = arguments.require(1).get(0).janitorUnpack();
         try {
-            return ScriptFilter.toFilter(process, argument, this::isFilterField, this::derivedFilter, "item -> item.code == \"FOO\"");
+            final FilterExpression filter = ScriptFilter.toFilter(process, argument, this::isFilterField, "item -> item.code == \"FOO\"");
+            expressionToSql(filter, prepper -> { }); // reports what cannot be a query, e.g. a pseudo field compared with the wrong value, before the query runs
+            return filter;
         } catch (MalformedExpression e) {
             throw new JanitorArgumentException(process, arguments.getFunctionName() + ": " + e.getMessage(), e);
         }

@@ -4,7 +4,8 @@
 package com.eischet.janitor.orm;
 
 import com.eischet.janitor.api.metadata.MetaDataKey;
-import com.eischet.janitor.orm.filter.FilterExpression;
+import com.eischet.janitor.orm.filter.FilterFields;
+import com.eischet.janitor.orm.filter.FilterRewrite;
 import com.eischet.janitor.orm.sql.ColumnCase;
 import com.eischet.janitor.orm.sql.ColumnTypeHint;
 import com.eischet.janitor.versioning.VersionRange;
@@ -47,12 +48,16 @@ public final class JanitorOrm {
         public static MetaDataKey<Boolean> LAZY_LOAD = new MetaDataKey<>("lazy_load", Boolean.class);
 
         /**
-         * Declares a boolean property without a column of its own as a shorthand for a filter on other fields, e.g. a property
-         * "open" for {@code status == "o"}. Lambda filters and filter maps of {@code dao.select} and {@code dao.count} then
-         * accept the property, also negated or through references; see {@code GenericDao.derivedFilter}. The script getter
-         * of the property must compute the same condition in memory.
+         * Makes a property without a column of its own a pseudo field that filters may use, e.g. a property "open" with
+         * {@code FilterRewrite.flag(status eq "o")}; see {@link FilterRewrite}. The script getter of the property must compute
+         * the same condition in memory.
          */
-        public static MetaDataKey<FilterExpression> DERIVED_FILTER = new MetaDataKey<>("derived_filter", FilterExpression.class);
+        public static MetaDataKey<FilterRewrite> FILTER_REWRITE = new MetaDataKey<>("filter_rewrite", FilterRewrite.class);
+
+        /**
+         * The pseudo fields of an entity that are no property, kept on its dispatch table; use {@link FilterFields#of}.
+         */
+        public static MetaDataKey<FilterFields> FILTER_FIELDS = new MetaDataKey<>("filter_fields", FilterFields.class);
 
         // public static MetaDataKey<String> OUTWARD_FOREIGN_KEYS = new MetaDataKey<>("outward_foreign_keys", String.class);
 

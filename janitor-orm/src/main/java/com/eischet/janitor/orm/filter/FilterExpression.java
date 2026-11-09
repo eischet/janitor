@@ -772,6 +772,29 @@ public class FilterExpression extends JanitorComposed<FilterExpression> {
     }
 
     /**
+     * Tells what a condition on a boolean field tests for: true for "eq true" and "neq false", false for "eq false" and "neq true".
+     * @return true if the condition tests for true
+     * @throws MalformedExpression if the condition does not compare the field with a boolean
+     */
+    public boolean testsForTrue() throws MalformedExpression {
+        if ((operator != FilterOperator.EQ && operator != FilterOperator.NEQ) || valueBoolean == null) {
+            throw new MalformedExpression("'" + field + "' can only be compared with true or false, using \"eq\" or \"neq\"");
+        }
+        return valueBoolean == (operator == FilterOperator.EQ);
+    }
+
+    /**
+     * Returns a copy of this condition on another field, e.g. on the path "department.section" instead of "section".
+     * @param newField the field or path
+     * @return a new expression
+     */
+    public @NotNull FilterExpression withField(final @NotNull String newField) {
+        final FilterExpression copy = deepCopy();
+        copy.field = newField;
+        return copy;
+    }
+
+    /**
      * Returns the opposite of this expression: groups are negated by De Morgan's laws, and each comparison by its opposite
      * operator, e.g. "eq" by "neq" and "contains" by "doesnotcontain". Like the expression, its negation follows the rules
      * of SQL for null: the negation of {@code status eq "o"} does not find rows without a status.
@@ -808,27 +831,5 @@ public class FilterExpression extends JanitorComposed<FilterExpression> {
         return copy;
     }
 
-    /**
-     * Returns a copy of this expression in which every field starts with the prefix, e.g. "ticket." to turn a filter on
-     * the fields of a referenced entity into one on the paths through the reference.
-     * @param prefix the prefix, including the dot
-     * @return a new expression
-     */
-    public @NotNull FilterExpression withPathPrefix(final @NotNull String prefix) {
-        final FilterExpression copy = deepCopy();
-        copy.prefixFields(prefix);
-        return copy;
-    }
-
-    private void prefixFields(final @NotNull String prefix) {
-        if (filters != null) {
-            for (final FilterExpression filter : filters) {
-                filter.prefixFields(prefix);
-            }
-        }
-        if (field != null) {
-            field = prefix + field;
-        }
-    }
 
 }

@@ -22,7 +22,9 @@ import com.eischet.janitor.orm.dao.JoinDao;
 import com.eischet.janitor.orm.dao.OrmDaoCollection;
 import com.eischet.janitor.orm.dao.Uplink;
 import com.eischet.janitor.orm.filter.FilterExpression;
+import com.eischet.janitor.orm.filter.FilterFields;
 import com.eischet.janitor.orm.filter.FilterOperator;
+import com.eischet.janitor.orm.filter.FilterRewrite;
 import com.eischet.janitor.orm.meta.EntityDispatchTable;
 import com.eischet.janitor.orm.meta.OrmDispatchTable;
 import com.eischet.janitor.orm.ref.ForeignKey;
@@ -33,6 +35,7 @@ import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -55,11 +58,14 @@ class JoinDaoSelectTestCase extends JanitorTest {
             DISPATCH.addLongColumn("id", "team_id", Team::getId, Team::setId);
             DISPATCH.addStringColumn("key", "team_key", Team::getKey, Team::setKey, 20);
             DISPATCH.addStringColumn("name", "team_name", Team::getName, Team::setName, 50);
+            DISPATCH.addDateTimeColumn("founded", "founded", Team::getFounded, Team::setFounded);
+            FilterFields.of(DISPATCH).add("founded@date", FilterRewrite.dateOf("founded"));
         }
 
         private long id;
         private String key;
         private String name;
+        private @Nullable LocalDateTime founded;
 
         Team() {
             super(DISPATCH);
@@ -71,6 +77,8 @@ class JoinDaoSelectTestCase extends JanitorTest {
         @Override public void setKey(final String key) { this.key = key; }
         @Override public String getName() { return name; }
         @Override public void setName(final String name) { this.name = name; }
+        @Nullable LocalDateTime getFounded() { return founded; }
+        void setFounded(final @Nullable LocalDateTime founded) { this.founded = founded; }
         @Override public boolean isSoftDeleted() { return false; }
         @Override public void setSoftDeleted(final boolean softDeleted) { }
         @Override public @NotNull Team getIdentity() { return this; }
@@ -86,9 +94,9 @@ class JoinDaoSelectTestCase extends JanitorTest {
             DISPATCH.addStringColumn("key", "member_key", Member::getKey, Member::setKey, 20);
             DISPATCH.addStringColumn("name", "member_name", Member::getName, Member::setName, 50);
             DISPATCH.addBooleanProperty("bob", self -> "BOB".equals(self.key))
-                    .setMetaData(JanitorOrm.MetaData.DERIVED_FILTER, FilterExpression.from("key", FilterOperator.EQ, "BOB"));
+                    .setMetaData(JanitorOrm.MetaData.FILTER_REWRITE, FilterRewrite.flag(FilterExpression.from("key", FilterOperator.EQ, "BOB")));
             DISPATCH.addBooleanProperty("startsWithA", self -> self.key != null && self.key.startsWith("A"))
-                    .setMetaData(JanitorOrm.MetaData.DERIVED_FILTER, FilterExpression.from("key", FilterOperator.STARTSWITH, "A"));
+                    .setMetaData(JanitorOrm.MetaData.FILTER_REWRITE, FilterRewrite.flag(FilterExpression.from("key", FilterOperator.STARTSWITH, "A")));
         }
 
         private long id;
@@ -123,11 +131,12 @@ class JoinDaoSelectTestCase extends JanitorTest {
             Member.DISPATCH.addReference(DISPATCH, "member", "member_id", Membership::getMember, Membership::setMember, membership -> membership.source);
             DISPATCH.addStringColumn("role", "member_role", Membership::getRole, Membership::setRole, 20);
             DISPATCH.addBooleanProperty("lead", self -> "lead".equals(self.role))
-                    .setMetaData(JanitorOrm.MetaData.DERIVED_FILTER, FilterExpression.from("role", FilterOperator.EQ, "lead"));
+                    .setMetaData(JanitorOrm.MetaData.FILTER_REWRITE, FilterRewrite.flag(FilterExpression.from("role", FilterOperator.EQ, "lead")));
             DISPATCH.addBooleanProperty("leadOrBlue", self -> "lead".equals(self.role) || self.team.resolveOrNull() != null && "BLUE".equals(self.team.resolveOrNull().getKey()))
-                    .setMetaData(JanitorOrm.MetaData.DERIVED_FILTER, FilterExpression.or(List.of(
+                    .setMetaData(JanitorOrm.MetaData.FILTER_REWRITE, FilterRewrite.flag(FilterExpression.or(List.of(
                             FilterExpression.from("role", FilterOperator.EQ, "lead"),
-                            FilterExpression.from("team.key", FilterOperator.EQ, "BLUE"))));
+                            FilterExpression.from("team.key", FilterOperator.EQ, "BLUE")))));
+            FilterFields.of(DISPATCH).add("teamKey", FilterRewrite.alias("team.key"));
         }
 
         private final Teams source;
@@ -202,7 +211,7 @@ class JoinDaoSelectTestCase extends JanitorTest {
         manager.executeTransaction(conn -> {
             conn.update(UpdateStatement.of("create sequence seq_f_team start with 1"));
             conn.update(UpdateStatement.of("create sequence seq_f_member start with 1"));
-            conn.update(UpdateStatement.of("create table f_team (team_id bigint primary key, team_key varchar(20), team_name varchar(50))"));
+            conn.update(UpdateStatement.of("create table f_team (team_id bigint primary key, team_key varchar(20), team_name varchar(50), founded timestamp)"));
             conn.update(UpdateStatement.of("create table f_member (member_id bigint primary key, member_key varchar(20), member_name varchar(50))"));
             conn.update(UpdateStatement.of("""
                     create table f_membership (
@@ -210,8 +219,8 @@ class JoinDaoSelectTestCase extends JanitorTest {
                       member_id bigint not null references f_member(member_id),
                       member_role varchar(20),
                       primary key (team_id, member_id))"""));
-            final Team newRed = team(conn, "RED");
-            final Team blue = team(conn, "BLUE");
+            final Team newRed = team(conn, "RED", LocalDateTime.of(2026, 3, 1, 23, 30));
+            final Team blue = team(conn, "BLUE", LocalDateTime.of(2026, 3, 2, 0, 0));
             final Member alice = member(conn, "ALICE");
             final Member bob = member(conn, "BOB");
             final Member carol = member(conn, "CAROL");
@@ -223,9 +232,10 @@ class JoinDaoSelectTestCase extends JanitorTest {
         red = manager.callTransaction(conn -> teams.getTeamDao().findByKey(conn, "RED"));
     }
 
-    private Team team(final com.eischet.dbxs.DatabaseConnection conn, final String key) throws DatabaseError {
+    private Team team(final com.eischet.dbxs.DatabaseConnection conn, final String key, final LocalDateTime founded) throws DatabaseError {
         final Team team = new Team();
         team.setKey(key);
+        team.setFounded(founded);
         teams.getTeamDao().insert(conn, team);
         return team;
     }
@@ -314,6 +324,25 @@ class JoinDaoSelectTestCase extends JanitorTest {
         assertEquals(List.of("RED/ALICE", "BLUE/BOB", "BLUE/CAROL"), pairs(run("return memberships.select(m -> m.leadOrBlue);")));
         assertEquals(List.of("RED/BOB"), pairs(run("return memberships.select(m -> not m.leadOrBlue);")));
         assertEquals(2L, run("return memberships.count(m -> m.member.bob);").janitorGetHostValue());
+    }
+
+    @Test
+    void usesAliases() throws Exception {
+        assertEquals(List.of("BLUE/BOB", "BLUE/CAROL"), pairs(run("return memberships.select(m -> m.teamKey == \"BLUE\");")));
+        assertEquals(List.of("RED/ALICE", "RED/BOB"), pairs(run("return memberships.select({field: \"teamKey\", operator: \"neq\", valueString: \"BLUE\"});")));
+    }
+
+    @Test
+    void comparesTheDateOfADateTime() throws Exception {
+        // RED was founded on 2026-03-01 at 23:30, BLUE exactly at midnight of the next day
+        assertEquals(List.of("RED/ALICE", "RED/BOB"), pairs(run("return memberships.select(m -> m.team.founded.date() == @2026-03-01);")));
+        assertEquals(List.of("BLUE/BOB", "BLUE/CAROL"), pairs(run("return memberships.select(m -> m.team.founded.date() != @2026-03-01);")));
+        assertEquals(List.of("BLUE/BOB", "BLUE/CAROL"), pairs(run("return memberships.select(m -> m.team.founded.date() > @2026-03-01);")));
+        assertEquals(List.of("BLUE/BOB", "BLUE/CAROL"), pairs(run("return memberships.select(m -> m.team.founded.date() >= @2026-03-02);")));
+        assertEquals(List.of("RED/ALICE", "RED/BOB"), pairs(run("return memberships.select(m -> m.team.founded.date() <= @2026-03-01);")));
+        assertEquals(List.of("RED/ALICE", "RED/BOB"), pairs(run("return memberships.select(m -> m.team.founded.date() < @2026-03-02);")));
+        assertEquals(List.of("RED/ALICE", "RED/BOB"), pairs(run("return memberships.select({field: \"team.founded@date\", operator: \"eq\", valueDate: @2026-03-01});")));
+        assertRejected("return memberships.select(m -> m.team.name.date() == @2026-03-01);", "there is no field 'team.name@date'");
     }
 
     @Test

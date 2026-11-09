@@ -143,11 +143,23 @@ lambda gets the join record: `memberships.select(m -> m.role == "lead" and m.tea
 Instead of a lambda, both methods also take a filter map in the JSON form of a filter expression, e.g.
 `items.select({field: "code", operator: "eq", valueString: "FOO"})` or `{logic: "and", filters: [...]}`, or a
 `FilterExpression` object; it must be complete and use only fields that the DAO can filter by (see `ScriptFilter`).
-A boolean property without a column can stand for a filter on other fields: give it the meta-data
-`JanitorOrm.MetaData.DERIVED_FILTER`, e.g. `status eq "o"` for a property `open`, and both forms accept it, as in
-`tickets.select(t -> t.open and "foo" in t.subject)`, `not t.open`, `t.open == false`, through references like
-`link.ticket.open`, and in maps as `{field: "open", operator: "eq", valueBoolean: true}`. The property's own getter
-must compute the same condition, for scripts that read it from an entity.
+Filters may also use pseudo fields, names without a column of their own that a `FilterRewrite` turns into a condition
+on real fields. The DAO rewrites them right before it builds the SQL, so search masks, filter maps, lambdas and paths
+like `link.ticket.open` all accept them. A property gets one with the meta-data `JanitorOrm.MetaData.FILTER_REWRITE`,
+other names are registered with `FilterFields`:
+
+```java
+DISPATCH.addBooleanProperty("open", (Ticket self) -> self.status == Status.OPEN)
+        .setMetaData(JanitorOrm.MetaData.FILTER_REWRITE, FilterRewrite.flag(FilterExpression.from("status", FilterOperator.EQ, "o")));
+
+FilterFields.of(DISPATCH)
+        .add("createdDate@date", FilterRewrite.dateOf("createdDate"))
+        .add("section", FilterRewrite.alias("department.section"));
+```
+
+`flag` makes a boolean shorthand (`t.open`, `not t.open`, `{field: "open", operator: "eq", valueBoolean: true}`), whose
+getter must compute the same condition in memory; `alias` another name for a field or path; `dateOf` compares the date
+of a date-time field, which a lambda writes as `t.createdDate.date() == @2026-11-09`.
 `FilterExpressionCode` goes the other way and writes a filter expression as such a lambda.
 
 <a id="limits"></a>

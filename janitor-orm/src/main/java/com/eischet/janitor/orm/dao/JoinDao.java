@@ -36,6 +36,8 @@ import com.eischet.janitor.orm.filter.FilterExpression;
 import com.eischet.janitor.orm.filter.FilterOperator;
 import com.eischet.janitor.orm.filter.LambdaFilter;
 import com.eischet.janitor.orm.filter.MalformedExpression;
+import com.eischet.janitor.orm.filter.FilterFields;
+import com.eischet.janitor.orm.filter.FilterRewrite;
 import com.eischet.janitor.orm.filter.ScriptFilter;
 import com.eischet.janitor.orm.ref.ForeignKey;
 import com.eischet.janitor.orm.sql.ColumnCase;
@@ -360,6 +362,7 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
 
     /**
      * Converts a filter expression to an SQL condition on the join table, collecting the preppers that bind its values.
+     * Conditions on pseudo fields are rewritten first, see {@link FilterRewrite}.
      * @param filterExpression the expression
      * @param prepperConsumer receives the preppers, in the order of the parameters in the SQL
      * @return the SQL condition
@@ -379,6 +382,10 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
             throw new MalformedExpression("part is neither group nor expression");
         }
         final int dot = field.indexOf('.');
+        final @Nullable FilterRewrite rewrite = dot >= 0 ? null : FilterFields.find(entityDispatchTable, field);
+        if (rewrite != null) {
+            return expressionToSql(rewrite.rewrite(filterExpression), prepperConsumer);
+        }
         if (dot >= 0) {
             final String reference = field.substring(0, dot);
             final GenericDao<?, ?> referencedDao = FilterSql.referencedDao(collection, columnForField, mappingForColumn, reference, field);
@@ -410,32 +417,12 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
     public boolean isFilterField(final @NotNull String path) {
         final int dot = path.indexOf('.');
         if (dot < 0) {
-            return columnForField.containsKey(path);
+            return columnForField.containsKey(path) || FilterFields.find(entityDispatchTable, path) != null;
         }
         try {
             return FilterSql.referencedDao(collection, columnForField, mappingForColumn, path.substring(0, dot), path).isFilterField(path.substring(dot + 1));
         } catch (MalformedExpression e) {
             return false;
-        }
-    }
-
-    /**
-     * Returns the filter that a property of the join records, or a path like "ticket.open" through a reference, stands for,
-     * like {@link GenericDao#derivedFilter}.
-     * @param path the property or path
-     * @return a new filter expression, or null if the property does not stand for a filter
-     */
-    public @Nullable FilterExpression derivedFilter(final @NotNull String path) {
-        final int dot = path.indexOf('.');
-        if (dot < 0) {
-            final FilterExpression filter = entityDispatchTable.getMetaData(path, JanitorOrm.MetaData.DERIVED_FILTER);
-            return filter == null ? null : filter.deepCopy();
-        }
-        try {
-            final FilterExpression filter = FilterSql.referencedDao(collection, columnForField, mappingForColumn, path.substring(0, dot), path).derivedFilter(path.substring(dot + 1));
-            return filter == null ? null : filter.withPathPrefix(path.substring(0, dot + 1));
-        } catch (MalformedExpression e) {
-            return null;
         }
     }
 
@@ -448,7 +435,7 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
      * @throws JanitorRuntimeException if evaluating a value of the lambda fails
      */
     public @NotNull FilterExpression filterFromLambda(final @NotNull JanitorScriptProcess process, final @NotNull JInspectableFunction function) throws JanitorRuntimeException {
-        return LambdaFilter.toFilter(process, function, this::isFilterField, this::derivedFilter);
+        return LambdaFilter.toFilter(process, function, this::isFilterField);
     }
 
     /**
@@ -490,7 +477,9 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
     private @NotNull FilterExpression scriptFilter(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         final JanitorObject argument = arguments.require(1).get(0).janitorUnpack();
         try {
-            return ScriptFilter.toFilter(process, argument, this::isFilterField, this::derivedFilter, "link -> link.reason.key == \"A\"");
+            final FilterExpression filter = ScriptFilter.toFilter(process, argument, this::isFilterField, "link -> link.reason.key == \"A\"");
+            expressionToSql(filter, prepper -> { }); // reports what cannot be a query before the query runs
+            return filter;
         } catch (MalformedExpression e) {
             throw new JanitorArgumentException(process, arguments.getFunctionName() + ": " + e.getMessage(), e);
         }

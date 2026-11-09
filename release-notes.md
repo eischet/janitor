@@ -7,14 +7,16 @@
   references, that the DAO can filter by; anything else is an argument error. `ScriptFilter` does the conversion.
 - orm: a lambda filter accepts `"text" in item.f` and `"text" not in item.f`, the script form of `item.f.contains("text")`,
   which was rejected with "the property must be on the left side of 'IN'". `item.f in [a, b]` stays a test against a list.
-- orm: a boolean property without a column can stand for a filter, so that `select` and `count` accept shorthands like
-  `tickets.select(t -> t.open and "foo" in t.subject)`. The new meta-data key `JanitorOrm.MetaData.DERIVED_FILTER` holds
-  the `FilterExpression` the property stands for, e.g. `status eq "o"`; lambdas may use it as `t.open`, `not t.open`,
-  `t.open == false` or through references (`link.ticket.open`), filter maps as `{field: "open", operator: "eq",
-  valueBoolean: true}`. `GenericDao.derivedFilter` and `JoinDao.derivedFilter` resolve a property or path,
-  `LambdaFilter.toFilter` has an overload that takes such a resolver. `FilterExpression.negated()` returns the opposite of
-  an expression (De Morgan for groups; "startswith" and "endswith" have none), `withPathPrefix` puts a path in front of
-  all fields.
+- orm: pseudo fields. A `FilterRewrite` turns a condition on a name without a column into a condition on real fields;
+  `GenericDao` and `JoinDao` apply it right before they build the SQL, so search masks, filter maps, lambdas and paths
+  through references (`link.ticket.open`) all accept them. Properties get one with the meta-data key
+  `JanitorOrm.MetaData.FILTER_REWRITE`, other names are registered with `FilterFields.of(dispatch).add(name, rewrite)`.
+  Ready-made rewrites: `FilterRewrite.flag(filter)` for boolean shorthands like `t.open` for `status eq "o"` (also
+  `not t.open`, `t.open == false`, `{field: "open", operator: "eq", valueBoolean: true}`), `alias(path)` for another name
+  of a field or path, and `dateOf(field)` for the date of a date-time field ("createdDate@date"), which lambdas write as
+  `t.createdDate.date() == @2026-11-09`. `isFilterField` knows the pseudo fields; `select` and `count` report a pseudo
+  field used the wrong way as an argument error before the query runs. `FilterExpression` gains `negated()` (De Morgan for
+  groups; "startswith" and "endswith" have no negation), `testsForTrue()` and `withField(path)`.
 
 # 0.9.73,2026-11-06 (internal release only)
 
