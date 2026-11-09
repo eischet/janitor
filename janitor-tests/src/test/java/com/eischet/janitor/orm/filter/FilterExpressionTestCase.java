@@ -75,4 +75,34 @@ public class FilterExpressionTestCase extends JanitorTest {
 
 
 
+    @Test
+    void negatesComparisonsAndGroups() {
+        final FilterExpression filter = FilterExpression.or(List.of(
+                FilterExpression.from("status", FilterOperator.EQ, "o"),
+                FilterExpression.and(List.of(
+                        new FilterExpression("closed", FilterOperator.ISNULL),
+                        FilterExpression.from("stock", FilterOperator.GT, 3L)))));
+        final FilterExpression negated = filter.negated();
+        assertEquals(FilterLogic.AND, negated.getLogic());
+        assertEquals(FilterOperator.NEQ, negated.getFilters().get(0).getOperator());
+        final FilterExpression inner = negated.getFilters().get(1);
+        assertEquals(FilterLogic.OR, inner.getLogic());
+        assertEquals(FilterOperator.ISNOTNULL, inner.getFilters().get(0).getOperator());
+        assertEquals(FilterOperator.LTE, inner.getFilters().get(1).getOperator());
+        assertEquals(3L, inner.getFilters().get(1).getValueLong());
+        assertEquals(FilterOperator.EQ, filter.getFilters().get(0).getOperator(), "the original stays as it was");
+        assertThrows(MalformedExpression.class, () -> FilterExpression.from("name", FilterOperator.STARTSWITH, "A").negated());
+    }
+
+    @Test
+    void prefixesPaths() {
+        final FilterExpression filter = FilterExpression.and(List.of(
+                FilterExpression.from("status", FilterOperator.EQ, "o"),
+                FilterExpression.from("team.key", FilterOperator.EQ, "RED")));
+        final FilterExpression prefixed = filter.withPathPrefix("ticket.");
+        assertEquals("ticket.status", prefixed.getFilters().get(0).getField());
+        assertEquals("ticket.team.key", prefixed.getFilters().get(1).getField());
+        assertEquals("status", filter.getFilters().get(0).getField());
+    }
+
 }

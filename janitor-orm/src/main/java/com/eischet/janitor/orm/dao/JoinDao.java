@@ -420,6 +420,26 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
     }
 
     /**
+     * Returns the filter that a property of the join records, or a path like "ticket.open" through a reference, stands for,
+     * like {@link GenericDao#derivedFilter}.
+     * @param path the property or path
+     * @return a new filter expression, or null if the property does not stand for a filter
+     */
+    public @Nullable FilterExpression derivedFilter(final @NotNull String path) {
+        final int dot = path.indexOf('.');
+        if (dot < 0) {
+            final FilterExpression filter = entityDispatchTable.getMetaData(path, JanitorOrm.MetaData.DERIVED_FILTER);
+            return filter == null ? null : filter.deepCopy();
+        }
+        try {
+            final FilterExpression filter = FilterSql.referencedDao(collection, columnForField, mappingForColumn, path.substring(0, dot), path).derivedFilter(path.substring(dot + 1));
+            return filter == null ? null : filter.withPathPrefix(path.substring(0, dot + 1));
+        } catch (MalformedExpression e) {
+            return null;
+        }
+    }
+
+    /**
      * Converts a script lambda to a filter expression on the fields of the join records, see {@link LambdaFilter}.
      * @param process the running script process
      * @param function the lambda, whose parameter is the join record
@@ -428,7 +448,7 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
      * @throws JanitorRuntimeException if evaluating a value of the lambda fails
      */
     public @NotNull FilterExpression filterFromLambda(final @NotNull JanitorScriptProcess process, final @NotNull JInspectableFunction function) throws JanitorRuntimeException {
-        return LambdaFilter.toFilter(process, function, this::isFilterField);
+        return LambdaFilter.toFilter(process, function, this::isFilterField, this::derivedFilter);
     }
 
     /**
@@ -470,7 +490,7 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
     private @NotNull FilterExpression scriptFilter(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         final JanitorObject argument = arguments.require(1).get(0).janitorUnpack();
         try {
-            return ScriptFilter.toFilter(process, argument, this::isFilterField, "link -> link.reason.key == \"A\"");
+            return ScriptFilter.toFilter(process, argument, this::isFilterField, this::derivedFilter, "link -> link.reason.key == \"A\"");
         } catch (MalformedExpression e) {
             throw new JanitorArgumentException(process, arguments.getFunctionName() + ": " + e.getMessage(), e);
         }

@@ -919,6 +919,27 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
     }
 
     /**
+     * Returns the filter that a property stands for, which has no column of its own, see {@link JanitorOrm.MetaData#DERIVED_FILTER};
+     * for a path like "ticket.open" through referenced entities, the filter of the referenced entity's property on the paths
+     * through the references.
+     * @param path the property or path
+     * @return a new filter expression, or null if the property does not stand for a filter
+     */
+    public @Nullable FilterExpression derivedFilter(final @NotNull String path) {
+        final int dot = path.indexOf('.');
+        if (dot < 0) {
+            final FilterExpression filter = entityDispatchTable.getMetaData(path, JanitorOrm.MetaData.DERIVED_FILTER);
+            return filter == null ? null : filter.deepCopy();
+        }
+        try {
+            final FilterExpression filter = referencedDao(path.substring(0, dot), path).derivedFilter(path.substring(dot + 1));
+            return filter == null ? null : filter.withPathPrefix(path.substring(0, dot + 1));
+        } catch (MalformedExpression e) {
+            return null;
+        }
+    }
+
+    /**
      * Converts a filter expression to an SQL condition for one column, collecting the preppers that bind its values.
      * @param filterExpression the expression
      * @param quotedColumn the column, already quoted for the database
@@ -1560,7 +1581,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
      * @throws JanitorRuntimeException if evaluating a value of the lambda fails
      */
     public @NotNull FilterExpression filterFromLambda(final @NotNull JanitorScriptProcess process, final @NotNull JInspectableFunction function) throws JanitorRuntimeException {
-        return LambdaFilter.toFilter(process, function, this::isFilterField);
+        return LambdaFilter.toFilter(process, function, this::isFilterField, this::derivedFilter);
     }
 
     /**
@@ -1575,7 +1596,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
     private @NotNull FilterExpression scriptFilter(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
         final JanitorObject argument = arguments.require(1).get(0).janitorUnpack();
         try {
-            return ScriptFilter.toFilter(process, argument, this::isFilterField, "item -> item.code == \"FOO\"");
+            return ScriptFilter.toFilter(process, argument, this::isFilterField, this::derivedFilter, "item -> item.code == \"FOO\"");
         } catch (MalformedExpression e) {
             throw new JanitorArgumentException(process, arguments.getFunctionName() + ": " + e.getMessage(), e);
         }

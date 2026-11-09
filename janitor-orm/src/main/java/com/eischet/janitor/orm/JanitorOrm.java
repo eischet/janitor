@@ -4,6 +4,7 @@
 package com.eischet.janitor.orm;
 
 import com.eischet.janitor.api.metadata.MetaDataKey;
+import com.eischet.janitor.orm.filter.FilterExpression;
 import com.eischet.janitor.orm.sql.ColumnCase;
 import com.eischet.janitor.orm.sql.ColumnTypeHint;
 import com.eischet.janitor.versioning.VersionRange;
@@ -44,6 +45,14 @@ public final class JanitorOrm {
          * unaffected — they still write the column's current value like any other property.
          */
         public static MetaDataKey<Boolean> LAZY_LOAD = new MetaDataKey<>("lazy_load", Boolean.class);
+
+        /**
+         * Declares a boolean property without a column of its own as a shorthand for a filter on other fields, e.g. a property
+         * "open" for {@code status == "o"}. Lambda filters and filter maps of {@code dao.select} and {@code dao.count} then
+         * accept the property, also negated or through references; see {@code GenericDao.derivedFilter}. The script getter
+         * of the property must compute the same condition in memory.
+         */
+        public static MetaDataKey<FilterExpression> DERIVED_FILTER = new MetaDataKey<>("derived_filter", FilterExpression.class);
 
         // public static MetaDataKey<String> OUTWARD_FOREIGN_KEYS = new MetaDataKey<>("outward_foreign_keys", String.class);
 

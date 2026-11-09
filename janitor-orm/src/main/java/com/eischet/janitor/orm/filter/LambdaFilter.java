@@ -17,6 +17,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
@@ -43,6 +44,8 @@ import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
  *     <li>{@code item.f == null or item.f == ""}, {@code item.f != null and item.f != ""}: is (not) empty</li>
  *     <li>{@code item.ref == entity} or {@code item.ref == 42}: a reference to an entity, compared by its ID</li>
  *     <li>{@code item.ref.f == v} etc.: a field of a referenced entity, through any number of references</li>
+ *     <li>{@code item.open}, {@code not item.open}, {@code item.open == false}: a property that stands for a filter, see
+ *     {@link com.eischet.janitor.orm.JanitorOrm.MetaData#DERIVED_FILTER}, also through references</li>
  * </ul>
  * <p>
  * Anything else is rejected with a {@link MalformedExpression}, instead of being evaluated in memory.
@@ -55,11 +58,14 @@ public final class LambdaFilter {
     private final JanitorScriptProcess process;
     private final JInspectableFunction function;
     private final Predicate<String> isField;
+    private final Function<String, @Nullable FilterExpression> derived;
 
-    private LambdaFilter(final JanitorScriptProcess process, final JInspectableFunction function, final Predicate<String> isField) {
+    private LambdaFilter(final JanitorScriptProcess process, final JInspectableFunction function, final Predicate<String> isField,
+                         final Function<String, @Nullable FilterExpression> derived) {
         this.process = process;
         this.function = function;
         this.isField = isField;
+        this.derived = derived;
     }
 
     /**
@@ -75,12 +81,32 @@ public final class LambdaFilter {
     public static @NotNull FilterExpression toFilter(final @NotNull JanitorScriptProcess process,
                                                      final @NotNull JInspectableFunction function,
                                                      final @NotNull Predicate<String> isField) throws JanitorRuntimeException {
+        return toFilter(process, function, isField, path -> null);
+    }
+
+    /**
+     * Converts a lambda to a filter expression, in which properties that stand for a filter, like {@code item.open} for
+     * {@code item.status == "o"}, can be used as conditions: {@code item.open}, {@code not item.open},
+     * {@code item.open == false}.
+     *
+     * @param process the running script, which evaluates the values
+     * @param function the lambda
+     * @param isField tells which property names are fields that can be filtered
+     * @param derived returns a new filter expression for a property or path that stands for one, or null
+     * @return the filter expression
+     * @throws MalformedExpression if the lambda cannot be converted
+     * @throws JanitorRuntimeException if evaluating a value fails
+     */
+    public static @NotNull FilterExpression toFilter(final @NotNull JanitorScriptProcess process,
+                                                     final @NotNull JInspectableFunction function,
+                                                     final @NotNull Predicate<String> isField,
+                                                     final @NotNull Function<String, @Nullable FilterExpression> derived) throws JanitorRuntimeException {
         if (function.getParameterNames().size() != 1) {
             throw new MalformedExpression("a filter needs a function with exactly one parameter, but got " + function.getParameterNames());
         }
         final ExpressionNode tree = function.getExpressionTree()
                 .orElseThrow(() -> new MalformedExpression("a filter must be a lambda that consists of a single expression, like 'item -> item.code == \"FOO\"'"));
-        return new LambdaFilter(process, function, isField).convert(tree, false);
+        return new LambdaFilter(process, function, isField, derived).convert(tree, false);
     }
 
     private @NotNull FilterExpression convert(final @NotNull ExpressionNode node, final boolean negated) throws JanitorRuntimeException {
@@ -101,6 +127,10 @@ public final class LambdaFilter {
             case ComparisonNode comparison -> comparison(comparison, negated);
             case MethodCallNode call -> methodCall(call, negated);
             case MemberNode member -> {
+                final @Nullable FilterExpression standsFor = derived.apply(path(member));
+                if (standsFor != null) {
+                    yield negated ? negate(standsFor, member) : standsFor;
+                }
                 final FilterExpression result = new FilterExpression(field(member), FilterOperator.EQ);
                 result.setValueBoolean(!negated);
                 yield result;
@@ -141,6 +171,16 @@ public final class LambdaFilter {
         if (!(fieldSide instanceof MemberNode member)) {
             throw unsupported(fieldSide, "expected a property of the parameter, like 'item.code'");
         }
+        final @Nullable FilterExpression standsFor = derived.apply(path(member));
+        if (standsFor != null) {
+            // item.open == true, item.open != false etc.
+            final boolean equality = operator == ComparisonOperator.EQUALS || operator == ComparisonOperator.NOT_EQUALS;
+            if (!equality || !(value(valueSide) instanceof JBool bool)) {
+                throw unsupported(comparison, "'" + path(member) + "' stands for a condition and can only be compared with true or false using == or !=");
+            }
+            final boolean holds = bool.janitorIsTrue() != (operator == ComparisonOperator.NOT_EQUALS) != negated;
+            return holds ? standsFor : negate(standsFor, comparison);
+        }
         final String field = field(member);
         final JanitorObject value = value(valueSide);
         return switch (operator) {
@@ -156,6 +196,14 @@ public final class LambdaFilter {
             case MATCHES -> glob(field, value, negated, comparison);
             case MATCHES_NOT -> glob(field, value, !negated, comparison);
         };
+    }
+
+    private static @NotNull FilterExpression negate(final @NotNull FilterExpression filter, final @NotNull ExpressionNode node) {
+        try {
+            return filter.negated();
+        } catch (MalformedExpression e) {
+            throw unsupported(node, e.getMessage());
+        }
     }
 
     private @NotNull FilterExpression textIn(final @NotNull ComparisonNode comparison, final boolean negated) throws JanitorRuntimeException {

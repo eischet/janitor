@@ -85,6 +85,10 @@ class JoinDaoSelectTestCase extends JanitorTest {
             DISPATCH.addLongColumn("id", "member_id", Member::getId, Member::setId);
             DISPATCH.addStringColumn("key", "member_key", Member::getKey, Member::setKey, 20);
             DISPATCH.addStringColumn("name", "member_name", Member::getName, Member::setName, 50);
+            DISPATCH.addBooleanProperty("bob", self -> "BOB".equals(self.key))
+                    .setMetaData(JanitorOrm.MetaData.DERIVED_FILTER, FilterExpression.from("key", FilterOperator.EQ, "BOB"));
+            DISPATCH.addBooleanProperty("startsWithA", self -> self.key != null && self.key.startsWith("A"))
+                    .setMetaData(JanitorOrm.MetaData.DERIVED_FILTER, FilterExpression.from("key", FilterOperator.STARTSWITH, "A"));
         }
 
         private long id;
@@ -118,6 +122,12 @@ class JoinDaoSelectTestCase extends JanitorTest {
             Team.DISPATCH.addReference(DISPATCH, "team", "team_id", Membership::getTeam, Membership::setTeam, membership -> membership.source);
             Member.DISPATCH.addReference(DISPATCH, "member", "member_id", Membership::getMember, Membership::setMember, membership -> membership.source);
             DISPATCH.addStringColumn("role", "member_role", Membership::getRole, Membership::setRole, 20);
+            DISPATCH.addBooleanProperty("lead", self -> "lead".equals(self.role))
+                    .setMetaData(JanitorOrm.MetaData.DERIVED_FILTER, FilterExpression.from("role", FilterOperator.EQ, "lead"));
+            DISPATCH.addBooleanProperty("leadOrBlue", self -> "lead".equals(self.role) || self.team.resolveOrNull() != null && "BLUE".equals(self.team.resolveOrNull().getKey()))
+                    .setMetaData(JanitorOrm.MetaData.DERIVED_FILTER, FilterExpression.or(List.of(
+                            FilterExpression.from("role", FilterOperator.EQ, "lead"),
+                            FilterExpression.from("team.key", FilterOperator.EQ, "BLUE"))));
         }
 
         private final Teams source;
@@ -292,6 +302,36 @@ class JoinDaoSelectTestCase extends JanitorTest {
                     {field: "role", operator: "eq", valueString: "lead"}
                 ]});""")));
         assertEquals(2L, run("return memberships.count({field: \"team.key\", operator: \"eq\", valueString: \"BLUE\"});").janitorGetHostValue());
+    }
+
+    @Test
+    void usesPropertiesThatStandForAFilter() throws Exception {
+        assertEquals(List.of("RED/ALICE", "BLUE/BOB"), pairs(run("return memberships.select(m -> m.lead);")));
+        assertEquals(List.of("RED/BOB"), pairs(run("return memberships.select(m -> not m.lead);"))); // SQL: no role is not "not lead"
+        assertEquals(List.of("RED/BOB"), pairs(run("return memberships.select(m -> m.lead == false);")));
+        assertEquals(List.of("RED/ALICE", "BLUE/BOB"), pairs(run("return memberships.select(m -> m.lead != false);")));
+        assertEquals(List.of("RED/BOB"), pairs(run("return memberships.select(m -> m.member.bob and not m.lead);")));
+        assertEquals(List.of("RED/ALICE", "BLUE/BOB", "BLUE/CAROL"), pairs(run("return memberships.select(m -> m.leadOrBlue);")));
+        assertEquals(List.of("RED/BOB"), pairs(run("return memberships.select(m -> not m.leadOrBlue);")));
+        assertEquals(2L, run("return memberships.count(m -> m.member.bob);").janitorGetHostValue());
+    }
+
+    @Test
+    void usesPropertiesThatStandForAFilterInMaps() throws Exception {
+        assertEquals(List.of("RED/BOB"), pairs(run("return memberships.select({field: \"lead\", operator: \"eq\", valueBoolean: false});")));
+        assertEquals(List.of("RED/BOB", "BLUE/BOB"), pairs(run("return memberships.select({field: \"member.bob\", operator: \"neq\", valueBoolean: false});")));
+    }
+
+    @Test
+    void rejectsMisusedPropertiesThatStandForAFilter() {
+        assertRejected("return memberships.select(m -> not m.member.startsWithA);", "no negated form of 'startswith'");
+        assertRejected("return memberships.select(m -> m.lead == \"x\");", "can only be compared with true or false");
+        assertRejected("return memberships.select({field: \"lead\", operator: \"contains\", valueString: \"x\"});", "can only be compared with true or false");
+    }
+
+    private void assertRejected(final String script, final String messagePart) {
+        final JanitorArgumentException e = assertThrows(JanitorArgumentException.class, () -> run(script));
+        assertTrue(e.getMessage().contains(messagePart), e.getMessage());
     }
 
     @Test

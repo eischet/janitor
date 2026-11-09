@@ -771,4 +771,64 @@ public class FilterExpression extends JanitorComposed<FilterExpression> {
         return copy;
     }
 
+    /**
+     * Returns the opposite of this expression: groups are negated by De Morgan's laws, and each comparison by its opposite
+     * operator, e.g. "eq" by "neq" and "contains" by "doesnotcontain". Like the expression, its negation follows the rules
+     * of SQL for null: the negation of {@code status eq "o"} does not find rows without a status.
+     * @return a new expression
+     * @throws MalformedExpression if the expression is incomplete or has no negated form, like "startswith" and "endswith"
+     */
+    public @NotNull FilterExpression negated() throws MalformedExpression {
+        if (isGroup()) {
+            final List<FilterExpression> parts = new ArrayList<>(filters.size());
+            for (final FilterExpression filter : filters) {
+                parts.add(filter.negated());
+            }
+            return logic == FilterLogic.AND ? or(parts) : and(parts);
+        }
+        if (operator == null || field == null) {
+            throw new MalformedExpression("an incomplete filter cannot be negated: " + this);
+        }
+        final FilterExpression copy = deepCopy();
+        copy.operator = switch (operator) {
+            case EQ -> FilterOperator.NEQ;
+            case NEQ -> FilterOperator.EQ;
+            case LT -> FilterOperator.GTE;
+            case LTE -> FilterOperator.GT;
+            case GT -> FilterOperator.LTE;
+            case GTE -> FilterOperator.LT;
+            case CONTAINS -> FilterOperator.DOESNOTCONTAIN;
+            case DOESNOTCONTAIN -> FilterOperator.CONTAINS;
+            case ISNULL -> FilterOperator.ISNOTNULL;
+            case ISNOTNULL -> FilterOperator.ISNULL;
+            case ISEMPTY -> FilterOperator.ISNOTEMPTY;
+            case ISNOTEMPTY -> FilterOperator.ISEMPTY;
+            case STARTSWITH, ENDSWITH -> throw new MalformedExpression("there is no negated form of '" + operator.getCode() + "' in a filter");
+        };
+        return copy;
+    }
+
+    /**
+     * Returns a copy of this expression in which every field starts with the prefix, e.g. "ticket." to turn a filter on
+     * the fields of a referenced entity into one on the paths through the reference.
+     * @param prefix the prefix, including the dot
+     * @return a new expression
+     */
+    public @NotNull FilterExpression withPathPrefix(final @NotNull String prefix) {
+        final FilterExpression copy = deepCopy();
+        copy.prefixFields(prefix);
+        return copy;
+    }
+
+    private void prefixFields(final @NotNull String prefix) {
+        if (filters != null) {
+            for (final FilterExpression filter : filters) {
+                filter.prefixFields(prefix);
+            }
+        }
+        if (field != null) {
+            field = prefix + field;
+        }
+    }
+
 }

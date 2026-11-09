@@ -7,6 +7,14 @@
   references, that the DAO can filter by; anything else is an argument error. `ScriptFilter` does the conversion.
 - orm: a lambda filter accepts `"text" in item.f` and `"text" not in item.f`, the script form of `item.f.contains("text")`,
   which was rejected with "the property must be on the left side of 'IN'". `item.f in [a, b]` stays a test against a list.
+- orm: a boolean property without a column can stand for a filter, so that `select` and `count` accept shorthands like
+  `tickets.select(t -> t.open and "foo" in t.subject)`. The new meta-data key `JanitorOrm.MetaData.DERIVED_FILTER` holds
+  the `FilterExpression` the property stands for, e.g. `status eq "o"`; lambdas may use it as `t.open`, `not t.open`,
+  `t.open == false` or through references (`link.ticket.open`), filter maps as `{field: "open", operator: "eq",
+  valueBoolean: true}`. `GenericDao.derivedFilter` and `JoinDao.derivedFilter` resolve a property or path,
+  `LambdaFilter.toFilter` has an overload that takes such a resolver. `FilterExpression.negated()` returns the opposite of
+  an expression (De Morgan for groups; "startswith" and "endswith" have none), `withPathPrefix` puts a path in front of
+  all fields.
 
 # 0.9.73,2026-11-06 (internal release only)
 

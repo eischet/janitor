@@ -11,7 +11,12 @@ import com.eischet.janitor.api.types.builtin.JMap;
 import com.eischet.janitor.api.types.functions.tree.JInspectableFunction;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
@@ -27,6 +32,8 @@ import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
  *     <li>as a {@link FilterExpression} object.</li>
  * </ul>
  * Maps and filter expressions must be complete, and every field they use must be one that the DAO can filter by.
+ * Properties that stand for a filter, see {@link com.eischet.janitor.orm.JanitorOrm.MetaData#DERIVED_FILTER}, can be compared
+ * with a boolean in all three forms, e.g. {@code {field: "open", operator: "eq", valueBoolean: true}}.
  */
 public final class ScriptFilter {
 
@@ -39,6 +46,7 @@ public final class ScriptFilter {
      * @param process the running script, which evaluates the values of a lambda
      * @param argument the argument: a lambda, a map or a filter expression
      * @param isField tells which fields, or paths through references, can be filtered
+     * @param derived returns a new filter expression for a property or path that stands for one, or null
      * @param lambdaExample an example lambda for the error message, like {@code item -> item.code == "FOO"}
      * @return the filter expression, which the caller may change
      * @throws MalformedExpression if the argument cannot be used as a filter
@@ -47,11 +55,12 @@ public final class ScriptFilter {
     public static @NotNull FilterExpression toFilter(final @NotNull JanitorScriptProcess process,
                                                      final @NotNull JanitorObject argument,
                                                      final @NotNull Predicate<String> isField,
+                                                     final @NotNull Function<String, @Nullable FilterExpression> derived,
                                                      final @NotNull String lambdaExample) throws JanitorRuntimeException {
         return switch (argument) {
-            case JInspectableFunction function -> LambdaFilter.toFilter(process, function, isField);
-            case JMap map -> checked(fromMap(map), isField);
-            case FilterExpression expression -> checked(expression.deepCopy(), isField);
+            case JInspectableFunction function -> LambdaFilter.toFilter(process, function, isField, derived);
+            case JMap map -> checked(fromMap(map), isField, derived);
+            case FilterExpression expression -> checked(expression.deepCopy(), isField, derived);
             default -> throw new MalformedExpression("expecting a lambda like '" + lambdaExample + "' or a filter map like "
                     + "{field: \"code\", operator: \"eq\", valueString: \"FOO\"}, but found " + simpleClassNameOf(argument));
         };
@@ -65,12 +74,35 @@ public final class ScriptFilter {
         }
     }
 
-    private static @NotNull FilterExpression checked(final @NotNull FilterExpression filter, final @NotNull Predicate<String> isField) {
+    private static @NotNull FilterExpression checked(final @NotNull FilterExpression filter, final @NotNull Predicate<String> isField,
+                                                     final @NotNull Function<String, @Nullable FilterExpression> derived) {
         if (filter.isIncomplete()) {
             throw new MalformedExpression("the filter is incomplete: " + filter);
         }
-        checkFields(filter, isField);
-        return filter;
+        final FilterExpression expanded = expand(filter, derived);
+        checkFields(expanded, isField);
+        return expanded;
+    }
+
+    /** Replaces the conditions on properties that stand for a filter, like {field: "open", operator: "eq", valueBoolean: true}, by that filter. */
+    private static @NotNull FilterExpression expand(final @NotNull FilterExpression filter, final @NotNull Function<String, @Nullable FilterExpression> derived) {
+        if (filter.isGroup()) {
+            final List<FilterExpression> parts = new ArrayList<>(filter.getFilters().size());
+            for (final FilterExpression child : filter.getFilters()) {
+                parts.add(expand(child, derived));
+            }
+            return new FilterExpression(Objects.requireNonNull(filter.getLogic()), parts);
+        }
+        final @Nullable FilterExpression standsFor = filter.getField() == null ? null : derived.apply(filter.getField());
+        if (standsFor == null) {
+            return filter;
+        }
+        final boolean equality = filter.getOperator() == FilterOperator.EQ || filter.getOperator() == FilterOperator.NEQ;
+        if (!equality || filter.getValueBoolean() == null) {
+            throw new MalformedExpression("'" + filter.getField() + "' stands for a condition and can only be compared with true or false using \"eq\" or \"neq\"");
+        }
+        final boolean holds = filter.getValueBoolean() != (filter.getOperator() == FilterOperator.NEQ);
+        return holds ? standsFor : standsFor.negated();
     }
 
     private static void checkFields(final @NotNull FilterExpression filter, final @NotNull Predicate<String> isField) {

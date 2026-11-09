@@ -143,6 +143,11 @@ lambda gets the join record: `memberships.select(m -> m.role == "lead" and m.tea
 Instead of a lambda, both methods also take a filter map in the JSON form of a filter expression, e.g.
 `items.select({field: "code", operator: "eq", valueString: "FOO"})` or `{logic: "and", filters: [...]}`, or a
 `FilterExpression` object; it must be complete and use only fields that the DAO can filter by (see `ScriptFilter`).
+A boolean property without a column can stand for a filter on other fields: give it the meta-data
+`JanitorOrm.MetaData.DERIVED_FILTER`, e.g. `status eq "o"` for a property `open`, and both forms accept it, as in
+`tickets.select(t -> t.open and "foo" in t.subject)`, `not t.open`, `t.open == false`, through references like
+`link.ticket.open`, and in maps as `{field: "open", operator: "eq", valueBoolean: true}`. The property's own getter
+must compute the same condition, for scripts that read it from an entity.
 `FilterExpressionCode` goes the other way and writes a filter expression as such a lambda.
 
 <a id="limits"></a>
