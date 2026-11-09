@@ -46,7 +46,7 @@ public class FilesModule extends JanitorComposed<FilesModule> implements Janitor
 
     private static final DispatchTable<FilesModule> dispatcher = new DispatchTable<>(FilesModule::new, false);
 
-    public static final JanitorModuleRegistration REGISTRATION = new JanitorModuleRegistration("files", FilesModule::new);
+    public static final JanitorModuleRegistration REGISTRATION = new JanitorModuleRegistration("files", FilesModule::new).withDispatcher(() -> FilesModule.dispatcher);
 
     static {
         dispatcher.addMethod("exists", FilesModule::fileExists)

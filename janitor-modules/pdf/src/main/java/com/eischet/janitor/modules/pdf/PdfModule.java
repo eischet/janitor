@@ -48,7 +48,7 @@ public class PdfModule extends JanitorComposed<PdfModule> implements JanitorModu
 
     public static final DispatchTable<PdfModule> dispatcher = new DispatchTable<>(PdfModule::new, false);
 
-    public static final JanitorModuleRegistration REGISTRATION = new JanitorModuleRegistration("pdf", PdfModule::new);
+    public static final JanitorModuleRegistration REGISTRATION = new JanitorModuleRegistration("pdf", PdfModule::new).withDispatcher(() -> PdfModule.dispatcher);
 
     static {
         // Document & output

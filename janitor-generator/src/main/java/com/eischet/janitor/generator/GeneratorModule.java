@@ -14,7 +14,7 @@ public class GeneratorModule extends JanitorComposed<GeneratorModule> implements
 
     public static final DispatchTable<GeneratorModule> DISPATCH = new DispatchTable<>(GeneratorModule::new);
 
-    public static final JanitorModuleRegistration REGISTRATION = new JanitorModuleRegistration("generator", GeneratorModule::new);
+    public static final JanitorModuleRegistration REGISTRATION = new JanitorModuleRegistration("generator", GeneratorModule::new).withDispatcher(() -> GeneratorModule.DISPATCH);
 
     static {
         DISPATCH.addMethod("Generator", (self, process, arguments) -> arguments.applyOptionalMap(process, new Generator()))

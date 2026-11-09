@@ -13,7 +13,7 @@ import com.eischet.janitor.api.types.dispatch.DispatchTable;
 /** The script module "httpclient", with a simple {@code fetch(url)} function and a {@code build()} function that creates HTTP clients. */
 public class HttpClientModule extends JanitorComposed<HttpClientModule> implements JanitorModule {
 
-    public static final JanitorModuleRegistration REGISTRATION = new JanitorModuleRegistration("httpclient", HttpClientModule::new);
+    public static final JanitorModuleRegistration REGISTRATION = new JanitorModuleRegistration("httpclient", HttpClientModule::new).withDispatcher(() -> HttpClientModule.DISPATCH);
 
     private static final DispatchTable<HttpClientModule> DISPATCH = new DispatchTable<>(HttpClientModule::new, false);
 

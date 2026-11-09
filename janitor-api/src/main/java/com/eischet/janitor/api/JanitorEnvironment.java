@@ -26,6 +26,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.function.Consumer;
 
 /**
@@ -73,6 +74,16 @@ public interface JanitorEnvironment extends JsonOutputSupport {
      */
     @Contract("_ -> this")
     @NotNull JanitorEnvironment addModule(final @NotNull JanitorModuleRegistration registration);
+
+    /**
+     * The modules that scripts can import by name, e.g. for editors that suggest them after {@code import}.
+     * Modules found by resolvers ({@code import "name" as foo}) are not listed.
+     *
+     * @return the registrations, in the order they were added
+     */
+    default @NotNull List<JanitorModuleRegistration> getModuleRegistrations() {
+        return List.of();
+    }
 
     /**
      * Register a module resolver, making it available to script code.

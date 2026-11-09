@@ -12,7 +12,7 @@ import com.eischet.janitor.api.types.dispatch.DispatchTable;
 /** The script module "mustang", which creates electronic invoices with the Mustang library. */
 public class MustangModule extends JanitorComposed<MustangModule> implements JanitorModule {
 
-    public static final JanitorModuleRegistration REGISTRATION = new JanitorModuleRegistration("mustang", MustangModule::new);
+    public static final JanitorModuleRegistration REGISTRATION = new JanitorModuleRegistration("mustang", MustangModule::new).withDispatcher(() -> MustangModule.DISPATCH);
 
     public static final DispatchTable<MustangModule> DISPATCH = new DispatchTable<>(MustangModule::new, false);
 

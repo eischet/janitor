@@ -28,7 +28,7 @@ import java.util.function.Supplier;
  */
 public class McpModule extends JanitorComposed<McpModule> implements JanitorModule {
 
-    public static final JanitorModuleRegistration REGISTRATION = new JanitorModuleRegistration("mcp", () -> new McpModule());
+    public static final JanitorModuleRegistration REGISTRATION = new JanitorModuleRegistration("mcp", () -> new McpModule()).withDispatcher(() -> McpModule.DISPATCH);
 
     private static final DispatchTable<McpModule> DISPATCH = new DispatchTable<>(() -> new McpModule(), false);
 
@@ -88,6 +88,6 @@ public class McpModule extends JanitorComposed<McpModule> implements JanitorModu
      * @return a registration for the module "mcp"
      */
     public static JanitorModuleRegistration registration(final @NotNull Supplier<McpOptions> defaults) {
-        return new JanitorModuleRegistration("mcp", () -> new McpModule(defaults));
+        return new JanitorModuleRegistration("mcp", () -> new McpModule(defaults)).withDispatcher(() -> McpModule.DISPATCH);
     }
 }

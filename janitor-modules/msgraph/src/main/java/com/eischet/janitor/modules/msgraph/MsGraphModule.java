@@ -23,7 +23,7 @@ import java.util.function.Supplier;
  */
 public class MsGraphModule extends JanitorComposed<MsGraphModule> implements JanitorModule {
 
-    public static final JanitorModuleRegistration REGISTRATION = new JanitorModuleRegistration("msgraph", () -> new MsGraphModule());
+    public static final JanitorModuleRegistration REGISTRATION = new JanitorModuleRegistration("msgraph", () -> new MsGraphModule()).withDispatcher(() -> MsGraphModule.DISPATCH);
 
     private static final DispatchTable<MsGraphModule> DISPATCH = new DispatchTable<>(() -> new MsGraphModule(), false);
 
@@ -62,6 +62,6 @@ public class MsGraphModule extends JanitorComposed<MsGraphModule> implements Jan
      * @return a registration for the module "msgraph"
      */
     public static JanitorModuleRegistration registration(final @NotNull Supplier<MsGraphOptions> defaults) {
-        return new JanitorModuleRegistration("msgraph", () -> new MsGraphModule(defaults));
+        return new JanitorModuleRegistration("msgraph", () -> new MsGraphModule(defaults)).withDispatcher(() -> MsGraphModule.DISPATCH);
     }
 }

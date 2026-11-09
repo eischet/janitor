@@ -7,6 +7,7 @@ import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorRuntime;
 import com.eischet.janitor.api.metadata.HasMetaData;
 import com.eischet.janitor.api.metadata.ScriptType;
+import com.eischet.janitor.api.modules.JanitorModuleRegistration;
 import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.scopes.ScriptBindings;
 import com.eischet.janitor.api.types.JanitorObject;
@@ -41,7 +42,9 @@ import java.util.stream.Collectors;
  * ({@code shop.Order.findById(1).customer.}). It also knows the
  * parameters of a lambda passed to a method with {@link Janitor.MetaData#PARAMETERS}
  * ({@code shop.Order.select(o -> o.}), variables assigned such an expression and the variables of
- * {@code for (x in list)} over one. Otherwise it offers the members of all built-in types, with the types that have them.
+ * {@code for (x in list)} over one. After {@code import} it offers the modules the environment registers, and a name an
+ * import binds has the members of its module, if the registration names its dispatcher
+ * ({@link JanitorModuleRegistration#withDispatcher}). Otherwise it offers the members of all built-in types, with the types that have them.
  * Build one instance per environment and keep it: it reads the dispatchers once.
  * </p>
  */
@@ -70,6 +73,9 @@ public final class JanitorCompletions {
     /** Every object has these members; they are listed under this owner. */
     public static final String COMMON = "any";
 
+    /** Suggestions of modules after {@code import} are variables with this owner. */
+    public static final String MODULE = "module";
+
     // samples of the built-in types, like the language reference uses them
     private static final Map<String, String> SAMPLES = new LinkedHashMap<>();
 
@@ -93,6 +99,8 @@ public final class JanitorCompletions {
     // type name -> members; COMMON first
     private final Map<String, List<DispatcherMembers.Member>> typeMembers = new LinkedHashMap<>();
     private final List<Completion> allMembers;
+    // the modules scripts can import by name; the first registration of a name wins, as for import
+    private final Map<String, JanitorModuleRegistration> modules = new TreeMap<>();
 
     /**
      * Read keywords, globals and the members of the built-in types.
@@ -117,6 +125,9 @@ public final class JanitorCompletions {
             }
         });
         allMembers = merge(typeMembers.keySet());
+        for (final JanitorModuleRegistration registration : runtime.getEnvironment().getModuleRegistrations()) {
+            modules.putIfAbsent(registration.getQualifiedName(), registration);
+        }
     }
 
     /**
@@ -146,6 +157,9 @@ public final class JanitorCompletions {
         // a word that is being typed belongs to the suggestion, not to the context
         if (last >= 0 && isWord(before.get(last)) && before.get(last).getStopIndex() + 1 == offset) {
             last--;
+        }
+        if (last >= 0 && expectsModuleName(before, last)) {
+            return modules.keySet().stream().map(name -> new Completion(name, Kind.VARIABLE, name, "", MODULE)).toList();
         }
         if (last >= 0 && isDot(before.get(last))) {
             final Expression receiver = last > 0 ? new Inference(before, declared).expressionEndingAt(last - 1, 0) : null;
@@ -283,7 +297,36 @@ public final class JanitorCompletions {
                     return value != null && value.start() == i + 2 ? value.type() : null;
                 }
             }
-            return globalType(name);
+            final ScriptType module = importedModuleType(name, at);
+            return module != null ? module : globalType(name);
+        }
+
+        // the type of a name that an import before index at binds, e.g. "import mcp;" or "import mcp as m;"
+        private @Nullable ScriptType importedModuleType(final String name, final int at) {
+            for (int i = 0; i < at; i++) {
+                if (tokens.get(i).getType() != JanitorLexer.IMPORT) {
+                    continue;
+                }
+                for (int j = i + 1; j < at && tokens.get(j).getType() == JanitorLexer.IDENTIFIER; ) {
+                    final String module = tokens.get(j).getText();
+                    String bound = module;
+                    int next = j + 1;
+                    if (next + 1 < at && isAs(tokens.get(next)) && tokens.get(next + 1).getType() == JanitorLexer.IDENTIFIER) {
+                        bound = tokens.get(next + 1).getText();
+                        next += 2;
+                    }
+                    if (bound.equals(name)) {
+                        final JanitorModuleRegistration registration = modules.get(module);
+                        final Dispatcher<?> dispatcher = registration == null ? null : registration.getDispatcher();
+                        return dispatcher == null ? null : new ScriptType.Of(module, dispatcher);
+                    }
+                    if (next >= at || tokens.get(next).getType() != JanitorLexer.COMMA) {
+                        break;
+                    }
+                    j = next + 1;
+                }
+            }
+            return null;
         }
 
         // the type of a lambda parameter, if the name at index at is one: the lambda is an argument of a method with PARAMETERS
@@ -479,6 +522,27 @@ public final class JanitorCompletions {
 
     private static @Nullable ScriptType known(final ScriptType type) {
         return type == ScriptType.ANY ? null : type;
+    }
+
+    // whether a module name comes after the token at index last: "import |" or "import a, |" or "import a as b, |"
+    private static boolean expectsModuleName(final List<Token> tokens, final int last) {
+        int i = last;
+        while (i >= 0 && tokens.get(i).getType() == JanitorLexer.COMMA) {
+            // skip back over "name" or "name as alias" before the comma
+            int j = i - 1;
+            if (j >= 2 && tokens.get(j).getType() == JanitorLexer.IDENTIFIER && isAs(tokens.get(j - 1))) {
+                j -= 2;
+            }
+            if (j < 0 || tokens.get(j).getType() != JanitorLexer.IDENTIFIER) {
+                return false;
+            }
+            i = j - 1;
+        }
+        return i >= 0 && tokens.get(i).getType() == JanitorLexer.IMPORT;
+    }
+
+    private static boolean isAs(final Token token) {
+        return "as".equals(token.getText()) && token.getType() != JanitorLexer.IDENTIFIER;
     }
 
     private static boolean isOpener(final int type) {

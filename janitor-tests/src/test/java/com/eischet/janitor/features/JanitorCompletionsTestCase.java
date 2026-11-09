@@ -7,6 +7,8 @@ import com.eischet.janitor.JanitorTest;
 import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.metadata.MetaDataMap;
 import com.eischet.janitor.api.metadata.ScriptType;
+import com.eischet.janitor.api.modules.JanitorModuleRegistration;
+import com.eischet.janitor.runtime.modules.CollectionsModule;
 import com.eischet.janitor.api.scopes.ScriptBindings;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
@@ -137,6 +139,28 @@ public class JanitorCompletionsTestCase extends JanitorTest {
     void membersOfAListLiteralAndOfAnIndex() {
         assertTrue(find(atEnd("[1]."), "size").orElseThrow().owners().contains("list"));
         assertTrue(find(atEnd("[1][0]."), "size").orElseThrow().owners().contains("list"), "the element is unknown: all types");
+    }
+
+    @Test
+    void modulesAfterImport() {
+        final Completion collections = find(atEnd("import col"), "collections").orElseThrow();
+        assertEquals(JanitorCompletions.MODULE, collections.owners());
+        assertTrue(find(atEnd("import col"), "while").isEmpty(), "only modules after import");
+        assertTrue(find(atEnd("import collections, "), "collections").isPresent());
+        assertTrue(find(atEnd("import collections as c, "), "collections").isPresent());
+        assertTrue(find(atEnd("foo(a, "), "while").isPresent(), "a comma elsewhere is no import");
+    }
+
+    @Test
+    void membersOfAnImportedModule() {
+        assertEquals(Kind.METHOD, find(atEnd("import collections;\ncollections."), "Set").orElseThrow().kind());
+        assertEquals("collections", find(atEnd("import collections as c;\nc."), "Set").orElseThrow().owners());
+        assertTrue(find(atEnd("collections."), "Set").isEmpty(), "not imported");
+        final JanitorCompletions withPlainModule = new JanitorCompletions(OutputCatchingTestRuntime.fresh(env ->
+                env.addModule(new JanitorModuleRegistration("plain", CollectionsModule.REGISTRATION.getModuleSupplier()))));
+        final String plain = "import plain;\nplain.";
+        assertTrue(withPlainModule.complete(plain, 2, 6).stream().noneMatch(c -> c.name().equals("Set") && c.owners().equals("plain")),
+                "a registration without a dispatcher tells nothing");
     }
 
     @Test

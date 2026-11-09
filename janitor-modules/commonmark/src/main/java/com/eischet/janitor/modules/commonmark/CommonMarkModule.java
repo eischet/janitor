@@ -15,7 +15,7 @@ public class CommonMarkModule extends JanitorComposed<CommonMarkModule> implemen
 
     private static final DispatchTable<CommonMarkModule> dispatch = new DispatchTable<>(CommonMarkModule::new, false);
 
-    public static final JanitorModuleRegistration REGISTRATION = new JanitorModuleRegistration("commonmark", CommonMarkModule::new);
+    public static final JanitorModuleRegistration REGISTRATION = new JanitorModuleRegistration("commonmark", CommonMarkModule::new).withDispatcher(() -> CommonMarkModule.dispatch);
 
     static {
         // Factory methods for the various node types

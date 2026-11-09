@@ -16,7 +16,7 @@ public class JanitorInternalsModule extends JanitorComposed<JanitorInternalsModu
 
     public static final DispatchTable<JanitorInternalsModule> dispatcher = new DispatchTable<>(JanitorInternalsModule::new, false);
 
-    public static final JanitorModuleRegistration REGISTRATION = new JanitorModuleRegistration("janitor", JanitorInternalsModule::new);
+    public static final JanitorModuleRegistration REGISTRATION = new JanitorModuleRegistration("janitor", JanitorInternalsModule::new).withDispatcher(() -> JanitorInternalsModule.dispatcher);
 
     /**
      * The "host" is the hosting application.

@@ -15,7 +15,7 @@ import com.eischet.janitor.api.types.dispatch.DispatchTable;
  */
 public class CollectionsModule extends JanitorComposed<CollectionsModule> implements JanitorModule {
 
-    public static final JanitorModuleRegistration REGISTRATION = new JanitorModuleRegistration("collections", CollectionsModule::new);
+    public static final JanitorModuleRegistration REGISTRATION = new JanitorModuleRegistration("collections", CollectionsModule::new).withDispatcher(() -> CollectionsModule.DISPATCH);
 
     private static final DispatchTable<CollectionsModule> DISPATCH = new DispatchTable<>(CollectionsModule::new, false);
 

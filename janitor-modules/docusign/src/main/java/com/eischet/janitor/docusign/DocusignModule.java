@@ -18,7 +18,7 @@ import com.eischet.janitor.api.types.functions.JCallArgs;
 /** The script module "docusign", which offers the factories for DocuSign objects such as signers, tabs and envelope definitions. */
 public class DocusignModule extends JanitorComposed<DocusignModule> implements JanitorModule {
 
-    public static final JanitorModuleRegistration REGISTRATION = new JanitorModuleRegistration("docusign", DocusignModule::new);
+    public static final JanitorModuleRegistration REGISTRATION = new JanitorModuleRegistration("docusign", DocusignModule::new).withDispatcher(() -> DocusignModule.DISPATCHER);
 
     private static final DispatchTable<DocusignModule> DISPATCHER = new DispatchTable<>(DocusignModule::new, false);
 

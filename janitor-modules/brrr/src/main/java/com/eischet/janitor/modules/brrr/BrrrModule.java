@@ -21,7 +21,7 @@ import java.util.List;
 /** The script module "brrr", which sends push notifications through the Brrr service. */
 public class BrrrModule extends JanitorComposed<BrrrModule> implements JanitorModule {
 
-    public static final JanitorModuleRegistration REGISTRATION = new JanitorModuleRegistration("brrr", BrrrModule::new);
+    public static final JanitorModuleRegistration REGISTRATION = new JanitorModuleRegistration("brrr", BrrrModule::new).withDispatcher(() -> BrrrModule.DISPATCH);
 
     public static final DispatchTable<BrrrModule> DISPATCH = new DispatchTable<>(BrrrModule::new, false);
 
