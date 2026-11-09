@@ -10,13 +10,16 @@ import org.antlr.v4.runtime.Token;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
  * The doc comments of a script: a comment that starts with {@code /**} documents what follows it, like in Java and
  * TypeScript. Other comments ({@code /* ... *}{@code /}, {@code //}) are no documentation, and neither is the empty
- * comment {@code /**}{@code /}.
+ * comment {@code /**}{@code /}. A comment that starts with {@code /*!} documents the script itself, i.e. the module made
+ * from it, like the inner doc comments of Rust; several of them are joined.
  * <p>
  * The lexer keeps comments on the hidden channel, so the parser does not see them. This class lexes the source once more
  * and remembers, for each token of the default channel, the last doc comment between it and the token before it. Callers
@@ -25,12 +28,14 @@ import java.util.Map;
  */
 public final class DocComments {
 
-    private static final DocComments NONE = new DocComments(Map.of());
+    private static final DocComments NONE = new DocComments(Map.of(), null);
 
     private final Map<Integer, String> textsByTokenStart;
+    private final @Nullable String moduleText;
 
-    private DocComments(final Map<Integer, String> textsByTokenStart) {
+    private DocComments(final Map<Integer, String> textsByTokenStart, final @Nullable String moduleText) {
         this.textsByTokenStart = textsByTokenStart;
+        this.moduleText = moduleText;
     }
 
     /**
@@ -40,13 +45,14 @@ public final class DocComments {
      * @return the doc comments
      */
     public static @NotNull DocComments of(final @Nullable String source) {
-        if (source == null || !source.contains("/**")) {
+        if (source == null || !source.contains("/**") && !source.contains("/*!")) {
             return NONE;
         }
         final JanitorLexer lexer = new JanitorLexer(CharStreams.fromString(source));
         lexer.removeErrorListeners();
         final Map<Integer, String> texts = new HashMap<>();
         String pending = null;
+        final List<String> moduleTexts = new ArrayList<>();
         for (Token token = lexer.nextToken(); token.getType() != Token.EOF; token = lexer.nextToken()) {
             if (token.getChannel() == Token.DEFAULT_CHANNEL) {
                 if (pending != null) {
@@ -58,9 +64,29 @@ public final class DocComments {
                 if (text != null) {
                     pending = text;
                 }
+            } else if (isModuleDocComment(token)) {
+                final String text = NameDoc.textOf(token.getText());
+                if (text != null) {
+                    moduleTexts.add(text);
+                }
             }
         }
-        return new DocComments(texts);
+        return new DocComments(texts, moduleTexts.isEmpty() ? null : String.join("\n", moduleTexts));
+    }
+
+    /**
+     * @param token a token
+     * @return true if the token is a doc comment of the module, i.e. starts with {@code /*!}
+     */
+    public static boolean isModuleDocComment(final @NotNull Token token) {
+        return token.getType() == JanitorLexer.COMMENT && token.getText().startsWith("/*!");
+    }
+
+    /**
+     * @return the documentation of the script itself, from its {@code /*!} comments, or null
+     */
+    public @Nullable String moduleText() {
+        return moduleText;
     }
 
     /**

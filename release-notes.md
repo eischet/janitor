@@ -7,6 +7,9 @@
   the value: it lives in the scope next to the variable (`Scope.getNameDoc`, `NameDoc`), modules made from scripts expose
   it for their exported names, copies do not carry it along, and reassigning without a doc comment keeps it. Editor
   completions show the doc comments of the script's own names. Other comments are no documentation.
+- Module documentation: a comment that starts with `/*!` documents the script itself (`RunnableScript.getDocumentation()`).
+  For modules made from scripts, `import` stores it as the documentation of the bound name, so `help(module)` returns it,
+  also under an alias. `JanitorModule.getDocumentation()` lets other modules provide documentation, too.
 
 - orm: `dao.select(condition)` and `dao.count(condition)` take a filter map as well as a lambda, on entity and join DAOs,
   in the JSON form of a filter expression as used by the REST API, e.g.

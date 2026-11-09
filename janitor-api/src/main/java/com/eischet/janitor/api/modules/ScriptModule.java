@@ -57,7 +57,7 @@ public class ScriptModule extends JanitorModuleRegistration {
         try {
             @NotNull RunnableScript compiled = process.getRuntime().compile(qualifiedName, source);
             @NotNull ResultAndScope result = compiled.runAndKeepGlobals(bindings == null ? g -> {} : bindings);
-            return new ModuleFromScope(result.getScope());
+            return new ModuleFromScope(result.getScope(), compiled.getDocumentation());
         } catch (JanitorCompilerException e) {
             throw new JanitorScriptModuleException(process, e);
         }
@@ -78,9 +78,24 @@ public class ScriptModule extends JanitorModuleRegistration {
     /** A module that exposes the top-level variables of a scope as its attributes, except private ones ({@link #isExported}). */
     public static class ModuleFromScope implements JanitorModule, HasNameDocs {
         private final Scope moduleScope;
+        private final @Nullable String documentation;
 
         public ModuleFromScope(Scope moduleScope) {
+            this(moduleScope, null);
+        }
+
+        /**
+         * @param moduleScope the top-level scope of the script
+         * @param documentation the documentation of the script from its {@code /*!} comments, or null
+         */
+        public ModuleFromScope(final Scope moduleScope, final @Nullable String documentation) {
             this.moduleScope = moduleScope;
+            this.documentation = documentation;
+        }
+
+        @Override
+        public @Nullable String getDocumentation() {
+            return documentation;
         }
 
         @Override

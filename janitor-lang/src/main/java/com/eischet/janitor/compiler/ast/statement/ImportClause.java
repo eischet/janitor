@@ -9,6 +9,10 @@ import com.eischet.janitor.api.errors.runtime.JanitorNotImplementedException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.modules.JanitorModule;
 import com.eischet.janitor.api.scopes.Location;
+import com.eischet.janitor.api.scopes.NameDoc;
+
+import java.util.List;
+import java.util.Map;
 import com.eischet.janitor.compiler.ast.expression.Identifier;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonExportableObject;
@@ -58,16 +62,27 @@ public class ImportClause extends Statement implements JsonExportableObject {
         // Load registered modules:
         if (name != null) {
             final JanitorModule m = process.getEnvironment().getModuleByQualifier(process, name.getText());
-            process.getMainScope().bind(process, alias == null ? name.getText() : alias.getText(), m);
+            bind(process, alias == null ? name.getText() : alias.getText(), m);
             return;
         }
         // Load string-based modules (implementation specific):
         if (module != null) {
             final JanitorModule m = process.getEnvironment().getModuleByStringName(process, module);
-            process.getMainScope().bind(process, alias.getText(), m);
+            bind(process, alias.getText(), m);
             return;
         }
         throw new JanitorNotImplementedException(process, "invalid import clause: either a module name or a module name string is required");
+    }
+
+    /**
+     * Binds the module in the main scope, with the module's documentation as the documentation of the name.
+     */
+    private static void bind(final JanitorScriptProcess process, final String boundName, final JanitorModule m) {
+        process.getMainScope().bind(process, boundName, m);
+        final String documentation = m == null ? null : m.getDocumentation();
+        if (documentation != null) {
+            process.getMainScope().document(boundName, new NameDoc(documentation, null, List.of(), Map.of()));
+        }
     }
 
     @Override

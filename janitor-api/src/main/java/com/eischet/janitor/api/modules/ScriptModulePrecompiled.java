@@ -64,7 +64,7 @@ public class ScriptModulePrecompiled extends JanitorModuleRegistration {
         public JanitorModule getModule(final JanitorScriptProcess process) throws JanitorRuntimeException {
             final ResultAndScope result = compiled.runAndKeepGlobals(bindings == null ? g -> {
             } : bindings);
-            return new ScriptModule.ModuleFromScope(result.getScope());
+            return new ScriptModule.ModuleFromScope(result.getScope(), compiled.getDocumentation());
         }
     }
 

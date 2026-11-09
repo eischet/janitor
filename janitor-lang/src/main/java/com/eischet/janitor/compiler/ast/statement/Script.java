@@ -29,6 +29,7 @@ public class Script extends Statement implements JsonExportableList {
 
     private final @Nullable String source;
     private final List<Statement> statements;
+    private @Nullable String documentation;
 
     /**
      * Constructor.
@@ -37,6 +38,22 @@ public class Script extends Statement implements JsonExportableList {
      * @param statements list of statements
      * @param source     source code
      */
+    /**
+     * @return the documentation of the script from its {@code /*!} comments, or null
+     */
+    public @Nullable String getDocumentation() {
+        return documentation;
+    }
+
+    /**
+     * @param documentation the documentation of the script from its {@code /*!} comments, or null
+     * @return this script
+     */
+    public Script setDocumentation(final @Nullable String documentation) {
+        this.documentation = documentation;
+        return this;
+    }
+
     public Script(final Location location, final List<Statement> statements, final @Nullable String source) {
         super(location);
         this.statements = statements;

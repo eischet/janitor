@@ -87,6 +87,14 @@ public interface RunnableScript {
     @Nullable Exception getCompilerException();
 
     /**
+     * Get the documentation of the script, from its {@code /*!} comments, e.g. for a module made from it.
+     * @return the documentation, or null if there is none
+     */
+    default @Nullable String getDocumentation() {
+        return null;
+    }
+
+    /**
      * Get the problems found during compilation, with their positions, e.g. for marking them in an editor.
      * Compile with {@link JanitorRuntime#checkCompile(String, String)} to get them instead of an exception.
      * @return syntax and compiler errors, empty if the script compiled

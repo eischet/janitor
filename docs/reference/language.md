@@ -76,6 +76,22 @@ carry the documentation along (`copy = config; help(copy)` is `null`), and assig
 keeps it. A name without documentation falls back to the HELP text of its value, which the built-in functions and the
 members of the built-in types have.
 
+A block comment that starts with `/*!` documents the script itself, i.e. the [module](modules.md) made from it, wherever
+it stands; the texts of several such comments are joined. `import` stores it as the documentation of the name it binds,
+so `help(tools)` returns it, also after `import tools as t` as `help(t)`. Hosts read it with
+`RunnableScript.getDocumentation()`.
+
+```janitor compile-only
+/*!
+ * Tools for customers.
+ */
+
+/** Greets someone. */
+function greet(name) {
+    return "Hello " + name;
+}
+```
+
 <a id="statements"></a>
 
 ### Statements and semicolons

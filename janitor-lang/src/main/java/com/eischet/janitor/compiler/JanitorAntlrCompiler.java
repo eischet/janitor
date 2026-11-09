@@ -203,7 +203,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
                 log.warn("invalid top level construct: {} in {} at {}, built from {} [{}]", construct, ctx.getText(), location(ctx.start, ctx.stop), topLevelStatementContext, simpleClassNameOf(topLevelStatementContext));
             }
         }
-        return new Script(location(ctx.start, ctx.stop), topLevelStatements, source);
+        return new Script(location(ctx.start, ctx.stop), topLevelStatements, source).setDocumentation(docComments().moduleText());
     }
 
     @Override

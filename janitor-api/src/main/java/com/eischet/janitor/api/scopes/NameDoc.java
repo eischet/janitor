@@ -118,7 +118,8 @@ public record NameDoc(@Nullable String text, @Nullable String signature, @NotNul
     }
 
     /**
-     * Turns the raw text of a doc comment into its documentation text: removes {@code /**} and the closing marker, the
+     * Turns the raw text of a doc comment into its documentation text: removes {@code /**} (or {@code /*!} for the
+     * documentation of a module) and the closing marker, the
      * leading {@code *} of each line and surrounding blank lines.
      *
      * @param comment the doc comment as written in the source code
@@ -126,7 +127,7 @@ public record NameDoc(@Nullable String text, @Nullable String signature, @NotNul
      */
     public static @Nullable String textOf(final @NotNull String comment) {
         String body = comment;
-        if (body.startsWith("/**")) {
+        if (body.startsWith("/**") || body.startsWith("/*!")) {
             body = body.substring(3);
         }
         if (body.endsWith("*/")) {

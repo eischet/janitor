@@ -129,4 +129,20 @@ public class DocCommentsTestCase extends JanitorTest {
                 evaluate("import tools; return help(tools.greet);", env -> env.addModule(tools), g -> {}).janitorToString());
     }
 
+    @Test
+    void moduleDocumentation() throws Exception {
+        final ScriptModule tools = new ScriptModule("tools", """
+                /*!
+                 * Tools for customers.
+                 */
+                /** Greets someone. */
+                function greet(name) { return "Hello " + name; }
+                """, null);
+        assertEquals("Tools for customers.", evaluate("import tools; return help(tools);", env -> env.addModule(tools), g -> {}).janitorToString());
+        assertEquals("Tools for customers.", evaluate("import tools as t; return help(t);", env -> env.addModule(tools), g -> {}).janitorToString());
+        assertEquals("greet(name): Greets someone.", evaluate("import tools; return help(tools.greet);", env -> env.addModule(tools), g -> {}).janitorToString());
+        assertEquals("Tools for customers.", OutputCatchingTestRuntime.fresh().compile("test", "/*! Tools for customers. */ x = 1;").getDocumentation());
+        assertEquals(null, OutputCatchingTestRuntime.fresh().compile("test", "/** not the module */ x = 1;").getDocumentation());
+    }
+
 }

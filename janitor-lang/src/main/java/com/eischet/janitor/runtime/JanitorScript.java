@@ -135,6 +135,11 @@ public class JanitorScript implements RunnableScript, JsonExportableObject {
     }
 
     @Override
+    public @Nullable String getDocumentation() {
+        return scriptObject == null ? null : scriptObject.getDocumentation();
+    }
+
+    @Override
     public @NotNull @Unmodifiable List<String> getIssues() {
         return List.copyOf(issues);
     }
