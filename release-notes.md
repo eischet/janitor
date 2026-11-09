@@ -1,5 +1,13 @@
 # 0.9.74 (in development)
 
+- Doc comments: a comment that starts with `/**` documents the name defined by the statement after it, i.e. a variable
+  of any kind, a function, a member (`config.timeout = 30`), a key of a map literal, or a parameter
+  (`function find(/** the customer number */ id)`). `help(name)` and `help(a.b)` return it, with the call form of a
+  function in front (`find(id, timeout = 30): ...`), also without a doc comment. Documentation belongs to the name, not to
+  the value: it lives in the scope next to the variable (`Scope.getNameDoc`, `NameDoc`), modules made from scripts expose
+  it for their exported names, copies do not carry it along, and reassigning without a doc comment keeps it. Editor
+  completions show the doc comments of the script's own names. Other comments are no documentation.
+
 - orm: `dao.select(condition)` and `dao.count(condition)` take a filter map as well as a lambda, on entity and join DAOs,
   in the JSON form of a filter expression as used by the REST API, e.g.
   `articles.select({field: "shortCode", operator: "eq", valueString: "GAD"})` or `{logic: "and", filters: [...]}`, and a

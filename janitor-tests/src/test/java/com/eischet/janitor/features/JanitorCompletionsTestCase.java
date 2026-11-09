@@ -228,6 +228,15 @@ public class JanitorCompletionsTestCase extends JanitorTest {
     }
 
     @Test
+    void docCommentsOfTheScript() {
+        final String source = "/** Greets someone. */\nfunction greet(name) {\n    return 'Hi ' + name\n}\n/** How often */\ncount = 1\n/* plain */\nother = 2\npri";
+        final List<Completion> completions = suggestions.complete(source, 9, 3);
+        assertEquals("Greets someone.", find(completions, "greet").orElseThrow().description());
+        assertEquals("How often", find(completions, "count").orElseThrow().description());
+        assertEquals("", find(completions, "other").orElseThrow().description());
+    }
+
+    @Test
     void globalsHaveTheirHelpTexts() {
         final Completion print = find(suggestions.complete("pri", 1, 3), "print").orElseThrow();
         assertEquals("print(values...)", print.signature());

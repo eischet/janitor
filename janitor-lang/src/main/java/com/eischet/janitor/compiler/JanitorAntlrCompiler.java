@@ -5,6 +5,7 @@ package com.eischet.janitor.compiler;
 
 import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.scopes.Location;
+import com.eischet.janitor.api.scopes.NameDoc;
 import com.eischet.janitor.api.scopes.ScriptSource;
 import com.eischet.janitor.api.types.BuiltinTypes;
 import com.eischet.janitor.api.types.JanitorObject;
@@ -38,6 +39,7 @@ import com.eischet.janitor.lang.JanitorLexer;
 import com.eischet.janitor.lang.JanitorParser;
 import com.eischet.janitor.logging.JanitorLogger;
 import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.jetbrains.annotations.NotNull;
@@ -46,7 +48,9 @@ import org.jetbrains.annotations.Nullable;
 import java.time.DateTimeException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
@@ -66,6 +70,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
     private final String source;
     private final JanitorEnvironment env;
     private final BuiltinTypes builtinTypes;
+    private @Nullable DocComments docComments;
 
 
     public JanitorAntlrCompiler(final JanitorEnvironment env, final ScriptSource module, final boolean verbose, final String source) {
@@ -532,7 +537,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
         if (verbose) log.info("visitAssignmentExpression");
         final Expression left = (Expression) visit(ctx.expression(0));
         final Expression right = (Expression) visit(ctx.expression(1));
-        return switch (ctx.bop.getType()) {
+        return documented(ctx.start, left, ctx.expression(1), switch (ctx.bop.getType()) {
             case JanitorLexer.ASSIGN -> new RegularAssignment(location(ctx.start, ctx.stop), left, right);
             case JanitorLexer.PLUS_ASSIGN -> new PlusAssignment(location(ctx.start, ctx.stop), left, right);
             case JanitorLexer.MINUS_ASSIGN -> new MinusAssignment(location(ctx.start, ctx.stop), left, right);
@@ -540,7 +545,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
             case JanitorLexer.MOD_ASSIGN -> new ModAssignment(location(ctx.start, ctx.stop), left, right);
             case JanitorLexer.MUL_ASSIGN -> new MulAssignment(location(ctx.start, ctx.stop), left, right);
             default -> throw new CompilerError("unimplemented assignment operation: " + ctx.getText() + " (" + ctx.bop.getText() + ")");
-        };
+        });
     }
 
     @Override
@@ -721,10 +726,16 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
 
         final Location loc = location(ctx.start, ctx.stop);
 
-        return new RegularAssignment(loc,
-                new Identifier(loc, ctx.validIdentifier().getText()),
-                new ScriptFunction(loc, ctx.validIdentifier().getText(), finishedParams, visitBlock(ctx.block()))
+        final String name = ctx.validIdentifier().getText();
+        final RegularAssignment assignment = new RegularAssignment(loc,
+                new Identifier(loc, name),
+                new ScriptFunction(loc, name, finishedParams, visitBlock(ctx.block()))
         );
+        final List<String> parameters = new ArrayList<>();
+        final List<NameDoc.Param> parameterDocs = new ArrayList<>();
+        describeParameters(ctx.formalParameters().formalParameterList(), parameters, parameterDocs);
+        assignment.document(name, List.of(), new NameDoc(docComments().before(ctx.start), signature(name, parameters), parameterDocs, Map.of()));
+        return assignment;
     }
 
     private FormalParameters helpExtractFormalParameters(final JanitorParser.FormalParametersContext formalParameters) {
@@ -1028,12 +1039,15 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
         if (identifierText != null && functionCallContext != null) {
             if (verbose) log.info("case 1: call with identifier and function call context");
             final JanitorParser.ArgumentListContext expList = functionCallContext.argumentList();
-            return new FunctionCallStatement(
+            final ArgumentList arguments = expList == null ? null : visitArgumentList(expList);
+            final FunctionCallStatement call = new FunctionCallStatement(
                     location(ctx.start, ctx.stop),
                     identifierText,
                     expr == null ? null : (Expression) visit(expr),
-                    expList == null ? null : visitArgumentList(expList)
+                    arguments
             );
+            final @Nullable List<Expression> helpPath = expr == null ? HelpCall.pathOfHelpArgument(identifierText, arguments) : null;
+            return helpPath == null ? call : new HelpCall(location(ctx.start, ctx.stop), helpPath, call);
         }
 
         if (identifierText != null && expr != null) {
@@ -1199,6 +1213,117 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
         } else {
             return new MapLiteral(location(ctx.start, ctx.stop), Collections.emptyList());
         }
+    }
+
+    private DocComments docComments() {
+        if (docComments == null) {
+            docComments = DocComments.of(source);
+        }
+        return docComments;
+    }
+
+    /**
+     * Records on an assignment what the doc comment in front of it documents, if it assigns to a name or a member path like
+     * {@code foo.bar}: the text of the comment, the signature of a function literal, and the keys of a map literal.
+     */
+    private Assignment documented(final Token start, final Expression left, final JanitorParser.ExpressionContext right, final Assignment assignment) {
+        final List<Expression> path = HelpCall.namePath(left);
+        if (path == null) {
+            return assignment;
+        }
+        final List<String> names = HelpCall.names(path);
+        final NameDoc doc = docOf(docComments().before(start), names.getLast(), right);
+        if (doc != null) {
+            assignment.document(names.getFirst(), names.subList(1, names.size()), doc);
+        }
+        return assignment;
+    }
+
+    /**
+     * The documentation of a name: its doc comment, plus the signature of a function literal or the documentation of the
+     * keys of a map literal that it is assigned.
+     *
+     * @return the documentation, or null if there is nothing to document
+     */
+    private @Nullable NameDoc docOf(final @Nullable String text, final String name, final JanitorParser.ExpressionContext value) {
+        String signature = null;
+        final List<NameDoc.Param> parameterDocs = new ArrayList<>();
+        final Map<String, NameDoc> members = new LinkedHashMap<>();
+        if (value instanceof JanitorParser.LambdaExpressionContext lambda) {
+            final List<String> parameters = new ArrayList<>();
+            final JanitorParser.LambdaParametersContext lambdaParameters = lambda.lambdaParameters();
+            if (lambdaParameters.formalParameterList() != null) {
+                describeParameters(lambdaParameters.formalParameterList(), parameters, parameterDocs);
+            } else {
+                for (final JanitorParser.ValidIdentifierContext identifier : lambdaParameters.validIdentifier()) {
+                    describeParameter(identifier.start, identifier.getText(), identifier.getText(), parameters, parameterDocs);
+                }
+            }
+            signature = signature(name, parameters);
+        } else if (value instanceof JanitorParser.MapExpressionContext map) {
+            for (final JanitorParser.PropertyAssignmentContext property : map.propertyAssignment()) {
+                final String key = keyOf(property);
+                final NameDoc member = docOf(docComments().before(property.start), key, property.expression());
+                if (member != null) {
+                    members.put(key, member);
+                }
+            }
+        }
+        final NameDoc doc = new NameDoc(text, signature, parameterDocs, members);
+        return doc.isEmpty() ? null : doc;
+    }
+
+    private String keyOf(final JanitorParser.PropertyAssignmentContext property) {
+        if (property.validIdentifier() != null) {
+            return property.validIdentifier().getText();
+        }
+        final String text = property.getStart().getText();
+        final int quotes = text.startsWith("\"\"\"") || text.startsWith("\'\'\'") ? 3 : 1;
+        return parseLiteral(env, text.substring(quotes, text.length() - quotes)).janitorToString();
+    }
+
+    private static String signature(final String name, final List<String> parameters) {
+        return name + "(" + String.join(", ", parameters) + ")";
+    }
+
+    /**
+     * Describes the parameters of a function as written in the source code, e.g. {@code timeout = 30} or {@code **filters},
+     * together with the doc comments in front of them.
+     */
+    private void describeParameters(final JanitorParser.@Nullable FormalParameterListContext list, final List<String> parameters, final List<NameDoc.Param> docs) {
+        if (list == null) {
+            return;
+        }
+        for (final ParseTree child : list.children) {
+            if (child instanceof JanitorParser.NonDefaultParamListContext nonDefault) {
+                for (final JanitorParser.FormalParameterContext parameter : nonDefault.formalParameter()) {
+                    describeParameter(parameter.start, parameter.getText(), parameter.getText(), parameters, docs);
+                }
+            } else if (child instanceof JanitorParser.DefaultParamListContext defaults) {
+                for (final JanitorParser.FormalParameterWithDefaultContext parameter : defaults.formalParameterWithDefault()) {
+                    final String parameterName = parameter.validIdentifier().getText();
+                    describeParameter(parameter.start, parameterName, parameterName + " = " + sourceOf(parameter.expression()), parameters, docs);
+                }
+            } else if (child instanceof JanitorParser.VarArgListContext varArgs) {
+                final String parameterName = varArgs.validIdentifier().getText();
+                describeParameter(varArgs.start, parameterName, "*" + parameterName, parameters, docs);
+            } else if (child instanceof JanitorParser.KwArgListContext kwArgs) {
+                final String parameterName = kwArgs.validIdentifier().getText();
+                describeParameter(kwArgs.start, parameterName, "**" + parameterName, parameters, docs);
+            }
+        }
+    }
+
+    private void describeParameter(final Token start, final String name, final String written, final List<String> parameters, final List<NameDoc.Param> docs) {
+        parameters.add(written);
+        final String text = docComments().before(start);
+        if (text != null) {
+            docs.add(new NameDoc.Param(name, text));
+        }
+    }
+
+    private static String sourceOf(final ParserRuleContext ctx) {
+        return ctx.start.getInputStream().getText(Interval.of(ctx.start.getStartIndex(), ctx.stop.getStopIndex()));
     }
 
     /**

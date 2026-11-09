@@ -83,7 +83,7 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
         // That's because we're using "unpack()" all over the place to get to the innermost value, which is
         // what we want in most cases, but maybe not here. I'm not sure if it's worth making things more complicated
         // just for this feature, though.
-        builtinScope.bindF("help", "help(value): Returns the HELP text of the value, e.g. of a function or method, or null if it has none.", (rs, args) -> {
+        builtinScope.bindF("help", "help(value): Returns the documentation of a name from its doc comment, or else the HELP text of the value, e.g. of a function or method; null if there is none.", (rs, args) -> {
             final JanitorObject subject = args.get(0);
             if (subject instanceof HasMetaData hasMetaData) {
                 return getBuiltinTypes().nullableString(hasMetaData.getMetaData(Janitor.MetaData.HELP));

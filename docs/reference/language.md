@@ -25,6 +25,57 @@ comments are ignored
 `#` does not start a comment. It is only allowed on the very first line of a script, as a Unix "shebang" line
 (`#!/usr/bin/env janitor`), which is then ignored.
 
+<a id="doc-comments"></a>
+
+### Doc comments
+
+A block comment that starts with `/**` is a doc comment. It documents the name that the statement after it defines: a
+variable of any kind, a function, a member assigned like `config.timeout = 30`, a key of a map literal, or a parameter of
+a function or lambda. [`help(name)`](builtins.md#global-help) returns the documentation. Other comments (`/* ... */`,
+`//`) and the empty comment `/**/` are no documentation.
+
+```janitor
+/**
+ * Finds a customer.
+ * Returns null if there is none.
+ */
+function find(
+    /** the customer number */ id,
+    /** in seconds */ timeout = 30
+) {
+    return null;
+}
+
+/** Connection settings */
+config = {
+    /** Timeout in seconds */
+    timeout: 30
+};
+
+print(help(find));
+print(help(config));
+print(help(config.timeout));
+```
+
+```output
+find(id, timeout = 30): Finds a customer.
+Returns null if there is none.
+    id: the customer number
+    timeout: in seconds
+Connection settings
+Timeout in seconds
+```
+
+The documentation of a function starts with its call form, as written in the source code; a function without a doc
+comment still has it, e.g. `add(a, b)`. This applies to `function` declarations and to lambdas that are assigned
+directly, e.g. `twice = x -> x * 2`.
+
+Documentation belongs to the name, not to the value. The scope that holds the variable holds its documentation, too, and
+a module made from a script exposes the documentation of its exported names (`help(module.name)`). A copy does not
+carry the documentation along (`copy = config; help(copy)` is `null`), and assigning a new value without a doc comment
+keeps it. A name without documentation falls back to the HELP text of its value, which the built-in functions and the
+members of the built-in types have.
+
 <a id="statements"></a>
 
 ### Statements and semicolons

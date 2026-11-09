@@ -9,6 +9,8 @@ import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.errors.runtime.JanitorNameException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.errors.runtime.JanitorScriptModuleException;
+import com.eischet.janitor.api.scopes.HasNameDocs;
+import com.eischet.janitor.api.scopes.NameDoc;
 import com.eischet.janitor.api.scopes.ResultAndScope;
 import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.types.JanitorObject;
@@ -74,7 +76,7 @@ public class ScriptModule extends JanitorModuleRegistration {
     }
 
     /** A module that exposes the top-level variables of a scope as its attributes, except private ones ({@link #isExported}). */
-    public static class ModuleFromScope implements JanitorModule {
+    public static class ModuleFromScope implements JanitorModule, HasNameDocs {
         private final Scope moduleScope;
 
         public ModuleFromScope(Scope moduleScope) {
@@ -96,6 +98,12 @@ public class ScriptModule extends JanitorModuleRegistration {
                 scriptFunction.setModuleScope(moduleScope);
             }
             return obj;
+        }
+
+        /** The documentation of an exported top-level name of the module, so that help(module.name) finds it. */
+        @Override
+        public @Nullable NameDoc getNameDoc(final @NotNull String name) {
+            return isExported(name) ? moduleScope.getNameDoc(name) : null;
         }
 
     }

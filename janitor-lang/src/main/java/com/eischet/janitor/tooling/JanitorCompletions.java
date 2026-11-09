@@ -17,6 +17,7 @@ import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.api.types.dispatch.HasDispatcher;
 import com.eischet.janitor.api.types.functions.JCallable;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
+import com.eischet.janitor.compiler.DocComments;
 import com.eischet.janitor.lang.JanitorLexer;
 import com.eischet.janitor.logging.JanitorLogger;
 import org.antlr.v4.runtime.CharStreams;
@@ -27,6 +28,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -619,10 +621,12 @@ public final class JanitorCompletions {
                 .toList();
     }
 
-    // the names declared or used in the script, except the word at the cursor and member names
+    // the names declared or used in the script, except the word at the cursor and member names, with their doc comments
     private static List<Completion> namesIn(final String source, final int offset) {
         final List<Token> all = tokens(source);
+        final DocComments docComments = DocComments.of(source);
         final Map<String, Kind> names = new TreeMap<>();
+        final Map<String, String> docs = new HashMap<>();
         for (int i = 0; i < all.size(); i++) {
             final Token token = all.get(i);
             if (token.getType() != JanitorLexer.IDENTIFIER) {
@@ -637,9 +641,15 @@ public final class JanitorCompletions {
             }
             final boolean function = previous != null && previous.getType() == JanitorLexer.FUNCTION;
             names.merge(token.getText(), function ? Kind.FUNCTION : Kind.VARIABLE, (a, b) -> a == Kind.FUNCTION ? a : b);
+            final Token next = i + 1 < all.size() ? all.get(i + 1) : null;
+            final String doc = function ? docComments.before(previous)
+                    : next != null && next.getType() == JanitorLexer.ASSIGN ? docComments.before(token) : null;
+            if (doc != null) {
+                docs.put(token.getText(), doc);
+            }
         }
         final List<Completion> result = new ArrayList<>();
-        names.forEach((name, kind) -> result.add(new Completion(name, kind, kind == Kind.FUNCTION ? name + "(...)" : name, "", "")));
+        names.forEach((name, kind) -> result.add(new Completion(name, kind, kind == Kind.FUNCTION ? name + "(...)" : name, docs.getOrDefault(name, ""), "")));
         return result;
     }
 

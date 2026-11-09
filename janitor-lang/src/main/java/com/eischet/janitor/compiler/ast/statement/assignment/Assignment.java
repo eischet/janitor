@@ -9,6 +9,7 @@ import com.eischet.janitor.api.errors.runtime.JanitorNameException;
 import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.Location;
+import com.eischet.janitor.api.scopes.NameDoc;
 import com.eischet.janitor.api.scopes.ResultAndScope;
 import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.types.JAssignable;
@@ -21,6 +22,10 @@ import com.eischet.janitor.compiler.ast.statement.Statement;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonExportableObject;
 import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
 
 import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
@@ -31,6 +36,8 @@ import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 public abstract class Assignment extends Statement implements JsonExportableObject {
     private final Expression left;
     private final Expression right;
+    private @Nullable String documentedName;
+    private @Nullable NameDoc doc;
 
     /**
      * Constructor.
@@ -42,6 +49,40 @@ public abstract class Assignment extends Statement implements JsonExportableObje
         super(location);
         this.left = left;
         this.right = right;
+    }
+
+    /**
+     * Records the documentation from the doc comment in front of this assignment, to be stored with the variable whenever
+     * the assignment runs.
+     *
+     * @param name the variable, e.g. {@code foo} for {@code foo.bar.baz = 1}
+     * @param members the members below the variable, e.g. {@code ["bar", "baz"]}; empty when assigning to the variable itself
+     * @param documentation the documentation of the assigned name
+     * @return this assignment
+     */
+    public Assignment document(final @NotNull String name, final @NotNull List<String> members, final @NotNull NameDoc documentation) {
+        this.documentedName = name;
+        this.doc = documentation.nestedIn(members);
+        return this;
+    }
+
+    /**
+     * Stores the documentation with the variable, in the scope that holds it.
+     */
+    private void storeDoc(final JanitorScriptProcess process, final @Nullable Scope scope) {
+        if (doc == null || documentedName == null) {
+            return;
+        }
+        final Scope target;
+        if (scope != null) {
+            target = scope;
+        } else {
+            final ResultAndScope scoped = process.lookupScopedVar(documentedName);
+            target = scoped == null ? null : scoped.getScope();
+        }
+        if (target != null) {
+            target.document(documentedName, doc);
+        }
     }
 
     @Override
@@ -73,6 +114,7 @@ public abstract class Assignment extends Statement implements JsonExportableObje
             if (scoped == null) {
                 process.trace(() -> "  will assign " + id + " = " + valueToAssign + " in current scope of script = " + process.getCurrentScope());
                 process.getCurrentScope().bind(process, id, valueToAssign);
+                storeDoc(process, process.getCurrentScope());
                 return;
             } else {
                 final Scope targetScope = scoped.getScope();
@@ -81,6 +123,7 @@ public abstract class Assignment extends Statement implements JsonExportableObje
                     process.trace(() -> "warning: trying to assign something to the top level scope!");
                 }
                 targetScope.bind(process, id, valueToAssign);
+                storeDoc(process, targetScope);
                 return;
             }
         }
@@ -92,6 +135,7 @@ public abstract class Assignment extends Statement implements JsonExportableObje
         process.trace(() -> "assigning " + evalRight + " to " + evalLeft);
         if (evalLeft instanceof JAssignable assignable) {
             JanitorSemantics.assign(process, assignable, evalRight);
+            storeDoc(process, null);
         } else {
 
             // runningScript.getCurrentScope().lookup()

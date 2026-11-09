@@ -55,7 +55,8 @@ assertion failed: the total is too small
 ### `help(value)`
 
 Returns the help text of a value, a method or a type as a string, or `null` if there is none. The help texts are the
-descriptions in the tables below.
+descriptions in the tables below. For a name or a member path like `config.timeout`, `help` first returns its
+[doc comment](language.md#doc-comments), with the call form of a function in front.
 
 ```janitor
 print(help("text".toUpperCase));

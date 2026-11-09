@@ -43,7 +43,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * is looked at instead. This enables hosts to quickly plug in e.g. a JMap of things they want to provide to the script,
  * instead of having to implement anything special.</p>
  */
-public class Scope implements JanitorObject {
+public class Scope implements JanitorObject, HasNameDocs {
 
     /** Supplies objects that are looked up when a name cannot be found in a scope, see "implicit object" above. */
     @FunctionalInterface
@@ -87,6 +87,7 @@ public class Scope implements JanitorObject {
     private @Nullable Location ip;
     private @Nullable ImplicitObjectProvider implicitObjectProvider;
     private boolean sealed = false;
+    private volatile @Nullable Map<String, NameDoc> nameDocs;
 
     private Scope(final JanitorEnvironment env, final @Nullable Location location, final @Nullable Scope parent, final @Nullable Scope moduleScope, final boolean threadEnabled) {
         this.env = env;
@@ -401,6 +402,39 @@ public class Scope implements JanitorObject {
     }
 
     /**
+     * Records the documentation of a variable of this scope, combined with what was documented for it before.
+     *
+     * @param variableName the variable name
+     * @param doc          the documentation from the doc comment of the statement that assigns the variable
+     * @see NameDoc#mergedWith(NameDoc)
+     */
+    public void document(final @NotNull String variableName, final @NotNull NameDoc doc) {
+        Map<String, NameDoc> docs = nameDocs;
+        if (docs == null) {
+            synchronized (this) {
+                docs = nameDocs;
+                if (docs == null) {
+                    docs = new ConcurrentHashMap<>(4);
+                    nameDocs = docs;
+                }
+            }
+        }
+        docs.merge(variableName, doc, NameDoc::mergedWith);
+    }
+
+    /**
+     * Looks up the documentation of a variable of this scope; no other scope is consulted.
+     *
+     * @param variableName the variable name
+     * @return the documentation, or null if it has none
+     */
+    @Override
+    public @Nullable NameDoc getNameDoc(final @NotNull String variableName) {
+        final Map<String, NameDoc> docs = nameDocs;
+        return docs == null ? null : docs.get(variableName);
+    }
+
+    /**
      * Unbind a variable from this scope.
      * This is here to the JSR223 implementation and is not usually used.
      * The best strategy to remove a variable from a scope is not to bind it in the first place.
@@ -604,6 +638,10 @@ public class Scope implements JanitorObject {
      */
     public void replEatScope(Scope other) {
         other._variables.forEach((variableName, value) -> setVariable(variableName, value, null));
+        final Map<String, NameDoc> otherDocs = other.nameDocs;
+        if (otherDocs != null) {
+            otherDocs.forEach(this::document);
+        }
     }
 
     /**
