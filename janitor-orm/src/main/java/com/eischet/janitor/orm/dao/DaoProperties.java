@@ -69,7 +69,7 @@ public final class DaoProperties<S extends OrmDaoCollection<S>> {
         for (final String scriptName : names) {
             if (!existing.contains(scriptName)) {
                 dispatch.addObjectProperty(scriptName, dao, type)
-                        .setMetaData(Janitor.MetaData.HELP, scriptName + ": The DAO of " + name + "; read-only.");
+                        .setMetaData(Janitor.MetaData.HELP, scriptName + ": The DAO of " + name + ".");
             }
         }
         declared.add(name);

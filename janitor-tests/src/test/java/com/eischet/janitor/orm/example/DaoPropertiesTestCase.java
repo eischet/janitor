@@ -31,7 +31,7 @@ public class DaoPropertiesTestCase extends JanitorTest {
         assertNotNull(type);
         assertEquals(collection.getArticleDao().getDispatcher().streamAttributeNames().sorted().toList(),
                 type.streamAttributeNames().sorted().toList());
-        assertEquals("Article: The DAO of Article; read-only.", ExampleDaoCollection.DISPATCH.getMetaData("Article", Janitor.MetaData.HELP));
+        assertEquals("Article: The DAO of Article.", ExampleDaoCollection.DISPATCH.getMetaData("Article", Janitor.MetaData.HELP));
         assertSame(collection.getArticleDao(), OutputCatchingTestRuntime.fresh().compile("test", "return example.Article;")
                 .run(process -> process.bind("example", collection)));
     }
