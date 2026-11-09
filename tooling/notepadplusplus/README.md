@@ -6,7 +6,7 @@ regex literals (`re/.../`), numbers and `@` literals, and folds `{ }` and `[ ]` 
 
 ## Installation
 
-Either copy `Janitor.udl.xml` to `%APPDATA%\Notepad++\userDefineLangs\` and restart Notepad++, or use
+Run `install.bat` (double-click is fine), or copy `Janitor.udl.xml` yourself to `%APPDATA%\Notepad++\userDefineLangs\` and restart Notepad++, or use
 *Language → User Defined Language → Define your language... → Import...*.
 
 Files ending in `.janitor` are then highlighted automatically; for other files choose *Language → Janitor*.
