@@ -6,6 +6,7 @@ package com.eischet.janitor.tooling;
 import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.metadata.HasMetaData;
 import com.eischet.janitor.api.metadata.ScriptType;
+import com.eischet.janitor.api.modules.ScriptModule;
 import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
@@ -19,8 +20,8 @@ import org.jetbrains.annotations.Nullable;
 
 /**
  * Describes the top-level scope of a module as a dispatcher, so that suggestions can treat it like any other object: its functions
- * become methods with their parameter names, its values properties with the type of what they hold. Only for tools; the dispatcher
- * dispatches nothing.
+ * become methods with their parameter names, its values properties with the type of what they hold; private names
+ * ({@link ScriptModule#isExported}) are left out. Only for tools; the dispatcher dispatches nothing.
  */
 public final class ScopeDescription {
 
@@ -37,7 +38,7 @@ public final class ScopeDescription {
         table.setMetaData(Janitor.MetaData.CLASS, name);
         for (final String member : scope.dir()) {
             final JanitorObject value = scope.retrieveLocal(member);
-            if (value == null) {
+            if (value == null || !ScriptModule.isExported(member)) {
                 continue;
             }
             final String help = value instanceof HasMetaData hasMetaData ? hasMetaData.getMetaData(Janitor.MetaData.HELP) : null;

@@ -47,6 +47,19 @@ public class ImportFormsTestCase extends JanitorTest {
     }
 
     @Test
+    void namesWithAnUnderscoreArePrivateToTheModule() throws Exception {
+        final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh(env -> env.addModuleResolver((process, name) ->
+                "greetings".equals(name) ? ScriptModule.moduleFromScript(process, name, """
+                        _prefix = "hello ";
+                        function _shout(text) { return text.toUpperCase(); }
+                        function greet(name) { return _shout(_prefix + name); }
+                        """, null) : null));
+        assertEquals("HELLO ADA\n", output(runtime, "import \"greetings\" as g; print(g.greet(\"ada\"));"));
+        assertThrows(JanitorNameException.class, () -> output(runtime, "import \"greetings\" as g; print(g._prefix);"));
+        assertThrows(JanitorNameException.class, () -> output(runtime, "import \"greetings\" as g; print(g._shout(\"x\"));"));
+    }
+
+    @Test
     void missingModulesAreRuntimeErrors() {
         assertThrows(JanitorNameException.class, () -> output(OutputCatchingTestRuntime.fresh(), "import nosuchmodule;"));
         assertThrows(JanitorNameException.class, () -> output(OutputCatchingTestRuntime.fresh(), "import \"collections\" as c;"));

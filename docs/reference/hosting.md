@@ -98,7 +98,9 @@ env.addModuleResolver((process, name) -> {
 });
 ```
 
-A module made from a script exposes the variables and functions defined at the top level of that script.
+A module made from a script exposes the variables and functions defined at the top level of that script, except names that
+start with an underscore (`ScriptModule.isExported`). Hosts that build such modules themselves read their attributes with
+`Scope.lookupLocally` and the same rule, so that neither the environment's globals nor private names show through.
 
 <a id="binding-globals"></a>
 

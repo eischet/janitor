@@ -55,6 +55,9 @@ Rules:
   hierarchical names offers them through the string form, e.g. `import "acme.crm" as crm;`.
 - There is no `from module import name`, no `require(...)`, and no `import * as`. Members are always used through the
   module: `collections.Set()`.
+- A module made from a script exposes what it defines at its own top level, except names that start with an underscore:
+  `_helper` is private to the module. Its own functions use it, `m._helper` is an unknown member, and editors do not
+  suggest it. There is no `export`.
 
 <a id="availability"></a>
 

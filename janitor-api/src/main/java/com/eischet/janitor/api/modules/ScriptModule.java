@@ -61,7 +61,19 @@ public class ScriptModule extends JanitorModuleRegistration {
         }
     }
 
-    /** A module that exposes the top-level variables of a scope as its attributes. */
+    /**
+     * Whether a top-level name of a module made from a script is visible to those who import it. Names that start with an
+     * underscore, e.g. {@code _helper}, are private: the module's own code uses them, importers cannot reach them, and editors
+     * do not suggest them.
+     *
+     * @param name a top-level name of the module
+     * @return true if importers can use it
+     */
+    public static boolean isExported(final @NotNull String name) {
+        return !name.startsWith("_");
+    }
+
+    /** A module that exposes the top-level variables of a scope as its attributes, except private ones ({@link #isExported}). */
     public static class ModuleFromScope implements JanitorModule {
         private final Scope moduleScope;
 
@@ -76,6 +88,9 @@ public class ScriptModule extends JanitorModuleRegistration {
             // for a module scope (created via Scope.createGlobalScope()) ends at the environment's
             // builtin scope -- so every global builtin (print, assert, ...) would incorrectly resolve
             // as if it were a member of the module too.
+            if (!isExported(name)) {
+                return null;
+            }
             final JanitorObject obj = moduleScope.lookupLocally(runningScript, name);
             if (obj instanceof ModuleScopeAware scriptFunction) {
                 scriptFunction.setModuleScope(moduleScope);

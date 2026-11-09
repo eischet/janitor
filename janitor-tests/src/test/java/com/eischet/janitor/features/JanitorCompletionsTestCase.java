@@ -171,6 +171,7 @@ public class JanitorCompletionsTestCase extends JanitorTest {
     void membersOfAModuleImportedByAString() throws Exception {
         final Scope greetings = OutputCatchingTestRuntime.fresh().compile("greetings", """
                 title = "Hello";
+                _secret = 42;
                 function greet(name, polite) {
                     return title + " " + name;
                 }
@@ -194,6 +195,7 @@ public class JanitorCompletionsTestCase extends JanitorTest {
         assertEquals("greet(name, polite)", greet.signature());
         assertEquals("greetings", greet.owners());
         assertEquals(Kind.PROPERTY, find(found, "title").orElseThrow().kind());
+        assertTrue(find(found, "_secret").isEmpty(), "private names are not suggested");
         final String title = "import 'greetings' as g;\ng.title.";
         final List<Completion> titleMembers = completions.complete(title, 2, 8);
         assertTrue(find(titleMembers, "toUpperCase").isPresent(), "the type of what a value holds");
