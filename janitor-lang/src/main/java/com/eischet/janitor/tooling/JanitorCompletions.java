@@ -7,7 +7,9 @@ import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorRuntime;
 import com.eischet.janitor.api.metadata.HasMetaData;
 import com.eischet.janitor.api.metadata.ScriptType;
+import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.modules.JanitorModuleRegistration;
+import com.eischet.janitor.api.modules.ModuleResolver;
 import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.scopes.ScriptBindings;
 import com.eischet.janitor.api.types.JanitorObject;
@@ -44,7 +46,8 @@ import java.util.stream.Collectors;
  * ({@code shop.Order.select(o -> o.}), variables assigned such an expression and the variables of
  * {@code for (x in list)} over one. After {@code import} it offers the modules the environment registers, and a name an
  * import binds has the members of its module, if the registration names its dispatcher
- * ({@link JanitorModuleRegistration#withDispatcher}). Otherwise it offers the members of all built-in types, with the types that have them.
+ * ({@link JanitorModuleRegistration#withDispatcher}); for {@code import "name" as x}, if a resolver has the module's scope at hand
+ * ({@link ModuleResolver#describeModuleByStringName}). Otherwise it offers the members of all built-in types, with the types that have them.
  * Build one instance per environment and keep it: it reads the dispatchers once.
  * </p>
  */
@@ -94,6 +97,7 @@ public final class JanitorCompletions {
 
     private final List<Completion> keywords;
     private final List<Completion> globals;
+    private final JanitorEnvironment environment;
     private final Scope builtinScope;
     private final Set<String> commonNames;
     // type name -> members; COMMON first
@@ -108,7 +112,8 @@ public final class JanitorCompletions {
      */
     public JanitorCompletions(final @NotNull JanitorRuntime runtime) {
         keywords = keywords();
-        builtinScope = runtime.getEnvironment().getBuiltinScope();
+        environment = runtime.getEnvironment();
+        builtinScope = environment.getBuiltinScope();
         globals = builtinScope.dir().stream()
                 .filter(name -> !name.startsWith("__"))
                 .sorted()
@@ -301,29 +306,45 @@ public final class JanitorCompletions {
             return module != null ? module : globalType(name);
         }
 
-        // the type of a name that an import before index at binds, e.g. "import mcp;" or "import mcp as m;"
+        // the type of a name that an import before index at binds: "import mcp;", "import mcp as m;" or "import "name" as m;"
         private @Nullable ScriptType importedModuleType(final String name, final int at) {
             for (int i = 0; i < at; i++) {
                 if (tokens.get(i).getType() != JanitorLexer.IMPORT) {
                     continue;
                 }
-                for (int j = i + 1; j < at && tokens.get(j).getType() == JanitorLexer.IDENTIFIER; ) {
-                    final String module = tokens.get(j).getText();
-                    String bound = module;
+                for (int j = i + 1; j < at && isModuleName(tokens.get(j)); ) {
+                    final boolean byString = tokens.get(j).getType() != JanitorLexer.IDENTIFIER;
+                    final String module = byString ? unquote(tokens.get(j).getText()) : tokens.get(j).getText();
+                    String bound = byString ? null : module;
                     int next = j + 1;
                     if (next + 1 < at && isAs(tokens.get(next)) && tokens.get(next + 1).getType() == JanitorLexer.IDENTIFIER) {
                         bound = tokens.get(next + 1).getText();
                         next += 2;
                     }
-                    if (bound.equals(name)) {
-                        final JanitorModuleRegistration registration = modules.get(module);
-                        final Dispatcher<?> dispatcher = registration == null ? null : registration.getDispatcher();
-                        return dispatcher == null ? null : new ScriptType.Of(module, dispatcher);
+                    if (name.equals(bound)) {
+                        return byString ? resolvedModuleType(module) : registeredModuleType(module);
                     }
                     if (next >= at || tokens.get(next).getType() != JanitorLexer.COMMA) {
                         break;
                     }
                     j = next + 1;
+                }
+            }
+            return null;
+        }
+
+        private @Nullable ScriptType registeredModuleType(final String module) {
+            final JanitorModuleRegistration registration = modules.get(module);
+            final Dispatcher<?> dispatcher = registration == null ? null : registration.getDispatcher();
+            return dispatcher == null ? null : new ScriptType.Of(module, dispatcher);
+        }
+
+        // a module imported by a string: the first resolver that has its scope at hand describes it
+        private @Nullable ScriptType resolvedModuleType(final String module) {
+            for (final ModuleResolver resolver : environment.getModuleResolvers()) {
+                final Scope scope = resolver.describeModuleByStringName(module);
+                if (scope != null) {
+                    return new ScriptType.Of(module, ScopeDescription.of(module, scope));
                 }
             }
             return null;
@@ -539,6 +560,16 @@ public final class JanitorCompletions {
             i = j - 1;
         }
         return i >= 0 && tokens.get(i).getType() == JanitorLexer.IMPORT;
+    }
+
+    // what may name a module after import: a name, or a string with "as" after it
+    private static boolean isModuleName(final Token token) {
+        return token.getType() == JanitorLexer.IDENTIFIER || token.getType() == JanitorLexer.STRING_LITERAL_SINGLE
+               || token.getType() == JanitorLexer.STRING_LITERAL_DOUBLE;
+    }
+
+    private static String unquote(final String literal) {
+        return literal.length() >= 2 ? literal.substring(1, literal.length() - 1) : literal;
     }
 
     private static boolean isAs(final Token token) {

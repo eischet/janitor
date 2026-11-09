@@ -7,7 +7,11 @@ import com.eischet.janitor.JanitorTest;
 import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.metadata.MetaDataMap;
 import com.eischet.janitor.api.metadata.ScriptType;
+import com.eischet.janitor.api.JanitorScriptProcess;
+import com.eischet.janitor.api.modules.JanitorModule;
 import com.eischet.janitor.api.modules.JanitorModuleRegistration;
+import com.eischet.janitor.api.modules.ModuleResolver;
+import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.runtime.modules.CollectionsModule;
 import com.eischet.janitor.api.scopes.ScriptBindings;
 import com.eischet.janitor.api.types.JanitorObject;
@@ -161,6 +165,41 @@ public class JanitorCompletionsTestCase extends JanitorTest {
         final String plain = "import plain;\nplain.";
         assertTrue(withPlainModule.complete(plain, 2, 6).stream().noneMatch(c -> c.name().equals("Set") && c.owners().equals("plain")),
                 "a registration without a dispatcher tells nothing");
+    }
+
+    @Test
+    void membersOfAModuleImportedByAString() throws Exception {
+        final Scope greetings = OutputCatchingTestRuntime.fresh().compile("greetings", """
+                title = "Hello";
+                function greet(name, polite) {
+                    return title + " " + name;
+                }
+                """).runAndKeepGlobals(g -> { }).getScope();
+        final ModuleResolver resolver = new ModuleResolver() {
+            @Override
+            public JanitorModule resolveModuleByStringName(final JanitorScriptProcess process, final String name) {
+                return null;
+            }
+
+            @Override
+            public Scope describeModuleByStringName(final String name) {
+                return "greetings".equals(name) ? greetings : null;
+            }
+        };
+        final JanitorCompletions completions = new JanitorCompletions(OutputCatchingTestRuntime.fresh(env -> env.addModuleResolver(resolver)));
+        final String members = "import \"greetings\" as g;\ng.";
+        final List<Completion> found = completions.complete(members, 2, 2);
+        final Completion greet = find(found, "greet").orElseThrow();
+        assertEquals(Kind.METHOD, greet.kind());
+        assertEquals("greet(name, polite)", greet.signature());
+        assertEquals("greetings", greet.owners());
+        assertEquals(Kind.PROPERTY, find(found, "title").orElseThrow().kind());
+        final String title = "import 'greetings' as g;\ng.title.";
+        final List<Completion> titleMembers = completions.complete(title, 2, 8);
+        assertTrue(find(titleMembers, "toUpperCase").isPresent(), "the type of what a value holds");
+        assertTrue(titleMembers.stream().noneMatch(c -> c.owners().equals("date")), "not the members of all types");
+        final String unknown = "import \"farewells\" as f;\nf.";
+        assertTrue(find(completions.complete(unknown, 2, 2), "greet").isEmpty(), "a module no resolver describes is unknown");
     }
 
     @Test

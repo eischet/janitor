@@ -86,6 +86,16 @@ public interface JanitorEnvironment extends JsonOutputSupport {
     }
 
     /**
+     * The resolvers for {@code import "name" as foo}, in the order they are asked, e.g. for editors that describe such modules
+     * ({@link ModuleResolver#describeModuleByStringName}).
+     *
+     * @return the resolvers
+     */
+    default @NotNull List<ModuleResolver> getModuleResolvers() {
+        return List.of();
+    }
+
+    /**
      * Register a module resolver, making it available to script code.
      * Resolvers can be used to load modules dynamically, e.g. from a database or whatever suits the use case.
      * This applies to the import syntax that uses strings: import "module-name" as foo;

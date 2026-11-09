@@ -360,6 +360,11 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
         return List.copyOf(moduleRegistrations);
     }
 
+    @Override
+    public @NotNull List<ModuleResolver> getModuleResolvers() {
+        return List.copyOf(resolvers);
+    }
+
     /** Registers all modules that are provided by {@link DiscoverableModules} services on the class path. */
     public void autoDiscoverModules() {
         for (final DiscoverableModules discoverableModules : ServiceLoader.load(DiscoverableModules.class)) {
