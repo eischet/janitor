@@ -134,10 +134,10 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
      * Put a key-value pair into the map.
      *
      * @param key   the key
-     * @param value the value
+     * @param value the value; {@link Janitor#NULL} for null, never Java null
      */
     @Contract(mutates = "this")
-    public void put(final String key, final JanitorObject value) {
+    public void put(final String key, final @NotNull JanitorObject value) {
         wrapped.put(Janitor.nullableString(key), value);
     }
 
@@ -145,11 +145,11 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
      * Put a key-value pair into the map, builder style.
      *
      * @param key   the key
-     * @param value the value
+     * @param value the value; {@link Janitor#NULL} for null, never Java null
      * @return the same map
      */
     @Contract(mutates = "this")
-    public JMap with(final String key, final JanitorObject value) {
+    public JMap with(final String key, final @NotNull JanitorObject value) {
         put(key, value);
         return this;
     }
@@ -170,11 +170,11 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
     /**
      * Put a key-value pair into the map.
      *
-     * @param key   the key
-     * @param value the value
+     * @param key   the key; {@link Janitor#NULL} for null, never Java null
+     * @param value the value; {@link Janitor#NULL} for null, never Java null
      */
     @Contract(mutates = "this")
-    public void put(final JanitorObject key, final JanitorObject value) {
+    public void put(final @NotNull JanitorObject key, final @NotNull JanitorObject value) {
         wrapped.put(key, value);
     }
 
