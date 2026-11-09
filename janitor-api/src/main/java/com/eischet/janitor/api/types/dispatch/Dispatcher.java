@@ -7,6 +7,7 @@ import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.metadata.HasMetaData;
 import com.eischet.janitor.api.metadata.MetaDataKey;
+import com.eischet.janitor.api.metadata.MetaDataMap;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonInputStream;
@@ -103,6 +104,23 @@ public interface Dispatcher<T extends JanitorObject> extends HasMetaData {
      * @return a new dispatcher that first tries to dispatch to the child, and then to the parent
      */
     static <P extends JanitorObject, C extends JanitorObject> Dispatcher<P> inherit(Dispatcher<P> parent, Dispatcher<C> child) {
+        return inherit(parent, child, new MetaDataMap());
+    }
+
+    /**
+     * Like {@link #inherit(Dispatcher, Dispatcher)}, with metadata of the combined dispatcher's own, e.g.
+     * {@link com.eischet.janitor.api.Janitor.MetaData#ENTITY}. Metadata is looked up there first, then at the child, then at
+     * the parent; metadata of attributes at the child, then at the parent.
+     *
+     * @param parent   the parent dispatcher
+     * @param child    the child dispatcher
+     * @param metaData the combined dispatcher's own metadata
+     * @param <P>      the type of the parent JanitorObject
+     * @param <C>      the type of the child JanitorObject
+     * @return a new dispatcher that first tries to dispatch to the child, and then to the parent
+     */
+    static <P extends JanitorObject, C extends JanitorObject> Dispatcher<P> inherit(Dispatcher<P> parent, Dispatcher<C> child,
+                                                                                    MetaDataMap metaData) {
         // WE know that inherit works only when C extends P, but it's not easy to drive this point home to the Java compiler.
         // Therefore, this method looks more dangerous than it really is, with all those casts.
 
@@ -115,12 +133,18 @@ public interface Dispatcher<T extends JanitorObject> extends HasMetaData {
 
             @Override
             public <K> @Nullable K getMetaData(final @NotNull MetaDataKey<K> key) {
-                return child.getMetaData(key);
+                final K own = metaData.get(key);
+                if (own != null) {
+                    return own;
+                }
+                final K value = child.getMetaData(key);
+                return value != null ? value : parent.getMetaData(key);
             }
 
             @Override
             public <K> @Nullable K getMetaData(final @NotNull String attributeName, final @NotNull MetaDataKey<K> key) {
-                return child.getMetaData(attributeName, key);
+                final K value = child.getMetaData(attributeName, key);
+                return value != null ? value : parent.getMetaData(attributeName, key);
             }
 
             @SuppressWarnings("unchecked")

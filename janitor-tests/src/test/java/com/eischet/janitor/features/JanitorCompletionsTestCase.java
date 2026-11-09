@@ -5,9 +5,13 @@ package com.eischet.janitor.features;
 
 import com.eischet.janitor.JanitorTest;
 import com.eischet.janitor.api.Janitor;
+import com.eischet.janitor.api.metadata.MetaDataMap;
+import com.eischet.janitor.api.metadata.ScriptType;
 import com.eischet.janitor.api.scopes.ScriptBindings;
+import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
+import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.runtime.OutputCatchingTestRuntime;
 import com.eischet.janitor.tooling.JanitorCompletions;
 import com.eischet.janitor.tooling.JanitorCompletions.Completion;
@@ -30,6 +34,7 @@ public class JanitorCompletionsTestCase extends JanitorTest {
         private static final DispatchTable<Ticket> DISPATCH = new DispatchTable<>();
 
         static {
+            DISPATCH.setMetaData(Janitor.MetaData.CLASS, "Ticket");
             DISPATCH.addStringProperty("summary", self -> "")
                     .setMetaData(Janitor.MetaData.HELP, "summary: The summary of the ticket.");
         }
@@ -39,12 +44,38 @@ public class JanitorCompletionsTestCase extends JanitorTest {
         }
     }
 
+    // like a DAO: the methods every DAO has, those of one DAO class, and the entities they hold
+    private static final class Tickets extends JanitorComposed<Tickets> {
+        private static final DispatchTable<Tickets> COMMON = new DispatchTable<>();
+        private static final DispatchTable<Tickets> OWN = new DispatchTable<>();
+        private static final Dispatcher<?> TYPE;
+
+        static {
+            COMMON.addMethod("select", (self, process, args) -> Janitor.NULL)
+                    .setMetaData(Janitor.MetaData.HELP, "select(condition): The entities for which the condition holds.")
+                    .setMetaData(Janitor.MetaData.PARAMETERS, ScriptType.parameters(
+                            ScriptType.parameter("condition", ScriptType.function(ScriptType.BOOL, ScriptType.ENTITY))))
+                    .setMetaData(Janitor.MetaData.RETURNS, ScriptType.listOf(ScriptType.ENTITY));
+            OWN.addMethod("open", (self, process, args) -> Janitor.NULL)
+                    .setMetaData(Janitor.MetaData.HELP, "open(): The open tickets.");
+            final MetaDataMap metaData = new MetaDataMap();
+            metaData.put(Janitor.MetaData.ENTITY, Ticket.DISPATCH);
+            TYPE = Dispatcher.inherit(COMMON, OWN, metaData);
+        }
+
+        private Tickets() {
+            super(OWN);
+        }
+    }
+
     private static final class Registry extends JanitorComposed<Registry> {
         private static final DispatchTable<Registry> DISPATCH = new DispatchTable<>();
 
         static {
             DISPATCH.addObjectProperty("Ticket", self -> new Ticket(), Ticket.DISPATCH)
                     .setMetaData(Janitor.MetaData.HELP, "Ticket: The tickets.");
+            DISPATCH.addObjectProperty("Tickets", self -> new Tickets(), castDispatcher(Tickets.TYPE))
+                    .setMetaData(Janitor.MetaData.HELP, "Tickets: The DAO of the tickets.");
             DISPATCH.addMethod("lookup", (self, process, args) -> Janitor.NULL)
                     .setMetaData(Janitor.MetaData.HELP, "lookup(key): Find an entry.");
         }
@@ -60,6 +91,60 @@ public class JanitorCompletionsTestCase extends JanitorTest {
 
     private static Optional<Completion> find(final List<Completion> completions, final String name) {
         return completions.stream().filter(c -> c.name().equals(name)).findFirst();
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <X extends JanitorObject> Dispatcher<X> castDispatcher(final Dispatcher<?> dispatcher) {
+        return (Dispatcher<X>) dispatcher;
+    }
+
+    // the suggestions at the end of the source, with the declared globals
+    private List<Completion> atEnd(final String source) {
+        final String[] lines = source.split("\n", -1);
+        return suggestions.complete(source, lines.length, lines[lines.length - 1].length(), BINDINGS.declarations());
+    }
+
+    @Test
+    void membersOfALambdaParameter() {
+        final List<Completion> completions = atEnd("x = registry.Tickets.select(t -> t.");
+        assertEquals("Ticket", find(completions, "summary").orElseThrow().owners());
+        assertTrue(find(completions, "toUpperCase").isEmpty(), "no members of other types");
+        assertTrue(find(atEnd("registry.Tickets.select(t -> t.summary == 'x' and t."), "summary").isPresent());
+        assertTrue(find(atEnd("registry.Tickets.select((t) -> {\n    print(1);\n    return t."), "summary").isPresent());
+    }
+
+    @Test
+    void aLambdaParameterIsOnlyKnownInsideTheLambda() {
+        assertTrue(find(atEnd("registry.Tickets.select(t -> true)\nt."), "summary").isEmpty());
+        assertTrue(find(atEnd("foo(registry.Tickets.select(t -> true), t."), "summary").isEmpty());
+        assertTrue(find(atEnd("registry.Tickets.open(t -> t."), "summary").isEmpty(), "open has no parameter types");
+    }
+
+    @Test
+    void elementsOfWhatAMethodReturns() {
+        assertTrue(find(atEnd("tickets = registry.Tickets.select(t -> true)\nfor (t in tickets) {\n    t."), "summary").isPresent());
+        assertTrue(find(atEnd("for (t in registry.Tickets.select(t -> true)) {\n    t."), "summary").isPresent());
+        assertTrue(find(atEnd("first = registry.Tickets.select(t -> true)[0];\nfirst."), "summary").isPresent());
+        assertEquals("list", find(atEnd("registry.Tickets.select(t -> true)."), "size").orElseThrow().owners());
+    }
+
+    @Test
+    void propertiesWithATypeHint() {
+        assertEquals("string", find(atEnd("registry.Tickets.select(t -> t.summary."), "toUpperCase").orElseThrow().owners());
+    }
+
+    @Test
+    void membersOfAListLiteralAndOfAnIndex() {
+        assertTrue(find(atEnd("[1]."), "size").orElseThrow().owners().contains("list"));
+        assertTrue(find(atEnd("[1][0]."), "size").orElseThrow().owners().contains("list"), "the element is unknown: all types");
+    }
+
+    @Test
+    void inheritedMembersKeepTheirHelpTexts() {
+        final Completion select = find(atEnd("registry.Tickets."), "select").orElseThrow();
+        assertEquals(Kind.METHOD, select.kind());
+        assertEquals("select(condition)", select.signature());
+        assertTrue(find(atEnd("registry.Tickets."), "open").isPresent());
     }
 
     @Test

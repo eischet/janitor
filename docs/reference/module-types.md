@@ -161,22 +161,22 @@ This module defines no object types of its own.
 
 | Member | Kind | Description |
 | --- | --- | --- |
-| `appendChild` | property |  |
+| `appendChild(node)` | method | Adds the given node as the last child of this node. |
 | `apply(map)` | method | Assigns each entry of the map to the property of the same name, and returns the object itself. |
-| `firstChild` | property |  |
-| `insertAfter` | property |  |
-| `insertBefore` | property |  |
-| `lastChild` | property |  |
-| `next` | property |  |
-| `parent` | property |  |
-| `prependChild` | property |  |
-| `previous` | property |  |
-| `toHtml` | property |  |
-| `toMarkdown` | property |  |
-| `toText` | property |  |
-| `type` | property |  |
-| `unlink` | property |  |
-| `visit` | property |  |
+| `firstChild` | property | The first child node, or null if the node has no children; read-only. |
+| `insertAfter(node)` | method | Inserts the given node as the next sibling of this node. |
+| `insertBefore(node)` | method | Inserts the given node as the previous sibling of this node. |
+| `lastChild` | property | The last child node, or null if the node has no children; read-only. |
+| `next` | property | The next sibling node, or null if there is none; read-only. |
+| `parent` | property | The parent node, or null if the node has none; read-only. |
+| `prependChild(node)` | method | Adds the given node as the first child of this node. |
+| `previous` | property | The previous sibling node, or null if there is none; read-only. |
+| `toHtml(...)` | method | Converts the node to html representation |
+| `toMarkdown(...)` | method | Converts the node to markdown representation |
+| `toText(...)` | method | Converts the node to plain text representation |
+| `type` | property, string | The kind of node, e.g. "Paragraph", "Heading" or "Text"; read-only. |
+| `unlink()` | method | Removes the node, with its children, from its parent and siblings. |
+| `visit(...)` | method |  |
 
 <a id="types-commonmark-cmbulletlist"></a>
 
@@ -186,7 +186,7 @@ This module defines no object types of its own.
 | --- | --- | --- |
 | `apply(map)` | method | Assigns each entry of the map to the property of the same name, and returns the object itself. |
 | `marker` | property, string | The character used as the bullet marker, e.g. "-", "*" or "+"; writable. |
-| `tight` | property |  |
+| `tight` | property, bool | True if the list is tight, i.e. its items are not separated by blank lines; writable. |
 
 <a id="types-commonmark-cmcode"></a>
 
@@ -194,23 +194,23 @@ This module defines no object types of its own.
 
 | Member | Kind | Description |
 | --- | --- | --- |
-| `appendChild` | property |  |
+| `appendChild(node)` | method | Adds the given node as the last child of this node. |
 | `apply(map)` | method | Assigns each entry of the map to the property of the same name, and returns the object itself. |
-| `firstChild` | property |  |
-| `insertAfter` | property |  |
-| `insertBefore` | property |  |
-| `lastChild` | property |  |
+| `firstChild` | property | The first child node, or null if the node has no children; read-only. |
+| `insertAfter(node)` | method | Inserts the given node as the next sibling of this node. |
+| `insertBefore(node)` | method | Inserts the given node as the previous sibling of this node. |
+| `lastChild` | property | The last child node, or null if the node has no children; read-only. |
 | `literal` | property, string | The text of the inline code span; writable. |
-| `next` | property |  |
-| `parent` | property |  |
-| `prependChild` | property |  |
-| `previous` | property |  |
-| `toHtml` | property |  |
-| `toMarkdown` | property |  |
-| `toText` | property |  |
-| `type` | property |  |
-| `unlink` | property |  |
-| `visit` | property |  |
+| `next` | property | The next sibling node, or null if there is none; read-only. |
+| `parent` | property | The parent node, or null if the node has none; read-only. |
+| `prependChild(node)` | method | Adds the given node as the first child of this node. |
+| `previous` | property | The previous sibling node, or null if there is none; read-only. |
+| `toHtml(...)` | method | Converts the node to html representation |
+| `toMarkdown(...)` | method | Converts the node to markdown representation |
+| `toText(...)` | method | Converts the node to plain text representation |
+| `type` | property, string | The kind of node, e.g. "Paragraph", "Heading" or "Text"; read-only. |
+| `unlink()` | method | Removes the node, with its children, from its parent and siblings. |
+| `visit(...)` | method |  |
 
 <a id="types-commonmark-cmcustomblock"></a>
 
@@ -234,22 +234,22 @@ This module defines no object types of its own.
 
 | Member | Kind | Description |
 | --- | --- | --- |
-| `appendChild` | property |  |
+| `appendChild(node)` | method | Adds the given node as the last child of this node. |
 | `apply(map)` | method | Assigns each entry of the map to the property of the same name, and returns the object itself. |
-| `firstChild` | property |  |
-| `insertAfter` | property |  |
-| `insertBefore` | property |  |
-| `lastChild` | property |  |
-| `next` | property |  |
-| `parent` | property |  |
-| `prependChild` | property |  |
-| `previous` | property |  |
-| `toHtml` | property |  |
-| `toMarkdown` | property |  |
-| `toText` | property |  |
-| `type` | property |  |
-| `unlink` | property |  |
-| `visit` | property |  |
+| `firstChild` | property | The first child node, or null if the node has no children; read-only. |
+| `insertAfter(node)` | method | Inserts the given node as the next sibling of this node. |
+| `insertBefore(node)` | method | Inserts the given node as the previous sibling of this node. |
+| `lastChild` | property | The last child node, or null if the node has no children; read-only. |
+| `next` | property | The next sibling node, or null if there is none; read-only. |
+| `parent` | property | The parent node, or null if the node has none; read-only. |
+| `prependChild(node)` | method | Adds the given node as the first child of this node. |
+| `previous` | property | The previous sibling node, or null if there is none; read-only. |
+| `toHtml(...)` | method | Converts the node to html representation |
+| `toMarkdown(...)` | method | Converts the node to markdown representation |
+| `toText(...)` | method | Converts the node to plain text representation |
+| `type` | property, string | The kind of node, e.g. "Paragraph", "Heading" or "Text"; read-only. |
+| `unlink()` | method | Removes the node, with its children, from its parent and siblings. |
+| `visit(...)` | method |  |
 
 <a id="types-commonmark-cmemphasis"></a>
 
@@ -257,24 +257,24 @@ This module defines no object types of its own.
 
 | Member | Kind | Description |
 | --- | --- | --- |
-| `appendChild` | property |  |
+| `appendChild(node)` | method | Adds the given node as the last child of this node. |
 | `apply(map)` | method | Assigns each entry of the map to the property of the same name, and returns the object itself. |
 | `closingDelimiter` | property, string | The delimiter that closes the emphasis, "*" or "_"; read-only. |
-| `firstChild` | property |  |
-| `insertAfter` | property |  |
-| `insertBefore` | property |  |
-| `lastChild` | property |  |
-| `next` | property |  |
+| `firstChild` | property | The first child node, or null if the node has no children; read-only. |
+| `insertAfter(node)` | method | Inserts the given node as the next sibling of this node. |
+| `insertBefore(node)` | method | Inserts the given node as the previous sibling of this node. |
+| `lastChild` | property | The last child node, or null if the node has no children; read-only. |
+| `next` | property | The next sibling node, or null if there is none; read-only. |
 | `openingDelimiter` | property, string | The delimiter that opens the emphasis, "*" or "_"; read-only. |
-| `parent` | property |  |
-| `prependChild` | property |  |
-| `previous` | property |  |
-| `toHtml` | property |  |
-| `toMarkdown` | property |  |
-| `toText` | property |  |
-| `type` | property |  |
-| `unlink` | property |  |
-| `visit` | property |  |
+| `parent` | property | The parent node, or null if the node has none; read-only. |
+| `prependChild(node)` | method | Adds the given node as the first child of this node. |
+| `previous` | property | The previous sibling node, or null if there is none; read-only. |
+| `toHtml(...)` | method | Converts the node to html representation |
+| `toMarkdown(...)` | method | Converts the node to markdown representation |
+| `toText(...)` | method | Converts the node to plain text representation |
+| `type` | property, string | The kind of node, e.g. "Paragraph", "Heading" or "Text"; read-only. |
+| `unlink()` | method | Removes the node, with its children, from its parent and siblings. |
+| `visit(...)` | method |  |
 
 <a id="types-commonmark-cmfencedcodeblock"></a>
 
@@ -282,29 +282,29 @@ This module defines no object types of its own.
 
 | Member | Kind | Description |
 | --- | --- | --- |
-| `appendChild` | property |  |
+| `appendChild(node)` | method | Adds the given node as the last child of this node. |
 | `apply(map)` | method | Assigns each entry of the map to the property of the same name, and returns the object itself. |
 | `closingFenceLength` | property, int | The number of fence characters in the closing fence; writable, may be null. |
 | `fenceCharacter` | property, string | The character of the fence, "`" or "~"; writable. |
 | `fenceIndent` | property, int | The indentation of the opening fence, in spaces; writable. |
 | `fenceLength` | property, int | The number of fence characters in the opening fence; writable. |
-| `firstChild` | property |  |
+| `firstChild` | property | The first child node, or null if the node has no children; read-only. |
 | `info` | property, string | The info string after the opening fence, usually the language of the code; writable. |
-| `insertAfter` | property |  |
-| `insertBefore` | property |  |
-| `lastChild` | property |  |
+| `insertAfter(node)` | method | Inserts the given node as the next sibling of this node. |
+| `insertBefore(node)` | method | Inserts the given node as the previous sibling of this node. |
+| `lastChild` | property | The last child node, or null if the node has no children; read-only. |
 | `literal` | property, string | The code inside the block; writable. |
-| `next` | property |  |
+| `next` | property | The next sibling node, or null if there is none; read-only. |
 | `openingFenceLength` | property, int | The number of fence characters in the opening fence; writable, may be null. |
-| `parent` | property |  |
-| `prependChild` | property |  |
-| `previous` | property |  |
-| `toHtml` | property |  |
-| `toMarkdown` | property |  |
-| `toText` | property |  |
-| `type` | property |  |
-| `unlink` | property |  |
-| `visit` | property |  |
+| `parent` | property | The parent node, or null if the node has none; read-only. |
+| `prependChild(node)` | method | Adds the given node as the first child of this node. |
+| `previous` | property | The previous sibling node, or null if there is none; read-only. |
+| `toHtml(...)` | method | Converts the node to html representation |
+| `toMarkdown(...)` | method | Converts the node to markdown representation |
+| `toText(...)` | method | Converts the node to plain text representation |
+| `type` | property, string | The kind of node, e.g. "Paragraph", "Heading" or "Text"; read-only. |
+| `unlink()` | method | Removes the node, with its children, from its parent and siblings. |
+| `visit(...)` | method |  |
 
 <a id="types-commonmark-cmhardlinebreak"></a>
 
@@ -312,22 +312,22 @@ This module defines no object types of its own.
 
 | Member | Kind | Description |
 | --- | --- | --- |
-| `appendChild` | property |  |
+| `appendChild(node)` | method | Adds the given node as the last child of this node. |
 | `apply(map)` | method | Assigns each entry of the map to the property of the same name, and returns the object itself. |
-| `firstChild` | property |  |
-| `insertAfter` | property |  |
-| `insertBefore` | property |  |
-| `lastChild` | property |  |
-| `next` | property |  |
-| `parent` | property |  |
-| `prependChild` | property |  |
-| `previous` | property |  |
-| `toHtml` | property |  |
-| `toMarkdown` | property |  |
-| `toText` | property |  |
-| `type` | property |  |
-| `unlink` | property |  |
-| `visit` | property |  |
+| `firstChild` | property | The first child node, or null if the node has no children; read-only. |
+| `insertAfter(node)` | method | Inserts the given node as the next sibling of this node. |
+| `insertBefore(node)` | method | Inserts the given node as the previous sibling of this node. |
+| `lastChild` | property | The last child node, or null if the node has no children; read-only. |
+| `next` | property | The next sibling node, or null if there is none; read-only. |
+| `parent` | property | The parent node, or null if the node has none; read-only. |
+| `prependChild(node)` | method | Adds the given node as the first child of this node. |
+| `previous` | property | The previous sibling node, or null if there is none; read-only. |
+| `toHtml(...)` | method | Converts the node to html representation |
+| `toMarkdown(...)` | method | Converts the node to markdown representation |
+| `toText(...)` | method | Converts the node to plain text representation |
+| `type` | property, string | The kind of node, e.g. "Paragraph", "Heading" or "Text"; read-only. |
+| `unlink()` | method | Removes the node, with its children, from its parent and siblings. |
+| `visit(...)` | method |  |
 
 <a id="types-commonmark-cmheading"></a>
 
@@ -335,23 +335,23 @@ This module defines no object types of its own.
 
 | Member | Kind | Description |
 | --- | --- | --- |
-| `appendChild` | property |  |
+| `appendChild(node)` | method | Adds the given node as the last child of this node. |
 | `apply(map)` | method | Assigns each entry of the map to the property of the same name, and returns the object itself. |
-| `firstChild` | property |  |
-| `insertAfter` | property |  |
-| `insertBefore` | property |  |
-| `lastChild` | property |  |
+| `firstChild` | property | The first child node, or null if the node has no children; read-only. |
+| `insertAfter(node)` | method | Inserts the given node as the next sibling of this node. |
+| `insertBefore(node)` | method | Inserts the given node as the previous sibling of this node. |
+| `lastChild` | property | The last child node, or null if the node has no children; read-only. |
 | `level` | property, int | The level of the heading, from 1 to 6; writable. |
-| `next` | property |  |
-| `parent` | property |  |
-| `prependChild` | property |  |
-| `previous` | property |  |
-| `toHtml` | property |  |
-| `toMarkdown` | property |  |
-| `toText` | property |  |
-| `type` | property |  |
-| `unlink` | property |  |
-| `visit` | property |  |
+| `next` | property | The next sibling node, or null if there is none; read-only. |
+| `parent` | property | The parent node, or null if the node has none; read-only. |
+| `prependChild(node)` | method | Adds the given node as the first child of this node. |
+| `previous` | property | The previous sibling node, or null if there is none; read-only. |
+| `toHtml(...)` | method | Converts the node to html representation |
+| `toMarkdown(...)` | method | Converts the node to markdown representation |
+| `toText(...)` | method | Converts the node to plain text representation |
+| `type` | property, string | The kind of node, e.g. "Paragraph", "Heading" or "Text"; read-only. |
+| `unlink()` | method | Removes the node, with its children, from its parent and siblings. |
+| `visit(...)` | method |  |
 
 <a id="types-commonmark-cmhtmlblock"></a>
 
@@ -359,23 +359,23 @@ This module defines no object types of its own.
 
 | Member | Kind | Description |
 | --- | --- | --- |
-| `appendChild` | property |  |
+| `appendChild(node)` | method | Adds the given node as the last child of this node. |
 | `apply(map)` | method | Assigns each entry of the map to the property of the same name, and returns the object itself. |
-| `firstChild` | property |  |
-| `insertAfter` | property |  |
-| `insertBefore` | property |  |
-| `lastChild` | property |  |
+| `firstChild` | property | The first child node, or null if the node has no children; read-only. |
+| `insertAfter(node)` | method | Inserts the given node as the next sibling of this node. |
+| `insertBefore(node)` | method | Inserts the given node as the previous sibling of this node. |
+| `lastChild` | property | The last child node, or null if the node has no children; read-only. |
 | `literal` | property, string | The raw HTML of the block; writable. |
-| `next` | property |  |
-| `parent` | property |  |
-| `prependChild` | property |  |
-| `previous` | property |  |
-| `toHtml` | property |  |
-| `toMarkdown` | property |  |
-| `toText` | property |  |
-| `type` | property |  |
-| `unlink` | property |  |
-| `visit` | property |  |
+| `next` | property | The next sibling node, or null if there is none; read-only. |
+| `parent` | property | The parent node, or null if the node has none; read-only. |
+| `prependChild(node)` | method | Adds the given node as the first child of this node. |
+| `previous` | property | The previous sibling node, or null if there is none; read-only. |
+| `toHtml(...)` | method | Converts the node to html representation |
+| `toMarkdown(...)` | method | Converts the node to markdown representation |
+| `toText(...)` | method | Converts the node to plain text representation |
+| `type` | property, string | The kind of node, e.g. "Paragraph", "Heading" or "Text"; read-only. |
+| `unlink()` | method | Removes the node, with its children, from its parent and siblings. |
+| `visit(...)` | method |  |
 
 <a id="types-commonmark-cmhtmlinline"></a>
 
@@ -383,23 +383,23 @@ This module defines no object types of its own.
 
 | Member | Kind | Description |
 | --- | --- | --- |
-| `appendChild` | property |  |
+| `appendChild(node)` | method | Adds the given node as the last child of this node. |
 | `apply(map)` | method | Assigns each entry of the map to the property of the same name, and returns the object itself. |
-| `firstChild` | property |  |
-| `insertAfter` | property |  |
-| `insertBefore` | property |  |
-| `lastChild` | property |  |
+| `firstChild` | property | The first child node, or null if the node has no children; read-only. |
+| `insertAfter(node)` | method | Inserts the given node as the next sibling of this node. |
+| `insertBefore(node)` | method | Inserts the given node as the previous sibling of this node. |
+| `lastChild` | property | The last child node, or null if the node has no children; read-only. |
 | `literal` | property, string | The raw inline HTML; writable. |
-| `next` | property |  |
-| `parent` | property |  |
-| `prependChild` | property |  |
-| `previous` | property |  |
-| `toHtml` | property |  |
-| `toMarkdown` | property |  |
-| `toText` | property |  |
-| `type` | property |  |
-| `unlink` | property |  |
-| `visit` | property |  |
+| `next` | property | The next sibling node, or null if there is none; read-only. |
+| `parent` | property | The parent node, or null if the node has none; read-only. |
+| `prependChild(node)` | method | Adds the given node as the first child of this node. |
+| `previous` | property | The previous sibling node, or null if there is none; read-only. |
+| `toHtml(...)` | method | Converts the node to html representation |
+| `toMarkdown(...)` | method | Converts the node to markdown representation |
+| `toText(...)` | method | Converts the node to plain text representation |
+| `type` | property, string | The kind of node, e.g. "Paragraph", "Heading" or "Text"; read-only. |
+| `unlink()` | method | Removes the node, with its children, from its parent and siblings. |
+| `visit(...)` | method |  |
 
 <a id="types-commonmark-cmimage"></a>
 
@@ -407,24 +407,24 @@ This module defines no object types of its own.
 
 | Member | Kind | Description |
 | --- | --- | --- |
-| `appendChild` | property |  |
+| `appendChild(node)` | method | Adds the given node as the last child of this node. |
 | `apply(map)` | method | Assigns each entry of the map to the property of the same name, and returns the object itself. |
 | `destination` | property, string | The URL of the image; writable. |
-| `firstChild` | property |  |
-| `insertAfter` | property |  |
-| `insertBefore` | property |  |
-| `lastChild` | property |  |
-| `next` | property |  |
-| `parent` | property |  |
-| `prependChild` | property |  |
-| `previous` | property |  |
+| `firstChild` | property | The first child node, or null if the node has no children; read-only. |
+| `insertAfter(node)` | method | Inserts the given node as the next sibling of this node. |
+| `insertBefore(node)` | method | Inserts the given node as the previous sibling of this node. |
+| `lastChild` | property | The last child node, or null if the node has no children; read-only. |
+| `next` | property | The next sibling node, or null if there is none; read-only. |
+| `parent` | property | The parent node, or null if the node has none; read-only. |
+| `prependChild(node)` | method | Adds the given node as the first child of this node. |
+| `previous` | property | The previous sibling node, or null if there is none; read-only. |
 | `title` | property, string | The title of the image; writable. |
-| `toHtml` | property |  |
-| `toMarkdown` | property |  |
-| `toText` | property |  |
-| `type` | property |  |
-| `unlink` | property |  |
-| `visit` | property |  |
+| `toHtml(...)` | method | Converts the node to html representation |
+| `toMarkdown(...)` | method | Converts the node to markdown representation |
+| `toText(...)` | method | Converts the node to plain text representation |
+| `type` | property, string | The kind of node, e.g. "Paragraph", "Heading" or "Text"; read-only. |
+| `unlink()` | method | Removes the node, with its children, from its parent and siblings. |
+| `visit(...)` | method |  |
 
 <a id="types-commonmark-cmindentedcodeblock"></a>
 
@@ -432,23 +432,23 @@ This module defines no object types of its own.
 
 | Member | Kind | Description |
 | --- | --- | --- |
-| `appendChild` | property |  |
+| `appendChild(node)` | method | Adds the given node as the last child of this node. |
 | `apply(map)` | method | Assigns each entry of the map to the property of the same name, and returns the object itself. |
-| `firstChild` | property |  |
-| `insertAfter` | property |  |
-| `insertBefore` | property |  |
-| `lastChild` | property |  |
+| `firstChild` | property | The first child node, or null if the node has no children; read-only. |
+| `insertAfter(node)` | method | Inserts the given node as the next sibling of this node. |
+| `insertBefore(node)` | method | Inserts the given node as the previous sibling of this node. |
+| `lastChild` | property | The last child node, or null if the node has no children; read-only. |
 | `literal` | property, string | The code inside the block; writable. |
-| `next` | property |  |
-| `parent` | property |  |
-| `prependChild` | property |  |
-| `previous` | property |  |
-| `toHtml` | property |  |
-| `toMarkdown` | property |  |
-| `toText` | property |  |
-| `type` | property |  |
-| `unlink` | property |  |
-| `visit` | property |  |
+| `next` | property | The next sibling node, or null if there is none; read-only. |
+| `parent` | property | The parent node, or null if the node has none; read-only. |
+| `prependChild(node)` | method | Adds the given node as the first child of this node. |
+| `previous` | property | The previous sibling node, or null if there is none; read-only. |
+| `toHtml(...)` | method | Converts the node to html representation |
+| `toMarkdown(...)` | method | Converts the node to markdown representation |
+| `toText(...)` | method | Converts the node to plain text representation |
+| `type` | property, string | The kind of node, e.g. "Paragraph", "Heading" or "Text"; read-only. |
+| `unlink()` | method | Removes the node, with its children, from its parent and siblings. |
+| `visit(...)` | method |  |
 
 <a id="types-commonmark-cmlink"></a>
 
@@ -456,24 +456,24 @@ This module defines no object types of its own.
 
 | Member | Kind | Description |
 | --- | --- | --- |
-| `appendChild` | property |  |
+| `appendChild(node)` | method | Adds the given node as the last child of this node. |
 | `apply(map)` | method | Assigns each entry of the map to the property of the same name, and returns the object itself. |
 | `destination` | property, string | The URL that the link points to; writable. |
-| `firstChild` | property |  |
-| `insertAfter` | property |  |
-| `insertBefore` | property |  |
-| `lastChild` | property |  |
-| `next` | property |  |
-| `parent` | property |  |
-| `prependChild` | property |  |
-| `previous` | property |  |
+| `firstChild` | property | The first child node, or null if the node has no children; read-only. |
+| `insertAfter(node)` | method | Inserts the given node as the next sibling of this node. |
+| `insertBefore(node)` | method | Inserts the given node as the previous sibling of this node. |
+| `lastChild` | property | The last child node, or null if the node has no children; read-only. |
+| `next` | property | The next sibling node, or null if there is none; read-only. |
+| `parent` | property | The parent node, or null if the node has none; read-only. |
+| `prependChild(node)` | method | Adds the given node as the first child of this node. |
+| `previous` | property | The previous sibling node, or null if there is none; read-only. |
 | `title` | property, string | The title of the link; writable. |
-| `toHtml` | property |  |
-| `toMarkdown` | property |  |
-| `toText` | property |  |
-| `type` | property |  |
-| `unlink` | property |  |
-| `visit` | property |  |
+| `toHtml(...)` | method | Converts the node to html representation |
+| `toMarkdown(...)` | method | Converts the node to markdown representation |
+| `toText(...)` | method | Converts the node to plain text representation |
+| `type` | property, string | The kind of node, e.g. "Paragraph", "Heading" or "Text"; read-only. |
+| `unlink()` | method | Removes the node, with its children, from its parent and siblings. |
+| `visit(...)` | method |  |
 
 <a id="types-commonmark-cmlinkreferencedefinition"></a>
 
@@ -481,25 +481,25 @@ This module defines no object types of its own.
 
 | Member | Kind | Description |
 | --- | --- | --- |
-| `appendChild` | property |  |
+| `appendChild(node)` | method | Adds the given node as the last child of this node. |
 | `apply(map)` | method | Assigns each entry of the map to the property of the same name, and returns the object itself. |
 | `destination` | property, string | The URL that the definition points to; writable. |
-| `firstChild` | property |  |
-| `insertAfter` | property |  |
-| `insertBefore` | property |  |
+| `firstChild` | property | The first child node, or null if the node has no children; read-only. |
+| `insertAfter(node)` | method | Inserts the given node as the next sibling of this node. |
+| `insertBefore(node)` | method | Inserts the given node as the previous sibling of this node. |
 | `label` | property, string | The label that links use to refer to this definition; writable. |
-| `lastChild` | property |  |
-| `next` | property |  |
-| `parent` | property |  |
-| `prependChild` | property |  |
-| `previous` | property |  |
+| `lastChild` | property | The last child node, or null if the node has no children; read-only. |
+| `next` | property | The next sibling node, or null if there is none; read-only. |
+| `parent` | property | The parent node, or null if the node has none; read-only. |
+| `prependChild(node)` | method | Adds the given node as the first child of this node. |
+| `previous` | property | The previous sibling node, or null if there is none; read-only. |
 | `title` | property, string | The title of the definition; writable. |
-| `toHtml` | property |  |
-| `toMarkdown` | property |  |
-| `toText` | property |  |
-| `type` | property |  |
-| `unlink` | property |  |
-| `visit` | property |  |
+| `toHtml(...)` | method | Converts the node to html representation |
+| `toMarkdown(...)` | method | Converts the node to markdown representation |
+| `toText(...)` | method | Converts the node to plain text representation |
+| `type` | property, string | The kind of node, e.g. "Paragraph", "Heading" or "Text"; read-only. |
+| `unlink()` | method | Removes the node, with its children, from its parent and siblings. |
+| `visit(...)` | method |  |
 
 <a id="types-commonmark-cmlistblock"></a>
 
@@ -516,24 +516,24 @@ This module defines no object types of its own.
 
 | Member | Kind | Description |
 | --- | --- | --- |
-| `appendChild` | property |  |
+| `appendChild(node)` | method | Adds the given node as the last child of this node. |
 | `apply(map)` | method | Assigns each entry of the map to the property of the same name, and returns the object itself. |
 | `contentIndent` | property, int | The indentation of the item's content, in columns; writable, may be null. |
-| `firstChild` | property |  |
-| `insertAfter` | property |  |
-| `insertBefore` | property |  |
-| `lastChild` | property |  |
+| `firstChild` | property | The first child node, or null if the node has no children; read-only. |
+| `insertAfter(node)` | method | Inserts the given node as the next sibling of this node. |
+| `insertBefore(node)` | method | Inserts the given node as the previous sibling of this node. |
+| `lastChild` | property | The last child node, or null if the node has no children; read-only. |
 | `markerIndent` | property, int | The indentation of the list marker, in columns; writable, may be null. |
-| `next` | property |  |
-| `parent` | property |  |
-| `prependChild` | property |  |
-| `previous` | property |  |
-| `toHtml` | property |  |
-| `toMarkdown` | property |  |
-| `toText` | property |  |
-| `type` | property |  |
-| `unlink` | property |  |
-| `visit` | property |  |
+| `next` | property | The next sibling node, or null if there is none; read-only. |
+| `parent` | property | The parent node, or null if the node has none; read-only. |
+| `prependChild(node)` | method | Adds the given node as the first child of this node. |
+| `previous` | property | The previous sibling node, or null if there is none; read-only. |
+| `toHtml(...)` | method | Converts the node to html representation |
+| `toMarkdown(...)` | method | Converts the node to markdown representation |
+| `toText(...)` | method | Converts the node to plain text representation |
+| `type` | property, string | The kind of node, e.g. "Paragraph", "Heading" or "Text"; read-only. |
+| `unlink()` | method | Removes the node, with its children, from its parent and siblings. |
+| `visit(...)` | method |  |
 
 <a id="types-commonmark-cmnode"></a>
 
@@ -568,7 +568,7 @@ This module defines no object types of its own.
 | `markerDelimiter` | property, string | The delimiter after the item numbers, "." or ")"; writable. |
 | `markerStartNumber` | property, int | The number of the first item of the list; writable, may be null. |
 | `startNumber` | property, int | The number of the first item of the list; writable. |
-| `tight` | property |  |
+| `tight` | property, bool | True if the list is tight, i.e. its items are not separated by blank lines; writable. |
 
 <a id="types-commonmark-cmparagraph"></a>
 
@@ -576,22 +576,22 @@ This module defines no object types of its own.
 
 | Member | Kind | Description |
 | --- | --- | --- |
-| `appendChild` | property |  |
+| `appendChild(node)` | method | Adds the given node as the last child of this node. |
 | `apply(map)` | method | Assigns each entry of the map to the property of the same name, and returns the object itself. |
-| `firstChild` | property |  |
-| `insertAfter` | property |  |
-| `insertBefore` | property |  |
-| `lastChild` | property |  |
-| `next` | property |  |
-| `parent` | property |  |
-| `prependChild` | property |  |
-| `previous` | property |  |
-| `toHtml` | property |  |
-| `toMarkdown` | property |  |
-| `toText` | property |  |
-| `type` | property |  |
-| `unlink` | property |  |
-| `visit` | property |  |
+| `firstChild` | property | The first child node, or null if the node has no children; read-only. |
+| `insertAfter(node)` | method | Inserts the given node as the next sibling of this node. |
+| `insertBefore(node)` | method | Inserts the given node as the previous sibling of this node. |
+| `lastChild` | property | The last child node, or null if the node has no children; read-only. |
+| `next` | property | The next sibling node, or null if there is none; read-only. |
+| `parent` | property | The parent node, or null if the node has none; read-only. |
+| `prependChild(node)` | method | Adds the given node as the first child of this node. |
+| `previous` | property | The previous sibling node, or null if there is none; read-only. |
+| `toHtml(...)` | method | Converts the node to html representation |
+| `toMarkdown(...)` | method | Converts the node to markdown representation |
+| `toText(...)` | method | Converts the node to plain text representation |
+| `type` | property, string | The kind of node, e.g. "Paragraph", "Heading" or "Text"; read-only. |
+| `unlink()` | method | Removes the node, with its children, from its parent and siblings. |
+| `visit(...)` | method |  |
 
 <a id="types-commonmark-cmsoftlinebreak"></a>
 
@@ -599,22 +599,22 @@ This module defines no object types of its own.
 
 | Member | Kind | Description |
 | --- | --- | --- |
-| `appendChild` | property |  |
+| `appendChild(node)` | method | Adds the given node as the last child of this node. |
 | `apply(map)` | method | Assigns each entry of the map to the property of the same name, and returns the object itself. |
-| `firstChild` | property |  |
-| `insertAfter` | property |  |
-| `insertBefore` | property |  |
-| `lastChild` | property |  |
-| `next` | property |  |
-| `parent` | property |  |
-| `prependChild` | property |  |
-| `previous` | property |  |
-| `toHtml` | property |  |
-| `toMarkdown` | property |  |
-| `toText` | property |  |
-| `type` | property |  |
-| `unlink` | property |  |
-| `visit` | property |  |
+| `firstChild` | property | The first child node, or null if the node has no children; read-only. |
+| `insertAfter(node)` | method | Inserts the given node as the next sibling of this node. |
+| `insertBefore(node)` | method | Inserts the given node as the previous sibling of this node. |
+| `lastChild` | property | The last child node, or null if the node has no children; read-only. |
+| `next` | property | The next sibling node, or null if there is none; read-only. |
+| `parent` | property | The parent node, or null if the node has none; read-only. |
+| `prependChild(node)` | method | Adds the given node as the first child of this node. |
+| `previous` | property | The previous sibling node, or null if there is none; read-only. |
+| `toHtml(...)` | method | Converts the node to html representation |
+| `toMarkdown(...)` | method | Converts the node to markdown representation |
+| `toText(...)` | method | Converts the node to plain text representation |
+| `type` | property, string | The kind of node, e.g. "Paragraph", "Heading" or "Text"; read-only. |
+| `unlink()` | method | Removes the node, with its children, from its parent and siblings. |
+| `visit(...)` | method |  |
 
 <a id="types-commonmark-cmstrongemphasis"></a>
 
@@ -622,24 +622,24 @@ This module defines no object types of its own.
 
 | Member | Kind | Description |
 | --- | --- | --- |
-| `appendChild` | property |  |
+| `appendChild(node)` | method | Adds the given node as the last child of this node. |
 | `apply(map)` | method | Assigns each entry of the map to the property of the same name, and returns the object itself. |
 | `closingDelimiter` | property, string | The delimiter that closes the strong emphasis, "**" or "__"; read-only. |
-| `firstChild` | property |  |
-| `insertAfter` | property |  |
-| `insertBefore` | property |  |
-| `lastChild` | property |  |
-| `next` | property |  |
+| `firstChild` | property | The first child node, or null if the node has no children; read-only. |
+| `insertAfter(node)` | method | Inserts the given node as the next sibling of this node. |
+| `insertBefore(node)` | method | Inserts the given node as the previous sibling of this node. |
+| `lastChild` | property | The last child node, or null if the node has no children; read-only. |
+| `next` | property | The next sibling node, or null if there is none; read-only. |
 | `openingDelimiter` | property, string | The delimiter that opens the strong emphasis, "**" or "__"; read-only. |
-| `parent` | property |  |
-| `prependChild` | property |  |
-| `previous` | property |  |
-| `toHtml` | property |  |
-| `toMarkdown` | property |  |
-| `toText` | property |  |
-| `type` | property |  |
-| `unlink` | property |  |
-| `visit` | property |  |
+| `parent` | property | The parent node, or null if the node has none; read-only. |
+| `prependChild(node)` | method | Adds the given node as the first child of this node. |
+| `previous` | property | The previous sibling node, or null if there is none; read-only. |
+| `toHtml(...)` | method | Converts the node to html representation |
+| `toMarkdown(...)` | method | Converts the node to markdown representation |
+| `toText(...)` | method | Converts the node to plain text representation |
+| `type` | property, string | The kind of node, e.g. "Paragraph", "Heading" or "Text"; read-only. |
+| `unlink()` | method | Removes the node, with its children, from its parent and siblings. |
+| `visit(...)` | method |  |
 
 <a id="types-commonmark-cmtext"></a>
 
@@ -647,23 +647,23 @@ This module defines no object types of its own.
 
 | Member | Kind | Description |
 | --- | --- | --- |
-| `appendChild` | property |  |
+| `appendChild(node)` | method | Adds the given node as the last child of this node. |
 | `apply(map)` | method | Assigns each entry of the map to the property of the same name, and returns the object itself. |
-| `firstChild` | property |  |
-| `insertAfter` | property |  |
-| `insertBefore` | property |  |
-| `lastChild` | property |  |
+| `firstChild` | property | The first child node, or null if the node has no children; read-only. |
+| `insertAfter(node)` | method | Inserts the given node as the next sibling of this node. |
+| `insertBefore(node)` | method | Inserts the given node as the previous sibling of this node. |
+| `lastChild` | property | The last child node, or null if the node has no children; read-only. |
 | `literal` | property, string | The text of the node; writable. |
-| `next` | property |  |
-| `parent` | property |  |
-| `prependChild` | property |  |
-| `previous` | property |  |
-| `toHtml` | property |  |
-| `toMarkdown` | property |  |
-| `toText` | property |  |
-| `type` | property |  |
-| `unlink` | property |  |
-| `visit` | property |  |
+| `next` | property | The next sibling node, or null if there is none; read-only. |
+| `parent` | property | The parent node, or null if the node has none; read-only. |
+| `prependChild(node)` | method | Adds the given node as the first child of this node. |
+| `previous` | property | The previous sibling node, or null if there is none; read-only. |
+| `toHtml(...)` | method | Converts the node to html representation |
+| `toMarkdown(...)` | method | Converts the node to markdown representation |
+| `toText(...)` | method | Converts the node to plain text representation |
+| `type` | property, string | The kind of node, e.g. "Paragraph", "Heading" or "Text"; read-only. |
+| `unlink()` | method | Removes the node, with its children, from its parent and siblings. |
+| `visit(...)` | method |  |
 
 <a id="types-commonmark-cmthematicbreak"></a>
 
@@ -671,23 +671,23 @@ This module defines no object types of its own.
 
 | Member | Kind | Description |
 | --- | --- | --- |
-| `appendChild` | property |  |
+| `appendChild(node)` | method | Adds the given node as the last child of this node. |
 | `apply(map)` | method | Assigns each entry of the map to the property of the same name, and returns the object itself. |
-| `firstChild` | property |  |
-| `insertAfter` | property |  |
-| `insertBefore` | property |  |
-| `lastChild` | property |  |
+| `firstChild` | property | The first child node, or null if the node has no children; read-only. |
+| `insertAfter(node)` | method | Inserts the given node as the next sibling of this node. |
+| `insertBefore(node)` | method | Inserts the given node as the previous sibling of this node. |
+| `lastChild` | property | The last child node, or null if the node has no children; read-only. |
 | `literal` | property, string | The source characters of the thematic break, e.g. "---"; writable. |
-| `next` | property |  |
-| `parent` | property |  |
-| `prependChild` | property |  |
-| `previous` | property |  |
-| `toHtml` | property |  |
-| `toMarkdown` | property |  |
-| `toText` | property |  |
-| `type` | property |  |
-| `unlink` | property |  |
-| `visit` | property |  |
+| `next` | property | The next sibling node, or null if there is none; read-only. |
+| `parent` | property | The parent node, or null if the node has none; read-only. |
+| `prependChild(node)` | method | Adds the given node as the first child of this node. |
+| `previous` | property | The previous sibling node, or null if there is none; read-only. |
+| `toHtml(...)` | method | Converts the node to html representation |
+| `toMarkdown(...)` | method | Converts the node to markdown representation |
+| `toText(...)` | method | Converts the node to plain text representation |
+| `type` | property, string | The kind of node, e.g. "Paragraph", "Heading" or "Text"; read-only. |
+| `unlink()` | method | Removes the node, with its children, from its parent and siblings. |
+| `visit(...)` | method |  |
 
 <a id="types-pdf"></a>
 

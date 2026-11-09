@@ -1006,6 +1006,28 @@ public final class Janitor {
         public static final MetaDataKey<String> TEXT_KEY = new MetaDataKey<>("text_key", String.class);
 
         /**
+         * What a method returns, for tools like editors; see {@link com.eischet.janitor.api.metadata.ScriptType}.
+         * Attach it like {@link #HELP}; it is not checked when a script runs.
+         */
+        public static final MetaDataKey<com.eischet.janitor.api.metadata.ScriptType> RETURNS =
+                new MetaDataKey<>("returns", com.eischet.janitor.api.metadata.ScriptType.class);
+
+        /**
+         * The parameters of a method, for tools like editors: a list of
+         * {@link com.eischet.janitor.api.metadata.ScriptType.Parameter}. Attach it like {@link #HELP}; it is not checked
+         * when a script runs.
+         */
+        public static final MetaDataKey<List<com.eischet.janitor.api.metadata.ScriptType.Parameter>> PARAMETERS =
+                new MetaDataKey<>("parameters", List.class);
+
+        /**
+         * On the dispatcher of a container like a DAO: the dispatcher of the objects it holds. Tools use it for
+         * {@link com.eischet.janitor.api.metadata.ScriptType#ENTITY}, e.g. to know the elements of what a DAO's
+         * {@code select} returns.
+         */
+        public static final MetaDataKey<Dispatcher<?>> ENTITY = new MetaDataKey<>("entity", Dispatcher.class);
+
+        /**
          * Private constructor, to keep you from creating instances of this singleton / "namespace class".
          */
         private MetaData() {

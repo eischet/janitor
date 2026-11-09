@@ -54,7 +54,7 @@ public final class DaoProperties<S extends OrmDaoCollection<S>> {
      *
      * @param name       the entity's class name, under which the DAO registers itself, e.g. "ShopOrder"
      * @param getter     the collection's getter of the DAO
-     * @param dispatcher the dispatcher of the DAO, e.g. {@code GenericDao.dispatcherFor(OrderDao.DISPATCH)}
+     * @param dispatcher the dispatcher of the DAO, e.g. {@code GenericDao.dispatcherFor(OrderDao.DISPATCH, Order.DISPATCH)}
      * @return this, for chained calls
      */
     @SuppressWarnings("unchecked")

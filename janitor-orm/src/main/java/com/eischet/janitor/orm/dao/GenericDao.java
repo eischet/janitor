@@ -25,6 +25,8 @@ import com.eischet.janitor.api.types.builtin.JString;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
+import com.eischet.janitor.api.metadata.MetaDataMap;
+import com.eischet.janitor.api.metadata.ScriptType;
 import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.types.functions.JCallable;
 import com.eischet.janitor.api.types.functions.tree.JInspectableFunction;
@@ -100,29 +102,50 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
         // should columnForField and fieldForColumn be made public as well!?
 
         DISPATCH.addMethod("insert", (self, process, arguments) -> self.insertForScript(process, arguments.require(1).get(0)))
-                .setMetaData(Janitor.MetaData.HELP, "insert(entity): Inserts the entity, or a new entity filled from a map, into the database and returns it.");
+                .setMetaData(Janitor.MetaData.HELP, "insert(entity): Inserts the entity, or a new entity filled from a map, into the database and returns it.")
+                .setMetaData(Janitor.MetaData.PARAMETERS, DaoScriptTypes.ONE_ENTITY)
+                .setMetaData(Janitor.MetaData.RETURNS, ScriptType.ENTITY);
         DISPATCH.addVoidMethod("update", (self, process, arguments) -> self.updateForScript(process, arguments.require(1).get(0)))
-                .setMetaData(Janitor.MetaData.HELP, "update(entity): Updates the entity, or a new entity filled from a map, in the database.");
+                .setMetaData(Janitor.MetaData.HELP, "update(entity): Updates the entity, or a new entity filled from a map, in the database.")
+                .setMetaData(Janitor.MetaData.PARAMETERS, DaoScriptTypes.ONE_ENTITY);
         DISPATCH.addMethod("findAll", GenericDao::scriptFindAll)
-                .setMetaData(Janitor.MetaData.HELP, "findAll(): Returns all entities as a list.");
+                .setMetaData(Janitor.MetaData.HELP, "findAll(): Returns all entities as a list.")
+                .setMetaData(Janitor.MetaData.RETURNS, DaoScriptTypes.ENTITIES);
         DISPATCH.addMethod("getById", GenericDao::scriptFindById)
-                .setMetaData(Janitor.MetaData.HELP, "getById(id): Returns the entity with the ID, or null if there is none; same as findById(id).");
+                .setMetaData(Janitor.MetaData.HELP, "getById(id): Returns the entity with the ID, or null if there is none; same as findById(id).")
+                .setMetaData(Janitor.MetaData.PARAMETERS, DaoScriptTypes.ID)
+                .setMetaData(Janitor.MetaData.RETURNS, ScriptType.ENTITY);
         DISPATCH.addMethod("getByKey", GenericDao::scriptFindByKey)
-                .setMetaData(Janitor.MetaData.HELP, "getByKey(key): Returns the entity with the key, or null if there is none; same as findByKey(key).");
+                .setMetaData(Janitor.MetaData.HELP, "getByKey(key): Returns the entity with the key, or null if there is none; same as findByKey(key).")
+                .setMetaData(Janitor.MetaData.PARAMETERS, DaoScriptTypes.KEY)
+                .setMetaData(Janitor.MetaData.RETURNS, ScriptType.ENTITY);
         DISPATCH.addMethod("getAll", GenericDao::scriptFindAll)
-                .setMetaData(Janitor.MetaData.HELP, "getAll(): Returns all entities as a list; same as findAll().");
+                .setMetaData(Janitor.MetaData.HELP, "getAll(): Returns all entities as a list; same as findAll().")
+                .setMetaData(Janitor.MetaData.RETURNS, DaoScriptTypes.ENTITIES);
         DISPATCH.addMethod("findById", GenericDao::scriptFindById)
-                .setMetaData(Janitor.MetaData.HELP, "findById(id): Returns the entity with the ID, or null if there is none.");
+                .setMetaData(Janitor.MetaData.HELP, "findById(id): Returns the entity with the ID, or null if there is none.")
+                .setMetaData(Janitor.MetaData.PARAMETERS, DaoScriptTypes.ID)
+                .setMetaData(Janitor.MetaData.RETURNS, ScriptType.ENTITY);
         DISPATCH.addMethod("findByKey", GenericDao::scriptFindByKey)
-                .setMetaData(Janitor.MetaData.HELP, "findByKey(key): Returns the entity with the key (see keyColumn), or null if there is none.");
+                .setMetaData(Janitor.MetaData.HELP, "findByKey(key): Returns the entity with the key (see keyColumn), or null if there is none.")
+                .setMetaData(Janitor.MetaData.PARAMETERS, DaoScriptTypes.KEY)
+                .setMetaData(Janitor.MetaData.RETURNS, ScriptType.ENTITY);
         DISPATCH.addMethod("findByIds", GenericDao::scriptFindByIds)
-                .setMetaData(Janitor.MetaData.HELP, "findByIds(ids): Returns the entities for a list or set of IDs, in the order of their IDs; missing IDs, duplicates and nulls are skipped.");
+                .setMetaData(Janitor.MetaData.HELP, "findByIds(ids): Returns the entities for a list or set of IDs, in the order of their IDs; missing IDs, duplicates and nulls are skipped.")
+                .setMetaData(Janitor.MetaData.PARAMETERS, DaoScriptTypes.IDS)
+                .setMetaData(Janitor.MetaData.RETURNS, DaoScriptTypes.ENTITIES);
         DISPATCH.addMethod("queryForEach", GenericDao::scriptQueryForEach)
-                .setMetaData(Janitor.MetaData.HELP, "queryForEach(sql, callback): Runs the SQL query, which must return entity IDs, calls callback(entity, id) for each entity found and returns how many there were.");
+                .setMetaData(Janitor.MetaData.HELP, "queryForEach(sql, callback): Runs the SQL query, which must return entity IDs, calls callback(entity, id) for each entity found and returns how many there were.")
+                .setMetaData(Janitor.MetaData.PARAMETERS, DaoScriptTypes.QUERY_FOR_EACH)
+                .setMetaData(Janitor.MetaData.RETURNS, ScriptType.INT);
         DISPATCH.addMethod("select", GenericDao::scriptSelect)
-                .setMetaData(Janitor.MetaData.HELP, "select(condition): Returns the entities for which the condition holds, running it as a database query; the condition is a lambda like item -> item.code == \"FOO\" or a filter map like {field: \"code\", operator: \"eq\", valueString: \"FOO\"}.");
+                .setMetaData(Janitor.MetaData.HELP, "select(condition): Returns the entities for which the condition holds, running it as a database query; the condition is a lambda like item -> item.code == \"FOO\" or a filter map like {field: \"code\", operator: \"eq\", valueString: \"FOO\"}.")
+                .setMetaData(Janitor.MetaData.PARAMETERS, DaoScriptTypes.CONDITION)
+                .setMetaData(Janitor.MetaData.RETURNS, DaoScriptTypes.ENTITIES);
         DISPATCH.addMethod("count", GenericDao::scriptCount)
-                .setMetaData(Janitor.MetaData.HELP, "count(condition): Returns the number of entities for which the condition, a lambda or a filter map like for select, holds, running it as a database query.");
+                .setMetaData(Janitor.MetaData.HELP, "count(condition): Returns the number of entities for which the condition, a lambda or a filter map like for select, holds, running it as a database query.")
+                .setMetaData(Janitor.MetaData.PARAMETERS, DaoScriptTypes.CONDITION)
+                .setMetaData(Janitor.MetaData.RETURNS, ScriptType.INT);
 
         DISPATCH.addStringProperty("jsonSchema", self -> Janitor.current().writeJson(self.entityDispatchTable::writeSchemaToJson))
                 .setMetaData(Janitor.MetaData.HELP, "jsonSchema: The JSON schema of the entities as a string; read-only.");
@@ -207,6 +230,21 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
      */
     public static @NotNull Dispatcher<?> dispatcherFor(final @NotNull Dispatcher<?> daoMethods) {
         return Dispatcher.inherit(DISPATCH, daoMethods);
+    }
+
+    /**
+     * Like {@link #dispatcherFor(Dispatcher)}, and names the dispatcher of the entities, so that editors know what
+     * {@code select}, {@code findById} &amp; co. return and what the lambda of {@code select} gets
+     * ({@link Janitor.MetaData#ENTITY}).
+     *
+     * @param daoMethods the script methods of the DAO class, as handed to the constructor
+     * @param entities   the dispatch table of the entities
+     * @return the dispatcher of the DAOs
+     */
+    public static @NotNull Dispatcher<?> dispatcherFor(final @NotNull Dispatcher<?> daoMethods, final @NotNull Dispatcher<?> entities) {
+        final MetaDataMap metaData = new MetaDataMap();
+        metaData.put(Janitor.MetaData.ENTITY, entities);
+        return Dispatcher.inherit(DISPATCH, daoMethods, metaData);
     }
 
     public GenericDao(

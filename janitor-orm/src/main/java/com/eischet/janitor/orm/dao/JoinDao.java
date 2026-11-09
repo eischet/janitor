@@ -24,6 +24,8 @@ import com.eischet.janitor.api.types.builtin.JString;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
+import com.eischet.janitor.api.metadata.MetaDataMap;
+import com.eischet.janitor.api.metadata.ScriptType;
 import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.types.functions.JCallable;
 import com.eischet.janitor.api.types.functions.tree.JInspectableFunction;
@@ -83,19 +85,30 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
         DISPATCH.addStringProperty("className", dao -> dao.className)
                 .setMetaData(Janitor.MetaData.HELP, "className: The class name of the join records; read-only.");
         DISPATCH.addMethod("insert", JoinDao::insertForScript)
-                .setMetaData(Janitor.MetaData.HELP, "insert(record): Inserts a join record, given as a record or a map, into the database and returns it.");
+                .setMetaData(Janitor.MetaData.HELP, "insert(record): Inserts a join record, given as a record or a map, into the database and returns it.")
+                .setMetaData(Janitor.MetaData.PARAMETERS, DaoScriptTypes.ONE_ENTITY)
+                .setMetaData(Janitor.MetaData.RETURNS, ScriptType.ENTITY);
         DISPATCH.addMethod("update", JoinDao::updateForScript)
-                .setMetaData(Janitor.MetaData.HELP, "update(record): Updates a join record, given as a record or a map, in the database and returns it.");
+                .setMetaData(Janitor.MetaData.HELP, "update(record): Updates a join record, given as a record or a map, in the database and returns it.")
+                .setMetaData(Janitor.MetaData.PARAMETERS, DaoScriptTypes.ONE_ENTITY)
+                .setMetaData(Janitor.MetaData.RETURNS, ScriptType.ENTITY);
         DISPATCH.addMethod("merge", JoinDao::mergeForScript)
-                .setMetaData(Janitor.MetaData.HELP, "merge(record): Updates a join record, given as a record or a map, or inserts it if it does not exist yet; returns it.");
+                .setMetaData(Janitor.MetaData.HELP, "merge(record): Updates a join record, given as a record or a map, or inserts it if it does not exist yet; returns it.")
+                .setMetaData(Janitor.MetaData.PARAMETERS, DaoScriptTypes.ONE_ENTITY)
+                .setMetaData(Janitor.MetaData.RETURNS, ScriptType.ENTITY);
         DISPATCH.addVoidMethod("delete", JoinDao::deleteForScript)
-                .setMetaData(Janitor.MetaData.HELP, "delete(record): Deletes a join record, given as a record or a map, from the database.");
+                .setMetaData(Janitor.MetaData.HELP, "delete(record): Deletes a join record, given as a record or a map, from the database.")
+                .setMetaData(Janitor.MetaData.PARAMETERS, DaoScriptTypes.ONE_ENTITY);
         DISPATCH.addStringProperty("jsonSchema", self -> Janitor.current().writeJson(self.entityDispatchTable::writeSchemaToJson))
                 .setMetaData(Janitor.MetaData.HELP, "jsonSchema: The JSON schema of the join records as a string; read-only.");
         DISPATCH.addMethod("select", JoinDao::scriptSelect)
-                .setMetaData(Janitor.MetaData.HELP, "select(condition): Returns the list of the join records for which the condition, a lambda like 'link -> link.reason.key == \"A\" and link.ticket.status == \"o\"' or a filter map like {field: \"reason.key\", operator: \"eq\", valueString: \"A\"}, holds; runs it as a query.");
+                .setMetaData(Janitor.MetaData.HELP, "select(condition): Returns the list of the join records for which the condition, a lambda like 'link -> link.reason.key == \"A\" and link.ticket.status == \"o\"' or a filter map like {field: \"reason.key\", operator: \"eq\", valueString: \"A\"}, holds; runs it as a query.")
+                .setMetaData(Janitor.MetaData.PARAMETERS, DaoScriptTypes.CONDITION)
+                .setMetaData(Janitor.MetaData.RETURNS, DaoScriptTypes.ENTITIES);
         DISPATCH.addMethod("count", JoinDao::scriptCount)
-                .setMetaData(Janitor.MetaData.HELP, "count(condition): Returns the number of the join records for which the condition, a lambda or a filter map like for select, holds; runs it as a query.");
+                .setMetaData(Janitor.MetaData.HELP, "count(condition): Returns the number of the join records for which the condition, a lambda or a filter map like for select, holds; runs it as a query.")
+                .setMetaData(Janitor.MetaData.PARAMETERS, DaoScriptTypes.CONDITION)
+                .setMetaData(Janitor.MetaData.RETURNS, ScriptType.INT);
     }
 
     protected final ListenerSet<EntityChangeListener<T>> entityChangeListeners= new ListenerSetStandard<>();
@@ -172,6 +185,20 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
      */
     public static @NotNull Dispatcher<?> dispatcherFor(final @NotNull Dispatcher<?> daoMethods) {
         return Dispatcher.inherit(DISPATCH, daoMethods);
+    }
+
+    /**
+     * Like {@link #dispatcherFor(Dispatcher)}, and names the dispatcher of the join records, so that editors know what
+     * {@code select} returns and what its lambda gets ({@link Janitor.MetaData#ENTITY}).
+     *
+     * @param daoMethods the script methods of the DAO class, as handed to the constructor
+     * @param records    the dispatch table of the join records
+     * @return the dispatcher of the DAOs
+     */
+    public static @NotNull Dispatcher<?> dispatcherFor(final @NotNull Dispatcher<?> daoMethods, final @NotNull Dispatcher<?> records) {
+        final MetaDataMap metaData = new MetaDataMap();
+        metaData.put(Janitor.MetaData.ENTITY, records);
+        return Dispatcher.inherit(DISPATCH, daoMethods, metaData);
     }
 
     public JoinDao(

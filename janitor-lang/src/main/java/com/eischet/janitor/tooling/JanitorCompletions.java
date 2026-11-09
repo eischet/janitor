@@ -6,6 +6,7 @@ package com.eischet.janitor.tooling;
 import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorRuntime;
 import com.eischet.janitor.api.metadata.HasMetaData;
+import com.eischet.janitor.api.metadata.ScriptType;
 import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.scopes.ScriptBindings;
 import com.eischet.janitor.api.types.JanitorObject;
@@ -33,11 +34,14 @@ import java.util.stream.Collectors;
  * Suggestions for an editor: keywords, the environment's global functions and the names used in the script, and after a
  * dot the members of the built-in types with their HELP texts.
  * <p>
- * Without types, a member suggestion knows the receiver only for literals ({@code "abc".}, {@code @2024-01-01.}) and for
- * chains of names that start at a global: one the host declares for the script ({@link ScriptBindings}) or one of the
- * environment, followed by properties whose dispatchers are known ({@code shop.Order.}, through the
- * {@link Janitor.MetaData#DISPATCHER} metadata). Otherwise it offers the members of all built-in types, with the types that
- * have them. Build one instance per environment and keep it: it reads the dispatchers once.
+ * A member suggestion knows the receiver for literals ({@code "abc".}, {@code [1].}) and for expressions that start at a
+ * global, one the host declares for the script ({@link ScriptBindings}) or one of the environment, and go on with
+ * properties and methods whose types are known: {@link Janitor.MetaData#DISPATCHER} and {@link Janitor.MetaData#TYPE_HINT}
+ * of properties, {@link Janitor.MetaData#RETURNS} of methods ({@code shop.Order.findById(1).}). It also knows the
+ * parameters of a lambda passed to a method with {@link Janitor.MetaData#PARAMETERS}
+ * ({@code shop.Order.select(o -> o.}), variables assigned such an expression and the variables of
+ * {@code for (x in list)} over one. Otherwise it offers the members of all built-in types, with the types that have them.
+ * Build one instance per environment and keep it: it reads the dispatchers once.
  * </p>
  */
 public final class JanitorCompletions {
@@ -143,9 +147,10 @@ public final class JanitorCompletions {
             last--;
         }
         if (last >= 0 && isDot(before.get(last))) {
-            final Type type = receiverType(before, last, declared);
-            if (type != null) {
-                return type.dispatcher() != null ? membersOf(type.dispatcher(), type.name()) : merge(List.of(type.name(), COMMON));
+            final Expression receiver = last > 0 ? new Inference(before, declared).expressionEndingAt(last - 1, 0) : null;
+            final List<Completion> known = receiver == null ? null : membersOf(receiver.type());
+            if (known != null) {
+                return known;
             }
             return members(last > 0 ? before.get(last - 1) : null);
         }
@@ -166,53 +171,321 @@ public final class JanitorCompletions {
         return merge(List.of(type, COMMON));
     }
 
-    /**
-     * The type of a value: a dispatcher, or the name of a built-in type that the suggestions know.
-     *
-     * @param name       the type's name as shown to the user
-     * @param dispatcher its dispatcher; null for a built-in type
-     */
-    private record Type(@NotNull String name, @Nullable Dispatcher<?> dispatcher) {
+    // the members of a known type, or null if the type tells nothing, e.g. ANY
+    private @Nullable List<Completion> membersOf(final @NotNull ScriptType type) {
+        return switch (type) {
+            case ScriptType.Of of -> membersOf(of.dispatcher(), of.name());
+            case ScriptType.ListOf ignored -> merge(List.of("list", COMMON));
+            case ScriptType.Builtin builtin -> typeMembers.containsKey(builtin.name()) && !builtin.name().equals(COMMON)
+                    ? merge(List.of(builtin.name(), COMMON)) : null;
+            default -> null;
+        };
     }
 
-    // the type before the dot at index dot, if it is a chain of names starting at a global with a known type, e.g. shop.Order
-    private @Nullable Type receiverType(final List<Token> tokens, final int dot, final List<ScriptBindings.Declaration> declared) {
-        final List<String> names = new ArrayList<>();
-        int i = dot - 1;
-        while (i >= 0 && tokens.get(i).getType() == JanitorLexer.IDENTIFIER) {
-            names.addFirst(tokens.get(i).getText());
-            if (i == 0 || !isDot(tokens.get(i - 1))) {
-                break;
-            }
-            i -= 2;
+    /**
+     * An expression that ends before a dot, with what is known about it.
+     *
+     * @param type  its type
+     * @param start the index of its first token
+     */
+    private record Expression(@NotNull ScriptType type, int start) {
+    }
+
+    /**
+     * Follows the tokens before the cursor back to what an expression is. It knows globals, chains of properties and
+     * methods with types ({@link Janitor.MetaData#DISPATCHER}, {@link Janitor.MetaData#TYPE_HINT},
+     * {@link Janitor.MetaData#RETURNS}), the parameters of lambdas passed to such methods ({@link Janitor.MetaData#PARAMETERS}),
+     * variables assigned once and the variables of {@code for (x in list)}. Everything else is unknown: then there is no
+     * type, never an error.
+     */
+    private final class Inference {
+
+        private static final int MAX_DEPTH = 20;
+
+        private final List<Token> tokens;
+        private final List<ScriptBindings.Declaration> declared;
+
+        private Inference(final List<Token> tokens, final List<ScriptBindings.Declaration> declared) {
+            this.tokens = tokens;
+            this.declared = declared;
         }
-        if (names.isEmpty() || i < 0 || tokens.get(i).getType() != JanitorLexer.IDENTIFIER) {
-            return null; // e.g. foo().bar: the chain does not start at a name
-        }
-        Type type = globalType(names.getFirst(), declared);
-        for (final String name : names.subList(1, names.size())) {
-            if (type == null || type.dispatcher() == null) {
+
+        // the expression whose last token is at index end, or null if it is unknown
+        private @Nullable Expression expressionEndingAt(final int end, final int depth) {
+            if (end < 0 || depth > MAX_DEPTH) {
                 return null;
             }
-            final Dispatcher<?> next = type.dispatcher().getMetaData(name, Janitor.MetaData.DISPATCHER);
-            type = next == null ? null : new Type(name, next);
-        }
-        if (type != null && type.dispatcher() == null && !typeMembers.containsKey(type.name())) {
-            return null;
-        }
-        return type;
-    }
-
-    // the type of a global: declared by the host, or from the value in the environment
-    private @Nullable Type globalType(final String name, final List<ScriptBindings.Declaration> declared) {
-        for (final ScriptBindings.Declaration declaration : declared) {
-            if (declaration.name().equals(name)) {
-                return new Type(declaration.typeName(), declaration.dispatcher());
+            final Token token = tokens.get(end);
+            final String literal = literalType(token.getType());
+            if (literal != null) {
+                return new Expression(new ScriptType.Builtin(literal), end);
+            }
+            switch (token.getType()) {
+                case JanitorLexer.IDENTIFIER -> {
+                    if (end >= 2 && isDot(tokens.get(end - 1))) {
+                        final Expression receiver = expressionEndingAt(end - 2, depth + 1);
+                        final ScriptType type = receiver == null ? null : propertyType(receiver.type(), token.getText());
+                        return type == null ? null : new Expression(type, receiver.start());
+                    }
+                    final ScriptType type = nameType(token.getText(), end, depth);
+                    return type == null ? null : new Expression(type, end);
+                }
+                case JanitorLexer.RPAREN -> {
+                    final int open = opener(end);
+                    if (open < 3 || tokens.get(open - 1).getType() != JanitorLexer.IDENTIFIER || !isDot(tokens.get(open - 2))) {
+                        return null; // a function call or brackets
+                    }
+                    final Expression receiver = expressionEndingAt(open - 3, depth + 1);
+                    final ScriptType type = receiver == null ? null : returnType(receiver.type(), tokens.get(open - 1).getText());
+                    return type == null ? null : new Expression(type, receiver.start());
+                }
+                case JanitorLexer.RBRACK -> {
+                    final int open = opener(end);
+                    if (open < 0) {
+                        return null;
+                    }
+                    if (open == 0 || !endsAnExpression(tokens.get(open - 1))) {
+                        return new Expression(ScriptType.LIST, open); // a list literal
+                    }
+                    final Expression list = expressionEndingAt(open - 1, depth + 1);
+                    return list != null && list.type() instanceof ScriptType.ListOf listOf && listOf.element() != ScriptType.ANY
+                            ? new Expression(listOf.element(), list.start()) : null;
+                }
+                default -> {
+                    return null;
+                }
             }
         }
-        final JanitorObject value = builtinScope.getVariable(name);
-        final Dispatcher<?> dispatcher = value == null ? null : dispatcherOf(value);
-        return dispatcher == null ? null : new Type(value.janitorClassName(), dispatcher);
+
+        // the type of a name at index at: a lambda parameter, a loop variable or an assigned variable, else a global
+        private @Nullable ScriptType nameType(final String name, final int at, final int depth) {
+            final ScriptType parameter = lambdaParameterType(name, at, depth);
+            if (parameter != null) {
+                return parameter;
+            }
+            for (int i = at - 1; i >= 0; i--) {
+                if (tokens.get(i).getType() != JanitorLexer.IDENTIFIER || !tokens.get(i).getText().equals(name)) {
+                    continue;
+                }
+                if (i >= 2 && tokens.get(i - 1).getType() == JanitorLexer.LPAREN && tokens.get(i - 2).getType() == JanitorLexer.FOR
+                    && i + 1 < at && tokens.get(i + 1).getType() == JanitorLexer.IN) {
+                    final int close = closer(i - 1, at);
+                    if (close < 0) {
+                        return null;
+                    }
+                    final Expression list = expressionEndingAt(close - 1, depth + 1);
+                    return list != null && list.start() == i + 2 && list.type() instanceof ScriptType.ListOf listOf ? listOf.element() : null;
+                }
+                if (i + 1 < at && tokens.get(i + 1).getType() == JanitorLexer.ASSIGN && (i == 0 || !isDot(tokens.get(i - 1)))) {
+                    final int last = statementEnd(i + 2, at);
+                    final Expression value = last < 0 ? null : expressionEndingAt(last, depth + 1);
+                    return value != null && value.start() == i + 2 ? value.type() : null;
+                }
+            }
+            return globalType(name);
+        }
+
+        // the type of a lambda parameter, if the name at index at is one: the lambda is an argument of a method with PARAMETERS
+        private @Nullable ScriptType lambdaParameterType(final String name, final int at, final int depth) {
+            int level = 0;
+            int lowest = 0;
+            boolean ended = false; // an expression body ended (comma or semicolon) at the lowest level
+            for (int i = at - 1; i >= 0; i--) {
+                final int type = tokens.get(i).getType();
+                if (isCloser(type)) {
+                    level++;
+                } else if (isOpener(type)) {
+                    level--;
+                    if (level < lowest) {
+                        lowest = level;
+                        ended = false;
+                    }
+                } else if (level == lowest && (type == JanitorLexer.COMMA || type == JanitorLexer.SEMICOLON)) {
+                    ended = true;
+                } else if (level == lowest && !ended && type == JanitorLexer.ARROW) {
+                    final ScriptType parameter = parameterOfLambda(i, name, depth);
+                    if (parameter != null) {
+                        return parameter;
+                    }
+                }
+            }
+            return null;
+        }
+
+        // the type of the parameter name of the lambda whose arrow is at index arrow, or null
+        private @Nullable ScriptType parameterOfLambda(final int arrow, final String name, final int depth) {
+            final List<String> parameters = new ArrayList<>();
+            final int start;
+            if (arrow >= 1 && tokens.get(arrow - 1).getType() == JanitorLexer.IDENTIFIER) {
+                parameters.add(tokens.get(arrow - 1).getText());
+                start = arrow - 1;
+            } else if (arrow >= 1 && tokens.get(arrow - 1).getType() == JanitorLexer.RPAREN) {
+                start = opener(arrow - 1);
+                if (start < 0) {
+                    return null;
+                }
+                for (int i = start + 1; i < arrow - 1; i++) {
+                    if (tokens.get(i).getType() == JanitorLexer.IDENTIFIER) {
+                        parameters.add(tokens.get(i).getText());
+                    }
+                }
+            } else {
+                return null;
+            }
+            final int index = parameters.indexOf(name);
+            if (index < 0) {
+                return null;
+            }
+            // the call the lambda is an argument of: receiver.method(..., lambda
+            int argument = 0;
+            int level = 0;
+            int open = -1;
+            for (int i = start - 1; i >= 0; i--) {
+                final int type = tokens.get(i).getType();
+                if (isCloser(type)) {
+                    level++;
+                } else if (isOpener(type)) {
+                    if (level == 0) {
+                        open = i;
+                        break;
+                    }
+                    level--;
+                } else if (level == 0 && type == JanitorLexer.COMMA) {
+                    argument++;
+                }
+            }
+            if (open < 3 || tokens.get(open).getType() != JanitorLexer.LPAREN
+                || tokens.get(open - 1).getType() != JanitorLexer.IDENTIFIER || !isDot(tokens.get(open - 2))) {
+                return null;
+            }
+            final Expression receiver = expressionEndingAt(open - 3, depth + 1);
+            if (receiver == null || !(receiver.type() instanceof ScriptType.Of of)) {
+                return null;
+            }
+            final List<ScriptType.Parameter> declaredParameters = of.dispatcher().getMetaData(tokens.get(open - 1).getText(), Janitor.MetaData.PARAMETERS);
+            if (declaredParameters == null || argument >= declaredParameters.size()) {
+                return null;
+            }
+            final ScriptType expected = declaredParameters.get(argument).type().resolve(of.dispatcher());
+            if (!(expected instanceof ScriptType.Function function) || index >= function.parameters().size()) {
+                return null;
+            }
+            return known(function.parameters().get(index));
+        }
+
+        // the type of a global: declared by the host, or from the value in the environment
+        private @Nullable ScriptType globalType(final String name) {
+            for (final ScriptBindings.Declaration declaration : declared) {
+                if (declaration.name().equals(name)) {
+                    return declaration.dispatcher() != null
+                            ? new ScriptType.Of(declaration.typeName(), declaration.dispatcher())
+                            : new ScriptType.Builtin(declaration.typeName());
+                }
+            }
+            final JanitorObject value = builtinScope.getVariable(name);
+            final Dispatcher<?> dispatcher = value == null ? null : dispatcherOf(value);
+            return dispatcher == null ? null : new ScriptType.Of(value.janitorClassName(), dispatcher);
+        }
+
+        // the index of the bracket that opens the one that closes at index close, or -1
+        private int opener(final int close) {
+            int level = 0;
+            for (int i = close; i >= 0; i--) {
+                final int type = tokens.get(i).getType();
+                if (isCloser(type)) {
+                    level++;
+                } else if (isOpener(type) && --level == 0) {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
+        // the index of the bracket that closes the one that opens at index open, before index limit, or -1
+        private int closer(final int open, final int limit) {
+            int level = 0;
+            for (int i = open; i < limit; i++) {
+                final int type = tokens.get(i).getType();
+                if (isOpener(type)) {
+                    level++;
+                } else if (isCloser(type) && --level == 0) {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
+        // the last token of the statement that starts at index from, before index limit, or -1 if it does not end before
+        private int statementEnd(final int from, final int limit) {
+            int level = 0;
+            for (int i = from; i < limit; i++) {
+                final Token token = tokens.get(i);
+                if (isOpener(token.getType())) {
+                    level++;
+                } else if (isCloser(token.getType())) {
+                    if (--level < 0) {
+                        return -1;
+                    }
+                } else if (level == 0 && token.getType() == JanitorLexer.SEMICOLON) {
+                    return i > from ? i - 1 : -1;
+                }
+                final Token next = i + 1 < limit ? tokens.get(i + 1) : null;
+                if (level == 0 && next != null && next.getLine() > token.getLine() && endsAnExpression(token) && !isDot(next)) {
+                    return i; // a line break ends the statement
+                }
+            }
+            return -1;
+        }
+    }
+
+    // the type of a property, from its dispatcher or its type hint; null if unknown
+    private static @Nullable ScriptType propertyType(final ScriptType owner, final String name) {
+        if (!(owner instanceof ScriptType.Of of)) {
+            return null;
+        }
+        final Dispatcher<?> dispatcher = of.dispatcher().getMetaData(name, Janitor.MetaData.DISPATCHER);
+        if (dispatcher != null) {
+            return new ScriptType.Of(name, dispatcher);
+        }
+        final Janitor.MetaData.TypeHint hint = of.dispatcher().getMetaData(name, Janitor.MetaData.TYPE_HINT);
+        return hint == null ? null : switch (hint) {
+            case STRING -> ScriptType.STRING;
+            case INTEGER -> ScriptType.INT;
+            case FLOAT -> ScriptType.FLOAT;
+            case BOOLEAN -> ScriptType.BOOL;
+            case DATE -> ScriptType.DATE;
+            case DATETIME -> ScriptType.DATETIME;
+            case LIST -> ScriptType.LIST;
+            case NUMBER, METHOD -> null;
+        };
+    }
+
+    // what a method returns, resolved for its receiver; null if unknown
+    private static @Nullable ScriptType returnType(final ScriptType owner, final String name) {
+        if (!(owner instanceof ScriptType.Of of)) {
+            return null;
+        }
+        final ScriptType returns = of.dispatcher().getMetaData(name, Janitor.MetaData.RETURNS);
+        return returns == null ? null : known(returns.resolve(of.dispatcher()));
+    }
+
+    private static @Nullable ScriptType known(final ScriptType type) {
+        return type == ScriptType.ANY ? null : type;
+    }
+
+    private static boolean isOpener(final int type) {
+        return type == JanitorLexer.LPAREN || type == JanitorLexer.LBRACK || type == JanitorLexer.LBRACE;
+    }
+
+    private static boolean isCloser(final int type) {
+        return type == JanitorLexer.RPAREN || type == JanitorLexer.RBRACK || type == JanitorLexer.RBRACE;
+    }
+
+    // tokens after which an expression may end: names, literals, closing brackets
+    private static boolean endsAnExpression(final Token token) {
+        final int type = token.getType();
+        return type == JanitorLexer.IDENTIFIER || type == JanitorLexer.RPAREN || type == JanitorLexer.RBRACK
+               || literalType(type) != null || type == JanitorLexer.TRUE || type == JanitorLexer.FALSE || type == JanitorLexer.NULL;
     }
 
     // the members of a dispatcher, then those of every object

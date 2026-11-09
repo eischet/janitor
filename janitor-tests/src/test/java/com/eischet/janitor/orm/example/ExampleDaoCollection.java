@@ -25,7 +25,7 @@ public class ExampleDaoCollection extends OrmDaoCollection<ExampleDaoCollection>
 
     static {
         OrmDaoCollection.addRegistryProperties(DISPATCH);
-        DAOS.add("Article", ExampleDaoCollection::getArticleDao, GenericDao.dispatcherFor(ArticleDao.DISPATCH));
+        DAOS.add("Article", ExampleDaoCollection::getArticleDao, GenericDao.dispatcherFor(ArticleDao.DISPATCH, Article.DISPATCH));
     }
 
     private final DataManager dataManager;
