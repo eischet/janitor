@@ -91,6 +91,15 @@ public class ArticleLambdaSelectTestCase extends JanitorTest {
     }
 
     @Test
+    void textInProperty() throws Exception {
+        assertEquals(List.of("Widget-A", "widget-b"), keys("return articles.select(a -> \"idget\" in a.name)"));
+        assertEquals(List.of("Gadget"), keys("return articles.select(a -> \"idget\" not in a.name)"));
+        assertEquals(List.of("Gadget"), keys("part = \"idget\"; return articles.select(a -> not (part in a.name))"));
+        assertEquals(List.of("Gadget", "Widget-A"), keys("return articles.select(a -> \"WID-B\" not in a.shortCode and a.shortCode in [\"GAD\", \"WID-A\"])"));
+        assertRejected("return articles.select(a -> 5 in a.name)", "needs a text on the left side");
+    }
+
+    @Test
     void textIsCaseSensitiveAsInScripts() throws Exception {
         assertEquals(List.of("widget-b"), keys("return articles.select(a -> a.name.startsWith(\"Red\"))"));
         assertEquals(List.of(), keys("return articles.select(a -> a.name.startsWith(\"red\"))"));

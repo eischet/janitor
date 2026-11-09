@@ -5,6 +5,8 @@
   `articles.select({field: "shortCode", operator: "eq", valueString: "GAD"})` or `{logic: "and", filters: [...]}`, and a
   `FilterExpression` object, too. Maps and expressions must be complete and may only use fields, or paths through
   references, that the DAO can filter by; anything else is an argument error. `ScriptFilter` does the conversion.
+- orm: a lambda filter accepts `"text" in item.f` and `"text" not in item.f`, the script form of `item.f.contains("text")`,
+  which was rejected with "the property must be on the left side of 'IN'". `item.f in [a, b]` stays a test against a list.
 
 # 0.9.73,2026-11-06 (internal release only)
 

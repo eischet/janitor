@@ -35,6 +35,7 @@ import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
  *     order; comparisons of text are exact, as in scripts; {@code == null} and {@code != null} test for null</li>
  *     <li>{@code item.f ~= v}: equality ignoring case</li>
  *     <li>{@code item.f in [a, b]}, {@code item.f not in list}</li>
+ *     <li>{@code v in item.f}, {@code v not in item.f}: the text contains (not) {@code v}, like {@code item.f.contains(v)}</li>
  *     <li>{@code item.f.startsWith(v)}, {@code endsWith(v)}, {@code contains(v)} and their variants ending in
  *     {@code IgnoreCase}</li>
  *     <li>{@code item.f ~ "A*"}, {@code "*A"}, {@code "*A*"} and {@code !~}: glob patterns with leading and/or trailing {@code *}</li>
@@ -120,6 +121,10 @@ public final class LambdaFilter {
         ComparisonOperator operator = comparison.operator();
         ExpressionNode fieldSide = comparison.left();
         ExpressionNode valueSide = comparison.right();
+        if (!fieldSide.usesParameters() && valueSide.usesParameters() && (operator == ComparisonOperator.IN || operator == ComparisonOperator.NOT_IN)) {
+            // "FOO" in item.name is a substring test, like item.name.contains("FOO")
+            return textIn(comparison, operator == ComparisonOperator.NOT_IN != negated);
+        }
         if (!fieldSide.usesParameters() && valueSide.usesParameters()) {
             // "FOO" == item.code, or 0 < item.stock
             fieldSide = comparison.right();
@@ -151,6 +156,18 @@ public final class LambdaFilter {
             case MATCHES -> glob(field, value, negated, comparison);
             case MATCHES_NOT -> glob(field, value, !negated, comparison);
         };
+    }
+
+    private @NotNull FilterExpression textIn(final @NotNull ComparisonNode comparison, final boolean negated) throws JanitorRuntimeException {
+        if (!(comparison.right() instanceof MemberNode member)) {
+            throw unsupported(comparison.right(), "expected a property of the parameter, like 'item.name'");
+        }
+        final String field = field(member);
+        final JanitorObject value = value(comparison.left());
+        if (!(value instanceof JString string)) {
+            throw unsupported(comparison, "'in' with the property on the right side tests for a part of a text and needs a text on the left side, but got " + simpleClassNameOf(value));
+        }
+        return text(field, negated ? FilterOperator.DOESNOTCONTAIN : FilterOperator.CONTAINS, string.janitorGetHostValue(), false);
     }
 
     private @NotNull FilterExpression in(final String field, final JanitorObject value, final boolean negated, final ExpressionNode node) {
