@@ -9,6 +9,7 @@ import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.*;
 import com.eischet.janitor.api.types.functions.tree.*;
 import com.eischet.janitor.orm.entity.OrmEntity;
+import com.eischet.janitor.orm.entity.OrmEntityHolder;
 import com.eischet.janitor.orm.ref.ForeignKey;
 import com.eischet.janitor.orm.ref.ForeignKeyNull;
 import org.jetbrains.annotations.NotNull;
@@ -41,7 +42,8 @@ import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
  *     <li>{@code item.f ~ "A*"}, {@code "*A"}, {@code "*A*"} and {@code !~}: glob patterns with leading and/or trailing {@code *}</li>
  *     <li>{@code item.f} and {@code not item.f}: a boolean property is true / false</li>
  *     <li>{@code item.f == null or item.f == ""}, {@code item.f != null and item.f != ""}: is (not) empty</li>
- *     <li>{@code item.ref == entity} or {@code item.ref == 42}: a reference to an entity, compared by its ID</li>
+ *     <li>{@code item.ref == entity} or {@code item.ref == 42}: a reference to an entity, compared by its ID; an
+ *     {@link OrmEntityHolder} counts as the entity it holds</li>
  *     <li>{@code item.ref.f == v} etc.: a field of a referenced entity, through any number of references</li>
  *     <li>{@code item.f.date() == v}, {@code <}, ... : the date of a date-time field, if the DAO has the pseudo field
  *     {@code "f@date"}, see {@link FilterRewrite#dateOf}</li>
@@ -316,6 +318,7 @@ public final class LambdaFilter {
             case JDateTime dateTime -> result.setValueDateTime(dateTime.janitorGetHostValue());
             // a reference is compared by the ID of the entity, like a lookup field in a filter UI:
             case OrmEntity entity -> result.setValueLong(entity.getId());
+            case OrmEntityHolder holder -> result.setValueLong(holder.getOrmEntity().getId());
             case ForeignKey<?> reference -> result.setValueLong(reference.getId());
             default -> throw unsupported(node, "a " + simpleClassNameOf(value) + " cannot be used as a value in a filter");
         }

@@ -12,6 +12,9 @@ import com.eischet.janitor.JanitorTest;
 import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.JList;
+import com.eischet.janitor.orm.entity.OrmEntity;
+import com.eischet.janitor.orm.entity.OrmEntityHolder;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -126,6 +129,22 @@ public class ArticleLambdaSelectTestCase extends JanitorTest {
     @Test
     void count() throws Exception {
         assertEquals(2L, evaluate("return articles.count(a -> a.active)", g -> g.bind("articles", dao)).janitorGetHostValue());
+    }
+
+    /** A value that stands for an article without being one, like a wrapper with additional query columns. */
+    private record ArticleHolder(Article article) implements JanitorObject, OrmEntityHolder {
+        @Override
+        public @NotNull OrmEntity getOrmEntity() {
+            return article;
+        }
+    }
+
+    @Test
+    void entityHolderIsComparedByTheIdOfItsEntity() throws Exception {
+        final Article gadget = (Article) ((JList) evaluate("return articles.select(a -> a.key == \"Gadget\")", g -> g.bind("articles", dao))).get(0);
+        final JanitorObject result = evaluate("return articles.select(a -> a.id == holder)",
+                g -> g.bind("articles", dao).bind("holder", new ArticleHolder(gadget)));
+        assertEquals(List.of("Gadget"), ((JList) result).stream().map(article -> ((Article) article).getKey()).toList());
     }
 
     @Test
