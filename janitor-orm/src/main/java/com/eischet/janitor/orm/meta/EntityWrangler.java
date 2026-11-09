@@ -4,6 +4,7 @@
 package com.eischet.janitor.orm.meta;
 
 import com.eischet.janitor.api.Janitor;
+import com.eischet.janitor.api.metadata.ScriptType;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.JNumber;
 import com.eischet.janitor.api.types.builtin.JString;
@@ -50,6 +51,16 @@ public interface EntityWrangler<T extends OrmEntity, U extends Uplink> extends W
     @NotNull ForeignKeyNull<T> getNullReference();
 
     @NotNull Dao<T> retrieveDao(final @NotNull U uplink);
+
+    /**
+     * The type of this wrangler's entities for tools, e.g. editors that follow {@code item.product.} to the fields of the
+     * product. References carry it as {@link Janitor.MetaData#RETURNS}.
+     *
+     * @return the type
+     */
+    default @NotNull ScriptType getEntityScriptType() {
+        return ScriptType.of(getDispatchTable());
+    }
 
     /**
      * Builds a {@link ValueExpander} that converts scripting values into a {@link ForeignKey} pointing at this
@@ -124,7 +135,8 @@ public interface EntityWrangler<T extends OrmEntity, U extends Uplink> extends W
                         (v, value) -> setter.set(v, value == null ? getNullReference() : value),
                         expander,
                         keyJsonAdapter(propertyName, getter, setter, expander)))
-                .setMetaData(Janitor.MetaData.REF, getSimpleClassName());
+                .setMetaData(Janitor.MetaData.REF, getSimpleClassName())
+                .setMetaData(Janitor.MetaData.RETURNS, getEntityScriptType());
     }
 
     /**
@@ -195,7 +207,8 @@ public interface EntityWrangler<T extends OrmEntity, U extends Uplink> extends W
                         (v, value) -> setter.set(v, value == null ? new ArrayList<>() : value),
                         expander,
                         keyListJsonAdapter(propertyName, getter, setter, expander)))
-                .setMetaData(Janitor.MetaData.REF, getSimpleClassName());
+                .setMetaData(Janitor.MetaData.REF, getSimpleClassName())
+                .setMetaData(Janitor.MetaData.RETURNS, ScriptType.listOf(getEntityScriptType()));
     }
 
     /**

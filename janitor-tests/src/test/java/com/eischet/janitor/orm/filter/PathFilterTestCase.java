@@ -9,9 +9,13 @@ import com.eischet.dbxs.TestDb;
 import com.eischet.dbxs.exceptions.DatabaseError;
 import com.eischet.dbxs.statements.UpdateStatement;
 import com.eischet.janitor.JanitorTest;
+import com.eischet.janitor.api.Janitor;
+import com.eischet.janitor.api.metadata.ScriptType;
+import com.eischet.janitor.api.scopes.ScriptBindings;
 import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.JList;
+import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import com.eischet.janitor.orm.dao.FilterQuery;
 import com.eischet.janitor.orm.dao.GenericDao;
@@ -20,7 +24,10 @@ import com.eischet.janitor.orm.dao.Uplink;
 import com.eischet.janitor.orm.entity.OrmEntity;
 import com.eischet.janitor.orm.meta.EntityDispatchTable;
 import com.eischet.janitor.orm.ref.ForeignKey;
+import com.eischet.janitor.orm.ref.ForeignKeyIdentity;
 import com.eischet.janitor.orm.ref.ForeignKeyNull;
+import com.eischet.janitor.runtime.OutputCatchingTestRuntime;
+import com.eischet.janitor.tooling.JanitorCompletions;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,11 +38,12 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Filters on fields of referenced entities, like "product.shortCode" or "product.vendor.name", which become sub-queries,
- * both as filter expressions and as lambdas: an item refers to a product, which refers to a vendor.
+ * both as filter expressions and as lambdas, and scripts and editors reading through references: an item refers to a
+ * product, which refers to a vendor.
  */
 public class PathFilterTestCase extends JanitorTest {
 
-    public static class Vendor implements OrmEntity {
+    public static class Vendor extends JanitorComposed<Vendor> implements OrmEntity, ForeignKeyIdentity<Vendor> {
         static final ForeignKeyNull<Vendor> NULL = new ForeignKeyNull<>(Vendor.class);
         static final EntityDispatchTable<Vendor, Shop> DISPATCH = new EntityDispatchTable<>(Vendor.class, up -> new Vendor(), NULL, Shop::getVendorDao);
 
@@ -50,6 +58,9 @@ public class PathFilterTestCase extends JanitorTest {
         private String key;
         private String name;
 
+        Vendor() { super(DISPATCH); }
+        @Override public @NotNull Vendor getIdentity() { return this; }
+
         @Override public long getId() { return id; }
         @Override public void setId(final long id) { this.id = id; }
         @Override public String getKey() { return key; }
@@ -60,7 +71,7 @@ public class PathFilterTestCase extends JanitorTest {
         @Override public void setSoftDeleted(final boolean softDeleted) { }
     }
 
-    public static class Product implements OrmEntity {
+    public static class Product extends JanitorComposed<Product> implements OrmEntity, ForeignKeyIdentity<Product> {
         static final ForeignKeyNull<Product> NULL = new ForeignKeyNull<>(Product.class);
         static final EntityDispatchTable<Product, Shop> DISPATCH = new EntityDispatchTable<>(Product.class, Product::new, NULL, Shop::getProductDao);
 
@@ -80,7 +91,8 @@ public class PathFilterTestCase extends JanitorTest {
         private String shortCode;
         private ForeignKey<Vendor> vendor = Vendor.NULL;
 
-        Product(final Shop source) { this.source = source; }
+        Product(final Shop source) { super(DISPATCH); this.source = source; }
+        @Override public @NotNull Product getIdentity() { return this; }
 
         @Override public long getId() { return id; }
         @Override public void setId(final long id) { this.id = id; }
@@ -96,7 +108,7 @@ public class PathFilterTestCase extends JanitorTest {
         void setVendor(final ForeignKey<Vendor> vendor) { this.vendor = vendor; }
     }
 
-    public static class Item implements OrmEntity {
+    public static class Item extends JanitorComposed<Item> implements OrmEntity, ForeignKeyIdentity<Item> {
         static final ForeignKeyNull<Item> NULL = new ForeignKeyNull<>(Item.class);
         static final EntityDispatchTable<Item, Shop> DISPATCH = new EntityDispatchTable<>(Item.class, Item::new, NULL, Shop::getItemDao);
 
@@ -114,7 +126,8 @@ public class PathFilterTestCase extends JanitorTest {
         private String name;
         private ForeignKey<Product> product = Product.NULL;
 
-        Item(final Shop source) { this.source = source; }
+        Item(final Shop source) { super(DISPATCH); this.source = source; }
+        @Override public @NotNull Item getIdentity() { return this; }
 
         @Override public long getId() { return id; }
         @Override public void setId(final long id) { this.id = id; }
@@ -232,6 +245,44 @@ public class PathFilterTestCase extends JanitorTest {
         assertEquals(List.of("I1"), select("return items.select(i -> i.product.shortCode == \"BAZ\")"));
         assertEquals(List.of("I2"), select("return items.select(i -> i.product.vendor.name.startsWithIgnoreCase(\"glob\"))"));
         assertEquals(List.of("I1", "I2"), select("return items.select(i -> i.product.vendor != null)"));
+    }
+
+    private String read(final String script) throws Exception {
+        return evaluate(script, g -> {
+            g.bind("items", shop.getItemDao());
+            g.bind("products", shop.getProductDao());
+        }).janitorToString();
+    }
+
+    @Test
+    void scriptsReadThroughReferences() throws Exception {
+        // a reference loaded from the database is an id, resolved when a script reads through it
+        assertEquals("Bazooka", read("return items.findByKey(\"I1\").product.name;"));
+        assertEquals("Acme", read("return items.findByKey(\"I1\").product.vendor.name;"));
+        // no reference: null, and the optional dot reads null through it
+        assertEquals("true", read("return items.findByKey(\"I4\").product == null;"));
+        assertEquals("null", read("return items.findByKey(\"I4\").product?.name;"));
+        // a reference to a product without a vendor
+        assertEquals("null", read("return items.findByKey(\"I3\").product.vendor?.name;"));
+        // assigned in the script, as an entity, an id or a key
+        assertEquals("Foobar", read("i = items.findByKey(\"I1\"); i.product = products.findByKey(\"P2\"); return i.product.name;"));
+        assertEquals("Foobar", read("i = items.findByKey(\"I1\"); i.product = 2; return i.product.name;"));
+        assertEquals("Globex", read("i = items.findByKey(\"I1\"); i.product = \"P2\"; return i.product.vendor.name;"));
+    }
+
+    @Test
+    void editorsFollowReferences() {
+        final JanitorCompletions completions = new JanitorCompletions(OutputCatchingTestRuntime.fresh());
+        final List<ScriptBindings.Declaration> declared = ScriptBindings.<Object>create()
+                .declare("items", "ItemDao", GenericDao.dispatcherFor(new DispatchTable<ItemDao>(false), Item.DISPATCH), "The items.", context -> null)
+                .declarations();
+        final String product = "items.select(i -> i.product.";
+        final List<JanitorCompletions.Completion> productMembers = completions.complete(product, 1, product.length(), declared);
+        assertEquals("Product", productMembers.stream().filter(c -> c.name().equals("shortCode")).findFirst().orElseThrow().owners());
+        final String vendor = "items.findByKey(\"I1\").product.vendor.";
+        assertTrue(completions.complete(vendor, 1, vendor.length(), declared).stream()
+                .anyMatch(c -> c.name().equals("name") && c.owners().equals("Vendor")));
+        assertEquals(ScriptType.of(Product.DISPATCH), Item.DISPATCH.getMetaData("product", Janitor.MetaData.RETURNS));
     }
 
     @Test

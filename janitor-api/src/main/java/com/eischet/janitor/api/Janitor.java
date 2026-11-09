@@ -1006,8 +1006,10 @@ public final class Janitor {
         public static final MetaDataKey<String> TEXT_KEY = new MetaDataKey<>("text_key", String.class);
 
         /**
-         * What a method returns, for tools like editors; see {@link com.eischet.janitor.api.metadata.ScriptType}.
-         * Attach it like {@link #HELP}; it is not checked when a script runs.
+         * What a method returns, or what a property holds, for tools like editors; see
+         * {@link com.eischet.janitor.api.metadata.ScriptType}. Properties need it where {@link #DISPATCHER} and
+         * {@link #TYPE_HINT} do not fit, e.g. a reference to another entity, which is no embedded object. Attach it like
+         * {@link #HELP}; it is not checked when a script runs.
          */
         public static final MetaDataKey<com.eischet.janitor.api.metadata.ScriptType> RETURNS =
                 new MetaDataKey<>("returns", com.eischet.janitor.api.metadata.ScriptType.class);

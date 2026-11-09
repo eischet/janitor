@@ -36,8 +36,9 @@ import java.util.stream.Collectors;
  * <p>
  * A member suggestion knows the receiver for literals ({@code "abc".}, {@code [1].}) and for expressions that start at a
  * global, one the host declares for the script ({@link ScriptBindings}) or one of the environment, and go on with
- * properties and methods whose types are known: {@link Janitor.MetaData#DISPATCHER} and {@link Janitor.MetaData#TYPE_HINT}
- * of properties, {@link Janitor.MetaData#RETURNS} of methods ({@code shop.Order.findById(1).}). It also knows the
+ * properties and methods whose types are known: {@link Janitor.MetaData#RETURNS}, {@link Janitor.MetaData#DISPATCHER} and
+ * {@link Janitor.MetaData#TYPE_HINT} of properties, {@link Janitor.MetaData#RETURNS} of methods
+ * ({@code shop.Order.findById(1).customer.}). It also knows the
  * parameters of a lambda passed to a method with {@link Janitor.MetaData#PARAMETERS}
  * ({@code shop.Order.select(o -> o.}), variables assigned such an expression and the variables of
  * {@code for (x in list)} over one. Otherwise it offers the members of all built-in types, with the types that have them.
@@ -438,16 +439,23 @@ public final class JanitorCompletions {
         }
     }
 
-    // the type of a property, from its dispatcher or its type hint; null if unknown
+    // the type of a property, from its RETURNS, its dispatcher or its type hint; null if unknown
     private static @Nullable ScriptType propertyType(final ScriptType owner, final String name) {
         if (!(owner instanceof ScriptType.Of of)) {
             return null;
+        }
+        final Janitor.MetaData.TypeHint hint = of.dispatcher().getMetaData(name, Janitor.MetaData.TYPE_HINT);
+        if (hint == Janitor.MetaData.TypeHint.METHOD) {
+            return null; // a method that is not called
+        }
+        final ScriptType returns = of.dispatcher().getMetaData(name, Janitor.MetaData.RETURNS);
+        if (returns != null) {
+            return known(returns.resolve(of.dispatcher()));
         }
         final Dispatcher<?> dispatcher = of.dispatcher().getMetaData(name, Janitor.MetaData.DISPATCHER);
         if (dispatcher != null) {
             return new ScriptType.Of(name, dispatcher);
         }
-        final Janitor.MetaData.TypeHint hint = of.dispatcher().getMetaData(name, Janitor.MetaData.TYPE_HINT);
         return hint == null ? null : switch (hint) {
             case STRING -> ScriptType.STRING;
             case INTEGER -> ScriptType.INT;
