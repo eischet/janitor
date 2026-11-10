@@ -8,7 +8,7 @@ import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.HasNameDocs;
 import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.api.scopes.NameDoc;
-import com.eischet.janitor.api.scopes.ResultAndScope;
+import com.eischet.janitor.api.scopes.ScopedVariable;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.compiler.ast.expression.ArgumentList;
 import com.eischet.janitor.compiler.ast.expression.Expression;
@@ -121,8 +121,8 @@ public class HelpCall extends Statement implements Expression {
 
     private @Nullable NameDoc lookupDoc(final JanitorScriptProcess process) throws JanitorRuntimeException {
         final List<String> names = names(path);
-        final ResultAndScope scoped = process.lookupScopedVar(names.getFirst());
-        NameDoc doc = scoped == null || scoped.getScope() == null ? null : scoped.getScope().getNameDoc(names.getFirst());
+        final ScopedVariable scoped = process.lookupScopedVar(names.getFirst());
+        NameDoc doc = scoped == null ? null : scoped.scope().getNameDoc(names.getFirst());
         for (int i = 1; i < names.size(); i++) {
             NameDoc member = doc == null ? null : doc.member(names.get(i));
             if (member == null && path.get(i - 1).evaluate(process) instanceof HasNameDocs owner) {

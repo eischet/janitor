@@ -4,7 +4,7 @@
 package com.eischet.janitor.jsr223;
 
 import com.eischet.janitor.api.JanitorEnvironment;
-import com.eischet.janitor.api.scopes.Scope;
+import com.eischet.janitor.api.scopes.VariableScope;
 import com.eischet.janitor.api.types.JanitorObject;
 import org.jetbrains.annotations.NotNull;
 
@@ -13,17 +13,17 @@ import java.util.*;
 
 /** JSR 223 bindings that are backed by a Janitor scope. */
 public class JanitorBindings implements Bindings {
-    private final Scope scope;
+    private final VariableScope scope;
     private final JanitorEnvironment environment;
 
-    public JanitorBindings(final Scope scope, final JanitorEnvironment environment) {
+    public JanitorBindings(final VariableScope scope, final JanitorEnvironment environment) {
         this.scope = scope;
         this.environment = environment;
     }
 
     @Override
     public Object put(final String name, final Object value) {
-        final JanitorObject oldValue = scope.retrieveLocal(name);
+        final JanitorObject oldValue = scope.getVariable(name);
         scope.bind(name, environment.nativeToScript(value));
         return oldValue;
     }
@@ -41,23 +41,23 @@ public class JanitorBindings implements Bindings {
     @NotNull
     @Override
     public Set<String> keySet() {
-        return Set.copyOf(scope.dir());
+        return Set.copyOf(scope.names());
     }
 
     @Override
     public int size() {
-        return scope.dir().size();
+        return scope.names().size();
     }
 
     @Override
     public boolean isEmpty() {
-        return scope.dir().isEmpty();
+        return scope.names().isEmpty();
     }
 
     @Override
     public boolean containsKey(final Object key) {
         if (key instanceof String) {
-            return scope.dir().contains(key);
+            return scope.names().contains(key);
         } else {
             return false;
         }
@@ -65,16 +65,16 @@ public class JanitorBindings implements Bindings {
 
     private Map<String, Object> extractVariables() {
         final Map<String, Object> variables = new HashMap<>();
-        for (final String key : scope.dir()) {
-            variables.put(key, scope.retrieveLocal(key));
+        for (final String key : scope.names()) {
+            variables.put(key, scope.getVariable(key));
         }
         return variables;
     }
 
     @Override
     public boolean containsValue(final Object value) {
-        for (final String key : scope.dir()) {
-            if (Objects.equals(value, scope.retrieveLocal(key))) {
+        for (final String key : scope.names()) {
+            if (Objects.equals(value, scope.getVariable(key))) {
                 return true;
             }
         }
@@ -97,7 +97,7 @@ public class JanitorBindings implements Bindings {
     @Override
     public Object get(final Object key) {
         if (key instanceof String stringKey) {
-            return scope.retrieveLocal(stringKey);
+            return scope.getVariable(stringKey);
         } else {
             return null;
         }
@@ -115,7 +115,7 @@ public class JanitorBindings implements Bindings {
     /**
      * @return the scope that holds the variables
      */
-    public Scope getScope() {
+    public VariableScope getScope() {
         return scope;
     }
 }

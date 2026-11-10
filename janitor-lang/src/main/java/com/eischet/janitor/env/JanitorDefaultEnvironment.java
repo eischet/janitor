@@ -21,7 +21,7 @@ import com.eischet.janitor.api.i18n.JanitorFormatting;
 import com.eischet.janitor.api.modules.JanitorModule;
 import com.eischet.janitor.api.modules.JanitorModuleRegistration;
 import com.eischet.janitor.api.scopes.Location;
-import com.eischet.janitor.api.scopes.Scope;
+import com.eischet.janitor.api.scopes.VariableScope;
 import com.eischet.janitor.api.scopes.ScriptSource;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.JList;
@@ -65,11 +65,11 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
     private volatile @NotNull JsonWriteOptions jsonWriteOptions = JsonWriteOptions.COMPACT;
     private final List<JanitorModuleRegistration> moduleRegistrations = new ArrayList<>();
     private final List<ModuleResolver> resolvers = new ArrayList<>();
-    protected @Nullable Scope.ImplicitObjectProvider implicitTemplateObjectProvider = null;
+    private volatile @Nullable JanitorObject templateGlobals = null;
     private volatile @Nullable JsonStreamFactory jsonStreams = null;
     private final MetaDataMap metaData = new MetaDataMap();
 
-    private final Scope builtinScope = Scope.createBuiltinScope(this, Location.virtual(ScriptSource.builtin()));
+    private final VariableScope builtinScope = VariableScope.createBuiltinScope(this, Location.virtual(ScriptSource.builtin()));
 
     {
         builtinScope.bindF("print", "print(values...): Prints the values, separated by spaces; where the output goes is up to the host, e.g. the console or a log.",
@@ -160,7 +160,7 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
      *
      * @param consumer a callback that receives the builtin scope
      */
-    public void setupBuiltinScope(final Consumer<Scope> consumer) {
+    public void setupBuiltinScope(final Consumer<VariableScope> consumer) {
         consumer.accept(builtinScope);
     }
 
@@ -334,7 +334,7 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
     }
 
     @Override
-    public Scope getBuiltinScope() {
+    public VariableScope getBuiltinScope() {
         return builtinScope;
     }
 
@@ -411,12 +411,12 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
     }
 
     @Override
-    public @Nullable Scope.ImplicitObjectProvider getImplicitTemplateObjectProvider() {
-        return implicitTemplateObjectProvider;
+    public @Nullable JanitorObject getTemplateGlobals() {
+        return templateGlobals;
     }
 
     @Override
-    public void setImplicitTemplateObjectProvider(@Nullable Scope.ImplicitObjectProvider implicitTemplateObjectProvider) {
-        this.implicitTemplateObjectProvider = implicitTemplateObjectProvider;
+    public void setTemplateGlobals(final @Nullable JanitorObject templateGlobals) {
+        this.templateGlobals = templateGlobals;
     }
 }

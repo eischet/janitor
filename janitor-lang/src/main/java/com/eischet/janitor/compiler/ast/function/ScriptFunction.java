@@ -91,13 +91,13 @@ public class ScriptFunction extends AstNode implements Expression, JsonExportabl
     @Override
     public @NotNull JanitorObject evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException {
         if (log.isDebugEnabled()) {
-            log.debug("**** eval called on script function: " + name + " in scope with dir: {}", process.getCurrentScope().dir());
+            log.debug("**** eval called on script function: " + name + " in scope with dir: {}", process.getCurrentScope().names());
         }
         // A function/lambda literal evaluates to a fresh closure every time, capturing whichever
         // scope is active right now. This closure "initially evaluates to itself", so it can later
         // be called, because Closure implements both JanitorObject and JCallable. This is a (small)
         // design decision, not a hard requirement.
-        return new Closure(process.getCurrentScope().capture());
+        return new Closure(process.getCurrentScope());
     }
 
     @Override

@@ -12,6 +12,7 @@ import com.eischet.janitor.api.modules.JanitorModuleRegistration;
 import com.eischet.janitor.api.modules.ModuleResolver;
 import com.eischet.janitor.api.scopes.NameDoc;
 import com.eischet.janitor.api.scopes.Scope;
+import com.eischet.janitor.api.scopes.VariableScope;
 import com.eischet.janitor.api.scopes.ScriptBindings;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
@@ -99,7 +100,7 @@ public final class JanitorCompletions {
     private final List<Completion> keywords;
     private final List<Completion> globals;
     private final JanitorEnvironment environment;
-    private final Scope builtinScope;
+    private final VariableScope builtinScope;
     private final Set<String> commonNames;
     // type name -> members; COMMON first
     private final Map<String, List<DispatcherMembers.Member>> typeMembers = new LinkedHashMap<>();
@@ -115,7 +116,7 @@ public final class JanitorCompletions {
         keywords = keywords();
         environment = runtime.getEnvironment();
         builtinScope = environment.getBuiltinScope();
-        globals = builtinScope.dir().stream()
+        globals = builtinScope.names().stream()
                 .filter(name -> !name.startsWith("__"))
                 .sorted()
                 .map(name -> global(name, builtinScope.getVariable(name)))
@@ -340,7 +341,7 @@ public final class JanitorCompletions {
         // a module imported by a string: the first resolver that has its scope at hand describes it
         private @Nullable ScriptType resolvedModuleType(final String module) {
             for (final ModuleResolver resolver : environment.getModuleResolvers()) {
-                final Scope scope = resolver.describeModuleByStringName(module);
+                final VariableScope scope = resolver.describeModuleByStringName(module);
                 if (scope != null) {
                     return new ScriptType.Of(module, ScopeDescription.of(module, scope));
                 }

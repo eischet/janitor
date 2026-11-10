@@ -8,7 +8,7 @@ import com.eischet.janitor.api.RunnableScript;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.ResultAndScope;
-import com.eischet.janitor.api.scopes.Scope;
+import com.eischet.janitor.api.scopes.VariableScope;
 import com.eischet.janitor.api.types.JanitorObject;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
@@ -39,7 +39,7 @@ public class JanitorScriptEngine implements ScriptEngine {
             final JanitorRuntime runtime = factory.getRuntime();
             final RunnableScript compiled = runtime.compile("eval", script);
 
-            Scope runtimeScope = null;
+            VariableScope runtimeScope = null;
             if (bindings != null) {
                 if (bindings instanceof JanitorBindings janitorBindings) {
                     runtimeScope = janitorBindings.getScope();

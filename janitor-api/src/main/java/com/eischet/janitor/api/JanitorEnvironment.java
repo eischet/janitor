@@ -9,7 +9,7 @@ import com.eischet.janitor.api.metadata.MetaDataKey;
 import com.eischet.janitor.api.modules.JanitorModule;
 import com.eischet.janitor.api.modules.JanitorModuleRegistration;
 import com.eischet.janitor.api.modules.ModuleResolver;
-import com.eischet.janitor.api.scopes.Scope;
+import com.eischet.janitor.api.scopes.VariableScope;
 import com.eischet.janitor.api.types.BuiltinTypes;
 import com.eischet.janitor.api.types.builtin.JList;
 import com.eischet.janitor.api.types.builtin.JMap;
@@ -198,7 +198,7 @@ public interface JanitorEnvironment extends JsonOutputSupport {
      * Return the builtin scope, e.g. for adding thing to it.
      * @return the built-in scope
      */
-    Scope getBuiltinScope();
+    VariableScope getBuiltinScope();
 
 
     /**
@@ -235,11 +235,18 @@ public interface JanitorEnvironment extends JsonOutputSupport {
     void autoDiscoverModules();
 
 
-    @Nullable Scope.ImplicitObjectProvider getImplicitTemplateObjectProvider();
+    /**
+     * The object whose attributes templates, filter scripts and other scripts that run for an object see as names, after
+     * those of that object (see {@code ObjectScope.withTemplateGlobals}); a host can use it for e.g. text macros.
+     *
+     * @return the object, or null if there is none
+     */
+    @Nullable JanitorObject getTemplateGlobals();
 
     /**
-     * Sets the provider of implicit objects for template expansion.
-     * @param implicitTemplateObjectProvider the provider, or null to remove it
+     * Sets the object whose attributes templates and scripts that run for an object see as names.
+     *
+     * @param templateGlobals the object, or null to remove it
      */
-    void setImplicitTemplateObjectProvider(@Nullable Scope.ImplicitObjectProvider implicitTemplateObjectProvider);
+    void setTemplateGlobals(@Nullable JanitorObject templateGlobals);
 }

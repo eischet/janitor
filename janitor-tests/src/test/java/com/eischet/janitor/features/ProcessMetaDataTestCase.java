@@ -3,6 +3,8 @@
 
 package com.eischet.janitor.features;
 
+import com.eischet.janitor.api.scopes.VariableScope;
+
 import com.eischet.janitor.JanitorTest;
 import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorScriptProcess;
@@ -199,7 +201,7 @@ public class ProcessMetaDataTestCase extends JanitorTest {
             process.bindF("read", (p, args) -> p.getBuiltins().nullableString(p.getMetaData(KEY)));
             parent.set(process);
         });
-        final JCallable callback = (JCallable) result.getScope().retrieveLocal("callback");
+        final JCallable callback = (JCallable) result.getScope().getVariable("callback");
         final List<JanitorObject> args = List.of(Janitor.integer(1));
 
         assertEquals("null", runtime.executeCallback(result.getScope(), callback, args).janitorToString());

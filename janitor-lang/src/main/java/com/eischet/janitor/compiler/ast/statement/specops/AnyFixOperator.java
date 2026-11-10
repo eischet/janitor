@@ -8,7 +8,7 @@ import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.errors.glue.JanitorControlFlowException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.Location;
-import com.eischet.janitor.api.scopes.ResultAndScope;
+import com.eischet.janitor.api.scopes.ScopedVariable;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.compiler.ast.expression.Expression;
 import com.eischet.janitor.compiler.ast.expression.Identifier;
@@ -47,13 +47,13 @@ public abstract class AnyFixOperator extends Statement implements Expression, Js
         if (expr instanceof Identifier) {
             process.countInstruction();
             final String id = ((Identifier) expr).getText();
-            final ResultAndScope scoped = process.lookupScopedVar(id);
+            final ScopedVariable scoped = process.lookupScopedVar(id);
             if (scoped == null) {
                 throw new JanitorArgumentException(process, "variable not bound: {}. cannot apply " + this + " to it.");
             }
-            final JanitorObject currentValue = scoped.getVariable().janitorUnpack(); // or this?? final Variable currentValue = expr.evaluate(runningScript);
+            final JanitorObject currentValue = scoped.variable().janitorUnpack(); // or this?? final Variable currentValue = expr.evaluate(runningScript);
             final JanitorObject newValue = operate(process, currentValue);
-            scoped.getScope().bind(process, id, newValue);  // previously wrong: runningScript.getCurrentScope().bind(id, newValue);
+            scoped.scope().assign(process, id, newValue);
             return pick(currentValue, newValue);
         } else {
             throw new JanitorArgumentException(process, "cannot apply " + this + " to " + expr);

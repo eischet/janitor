@@ -178,7 +178,7 @@ public final class ReferenceGenerator {
     }
 
     private String globals() {
-        final List<String> names = new ArrayList<>(runtime.getEnvironment().getBuiltinScope().dir());
+        final List<String> names = new ArrayList<>(runtime.getEnvironment().getBuiltinScope().names());
         Collections.sort(names);
         return names.stream().map(name -> "`" + name + "`").collect(Collectors.joining(", ")) + "\n";
     }
@@ -187,7 +187,7 @@ public final class ReferenceGenerator {
      * @return the names of the functions in the built-in scope, which the reference must describe
      */
     public List<String> builtinGlobals() {
-        return runtime.getEnvironment().getBuiltinScope().dir().stream().sorted().toList();
+        return runtime.getEnvironment().getBuiltinScope().names().stream().sorted().toList();
     }
 
     private JanitorObject evaluate(final String source) throws JanitorCompilerException, JanitorRuntimeException {

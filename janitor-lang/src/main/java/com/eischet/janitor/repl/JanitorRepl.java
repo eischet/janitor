@@ -7,7 +7,7 @@ import com.eischet.janitor.api.JanitorRuntime;
 import com.eischet.janitor.api.errors.glue.JanitorControlFlowException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.Location;
-import com.eischet.janitor.api.scopes.Scope;
+import com.eischet.janitor.api.scopes.VariableScope;
 import com.eischet.janitor.api.scopes.ScriptSource;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.JNull;
@@ -51,7 +51,7 @@ public class JanitorRepl {
             """;
 
     private final ScriptSource module;
-    private final Scope globalScope;
+    private final VariableScope globalScope;
     private final JanitorRuntime runtime;
     private final ReplIO io;
 
@@ -66,7 +66,7 @@ public class JanitorRepl {
         this.runtime = runtime;
         this.io = io;
         module = new ScriptSource("repl", "");
-        globalScope = Scope.createGlobalScope(runtime.getEnvironment(), module);
+        globalScope = VariableScope.createGlobalScope(runtime.getEnvironment(), module);
     }
 
     private Fragment parseFragment(final String text) {
@@ -445,7 +445,7 @@ public class JanitorRepl {
     /**
      * @return the scope that holds the REPL's variables
      */
-    public Scope getGlobalScope() {
+    public VariableScope getGlobalScope() {
         return globalScope;
     }
 

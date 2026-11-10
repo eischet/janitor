@@ -3,6 +3,8 @@
 
 package com.eischet.janitor.features;
 
+import com.eischet.janitor.api.scopes.VariableScope;
+
 import com.eischet.janitor.JanitorTest;
 import com.eischet.janitor.TestEnv;
 import com.eischet.janitor.api.RunnableScript;
@@ -32,7 +34,7 @@ public class CallbackTestCase  extends JanitorTest {
 
         final RunnableScript firstScript = rt.compile("first", "callback = it -> it * 2;");
         final ResultAndScope ras = firstScript.runAndKeepGlobals();
-        JCallable callback = (JCallable) ras.getScope().retrieveLocal("callback");
+        JCallable callback = (JCallable) ras.getScope().getVariable("callback");
 
         final JanitorObject thirtyFour = rt.executeCallback(ras.getScope(), callback, List.of(TestEnv.env.getBuiltinTypes().integer(17)));
         assertEquals(34L, thirtyFour.janitorGetHostValue());

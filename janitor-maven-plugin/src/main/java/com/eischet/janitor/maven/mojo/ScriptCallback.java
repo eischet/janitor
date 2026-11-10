@@ -3,15 +3,15 @@
 
 package com.eischet.janitor.maven.mojo;
 
-import com.eischet.janitor.api.scopes.Scope;
+import com.eischet.janitor.api.scopes.VariableScope;
 import com.eischet.janitor.api.types.functions.JCallable;
 
 /** A function from a script that is called later, together with the scope that it was registered in. */
 public class ScriptCallback {
     private final JCallable callable;
-    private final Scope scope;
+    private final VariableScope scope;
 
-    public ScriptCallback(final JCallable callable, final Scope scope) {
+    public ScriptCallback(final JCallable callable, final VariableScope scope) {
         this.callable = callable;
         this.scope = scope;
     }
@@ -26,7 +26,7 @@ public class ScriptCallback {
     /**
      * @return the scope that the function was registered in
      */
-    public Scope getScope() {
+    public VariableScope getScope() {
         return scope;
     }
 }

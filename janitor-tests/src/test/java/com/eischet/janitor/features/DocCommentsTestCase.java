@@ -3,6 +3,7 @@
 
 package com.eischet.janitor.features;
 
+import com.eischet.janitor.api.scopes.VariableScope;
 import com.eischet.janitor.JanitorTest;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
@@ -155,7 +156,7 @@ public class DocCommentsTestCase extends JanitorTest {
 
     @Test
     void scopeDescriptionsUseTheDocumentation() throws Exception {
-        final Scope scope = OutputCatchingTestRuntime.fresh().compile("tools", """
+        final VariableScope scope = OutputCatchingTestRuntime.fresh().compile("tools", """
                 /** Greets someone. */
                 function greet(name) { return name; }
                 function plain(a, b) { return a; }

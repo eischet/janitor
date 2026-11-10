@@ -6,7 +6,7 @@ package com.eischet.janitor.standalone.repl;
 import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.JanitorRuntime;
-import com.eischet.janitor.api.scopes.Scope;
+import com.eischet.janitor.api.scopes.VariableScope;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.modules.janitor.JanitorInternalsModule;
 import com.eischet.janitor.repl.ConsoleReplIO;
@@ -93,11 +93,11 @@ class JanitorStandaloneReplTestCase {
         final JanitorEnvironment env = JanitorStandaloneRepl.createEnvironment();
         Janitor.setUserProvider(() -> env);
 
-        final Scope scope = JanitorStandaloneRepl.runScriptFile(env, script, false, true);
+        final VariableScope scope = JanitorStandaloneRepl.runScriptFile(env, script, false, true);
 
         assertNotNull(scope, "with -i, a successfully run script must hand back its scope");
-        final JanitorObject x = scope.lookupLocally(null, "x");
-        final JanitorObject y = scope.lookupLocally(null, "y");
+        final JanitorObject x = scope.getVariable("x");
+        final JanitorObject y = scope.getVariable("y");
         assertNotNull(x, "the script's top-level variable 'x' must be present in the returned scope");
         assertEquals("42", x.janitorToString());
         assertNotNull(y, "the script's top-level variable 'y' must be present in the returned scope");
@@ -114,7 +114,7 @@ class JanitorStandaloneReplTestCase {
 
         // must return (not System.exit()) so the caller can still start an interactive shell, matching
         // "python -i" dropping you into the shell even after the script itself failed.
-        final Scope scope = JanitorStandaloneRepl.runScriptFile(env, script, false, true);
+        final VariableScope scope = JanitorStandaloneRepl.runScriptFile(env, script, false, true);
         assertNull(scope);
     }
 

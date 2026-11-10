@@ -10,7 +10,6 @@ import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.types.*;
 import com.eischet.janitor.api.errors.runtime.JanitorNameException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
-import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
@@ -556,10 +555,6 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
         }
     }
 
-    @Override
-    public Scope.ImplicitObjectProvider asImplicitObjectProvider() {
-        return readonlyView().asImplicitObjectProvider();
-    }
 
     /*
 

@@ -9,6 +9,7 @@ import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.errors.runtime.JanitorTypeException;
 import com.eischet.janitor.api.scopes.Scope;
+import com.eischet.janitor.api.scopes.VariableScope;
 import com.eischet.janitor.api.scopes.ScriptSource;
 import com.eischet.janitor.api.types.builtin.JBool;
 import com.eischet.janitor.api.types.JanitorObject;
@@ -29,14 +30,14 @@ public class SimpleExpressionTestCase extends JanitorTest {
         });
     }
 
-    private JanitorObject eval(final @Language("Janitor") String expressionSource, final Consumer<Scope> prepareGlobals) throws JanitorCompilerException, JanitorRuntimeException {
+    private JanitorObject eval(final @Language("Janitor") String expressionSource, final Consumer<VariableScope> prepareGlobals) throws JanitorCompilerException, JanitorRuntimeException {
         // log.info("parsing: " + expressionSource + "\n");
         final JanitorParser.ScriptContext script = JanitorScript.parseScript(expressionSource);
         final ScriptSource module = ScriptSource.unnamed(expressionSource);
         final Script scriptObject = JanitorCompiler.build(TestEnv.env, module, script, null);
         final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
 
-        final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), module); // new Scope(root, null, null);
+        final VariableScope globalScope = VariableScope.createGlobalScope(runtime.getEnvironment(), module); // new Scope(root, null, null);
         prepareGlobals.accept(globalScope);
         final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, "manual", scriptObject);
         return process.run();

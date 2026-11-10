@@ -4,7 +4,7 @@
 package com.eischet.janitor.api;
 
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
-import com.eischet.janitor.api.scopes.Scope;
+import com.eischet.janitor.api.scopes.VariableScope;
 import com.eischet.janitor.api.types.BuiltinTypes;
 import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
@@ -60,7 +60,7 @@ public interface JanitorRuntime {
      * @param args arguments to be passed to the callable
      * @return whatever the callable chooses to return
      */
-    default JanitorObject executeCallback(Scope scope, JCallable callable, List<JanitorObject> args) throws JanitorRuntimeException {
+    default JanitorObject executeCallback(VariableScope scope, JCallable callable, List<JanitorObject> args) throws JanitorRuntimeException {
         return executeCallback(scope, callable, args, process -> { });
     }
 
@@ -75,7 +75,7 @@ public interface JanitorRuntime {
      * @param setup receives the process before the function runs
      * @return whatever the callable chooses to return
      */
-    JanitorObject executeCallback(Scope scope, JCallable callable, List<JanitorObject> args, @NotNull Consumer<JanitorScriptProcess> setup) throws JanitorRuntimeException;
+    JanitorObject executeCallback(VariableScope scope, JCallable callable, List<JanitorObject> args, @NotNull Consumer<JanitorScriptProcess> setup) throws JanitorRuntimeException;
 
 
     /**

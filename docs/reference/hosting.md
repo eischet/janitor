@@ -100,13 +100,14 @@ env.addModuleResolver((process, name) -> {
 
 A module made from a script exposes the variables and functions defined at the top level of that script, except names that
 start with an underscore (`ScriptModule.isExported`). Hosts that build such modules themselves read their attributes with
-`Scope.lookupLocally` and the same rule, so that neither the environment's globals nor private names show through.
+`Scope.get`, which only answers the names a scope defines itself, and the same rule, so that neither the environment's
+globals nor private names show through.
 
 <a id="binding-globals"></a>
 
 ## Binding global variables
 
-There are two places for globals:
+There are three places for globals:
 
 - **Per run**: `script.run(process -> process.bind("name", value))`. The run methods (`run`, `runAndKeepGlobals`,
   `runInScope`), `filterScript` and the `ScriptModule` classes take a callback that receives the script process after it
@@ -114,9 +115,18 @@ There are two places for globals:
   `bind` accepts Janitor objects and plain strings, numbers and booleans, `bindF` binds a function, and both return the
   process, so calls can be chained: `process.bind("order", order).bind("user", user)`. The callback can also configure
   the process, e.g. its [limits](#limits).
+- **An object the script runs for**: `script.runInScope(setup, ObjectScope.of(context, env.getBuiltinScope()))`. The
+  attributes of the object become names in the script, below its own variables and above the built-in scope; they are
+  computed when the script reads them, so an expensive attribute costs nothing in scripts that do not use it. A map
+  offers its keys. Assigning to one of the names, e.g. `ticket = other;`, shadows it for the rest of the script and does
+  not change the object; `ticket.status = 2` changes the object as usual. Parameters, loop variables and imports of the
+  same name shadow it, too. `ObjectScope.withTemplateGlobals(env, context, parent)` adds the environment's template
+  globals (`env.setTemplateGlobals(object)`) below the object; templates (`"...".expand(values)`) and filter scripts
+  look names up the same way, e.g. text macros of the host.
 - **Shared by all scripts**: `env.setupBuiltinScope(scope -> scope.bind("name", value))`. Use this only for values that
   never change, such as constants or stateless functions. The built-in scope is shared between all scripts of the
-  environment, so mutable values would leak from one run into the next.
+  environment, so mutable values would leak from one run into the next. Scripts cannot change it: assigning to one of
+  its names, e.g. `print = 1;`, shadows the name in the script.
 
 Host objects become usable in scripts when they are `JanitorObject`s, typically `JanitorComposed` subclasses with a
 dispatch table, or wrapped with `JanitorWrapper`. Give their members HELP texts, too.

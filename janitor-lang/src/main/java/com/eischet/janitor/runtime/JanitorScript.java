@@ -13,6 +13,7 @@ import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.api.scopes.ResultAndScope;
 import com.eischet.janitor.api.scopes.Scope;
+import com.eischet.janitor.api.scopes.VariableScope;
 import com.eischet.janitor.api.scopes.ScriptSource;
 import com.eischet.janitor.api.types.builtin.JNull;
 import com.eischet.janitor.api.types.JanitorObject;
@@ -203,7 +204,7 @@ public class JanitorScript implements RunnableScript, JsonExportableObject {
         // used to double-fire janitorLeaveScope() on every object bound in this scope (one janitorEnterScope() call per
         // binding, but two janitorLeaveScope() calls), which is exactly why ref-counted cleanup objects like
         // JanitorHttpClient logged a "RefCounter was already zeroed" warning on essentially every run.
-        final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), module);
+        final VariableScope globalScope = VariableScope.createGlobalScope(runtime.getEnvironment(), module);
         final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, module.getName(), scriptObject);
         setup.accept(process);
         return process.run();
@@ -211,7 +212,7 @@ public class JanitorScript implements RunnableScript, JsonExportableObject {
 
     @Override
     public @NotNull JanitorObject runInScope(final @NotNull Consumer<JanitorScriptProcess> setup, final Scope parentScope) throws JanitorRuntimeException {
-        final Scope globalScope = Scope.createMainScope(parentScope);
+        final VariableScope globalScope = VariableScope.createMainScope(runtime.getEnvironment(), parentScope);
         final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, module.getName(), scriptObject);
         setup.accept(process);
         return process.run();
@@ -220,15 +221,15 @@ public class JanitorScript implements RunnableScript, JsonExportableObject {
 
     @Override
     public @NotNull ResultAndScope runAndKeepGlobals(final @NotNull Consumer<JanitorScriptProcess> setup) throws JanitorRuntimeException {
-        final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), module);
+        final VariableScope globalScope = VariableScope.createGlobalScope(runtime.getEnvironment(), module);
         final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, module.getName(), scriptObject);
         setup.accept(process);
         return new ResultAndScope(process.getMainScope(), process.run());
     }
 
     @Override
-    public @NotNull ResultAndScope runInScopeAndKeepGlobals(final Scope parentScope) throws JanitorRuntimeException {
-        final RunningScriptProcess process = new RunningScriptProcess(runtime, parentScope, module.getName(), scriptObject, false);
+    public @NotNull ResultAndScope runInScopeAndKeepGlobals(final VariableScope parentScope) throws JanitorRuntimeException {
+        final RunningScriptProcess process = new RunningScriptProcess(runtime, parentScope, module.getName(), scriptObject);
         return new ResultAndScope(process.getMainScope(), process.run());
     }
 

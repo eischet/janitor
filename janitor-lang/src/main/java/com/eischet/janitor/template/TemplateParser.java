@@ -7,7 +7,7 @@ import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorRuntime;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.RunnableScript;
-import com.eischet.janitor.api.scopes.Scope;
+import com.eischet.janitor.api.scopes.ObjectScope;
 import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
@@ -175,16 +175,7 @@ public class TemplateParser {
                         g.inheritMetaData(process); // a template is code of the calling script, which merely runs in a process of its own
                         g.bind("__POP__", popper.asObject("__POP__"));
                         g.bind("__OUT__", writer.asObject("__OUT__"));
-                        if (values != null) {
-                            System.err.println("setting implicit object provider to values=" + values);
-                            g.getMainScope().setImplicitObjectProvider(values.asImplicitObjectProvider());
-                        } else {
-                            System.err.println("setting implcit object provider to NONE");
-                            // we only look up the environment's implicit object provide when a provider is attached,
-                            // so in this case here attach the NONE dummy provider to trigger that behaviour:
-                            g.getMainScope().setImplicitObjectProvider(Scope.ImplicitObjectProvider.NONE);
-                        }
-                    }, process.getCurrentScope()
+                    }, ObjectScope.withTemplateGlobals(runtime.getEnvironment(), values, process.getCurrentScope())
             );
             return Janitor.string(stringBuilder.toString());
         } catch (JanitorCompilerException e) {

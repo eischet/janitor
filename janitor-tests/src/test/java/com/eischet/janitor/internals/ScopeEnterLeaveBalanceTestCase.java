@@ -3,6 +3,7 @@
 
 package com.eischet.janitor.internals;
 
+import com.eischet.janitor.api.scopes.VariableScope;
 import com.eischet.janitor.JanitorTest;
 import com.eischet.janitor.api.RunnableScript;
 import com.eischet.janitor.api.types.JanitorObject;
@@ -16,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
- * Regression test for a bug in {@code JanitorScript.run(Consumer<Scope>)}: it used to call
+ * Regression test for a bug in {@code JanitorScript.run(Consumer<VariableScope>)}: it used to call
  * {@code globalScope.janitorLeaveScope()} in its own {@code finally} block, AFTER
  * {@code RunningScriptProcess.run()} had already called {@code getMainScope().janitorLeaveScope()}
  * in its own {@code finally} block on the very same {@code Scope} instance -- {@code RunningScriptProcess}

@@ -9,6 +9,7 @@ import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.api.scopes.Scope;
+import com.eischet.janitor.api.scopes.VariableScope;
 import com.eischet.janitor.api.scopes.ScriptSource;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.compiler.ast.expression.ArgumentList;
@@ -42,7 +43,7 @@ public class ManualAstTestCase extends JanitorTest {
 
         final ScriptSource dummy = new ScriptSource("dummy", "// no source");
 
-        final Scope processScope = Scope.createBuiltinScope(environment, Location.at(dummy, 1, 1, 1, 1)); // new Scope(Location.at(dummy, 1, 1), null, null);
+        final VariableScope processScope = VariableScope.createBuiltinScope(environment, Location.at(dummy, 1, 1, 1, 1)); // new Scope(Location.at(dummy, 1, 1), null, null);
 
         final JanitorScriptProcess proc = new AbstractScriptProcess(new TestingRuntime(), processScope, "manual") {
             @Override
@@ -102,16 +103,16 @@ public class ManualAstTestCase extends JanitorTest {
             }
         };
 
-        final Scope global = Scope.createGlobalScope(environment, dummy); // new Scope(null, null, null);
-        final Scope local1 = Scope.createFreshBlockScope(null, global); // new Scope(null, global, null);
+        final VariableScope global = VariableScope.createGlobalScope(environment, dummy); // new Scope(null, null, null);
+        final VariableScope local1 = VariableScope.createFreshBlockScope(null, global); // new Scope(null, global, null);
 
         global.bind("foo", environment.getBuiltinTypes().integer(100));
         local1.bind("bar", environment.getBuiltinTypes().integer(200));
         local1.bind("foo", environment.getBuiltinTypes().integer(300));
 
-        assertEquals(300L, local1.lookup(proc, "foo", null).janitorGetHostValue());
-        assertEquals(200L, local1.lookup(proc, "bar", null).janitorGetHostValue());
-        assertEquals(100L, global.lookup(proc, "foo", null).janitorGetHostValue());
+        assertEquals(300L, local1.getVariable("foo").janitorGetHostValue());
+        assertEquals(200L, local1.getVariable("bar").janitorGetHostValue());
+        assertEquals(100L, global.getVariable("foo").janitorGetHostValue());
 
     }
 
@@ -127,7 +128,7 @@ public class ManualAstTestCase extends JanitorTest {
         final Script script = new Script(Location.BUILTIN_LOCATION, List.of(printCall), null);
 
 
-        final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), null); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
+        final VariableScope globalScope = VariableScope.createGlobalScope(runtime.getEnvironment(), null); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
         globalScope.bind("x", Janitor.integer(17));
 
         final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, "manual", script);
@@ -156,7 +157,7 @@ public class ManualAstTestCase extends JanitorTest {
         final Script script = new Script(Location.BUILTIN_LOCATION, List.of(printCall), null);
 
 
-        final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), null); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
+        final VariableScope globalScope = VariableScope.createGlobalScope(runtime.getEnvironment(), null); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
         globalScope.bind("a", Janitor.integer(17));
         final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, "manual", script);
         process.run();
@@ -175,7 +176,7 @@ public class ManualAstTestCase extends JanitorTest {
         final FunctionCallStatement printCall = new FunctionCallStatement(Location.BUILTIN_LOCATION, "print", null, expressionList);
         final Script script = new Script(Location.BUILTIN_LOCATION, List.of(printCall), null);
 
-        final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), null); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
+        final VariableScope globalScope = VariableScope.createGlobalScope(runtime.getEnvironment(), null); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
         globalScope.bind("a", Janitor.integer(17));
         globalScope.bind("b", Janitor.integer(4));
         final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, "manual", script);

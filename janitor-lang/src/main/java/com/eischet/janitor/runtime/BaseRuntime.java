@@ -7,7 +7,7 @@ package com.eischet.janitor.runtime;
 import com.eischet.janitor.api.*;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
-import com.eischet.janitor.api.scopes.Scope;
+import com.eischet.janitor.api.scopes.VariableScope;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.functions.JCallable;
 import com.eischet.janitor.compiler.ast.statement.Script;
@@ -94,7 +94,7 @@ public abstract class BaseRuntime implements JanitorRuntime {
 
 
     @Override
-    public JanitorObject executeCallback(final Scope scope, final JCallable callable, final List<JanitorObject> args, final @NotNull Consumer<JanitorScriptProcess> setup) throws JanitorRuntimeException {
+    public JanitorObject executeCallback(final VariableScope scope, final JCallable callable, final List<JanitorObject> args, final @NotNull Consumer<JanitorScriptProcess> setup) throws JanitorRuntimeException {
         final RunningScriptProcess process = new RunningScriptProcess(this, scope, "callback", Script.wrapperForCallback(callable, args));
         setup.accept(process);
         return process.run();

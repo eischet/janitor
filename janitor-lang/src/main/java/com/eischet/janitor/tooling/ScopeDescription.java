@@ -8,7 +8,7 @@ import com.eischet.janitor.api.metadata.HasMetaData;
 import com.eischet.janitor.api.metadata.ScriptType;
 import com.eischet.janitor.api.modules.ScriptModule;
 import com.eischet.janitor.api.scopes.NameDoc;
-import com.eischet.janitor.api.scopes.Scope;
+import com.eischet.janitor.api.scopes.VariableScope;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
@@ -34,11 +34,11 @@ public final class ScopeDescription {
      * @param scope the module's top-level scope; only read
      * @return a dispatcher describing the members of the scope
      */
-    public static @NotNull Dispatcher<?> of(final @NotNull String name, final @NotNull Scope scope) {
+    public static @NotNull Dispatcher<?> of(final @NotNull String name, final @NotNull VariableScope scope) {
         final DispatchTable<JanitorObject> table = new DispatchTable<>(false);
         table.setMetaData(Janitor.MetaData.CLASS, name);
-        for (final String member : scope.dir()) {
-            final JanitorObject value = scope.retrieveLocal(member);
+        for (final String member : scope.names()) {
+            final JanitorObject value = scope.getVariable(member);
             if (value == null || !ScriptModule.isExported(member)) {
                 continue;
             }

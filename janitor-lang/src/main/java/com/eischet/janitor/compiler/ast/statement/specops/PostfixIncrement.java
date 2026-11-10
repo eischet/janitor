@@ -8,7 +8,7 @@ import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.errors.glue.JanitorControlFlowException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.Location;
-import com.eischet.janitor.api.scopes.ResultAndScope;
+import com.eischet.janitor.api.scopes.ScopedVariable;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.runtime.JanitorSemantics;
 import com.eischet.janitor.compiler.ast.expression.Expression;
@@ -45,13 +45,13 @@ public class PostfixIncrement extends Statement implements Expression, JsonExpor
         process.countInstruction();
         if (expr instanceof Identifier) {
             final String id = ((Identifier) expr).getText();
-            final ResultAndScope scoped = process.lookupScopedVar(id);
+            final ScopedVariable scoped = process.lookupScopedVar(id);
             if (scoped == null) {
                 throw new JanitorArgumentException(process, "variable not bound: '" + id + "'. cannot apply postfix++ to it.");
             }
-            final JanitorObject currentValue = scoped.getVariable(); // or this?? final Variable currentValue = expr.evaluate(runningScript);
+            final JanitorObject currentValue = scoped.variable(); // or this?? final Variable currentValue = expr.evaluate(runningScript);
             final JanitorObject newValue = JanitorSemantics.increment(process, currentValue);
-            scoped.getScope().bind(process, id, newValue);  // previously wrong: runningScript.getCurrentScope().bind(id, newValue);
+            scoped.scope().assign(process, id, newValue);
             return currentValue;
         } else {
             throw new JanitorArgumentException(process, "cannot apply postfix++ to " + expr);

@@ -108,7 +108,7 @@ public class ScriptModule extends JanitorModuleRegistration {
             if (!isExported(name)) {
                 return null;
             }
-            final JanitorObject obj = moduleScope.lookupLocally(runningScript, name);
+            final JanitorObject obj = moduleScope.get(runningScript, name);
             if (obj instanceof ModuleScopeAware scriptFunction) {
                 scriptFunction.setModuleScope(moduleScope);
             }

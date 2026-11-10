@@ -5,7 +5,7 @@ package com.eischet.janitor.api.modules;
 
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
-import com.eischet.janitor.api.scopes.Scope;
+import com.eischet.janitor.api.scopes.VariableScope;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -31,7 +31,7 @@ public interface ModuleResolver {
      * @param name the name of the module, as in {@code import "name" as foo}
      * @return the scope, or null if the resolver does not know the module or has not built it
      */
-    default @Nullable Scope describeModuleByStringName(final @NotNull String name) {
+    default @Nullable VariableScope describeModuleByStringName(final @NotNull String name) {
         return null;
     }
 }

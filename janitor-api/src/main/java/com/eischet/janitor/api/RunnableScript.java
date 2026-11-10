@@ -7,6 +7,7 @@ import com.eischet.janitor.api.errors.compiler.ScriptDiagnostic;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.ResultAndScope;
 import com.eischet.janitor.api.scopes.Scope;
+import com.eischet.janitor.api.scopes.VariableScope;
 import com.eischet.janitor.api.types.JanitorObject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -109,5 +110,5 @@ public interface RunnableScript {
      * @return result and scope
      * @throws JanitorRuntimeException on errors
      */
-    @NotNull ResultAndScope runInScopeAndKeepGlobals(Scope parentScope) throws JanitorRuntimeException;
+    @NotNull ResultAndScope runInScopeAndKeepGlobals(VariableScope parentScope) throws JanitorRuntimeException;
 }

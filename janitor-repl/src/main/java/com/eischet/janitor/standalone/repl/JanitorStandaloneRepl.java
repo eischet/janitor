@@ -6,7 +6,7 @@ package com.eischet.janitor.standalone.repl;
 import com.eischet.janitor.api.*;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
-import com.eischet.janitor.api.scopes.Scope;
+import com.eischet.janitor.api.scopes.VariableScope;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.JNull;
 import com.eischet.janitor.api.types.functions.JCallArgs;
@@ -84,7 +84,7 @@ public class JanitorStandaloneRepl {
         Janitor.setUserProvider(() -> env);
 
         final boolean ranAScript = cli.getScriptFile() != null;
-        Scope seedScope = null;
+        VariableScope seedScope = null;
         if (ranAScript) {
             seedScope = runScriptFile(env, Path.of(cli.getScriptFile()), cli.isVerbose(), cli.isInteractive());
             if (!cli.isInteractive()) {
@@ -136,7 +136,7 @@ public class JanitorStandaloneRepl {
      * a shell after a failed script) it also returns null, but the caller still starts an interactive
      * shell -- just with a fresh scope, since a script that failed mid-run doesn't hand back one.
      */
-    static @Nullable Scope runScriptFile(final JanitorEnvironment env, final Path scriptPath, final boolean verbose, final boolean interactive) {
+    static @Nullable VariableScope runScriptFile(final JanitorEnvironment env, final Path scriptPath, final boolean verbose, final boolean interactive) {
         if (!Files.exists(scriptPath)) {
             System.err.println("Script file does not exist: " + scriptPath);
             System.exit(1);
@@ -216,7 +216,7 @@ public class JanitorStandaloneRepl {
      * @param suppressBanner true to skip the welcome banner
      * @throws IOException if the terminal cannot be set up
      */
-    protected static void runJlineConsole(final JanitorEnvironment env, final boolean verbose, final @Nullable Scope seedScope, final boolean suppressBanner) throws IOException {
+    protected static void runJlineConsole(final JanitorEnvironment env, final boolean verbose, final @Nullable VariableScope seedScope, final boolean suppressBanner) throws IOException {
 
         final Terminal terminal = TerminalBuilder.builder().system(true).build();
         // Without DISABLE_EVENT_EXPANSION, JLine treats '\' as its own escape character and removes it from the line, so
@@ -288,7 +288,7 @@ public class JanitorStandaloneRepl {
      * @param seedScope a scope with variables to start with, or null
      * @param suppressBanner true to skip the welcome banner
      */
-    protected static void runPlainConsole(final JanitorEnvironment env, final boolean verbose, final @Nullable Scope seedScope, final boolean suppressBanner) {
+    protected static void runPlainConsole(final JanitorEnvironment env, final boolean verbose, final @Nullable VariableScope seedScope, final boolean suppressBanner) {
         final JanitorRuntime runtime = createStdoutRuntime(env);
         final ConsoleReplIO io = new ConsoleReplIO() {
             @Override
@@ -314,7 +314,7 @@ public class JanitorStandaloneRepl {
      * suppressBanner skips the REPL's welcome banner -- either because the user already saw a script
      * run (-i), or because they explicitly asked for quiet (-q).
      */
-    static void seedRepl(final JanitorRepl repl, final @Nullable Scope seedScope, final boolean suppressBanner) {
+    static void seedRepl(final JanitorRepl repl, final @Nullable VariableScope seedScope, final boolean suppressBanner) {
         if (seedScope != null) {
             repl.getGlobalScope().replEatScope(seedScope);
         }

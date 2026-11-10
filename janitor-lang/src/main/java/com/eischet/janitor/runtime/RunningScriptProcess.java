@@ -10,7 +10,7 @@ import com.eischet.janitor.api.errors.runtime.JanitorInstructionLimitExceededExc
 import com.eischet.janitor.api.errors.runtime.JanitorInternalException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.errors.runtime.JanitorTimeLimitExceededException;
-import com.eischet.janitor.api.scopes.Scope;
+import com.eischet.janitor.api.scopes.VariableScope;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.compiler.ast.statement.Script;
 import com.eischet.janitor.compiler.ast.statement.controlflow.ReturnStatement;
@@ -42,17 +42,19 @@ public class RunningScriptProcess extends AbstractScriptProcess {
     // once an abort was detected, check on every instruction, so that code which swallows the error cannot keep going
     private boolean aborting = false;
 
-    public RunningScriptProcess(final JanitorRuntime runtime, final Scope parentScope, final @NotNull String processName, final Script script, final boolean wrapScope) {
-        super(runtime, wrapScope ? Scope.createMainScope(parentScope) : parentScope, processName);
+    /**
+     * @param runtime     the runtime
+     * @param mainScope   the scope the script runs in
+     * @param processName the name of the process, for messages
+     * @param script      the script
+     */
+    public RunningScriptProcess(final JanitorRuntime runtime, final VariableScope mainScope, final @NotNull String processName, final Script script) {
+        super(runtime, mainScope, processName);
         this.script = script;
         // every process starts with the environment's defaults; hosts can override them per run in the setup callback
         this.maxInstructionCount = runtime.getEnvironment().getMaxInstructionCount();
         this.maxRunTime = runtime.getEnvironment().getMaxRunTime();
         this.jsonWriteOptions = runtime.getEnvironment().getJsonWriteOptions();
-    }
-
-    public RunningScriptProcess(final JanitorRuntime runtime, final Scope globalScope, final @NotNull String processName, final Script script) {
-        this(runtime, globalScope, processName, script, false);
     }
 
     @Override

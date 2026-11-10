@@ -9,6 +9,7 @@ import com.eischet.janitor.api.RunnableScript;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.JanitorScriptProcess;
+import com.eischet.janitor.api.scopes.ObjectScope;
 import com.eischet.janitor.api.types.builtin.JBool;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.logging.JanitorLogger;
@@ -42,13 +43,14 @@ public class FilterScript implements FilterPredicate {
     @Override
     public boolean test(final JanitorObject t) {
         try {
-            return JBool.TRUE == script.run(process -> {
+            // the fields of the object are names in the script, below its own variables
+            final JanitorEnvironment env = runtime.getEnvironment();
+            return JBool.TRUE == script.runInScope(process -> {
                 if (setup != null) {
                     setup.accept(process);
                 }
                 process.bind("value", t);
-                process.getMainScope().setImplicitObjectProvider(t.asImplicitObjectProvider());
-            });
+            }, ObjectScope.withTemplateGlobals(env, t, env.getBuiltinScope()));
         } catch (JanitorRuntimeException e) {
             log.warn("{}: filter script error: {}", name, e.getMessage());
             return false;

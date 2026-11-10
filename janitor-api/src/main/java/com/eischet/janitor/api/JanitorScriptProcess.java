@@ -9,7 +9,8 @@ import com.eischet.janitor.api.i18n.JanitorFormatting;
 import com.eischet.janitor.api.metadata.MetaDataKey;
 import com.eischet.janitor.api.metadata.MetaDataMap;
 import com.eischet.janitor.api.scopes.Location;
-import com.eischet.janitor.api.scopes.ResultAndScope;
+import com.eischet.janitor.api.scopes.ScopedVariable;
+import com.eischet.janitor.api.scopes.VariableScope;
 import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.types.BuiltinTypes;
 import com.eischet.janitor.api.types.JanitorCleanupRequired;
@@ -65,9 +66,9 @@ public interface JanitorScriptProcess {
     /**
      * @return the scope of the main script
      */
-    Scope getMainScope();
+    VariableScope getMainScope();
 
-    @NotNull Scope getCurrentScope();
+    @NotNull VariableScope getCurrentScope();
 
     /**
      * @return the runtime that this process runs in
@@ -132,9 +133,9 @@ public interface JanitorScriptProcess {
     /**
      * Finds the scope that defines a variable.
      * @param id the name of the variable
-     * @return the variable's value together with the scope that it was found in
+     * @return the variable's value together with the scope that it was found in, or null if no scope defines it
      */
-    ResultAndScope lookupScopedVar(String id);
+    @Nullable ScopedVariable lookupScopedVar(String id);
 
     /**
      * @return the location in the source code that is currently executed

@@ -5,7 +5,7 @@ package com.eischet.janitor.jsr223;
 
 import com.eischet.janitor.api.*;
 import com.eischet.janitor.api.types.functions.JCallArgs;
-import com.eischet.janitor.api.scopes.Scope;
+import com.eischet.janitor.api.scopes.VariableScope;
 import com.eischet.janitor.api.scopes.ScriptSource;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.JNull;
@@ -36,7 +36,7 @@ public class JanitorScriptEngineFactory implements ScriptEngineFactory {
             System.err.println(message);
         }
     };
-    private final Scope globalScope;
+    private final VariableScope globalScope;
     private Bindings bindings;
 
     public JanitorScriptEngineFactory() {
@@ -44,7 +44,7 @@ public class JanitorScriptEngineFactory implements ScriptEngineFactory {
         if (Janitor.getUserProvider() == null) {
             Janitor.setUserProvider(() -> environment);
         }
-        this.globalScope = Scope.createGlobalScope(environment, ScriptSource.builtin());
+        this.globalScope = VariableScope.createGlobalScope(environment, ScriptSource.builtin());
         this.bindings = new JanitorBindings(globalScope, environment);
     }
 
@@ -57,7 +57,7 @@ public class JanitorScriptEngineFactory implements ScriptEngineFactory {
      * @return new bindings with an empty global scope
      */
     public Bindings createBindings() {
-        return new JanitorBindings(Scope.createGlobalScope(environment, ScriptSource.builtin()), environment);
+        return new JanitorBindings(VariableScope.createGlobalScope(environment, ScriptSource.builtin()), environment);
     }
 
     @Override
@@ -146,7 +146,7 @@ public class JanitorScriptEngineFactory implements ScriptEngineFactory {
     /**
      * @return the global scope
      */
-    public Scope getGlobalScope() {
+    public VariableScope getGlobalScope() {
         return globalScope;
     }
 }

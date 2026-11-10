@@ -10,6 +10,7 @@ import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.Scope;
+import com.eischet.janitor.api.scopes.VariableScope;
 import com.eischet.janitor.api.scopes.ScriptSource;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.compiler.CompilerError;
@@ -30,7 +31,7 @@ import java.util.function.Consumer;
 
 public abstract class JanitorTest {
 
-    public static final Consumer<Scope> NO_GLOBALS = globals -> {
+    public static final Consumer<VariableScope> NO_GLOBALS = globals -> {
     };
 
     protected final JanitorLogger log = JanitorLogger.getLogger(getClass());
@@ -58,18 +59,18 @@ public abstract class JanitorTest {
         return getOutput(scriptSource, NO_GLOBALS);
     }
 
-    protected String getOutput(final @Language("Janitor") String scriptSource, final Consumer<Scope> prepareGlobals) throws JanitorRuntimeException, JanitorCompilerException {
+    protected String getOutput(final @Language("Janitor") String scriptSource, final Consumer<VariableScope> prepareGlobals) throws JanitorRuntimeException, JanitorCompilerException {
         return getOutput(scriptSource, prepareGlobals, false);
     }
 
-    protected String getOutput(final @Language("Janitor") String scriptSource, final Consumer<Scope> prepareGlobals, boolean verbose) throws JanitorCompilerException, JanitorRuntimeException {
+    protected String getOutput(final @Language("Janitor") String scriptSource, final Consumer<VariableScope> prepareGlobals, boolean verbose) throws JanitorCompilerException, JanitorRuntimeException {
         log.debug("parsing: {}\n", scriptSource);
         final JanitorParser.ScriptContext script = JanitorScript.parseScript(scriptSource);
         final ScriptSource module = ScriptSource.unnamed(scriptSource);
         final Script scriptObject = JanitorCompiler.build(TestEnv.env, module, script, scriptSource, verbose);
         final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
 
-        final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), module); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
+        final VariableScope globalScope = VariableScope.createGlobalScope(runtime.getEnvironment(), module); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
         prepareGlobals.accept(globalScope);
         final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, "manual", scriptObject);
         process.run();
@@ -80,13 +81,13 @@ public abstract class JanitorTest {
         return evaluate(expressionSource, NO_GLOBALS);
     }
 
-    protected JanitorObject evaluate(final @Language("Janitor") String expressionSource, final Consumer<Scope> prepareGlobals) throws JanitorCompilerException, JanitorRuntimeException {
+    protected JanitorObject evaluate(final @Language("Janitor") String expressionSource, final Consumer<VariableScope> prepareGlobals) throws JanitorCompilerException, JanitorRuntimeException {
         return evaluate(expressionSource, null, prepareGlobals);
     }
 
     protected JanitorObject evaluate(final @Language("Janitor") String expressionSource,
                                      final @Nullable Consumer<JanitorEnvironment> environmentConfigurer,
-                                     final @Nullable Consumer<Scope> prepareGlobals) throws JanitorCompilerException, JanitorRuntimeException {
+                                     final @Nullable Consumer<VariableScope> prepareGlobals) throws JanitorCompilerException, JanitorRuntimeException {
         log.info("evaluating: {}\n", expressionSource);
         final JanitorParser.ScriptContext script = JanitorScript.parseScript(expressionSource);
         final ScriptSource module = ScriptSource.unnamed(expressionSource);
@@ -94,7 +95,7 @@ public abstract class JanitorTest {
             final Script scriptObject = JanitorCompiler.build(TestEnv.env, module, script, expressionSource);
             final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh(environmentConfigurer);
 
-            final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), module); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
+            final VariableScope globalScope = VariableScope.createGlobalScope(runtime.getEnvironment(), module); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
             if (prepareGlobals != null) {
                 prepareGlobals.accept(globalScope);
             }
@@ -115,7 +116,7 @@ public abstract class JanitorTest {
             final Script scriptObject = JanitorCompiler.build(TestEnv.env, module, script, expressionSource);
             final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
 
-            final Scope globalScope = Scope.createGlobalScope(runtime.getEnvironment(), module); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
+            final VariableScope globalScope = VariableScope.createGlobalScope(runtime.getEnvironment(), module); // new Scope(null, JanitorScript.BUILTIN_SCOPE, null);
 
             final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, "manual", scriptObject);
 

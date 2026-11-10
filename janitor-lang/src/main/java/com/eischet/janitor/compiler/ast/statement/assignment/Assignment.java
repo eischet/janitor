@@ -10,8 +10,9 @@ import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.api.scopes.NameDoc;
-import com.eischet.janitor.api.scopes.ResultAndScope;
 import com.eischet.janitor.api.scopes.Scope;
+import com.eischet.janitor.api.scopes.ScopedVariable;
+import com.eischet.janitor.api.scopes.VariableScope;
 import com.eischet.janitor.api.types.JAssignable;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.TemporaryAssignable;
@@ -67,9 +68,10 @@ public abstract class Assignment extends Statement implements JsonExportableObje
     }
 
     /**
-     * Stores the documentation with the variable, in the scope that holds it.
+     * Stores the documentation with the variable, in the scope that holds it; null looks that scope up, e.g. after an
+     * assignment that may have shadowed the name in the main scope.
      */
-    private void storeDoc(final JanitorScriptProcess process, final @Nullable Scope scope) {
+    private void storeDoc(final JanitorScriptProcess process, final @Nullable VariableScope scope) {
         if (doc == null || documentedName == null) {
             return;
         }
@@ -77,11 +79,11 @@ public abstract class Assignment extends Statement implements JsonExportableObje
         if (scope != null) {
             target = scope;
         } else {
-            final ResultAndScope scoped = process.lookupScopedVar(documentedName);
-            target = scoped == null ? null : scoped.getScope();
+            final ScopedVariable scoped = process.lookupScopedVar(documentedName);
+            target = scoped == null ? null : scoped.scope();
         }
-        if (target != null) {
-            target.document(documentedName, doc);
+        if (target instanceof VariableScope variables) {
+            variables.document(documentedName, doc);
         }
     }
 
@@ -105,7 +107,7 @@ public abstract class Assignment extends Statement implements JsonExportableObje
             // for what broke because of it -- e.g. a counter closure like
             // "() -> { n = n + 1; return n; }" could never accumulate state across calls, since every
             // call kept creating and discarding its own fresh local shadow of "n").
-            final ResultAndScope scoped = process.lookupScopedVar(id);
+            final ScopedVariable scoped = process.lookupScopedVar(id);
             // LATER: the module scope must be taken into account here as well!
             // This probably does not work if a function from a module tries to assign to one of its own
             // variables (defined in the module). That is not a good idea anyway, because modules
@@ -117,13 +119,13 @@ public abstract class Assignment extends Statement implements JsonExportableObje
                 storeDoc(process, process.getCurrentScope());
                 return;
             } else {
-                final Scope targetScope = scoped.getScope();
+                final Scope targetScope = scoped.scope();
                 process.trace(() -> "  will assign " + id + " = " + valueToAssign + " in its original scope " + targetScope);
                 if (targetScope.getParent() == null) {
                     process.trace(() -> "warning: trying to assign something to the top level scope!");
                 }
-                targetScope.bind(process, id, valueToAssign);
-                storeDoc(process, targetScope);
+                targetScope.assign(process, id, valueToAssign);
+                storeDoc(process, null);
                 return;
             }
         }

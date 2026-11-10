@@ -11,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
  * Turns out it's quite useful to keep the scope of a script around, and feed it into another script later.
  */
 public class ResultAndScope {
-    private final Scope scope;
+    private final VariableScope scope;
     private final JanitorObject variable;
 
     /**
@@ -19,7 +19,7 @@ public class ResultAndScope {
      * @param scope the scope
      * @param variable the result
      */
-    public ResultAndScope(final @NotNull Scope scope, final @NotNull JanitorObject variable) {
+    public ResultAndScope(final @NotNull VariableScope scope, final @NotNull JanitorObject variable) {
         this.scope = scope;
         this.variable = variable;
     }
@@ -28,7 +28,7 @@ public class ResultAndScope {
      * Get the scope.
      * @return the scope
      */
-    public Scope getScope() {
+    public VariableScope getScope() {
         return scope;
     }
 

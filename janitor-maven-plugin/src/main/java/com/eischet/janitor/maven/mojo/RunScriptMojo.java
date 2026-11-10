@@ -113,7 +113,7 @@ public class RunScriptMojo extends AbstractMojo {
                 g.bindF("addSuccessCallback", (process, args) -> {
                     final JanitorObject callback = args.getRequired(1, JanitorObject.class);
                     if (callback instanceof JCallable callable) {
-                        Lifecycle.BUILD_SUCCESS_CALLBACKS.add(new ScriptCallback(callable, process.getCurrentScope().capture()));
+                        Lifecycle.BUILD_SUCCESS_CALLBACKS.add(new ScriptCallback(callable, process.getCurrentScope()));
                     } else {
                         throw new JanitorArgumentException(process, "addSuccessCallback expects a callable, got " + simpleClassNameOf(callback));
                     }
@@ -122,7 +122,7 @@ public class RunScriptMojo extends AbstractMojo {
                 g.bindF("addFailureCallback", (process, args) -> {
                     final JanitorObject callback = args.getRequired(1, JanitorObject.class);
                     if (callback instanceof JCallable callable) {
-                        Lifecycle.BUILD_FAILURE_CALLBACKS.add(new ScriptCallback(callable, process.getCurrentScope().capture()));
+                        Lifecycle.BUILD_FAILURE_CALLBACKS.add(new ScriptCallback(callable, process.getCurrentScope()));
                     } else {
                         throw new JanitorArgumentException(process, "addFailureCallback expects a callable, got " + simpleClassNameOf(callback));
                     }

@@ -3,6 +3,7 @@
 
 package com.eischet.janitor.features;
 
+import com.eischet.janitor.api.scopes.VariableScope;
 import com.eischet.janitor.JanitorTest;
 import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.metadata.MetaDataMap;
@@ -169,7 +170,7 @@ public class JanitorCompletionsTestCase extends JanitorTest {
 
     @Test
     void membersOfAModuleImportedByAString() throws Exception {
-        final Scope greetings = OutputCatchingTestRuntime.fresh().compile("greetings", """
+        final VariableScope greetings = OutputCatchingTestRuntime.fresh().compile("greetings", """
                 title = "Hello";
                 _secret = 42;
                 function greet(name, polite) {
@@ -183,7 +184,7 @@ public class JanitorCompletionsTestCase extends JanitorTest {
             }
 
             @Override
-            public Scope describeModuleByStringName(final String name) {
+            public VariableScope describeModuleByStringName(final String name) {
                 return "greetings".equals(name) ? greetings : null;
             }
         };
