@@ -4,7 +4,6 @@
 package com.eischet.janitor.api.types.builtin;
 
 import com.eischet.janitor.api.JanitorEnvironment;
-import com.eischet.janitor.api.RunnableScript;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.api.util.WildCardMatcher;
@@ -38,12 +37,14 @@ public class JString extends JanitorComposed<JString> implements JConstant, Json
     }
 
     /**
-     * A template compiled from a string, for the environment it was compiled in.
-     *
-     * @param environment the environment
-     * @param script      the compiled template
+     * The code of a template compiled from a string, which the template engine keeps with the string. It belongs to the
+     * environment it was compiled for, not to a runtime: a template runs with the runtime of the script that expands it.
      */
-    public record CompiledTemplate(@NotNull JanitorEnvironment environment, @NotNull RunnableScript script) {
+    public interface CompiledTemplate {
+        /**
+         * @return the environment the template was compiled for
+         */
+        @NotNull JanitorEnvironment environment();
     }
 
     // What the string compiles to when it is used as a wild card pattern or a template, kept so that a string literal is
@@ -70,8 +71,8 @@ public class JString extends JanitorComposed<JString> implements JConstant, Json
      * @param environment the environment the template runs in
      * @return the template compiled from this string for that environment, or null if there is none yet
      */
-    public @Nullable RunnableScript getCompiledTemplate(final @NotNull JanitorEnvironment environment) {
-        return compiled instanceof CompiledTemplate template && template.environment() == environment ? template.script() : null;
+    public @Nullable CompiledTemplate getCompiledTemplate(final @NotNull JanitorEnvironment environment) {
+        return compiled instanceof CompiledTemplate template && template.environment() == environment ? template : null;
     }
 
     /**

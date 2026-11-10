@@ -7,7 +7,6 @@ import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.JanitorRuntime;
 import com.eischet.janitor.api.JanitorScriptProcess;
-import com.eischet.janitor.api.RunnableScript;
 import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
@@ -17,6 +16,9 @@ import com.eischet.janitor.api.types.functions.JCallable;
 import com.eischet.janitor.api.types.builtin.JNull;
 import com.eischet.janitor.api.types.builtin.JString;
 import com.eischet.janitor.api.types.JanitorObject;
+import com.eischet.janitor.compiler.ast.statement.Script;
+import com.eischet.janitor.runtime.JanitorScript;
+import com.eischet.janitor.runtime.RunningScriptProcess;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -133,14 +135,25 @@ public class TemplateParser {
         }
     }
 
+    // the name of a template's code in messages and stack traces
+    private static final String TEMPLATE = "TEMPLATE";
+
     /**
-     * The template compiled from a string. A string literal is the same object on every evaluation, so it keeps its compiled
-     * template and a template in a loop or a function is compiled once, not on every call.
+     * The code of a template, for the environment it was compiled for; it runs with the runtime of the script that expands it.
+     *
+     * @param environment the environment
+     * @param script      the compiled code
      */
-    private static RunnableScript compiled(final JanitorRuntime runtime, final JanitorScriptProcess process, final JString templateString) throws JanitorRuntimeException, JanitorCompilerException {
+    private record TemplateCode(@NotNull JanitorEnvironment environment, @NotNull Script script) implements JString.CompiledTemplate {
+    }
+
+    /**
+     * The code compiled from a template string. A string literal is the same object on every evaluation, so it keeps its
+     * compiled template and a template in a loop or a function is compiled once, not on every call.
+     */
+    private static TemplateCode compiled(final JanitorRuntime runtime, final JanitorScriptProcess process, final JString templateString) throws JanitorRuntimeException, JanitorCompilerException {
         final JanitorEnvironment environment = runtime.getEnvironment();
-        final RunnableScript known = templateString.getCompiledTemplate(environment);
-        if (known != null) {
+        if (templateString.getCompiledTemplate(environment) instanceof TemplateCode known) {
             return known;
         }
         final TemplateParser parser = new TemplateParser(templateString.janitorToString());
@@ -148,9 +161,9 @@ public class TemplateParser {
             throw new JanitorArgumentException(process, "invalid template");
         }
         @Language("Janitor") final String scriptSource = parser.toScript(TemplateParser::plainRenderer);
-        final RunnableScript script = runtime.compile("TEMPLATE", scriptSource);
-        templateString.setCompiledTemplate(new JString.CompiledTemplate(environment, script));
-        return script;
+        final TemplateCode code = new TemplateCode(environment, Objects.requireNonNull(new JanitorScript(runtime, TEMPLATE, scriptSource).getScriptObject()));
+        templateString.setCompiledTemplate(code);
+        return code;
     }
 
     /**
@@ -164,7 +177,7 @@ public class TemplateParser {
      */
     public static JString expand(final JanitorRuntime runtime, JanitorScriptProcess process, final JString templateString, final JCallArgs arguments) throws JanitorRuntimeException {
         try {
-            final RunnableScript script = compiled(runtime, process, templateString);
+            final TemplateCode code = compiled(runtime, process, templateString);
             arguments.require(0, 1);
             final JanitorObject values = arguments.size() > 0 ? arguments.get(0) : null;
 
@@ -185,21 +198,21 @@ public class TemplateParser {
 
 
 
-            script.runInScope(g -> {
-                        g.inheritMetaData(process); // a template is code of the calling script, which merely runs in a process of its own
-                        g.bind("__POP__", popper.asObject("__POP__"));
-                        g.bind("__OUT__", writer.asObject("__OUT__"));
-                        if (values != null) {
-                            System.err.println("setting implicit object provider to values=" + values);
-                            g.getMainScope().setImplicitObjectProvider(values.asImplicitObjectProvider());
-                        } else {
-                            System.err.println("setting implcit object provider to NONE");
-                            // we only look up the environment's implicit object provide when a provider is attached,
-                            // so in this case here attach the NONE dummy provider to trigger that behaviour:
-                            g.getMainScope().setImplicitObjectProvider(Scope.ImplicitObjectProvider.NONE);
-                        }
-                    }, process.getCurrentScope()
-            );
+            // a template is code of the calling script, which merely runs in a process of its own, with the same runtime
+            final RunningScriptProcess template = new RunningScriptProcess(runtime, Scope.createMainScope(process.getCurrentScope()), TEMPLATE, code.script());
+            template.inheritMetaData(process);
+            template.bind("__POP__", popper.asObject("__POP__"));
+            template.bind("__OUT__", writer.asObject("__OUT__"));
+            if (values != null) {
+                System.err.println("setting implicit object provider to values=" + values);
+                template.getMainScope().setImplicitObjectProvider(values.asImplicitObjectProvider());
+            } else {
+                System.err.println("setting implcit object provider to NONE");
+                // we only look up the environment's implicit object provide when a provider is attached,
+                // so in this case here attach the NONE dummy provider to trigger that behaviour:
+                template.getMainScope().setImplicitObjectProvider(Scope.ImplicitObjectProvider.NONE);
+            }
+            template.run();
             return Janitor.string(stringBuilder.toString());
         } catch (JanitorCompilerException e) {
             throw new JanitorArgumentException(process, "invalid template", e);

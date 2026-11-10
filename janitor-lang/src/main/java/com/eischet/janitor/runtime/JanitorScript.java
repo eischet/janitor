@@ -105,6 +105,13 @@ public class JanitorScript implements RunnableScript, JsonExportableObject {
         }
     }
 
+    /**
+     * @return the compiled code, or null if a check found errors
+     */
+    public @Nullable Script getScriptObject() {
+        return scriptObject;
+    }
+
     // LATER: it would be preferable to throw the exception during the check, because it is an error nevertheless
     @Override
     public @Nullable Exception getCompilerException() {
