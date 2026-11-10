@@ -188,7 +188,6 @@ return console.askOkCancel(message, true);
                   <property name="description" type="string">Janitor Script</property>
                   <property name="extension" type="string">janitor</property>
                   <property name="launcherId" type="string">25</property>
-                  <property name="removeOnUninstall" type="boolean" value="true" />
                 </serializedBean>
               </action>
               <action id="101" beanClass="com.install4j.runtime.beans.actions.control.RunScriptAction" actionElevationType="none" rollbackBarrierExitCode="0">
