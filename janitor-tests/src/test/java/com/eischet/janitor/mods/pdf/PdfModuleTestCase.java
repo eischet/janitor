@@ -161,6 +161,62 @@ public class PdfModuleTestCase extends JanitorTest {
         return ((JBinary) result).janitorGetHostValue();
     }
 
+    /**
+     * concat with a PDF/A level must give a file that Mustang's PDF/A-1 preflight accepts, even when a source has an
+     * image with the Interpolate flag (as PDFs from Word on macOS do); without the level, the same sources are rejected.
+     */
+    @Test
+    void concatWithPdfALevelProducesValidPdfA1b(@TempDir Path tempDir) throws Exception {
+        final Path source = tempDir.resolve("interpolated.pdf");
+        final java.awt.image.BufferedImage picture = new java.awt.image.BufferedImage(40, 20, java.awt.image.BufferedImage.TYPE_INT_RGB);
+        picture.getGraphics().fillRect(5, 5, 30, 10);
+        final org.openpdf.text.Document document = new org.openpdf.text.Document();
+        try (var out = java.nio.file.Files.newOutputStream(source)) {
+            org.openpdf.text.pdf.PdfWriter.getInstance(document, out);
+            document.open();
+            final org.openpdf.text.Image image = org.openpdf.text.Image.getInstance(picture, null);
+            image.setInterpolation(true);
+            document.add(image);
+            document.close();
+        }
+
+        final Path pdfA = tempDir.resolve("pdfa.pdf");
+        final Path plain = tempDir.resolve("plain.pdf");
+        final @Language("Janitor") String script = """
+            import pdf;
+            pdf.concat(pdfA, [source], "1B");
+            pdf.concat(plain, [source]);
+            """;
+        evaluate(script, env -> env.addModule(PdfModule.REGISTRATION), globals -> {
+            globals.bind("source", source.toString());
+            globals.bind("pdfA", pdfA.toString());
+            globals.bind("plain", plain.toString());
+        });
+
+        new org.mustangproject.ZUGFeRD.ZUGFeRDExporterFromA1().load(java.nio.file.Files.readAllBytes(pdfA));
+        final byte[] plainBytes = java.nio.file.Files.readAllBytes(plain);
+        org.junit.jupiter.api.Assertions.assertThrows(IOException.class, () -> new org.mustangproject.ZUGFeRD.ZUGFeRDExporterFromA1().load(plainBytes));
+        assertEquals(1, interpolatedImages(plain), "the plain copy keeps the flag of the source");
+        assertEquals(0, interpolatedImages(pdfA), "the PDF/A copy must not have it");
+    }
+
+    private static int interpolatedImages(final Path file) throws IOException {
+        final PdfReader reader = new PdfReader(java.nio.file.Files.readAllBytes(file));
+        try {
+            int count = 0;
+            for (int i = 1; i < reader.getXrefSize(); i++) {
+                if (reader.getPdfObject(i) instanceof org.openpdf.text.pdf.PRStream stream
+                        && org.openpdf.text.pdf.PdfName.IMAGE.equals(stream.get(org.openpdf.text.pdf.PdfName.SUBTYPE))
+                        && stream.contains(org.openpdf.text.pdf.PdfName.INTERPOLATE)) {
+                    count++;
+                }
+            }
+            return count;
+        } finally {
+            reader.close();
+        }
+    }
+
     @Test
     void setPdfARejectsUnknownLevels() throws JanitorCompilerException {
         final @Language("Janitor") String script = """

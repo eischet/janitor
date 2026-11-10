@@ -68,11 +68,12 @@ public class PdfModule extends JanitorComposed<PdfModule> implements JanitorModu
         dispatcher.addMethod("Reader", (self, process, args) -> JPDFReader.fromArgs(process, args))
                 .setMetaData(Janitor.MetaData.HELP, "Reader(source): Reads an existing PDF from a file path or from binary data.");
         dispatcher.addVoidMethod("concat", (self, process, args) -> {
-            args.require(2);
+            args.require(2, 3);
             final String targetFileName = args.getRequiredStringValue(0);
             final List<String> sourceFileNames = PdfElements.stringListArg(process, args.get(1));
-            concat(process, targetFileName, sourceFileNames);
-        }).setMetaData(Janitor.MetaData.HELP, "concat(targetFile, sourceFiles): Concatenates the pages of the PDF files in the list sourceFiles into the new file targetFile.");
+            final String pdfALevel = args.size() == 3 ? args.getRequiredStringValue(2) : null;
+            concat(process, targetFileName, sourceFileNames, pdfALevel);
+        }).setMetaData(Janitor.MetaData.HELP, "concat(targetFile, sourceFiles, pdfALevel): Concatenates the pages of the PDF files in the list sourceFiles into the new file targetFile. With pdfALevel (\"1B\", \"2B\" or \"3B\"), the result is PDF/A like with Writer.setPdfA, and the Interpolate flag, which PDF/A forbids, is removed from the images of the sources; the pages must meet the other PDF/A rules already, e.g. embedded fonts.");
 
         // Text building blocks
         dispatcher.addMethod("Chunk", (self, process, args) -> JPDFChunk.fromArgs(process, args))
@@ -223,11 +224,19 @@ public class PdfModule extends JanitorComposed<PdfModule> implements JanitorModu
      * <p>
      * Like pdf.Writer(document, path) / pdf.Reader(path), this reads and writes arbitrary filesystem
      * paths directly, with no sandboxing.
+     * <p>
+     * With a PDF/A level, the copied pages stay as they are, apart from the image interpolation; whatever else breaks
+     * PDF/A in a source (fonts that are not embedded, transparency for PDF/A-1, ...) is not repaired, so a checker like
+     * Mustang's preflight still rejects the result.
      */
-    private static void concat(final JanitorScriptProcess process, final String targetFileName, final List<String> sourceFileNames) throws JanitorRuntimeException {
+    private static void concat(final JanitorScriptProcess process, final String targetFileName, final List<String> sourceFileNames,
+                               final @org.jetbrains.annotations.Nullable String pdfALevel) throws JanitorRuntimeException {
         final Document document = new Document();
         try (FileOutputStream out = new FileOutputStream(targetFileName)) {
             final PdfSmartCopy copy = new PdfSmartCopy(document, out);
+            if (pdfALevel != null) {
+                PdfA.enable(process, "concat", copy, pdfALevel);
+            }
             document.open();
             for (final String sourceFileName : sourceFileNames) {
                 // Read fully into memory rather than PdfReader(filename), which memory-maps the file --
@@ -236,6 +245,9 @@ public class PdfModule extends JanitorComposed<PdfModule> implements JanitorModu
                 // file locked for a while after concat() returns.
                 final PdfReader reader = new PdfReader(java.nio.file.Files.readAllBytes(java.nio.file.Path.of(sourceFileName)));
                 try {
+                    if (pdfALevel != null) {
+                        PdfA.removeImageInterpolation(reader);
+                    }
                     final int pages = reader.getNumberOfPages();
                     for (int page = 1; page <= pages; page++) {
                         copy.addPage(copy.getImportedPage(reader, page));
