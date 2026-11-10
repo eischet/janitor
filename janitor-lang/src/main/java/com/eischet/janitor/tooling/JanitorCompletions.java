@@ -441,9 +441,7 @@ public final class JanitorCompletions {
         private @Nullable ScriptType globalType(final String name) {
             for (final ScriptBindings.Declaration declaration : declared) {
                 if (declaration.name().equals(name)) {
-                    return declaration.dispatcher() != null
-                            ? new ScriptType.Of(declaration.typeName(), declaration.dispatcher())
-                            : new ScriptType.Builtin(declaration.typeName());
+                    return known(declaration.type());
                 }
             }
             final JanitorObject value = builtinScope.getVariable(name);

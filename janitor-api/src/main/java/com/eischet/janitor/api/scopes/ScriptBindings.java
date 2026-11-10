@@ -5,6 +5,7 @@ package com.eischet.janitor.api.scopes;
 
 import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorScriptProcess;
+import com.eischet.janitor.api.metadata.ScriptType;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import org.jetbrains.annotations.NotNull;
@@ -39,13 +40,36 @@ public final class ScriptBindings<C> {
     /**
      * A declared global variable.
      *
-     * @param name       the name in scripts
-     * @param typeName   the name of its type as editors show it, e.g. "string" or "ShopDaoCollection"
-     * @param dispatcher the dispatcher of its values, which tells editors their members; null for the built-in types, which
-     *                   editors know by their type name, and for values without a known dispatcher
-     * @param help       what the variable is, for editors and documentation
+     * @param name the name in scripts
+     * @param type its type, which tells editors its members, e.g. {@link ScriptType#STRING}, {@code ScriptType.of(dispatcher)} or a
+     *             list of such objects; {@link ScriptType#ANY} if unknown
+     * @param help what the variable is, for editors and documentation
      */
-    public record Declaration(@NotNull String name, @NotNull String typeName, @Nullable Dispatcher<?> dispatcher, @NotNull String help) {
+    public record Declaration(@NotNull String name, @NotNull ScriptType type, @NotNull String help) {
+
+        /**
+         * @param name       the name in scripts
+         * @param typeName   the name of its type as editors show it, e.g. "string" or "ShopDaoCollection"
+         * @param dispatcher the dispatcher of its values; null for the built-in types, which editors know by their type name
+         * @param help       what the variable is
+         */
+        public Declaration(final @NotNull String name, final @NotNull String typeName, final @Nullable Dispatcher<?> dispatcher, final @NotNull String help) {
+            this(name, dispatcher != null ? new ScriptType.Of(typeName, dispatcher) : new ScriptType.Builtin(typeName), help);
+        }
+
+        /**
+         * @return the name of the type as editors show it, e.g. {@code string}, {@code ShopDaoCollection} or {@code list<Order>}
+         */
+        public @NotNull String typeName() {
+            return type.describe();
+        }
+
+        /**
+         * @return the dispatcher of the values, or null if the type has none, e.g. a built-in type or a list
+         */
+        public @Nullable Dispatcher<?> dispatcher() {
+            return type instanceof ScriptType.Of of ? of.dispatcher() : null;
+        }
     }
 
     private record Binding<C>(@NotNull Declaration declaration, @NotNull Function<? super C, ? extends @Nullable JanitorObject> value) {
@@ -88,6 +112,21 @@ public final class ScriptBindings<C> {
     public @NotNull ScriptBindings<C> declare(final @NotNull String name, final @NotNull String typeName, final @Nullable Dispatcher<?> dispatcher,
                                               final @NotNull String help, final @NotNull Function<? super C, ? extends @Nullable JanitorObject> value) {
         bindings.put(name, new Binding<>(new Declaration(name, typeName, dispatcher, help), value));
+        return this;
+    }
+
+    /**
+     * Declares a variable of any type, e.g. a list of objects: {@code ScriptType.listOf(ScriptType.of(Order.DISPATCH))}.
+     *
+     * @param name  the name in scripts
+     * @param type  its type
+     * @param help  what the variable is
+     * @param value computes the value from the context; may return null
+     * @return these bindings, for chained calls
+     */
+    public @NotNull ScriptBindings<C> declare(final @NotNull String name, final @NotNull ScriptType type, final @NotNull String help,
+                                              final @NotNull Function<? super C, ? extends @Nullable JanitorObject> value) {
+        bindings.put(name, new Binding<>(new Declaration(name, type, help), value));
         return this;
     }
 

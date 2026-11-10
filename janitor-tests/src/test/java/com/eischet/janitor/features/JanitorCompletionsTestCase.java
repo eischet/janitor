@@ -339,6 +339,19 @@ public class JanitorCompletionsTestCase extends JanitorTest {
     }
 
     @Test
+    void elementsOfADeclaredList() {
+        final List<ScriptBindings.Declaration> declared = ScriptBindings.<Object>create()
+                .declare("tickets", ScriptType.listOf(ScriptType.of(Ticket.DISPATCH)), "The tickets to check.", context -> null)
+                .declarations();
+        assertEquals("list<Ticket>", declared.getFirst().typeName());
+        final String source = "for (t in tickets) {\n    t.";
+        final List<Completion> completions = suggestions.complete(source, 2, 6, declared);
+        assertEquals("The summary of the ticket.", find(completions, "summary").orElseThrow().description());
+        assertTrue(find(completions, "toUpperCase").isEmpty(), "no members of other types");
+        assertTrue(find(suggestions.complete("x = tickets.", 1, 12, declared), "add").isPresent(), "the list itself is a list");
+    }
+
+    @Test
     void aChainThatDoesNotStartAtAGlobalHasNoKnownType() {
         final List<Completion> completions = suggestions.complete("x = foo().registry.", 1, 19, BINDINGS.declarations());
         assertTrue(find(completions, "Ticket").isEmpty());
