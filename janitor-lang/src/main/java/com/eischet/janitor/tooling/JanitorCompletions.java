@@ -214,8 +214,9 @@ public final class JanitorCompletions {
      * Follows the tokens before the cursor back to what an expression is. It knows globals, chains of properties and
      * methods with types ({@link Janitor.MetaData#DISPATCHER}, {@link Janitor.MetaData#TYPE_HINT},
      * {@link Janitor.MetaData#RETURNS}), the parameters of lambdas passed to such methods ({@link Janitor.MetaData#PARAMETERS}),
-     * variables assigned once and the variables of {@code for (x in list)}. Everything else is unknown: then there is no
-     * type, never an error.
+     * variables assigned once and the variables of {@code for (x in list)}. Of a list whose elements have a known type, it
+     * knows {@code list[i]}, {@code get}, {@code filter} and the parameter of the functions of {@code filter} and {@code map}.
+     * Everything else is unknown: then there is no type, never an error.
      */
     private final class Inference {
 
@@ -255,7 +256,10 @@ public final class JanitorCompletions {
                         return null; // a function call or brackets
                     }
                     final Expression receiver = expressionEndingAt(open - 3, depth + 1);
-                    final ScriptType type = receiver == null ? null : returnType(receiver.type(), tokens.get(open - 1).getText());
+                    final String method = tokens.get(open - 1).getText();
+                    final ScriptType type = receiver == null ? null
+                            : receiver.type() instanceof ScriptType.ListOf list ? listMethodType(list, method, arguments(open, end))
+                            : returnType(receiver.type(), method);
                     return type == null ? null : new Expression(type, receiver.start());
                 }
                 case JanitorLexer.RBRACK -> {
@@ -423,6 +427,11 @@ public final class JanitorCompletions {
                 return null;
             }
             final Expression receiver = expressionEndingAt(open - 3, depth + 1);
+            if (receiver != null && receiver.type() instanceof ScriptType.ListOf list) {
+                // filter and map call their function with each element
+                final boolean eachElement = LIST_FUNCTIONS.contains(tokens.get(open - 1).getText()) && argument == 0 && index == 0;
+                return eachElement ? known(list.element()) : null;
+            }
             if (receiver == null || !(receiver.type() instanceof ScriptType.Of of)) {
                 return null;
             }
@@ -447,6 +456,26 @@ public final class JanitorCompletions {
             final JanitorObject value = builtinScope.getVariable(name);
             final Dispatcher<?> dispatcher = value == null ? null : dispatcherOf(value);
             return dispatcher == null ? null : new ScriptType.Of(value.janitorClassName(), dispatcher);
+        }
+
+        // the number of arguments of a call whose brackets are at the indexes open and close
+        private int arguments(final int open, final int close) {
+            if (close == open + 1) {
+                return 0;
+            }
+            int count = 1;
+            int level = 0;
+            for (int i = open + 1; i < close; i++) {
+                final int type = tokens.get(i).getType();
+                if (isOpener(type)) {
+                    level++;
+                } else if (isCloser(type)) {
+                    level--;
+                } else if (level == 0 && type == JanitorLexer.COMMA) {
+                    count++;
+                }
+            }
+            return count;
         }
 
         // the index of the bracket that opens the one that closes at index close, or -1
@@ -491,7 +520,8 @@ public final class JanitorCompletions {
                 } else if (level == 0 && token.getType() == JanitorLexer.SEMICOLON) {
                     return i > from ? i - 1 : -1;
                 }
-                final Token next = i + 1 < limit ? tokens.get(i + 1) : null;
+                // the token after the limit counts too: it may be the first one of the next line, e.g. "x = y\nx."
+                final Token next = i + 1 < tokens.size() ? tokens.get(i + 1) : null;
                 if (level == 0 && next != null && next.getLine() > token.getLine() && endsAnExpression(token) && !isDot(next)) {
                     return i; // a line break ends the statement
                 }
@@ -526,6 +556,22 @@ public final class JanitorCompletions {
             case DATETIME -> ScriptType.DATETIME;
             case LIST -> ScriptType.LIST;
             case NUMBER, METHOD -> null;
+        };
+    }
+
+    // the methods of lists that call their function with each element
+    private static final Set<String> LIST_FUNCTIONS = Set.of("filter", "map");
+
+    // what a method of a list returns, knowing the type of its elements; null if unknown
+    private static @Nullable ScriptType listMethodType(final ScriptType.ListOf list, final String name, final int arguments) {
+        return switch (name) {
+            case "get" -> arguments <= 1 ? known(list.element()) : list; // get(from, to) returns a slice
+            case "filter", "toList", "randomSublist" -> list;
+            case "map" -> ScriptType.LIST;
+            case "size", "count" -> ScriptType.INT;
+            case "isEmpty", "contains" -> ScriptType.BOOL;
+            case "join" -> ScriptType.STRING;
+            default -> null;
         };
     }
 

@@ -352,6 +352,23 @@ public class JanitorCompletionsTestCase extends JanitorTest {
     }
 
     @Test
+    void elementsOfAListThroughItsMethodsAndIndex() {
+        final List<ScriptBindings.Declaration> declared = ScriptBindings.extending(BINDINGS)
+                .declare("tickets", ScriptType.listOf(ScriptType.of(Ticket.DISPATCH)), "The tickets to check.", context -> null)
+                .declarations();
+        for (final String source : List.of("tickets[0].", "x = tickets\nx[0].", "tickets.get(0).", "tickets.filter(t -> true)[0].",
+                "tickets.filter(t -> t.", "tickets.map(t -> t.", "tickets.toList().get(1).", "tickets.randomSublist(2)[0].",
+                "x = registry.Tickets.select(t -> true)\nx[0].", "x = registry.Tickets.select(t -> true)\nx.get(0).")) {
+            final String[] lines = source.split("\n", -1);
+            final List<Completion> completions = suggestions.complete(source, lines.length, lines[lines.length - 1].length(), declared);
+            assertTrue(find(completions, "summary").isPresent(), source);
+            assertTrue(find(completions, "toUpperCase").isEmpty(), source + ": no members of other types");
+        }
+        final List<Completion> slice = suggestions.complete("tickets.get(0, 2).", 1, 18, declared);
+        assertTrue(find(slice, "size").isPresent(), "a slice is a list");
+    }
+
+    @Test
     void aChainThatDoesNotStartAtAGlobalHasNoKnownType() {
         final List<Completion> completions = suggestions.complete("x = foo().registry.", 1, 19, BINDINGS.declarations());
         assertTrue(find(completions, "Ticket").isEmpty());
