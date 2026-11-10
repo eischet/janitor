@@ -4,6 +4,7 @@
 package com.eischet.janitor.template;
 
 import com.eischet.janitor.api.Janitor;
+import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.JanitorRuntime;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.RunnableScript;
@@ -133,6 +134,26 @@ public class TemplateParser {
     }
 
     /**
+     * The template compiled from a string. A string literal is the same object on every evaluation, so it keeps its compiled
+     * template and a template in a loop or a function is compiled once, not on every call.
+     */
+    private static RunnableScript compiled(final JanitorRuntime runtime, final JanitorScriptProcess process, final JString templateString) throws JanitorRuntimeException, JanitorCompilerException {
+        final JanitorEnvironment environment = runtime.getEnvironment();
+        final RunnableScript known = templateString.getCompiledTemplate(environment);
+        if (known != null) {
+            return known;
+        }
+        final TemplateParser parser = new TemplateParser(templateString.janitorToString());
+        if (!parser.isValid()) {
+            throw new JanitorArgumentException(process, "invalid template");
+        }
+        @Language("Janitor") final String scriptSource = parser.toScript(TemplateParser::plainRenderer);
+        final RunnableScript script = runtime.compile("TEMPLATE", scriptSource);
+        templateString.setCompiledTemplate(new JString.CompiledTemplate(environment, script));
+        return script;
+    }
+
+    /**
      * Expand a template string with arguments.
      * @param runtime the runtime
      * @param process the process
@@ -142,15 +163,8 @@ public class TemplateParser {
      * @throws JanitorRuntimeException on errors
      */
     public static JString expand(final JanitorRuntime runtime, JanitorScriptProcess process, final JString templateString, final JCallArgs arguments) throws JanitorRuntimeException {
-        final TemplateParser parser = new TemplateParser(templateString.janitorToString());
-
-        if (!parser.isValid()) {
-            throw new JanitorArgumentException(process, "invalid template");
-        }
-
         try {
-            @Language("Janitor") final String scriptSource = parser.toScript(TemplateParser::plainRenderer);
-            RunnableScript script = runtime.compile("TEMPLATE", scriptSource);
+            final RunnableScript script = compiled(runtime, process, templateString);
             arguments.require(0, 1);
             final JanitorObject values = arguments.size() > 0 ? arguments.get(0) : null;
 
