@@ -50,7 +50,8 @@ The standalone interpreter resolves the string form to script files; `.janitor` 
   working directory). Use this for modules that belong to a script.
 - Absolute paths are used as they are.
 - Any other name, e.g. `"name"` or `"dir/name"`, is looked up in the directories given with `-I <dir>`, then in those of
-  the environment variable `JANITOR_PATH` (separated like `PATH`), or in `~/.janitor/modules` if it is not set. The
+  the environment variable `JANITOR_PATH` (separated like `PATH`), and last in the user's own modules in
+  `~/.janitor/modules`. The first match wins, so a shared module wins over a user's module of the same name. The
   directory of the importing script is not searched; local modules are imported with `./`.
 - A file is loaded once and the module is shared by all scripts that import it; when the file changes, the next import
   loads it again. A module that imports itself, directly or through others, is an error.

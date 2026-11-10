@@ -130,7 +130,8 @@ class FileModuleResolverTestCase {
         assertEquals(List.of(extra, home.resolve(".janitor").resolve("modules")),
                 FileModuleResolver.defaultSearchPath(List.of(extra), null, home));
         final String variable = dir.resolve("x") + File.pathSeparator + dir.resolve("y");
-        assertEquals(List.of(extra, dir.resolve("x"), dir.resolve("y")),
-                FileModuleResolver.defaultSearchPath(List.of(extra), variable, home));
+        assertEquals(List.of(extra, dir.resolve("x"), dir.resolve("y"), home.resolve(".janitor").resolve("modules")),
+                FileModuleResolver.defaultSearchPath(List.of(extra), variable, home),
+                "the user's modules are searched last, also when the variable is set");
     }
 }

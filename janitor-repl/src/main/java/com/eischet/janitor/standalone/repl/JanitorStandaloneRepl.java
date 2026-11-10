@@ -123,9 +123,9 @@ public class JanitorStandaloneRepl {
                                 retains the script's scope, instead of exiting
                   -q            suppress the welcome banner, even for a plain interactive shell
                   -I <dir>      search <dir> for modules imported by name, e.g. import "foo" as foo;
-                                (repeatable; searched before JANITOR_PATH, or ~/.janitor/modules
-                                if JANITOR_PATH is not set). import "./foo" as foo; loads foo.janitor
-                                next to the importing script.
+                                (repeatable; searched before JANITOR_PATH and ~/.janitor/modules,
+                                in that order). import "./foo" as foo; loads foo.janitor next to
+                                the importing script.
                   -h, --help    show this help and exit
                   -V, --version print the interpreter revision and exit
 

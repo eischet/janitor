@@ -40,7 +40,8 @@ import java.util.stream.Collectors;
  *     directory for code typed into the interactive shell.</li>
  *     <li>Absolute paths are used as they are.</li>
  *     <li>Any other name, e.g. {@code "foo"} or {@code "util/strings"}, is looked up in the directories of the search path, in
- *     order. The directory of the importing script is not part of it: local modules are imported with {@code "./"}.</li>
+ *     order (see {@link #defaultSearchPath}). The directory of the importing script is not part of it: local modules are
+ *     imported with {@code "./"}.</li>
  * </ul>
  * The file name extension {@code .janitor} is added unless the name already has it. Each file is loaded once and the module
  * is shared by all scripts that import it; when the file changes, the next import loads it again. A module that imports
@@ -70,7 +71,8 @@ public class FileModuleResolver implements ModuleResolver {
 
     /**
      * The search path: first the extra directories (e.g. from the command line), then the directories from
-     * {@value #SEARCH_PATH_VARIABLE}, or {@code ~/.janitor/modules} if that variable is not set.
+     * {@value #SEARCH_PATH_VARIABLE}, and last the user's own modules in {@code ~/.janitor/modules}, so that shared
+     * modules win over the user's modules of the same name.
      *
      * @param extraDirectories directories to search first
      * @param variable the value of {@value #SEARCH_PATH_VARIABLE}, or null
@@ -79,15 +81,14 @@ public class FileModuleResolver implements ModuleResolver {
      */
     public static @NotNull List<Path> defaultSearchPath(final @NotNull List<Path> extraDirectories, final @Nullable String variable, final @NotNull Path userHome) {
         final List<Path> result = new ArrayList<>(extraDirectories);
-        if (variable == null || variable.isBlank()) {
-            result.add(userHome.resolve(".janitor").resolve("modules"));
-        } else {
+        if (variable != null) {
             for (final String entry : variable.split(File.pathSeparator)) {
                 if (!entry.isBlank()) {
                     result.add(Path.of(entry.trim()));
                 }
             }
         }
+        result.add(userHome.resolve(".janitor").resolve("modules"));
         return result;
     }
 
