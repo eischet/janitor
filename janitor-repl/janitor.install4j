@@ -132,13 +132,34 @@ return console.askOkCancel(message, true);
                   <propertyName>standardValidation</propertyName>
                 </externalParametrizationPropertyNames>
               </formComponent>
-              <formComponent id="100" beanClass="com.install4j.runtime.beans.formcomponents.CheckboxComponent" insetTop="20">
+            </formComponents>
+          </screen>
+          <screen id="103" beanClass="com.install4j.runtime.beans.screens.FormScreen" rollbackBarrierExitCode="0">
+            <serializedBean>
+              <property name="title" type="string">Additional Options</property>
+              <property name="subtitle" type="string">Integration with other programs</property>
+            </serializedBean>
+            <condition>// Windows only. Shown on every regular installation; on an update only while there is no saved answer,
+// i.e. on the first update after this option was introduced. Later updates apply the saved answer.
+// Without a saved answer, the checkbox is preselected if Janitor.udl.xml is already installed (e.g. by install.bat).
+if (!com.install4j.api.Util.isWindows()) {
+    return false;
+}
+if (context.getVariable("installNotepadPlusPlus") == null) {
+    String appData = System.getenv("APPDATA");
+    boolean present = appData != null
+            &amp;&amp; new java.io.File(appData, "Notepad++\\userDefineLangs\\Janitor.udl.xml").isFile();
+    context.setVariable("installNotepadPlusPlus", Boolean.valueOf(present));
+    return true;
+}
+return !context.getBooleanVariable("sys.streamlinedInstallation");
+</condition>
+            <formComponents>
+              <formComponent id="100" beanClass="com.install4j.runtime.beans.formcomponents.CheckboxComponent">
                 <serializedBean>
                   <property name="checkboxText" type="string">Install syntax highlighting for Notepad++ (for the current user)</property>
-                  <property name="initiallySelected" type="boolean" value="false" />
                   <property name="variableName" type="string">installNotepadPlusPlus</property>
                 </serializedBean>
-                <visibilityScript>com.install4j.api.Util.isWindows()</visibilityScript>
               </formComponent>
             </formComponents>
           </screen>
