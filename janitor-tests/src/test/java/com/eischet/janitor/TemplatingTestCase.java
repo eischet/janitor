@@ -64,7 +64,8 @@ public class TemplatingTestCase extends JanitorTest {
 
     /**
      * A template literal keeps its compiled template, so a template in a loop is compiled once, and still expands with the
-     * values of each call.
+     * values of each call. It keeps the code for the environment, not a runtime: the template runs with the runtime of the
+     * script that expands it.
      */
     @Test
     void templateLiteralsAreCompiledOnce() throws JanitorRuntimeException, JanitorCompilerException {
@@ -84,5 +85,22 @@ public class TemplatingTestCase extends JanitorTest {
         final JString template = assertInstanceOf(JString.class, literal);
         assertNotNull(template.getCompiledTemplate(runtime.getEnvironment()));
         assertNull(template.getCompiledTemplate(OutputCatchingTestRuntime.fresh().getEnvironment()), "kept per environment");
+    }
+
+    /**
+     * A template that was compiled under one runtime runs with the runtime of the script that expands it later.
+     */
+    @Test
+    void templatesRunWithTheRuntimeOfTheirCaller() throws JanitorRuntimeException, JanitorCompilerException {
+        final OutputCatchingTestRuntime first = OutputCatchingTestRuntime.fresh();
+        final JanitorObject literal = first.compile("first", """
+                t = "<% print('in template'); %>";
+                t.expand();
+                return t;
+                """).run();
+        final OutputCatchingTestRuntime second = first.withSameEnvironment();
+        second.compile("second", "t.expand();").run(g -> g.bind("t", literal));
+        assertEquals("in template\n", first.getAllOutput());
+        assertEquals("in template\n", second.getAllOutput(), "the second expansion prints through the second runtime");
     }
 }

@@ -42,6 +42,13 @@ public class OutputCatchingTestRuntime extends BaseRuntime {
         return new OutputCatchingTestRuntime(env);
     }
 
+    /**
+     * @return a new runtime with the same environment as this one, but its own output
+     */
+    public OutputCatchingTestRuntime withSameEnvironment() {
+        return new OutputCatchingTestRuntime(getEnvironment());
+    }
+
     final StringBuffer output = new StringBuffer();
 
     private OutputCatchingTestRuntime(final JanitorEnvironment ENV) {
