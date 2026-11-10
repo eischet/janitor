@@ -19,7 +19,8 @@
             <groupId>org.mustangproject</groupId>
             <artifactId>library</artifactId>
             <version>2.26.0</version>
-            <!-- only needed for visualization (FOP), UBL conversion (helger) and XSLT (Saxon), none of which this module exposes -->
+            <!-- only needed for visualization (FOP) and UBL conversion (helger), which this module does not expose;
+                 Saxon must stay: XMLTools uses it whenever an invoice XML is generated -->
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.xmlgraphics</groupId>
@@ -28,10 +29,6 @@
                 <exclusion>
                     <groupId>com.helger</groupId>
                     <artifactId>en16931-cii2ubl</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>net.sf.saxon</groupId>
-                    <artifactId>Saxon-HE</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
