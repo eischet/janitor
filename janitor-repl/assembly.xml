@@ -29,6 +29,16 @@
             </includes>
             <useDefaultExcludes>true</useDefaultExcludes>
         </fileSet>
+        <fileSet>
+            <!-- Notepad++ syntax highlighting; the Windows installer copies it to the user's Notepad++ on request -->
+            <directory>${project.basedir}/../tooling/notepadplusplus</directory>
+            <outputDirectory>notepadplusplus</outputDirectory>
+            <includes>
+                <include>Janitor.udl.xml</include>
+                <include>README.md</include>
+                <include>install.bat</include>
+            </includes>
+        </fileSet>
 
     </fileSets>
     <files>

@@ -11,6 +11,7 @@
     <entries>
       <dirEntry mountPoint="24" file="./target/janitor-janitor/lib" overwriteMode="always" uninstallMode="always" overrideOverwriteMode="true" overrideUninstallMode="true" entryMode="subdir" subDirectory="lib" />
       <fileEntry mountPoint="24" file="./target/janitor.jar" overwriteMode="always" uninstallMode="always" overrideOverwriteMode="true" overrideUninstallMode="true" />
+      <dirEntry mountPoint="24" file="./target/janitor-janitor/notepadplusplus" overwriteMode="always" uninstallMode="always" overrideOverwriteMode="true" overrideUninstallMode="true" entryMode="subdir" subDirectory="notepadplusplus" />
     </entries>
   </files>
   <launchers>
@@ -131,6 +132,14 @@ return console.askOkCancel(message, true);
                   <propertyName>standardValidation</propertyName>
                 </externalParametrizationPropertyNames>
               </formComponent>
+              <formComponent id="100" beanClass="com.install4j.runtime.beans.formcomponents.CheckboxComponent" insetTop="20">
+                <serializedBean>
+                  <property name="checkboxText" type="string">Install syntax highlighting for Notepad++ (for the current user)</property>
+                  <property name="initiallySelected" type="boolean" value="false" />
+                  <property name="variableName" type="string">installNotepadPlusPlus</property>
+                </serializedBean>
+                <visibilityScript>com.install4j.api.Util.isWindows()</visibilityScript>
+              </formComponent>
             </formComponents>
           </screen>
           <screen id="12" beanClass="com.install4j.runtime.beans.screens.ComponentsScreen" rollbackBarrierExitCode="0">
@@ -181,6 +190,32 @@ return console.askOkCancel(message, true);
                   <property name="launcherId" type="string">25</property>
                   <property name="removeOnUninstall" type="boolean" value="true" />
                 </serializedBean>
+              </action>
+              <action id="101" beanClass="com.install4j.runtime.beans.actions.control.RunScriptAction" actionElevationType="none" rollbackBarrierExitCode="0">
+                <serializedBean>
+                  <property name="script">
+                    <object class="com.install4j.api.beans.ScriptProperty">
+                      <property name="value" type="string">// Runs unelevated, so APPDATA is the profile of the user who started the installer.
+String appData = System.getenv("APPDATA");
+if (appData == null) {
+    return true;
+}
+java.io.File source = new java.io.File(context.getInstallationDirectory(), "notepadplusplus/Janitor.udl.xml");
+java.io.File targetDir = new java.io.File(new java.io.File(appData, "Notepad++"), "userDefineLangs");
+try {
+    targetDir.mkdirs();
+    java.nio.file.Files.copy(source.toPath(), new java.io.File(targetDir, "Janitor.udl.xml").toPath(),
+            java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+} catch (Exception e) {
+    // a missing highlighter is no reason to fail the installation
+    e.printStackTrace();
+}
+return true;
+</property>
+                    </object>
+                  </property>
+                </serializedBean>
+                <condition>com.install4j.api.Util.isWindows() &amp;&amp; context.getBooleanVariable("installNotepadPlusPlus")</condition>
               </action>
             </actions>
             <formComponents>
@@ -239,6 +274,33 @@ return console.askYesNo(message, true);
           </screen>
           <screen id="27" beanClass="com.install4j.runtime.beans.screens.UninstallationScreen" rollbackBarrierExitCode="0">
             <actions>
+              <action id="102" beanClass="com.install4j.runtime.beans.actions.control.RunScriptAction" actionElevationType="none" rollbackBarrierExitCode="0">
+                <serializedBean>
+                  <property name="script">
+                    <object class="com.install4j.api.beans.ScriptProperty">
+                      <property name="value" type="string">// Removes the Notepad++ highlighting only if it is still the copy this installation shipped,
+// so a user's own changes (e.g. colours for a dark theme) survive. Runs before the files are removed.
+String appData = System.getenv("APPDATA");
+if (appData == null) {
+    return true;
+}
+java.io.File source = new java.io.File(context.getInstallationDirectory(), "notepadplusplus/Janitor.udl.xml");
+java.io.File installed = new java.io.File(new java.io.File(new java.io.File(appData, "Notepad++"), "userDefineLangs"), "Janitor.udl.xml");
+try {
+    if (source.isFile() &amp;&amp; installed.isFile()
+            &amp;&amp; java.util.Arrays.equals(java.nio.file.Files.readAllBytes(source.toPath()), java.nio.file.Files.readAllBytes(installed.toPath()))) {
+        installed.delete();
+    }
+} catch (Exception e) {
+    e.printStackTrace();
+}
+return true;
+</property>
+                    </object>
+                  </property>
+                </serializedBean>
+                <condition>com.install4j.api.Util.isWindows()</condition>
+              </action>
               <action id="29" beanClass="com.install4j.runtime.beans.actions.UninstallFilesAction" actionElevationType="elevated" rollbackBarrierExitCode="0" />
             </actions>
             <formComponents>
