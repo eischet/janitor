@@ -102,7 +102,7 @@ class ScriptWriteCheckTestCase {
     }
 
     private void run(final String script, final Consumer<JanitorScriptProcess> setup) throws Exception {
-        OutputCatchingTestRuntime.fresh().compile("test", script).run(process -> {
+        OutputCatchingTestRuntime.fresh().compileAndRun("test", script, process -> {
             setup.accept(process);
             process.bind("teamDao", teams.getTeamDao());
             process.bind("membershipDao", teams.getMembershipDao());

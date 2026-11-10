@@ -60,7 +60,7 @@ public class ClosureVariableAssignmentTestCase extends JanitorTest {
                 print(counter());
                 print(counter());
                 """);
-        script.run();
+        script.run(runtime);
         assertEquals("1\n2\n3\n", runtime.getAllOutput());
     }
 
@@ -78,7 +78,7 @@ public class ClosureVariableAssignmentTestCase extends JanitorTest {
                 print(counter());
                 print(counter());
                 """);
-        script.run();
+        script.run(runtime);
         assertEquals("1\n2\n3\n", runtime.getAllOutput());
     }
 
@@ -99,7 +99,7 @@ public class ClosureVariableAssignmentTestCase extends JanitorTest {
                 print(counter());
                 print(counter());
                 """);
-        script.run();
+        script.run(runtime);
         assertEquals("1\n2\n3\n", runtime.getAllOutput());
     }
 
@@ -121,7 +121,7 @@ public class ClosureVariableAssignmentTestCase extends JanitorTest {
                 }
                 print(f());
                 """);
-        script.run();
+        script.run(runtime);
         assertEquals("1\n", runtime.getAllOutput());
     }
 
@@ -145,7 +145,7 @@ public class ClosureVariableAssignmentTestCase extends JanitorTest {
                 print(c2());
                 print(c1());
                 """);
-        script.run();
+        script.run(runtime);
         assertEquals("1\n2\n1\n3\n", runtime.getAllOutput());
     }
 

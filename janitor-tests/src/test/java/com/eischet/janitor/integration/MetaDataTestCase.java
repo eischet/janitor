@@ -20,14 +20,14 @@ public class MetaDataTestCase extends JanitorTest {
     @Test
     void checkStringClassDocstring() throws JanitorCompilerException, JanitorRuntimeException {
         final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
-        rt.compile("test", "print(help(''));").run();
+        rt.compile("test", "print(help(''));").run(rt);
         assertEquals(JStringClass.STRING_CLASS + "\n", rt.getAllOutput());
     }
 
     @Test
     void checkStringLengthDocstring() throws JanitorCompilerException, JanitorRuntimeException {
         final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
-        rt.compile("test", "print(help(''.length));").run();
+        rt.compile("test", "print(help(''.length));").run(rt);
         assertEquals(JStringClass.STRING_LENGTH + "\n", rt.getAllOutput());
     }
 
@@ -55,7 +55,7 @@ public class MetaDataTestCase extends JanitorTest {
     void checkDir() throws JanitorCompilerException, JanitorRuntimeException {
         final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         rt.compile("test", "print(dir(simpy));")
-                .run(g -> g.bind("simpy", new Simpleton()));
+                .run(rt, g -> g.bind("simpy", new Simpleton()));
         assertEquals("[apply, stoopid]\n", rt.getAllOutput()); // apply is now automatically added by the GenericDispatchTable
     }
 
@@ -68,7 +68,7 @@ public class MetaDataTestCase extends JanitorTest {
     void checkPropertyAttributes() throws JanitorCompilerException, JanitorRuntimeException {
         final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         rt.compile("test", "print(help(simpy.stoopid));")
-                .run(g -> g.bind("simpy", new Simpleton()));
+                .run(rt, g -> g.bind("simpy", new Simpleton()));
         assertEquals("[stoopid]\n", rt.getAllOutput());
     }
      */

@@ -66,7 +66,7 @@ public class ReferenceExamplesTest extends JanitorTest {
         final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh(ReferenceGenerator::registerAllModules);
         final String where = block.file() + ":" + block.line();
         if (block.hasFlag("error")) {
-            final Exception error = assertThrows(Exception.class, () -> runtime.compile(where, block.content()).run(), where + ": expected an error");
+            final Exception error = assertThrows(Exception.class, () -> runtime.compile(where, block.content()).run(runtime), where + ": expected an error");
             assertTrue(error instanceof JanitorCompilerException || error instanceof JanitorRuntimeException,
                     where + ": expected a compiler or runtime error, got " + error);
             final String expected = companion(companions, "error");
@@ -80,7 +80,7 @@ public class ReferenceExamplesTest extends JanitorTest {
         if (block.hasFlag("compile-only")) {
             return;
         }
-        final JanitorObject result = script.run();
+        final JanitorObject result = script.run(runtime);
         final String expectedOutput = companion(companions, "output");
         if (expectedOutput != null) {
             assertEquals(expectedOutput, runtime.getAllOutput(), where + ": output");

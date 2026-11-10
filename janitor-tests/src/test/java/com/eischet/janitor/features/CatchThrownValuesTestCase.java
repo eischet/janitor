@@ -20,7 +20,7 @@ public class CatchThrownValuesTestCase extends JanitorTest {
 
     private static String output(final String source) throws JanitorCompilerException, JanitorRuntimeException {
         final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
-        runtime.compile("test", source).run();
+        runtime.compile("test", source).run(runtime);
         return runtime.getAllOutput();
     }
 
@@ -97,7 +97,7 @@ public class CatchThrownValuesTestCase extends JanitorTest {
     @Test
     void javaMessageIsUnchanged() {
         final JanitorScriptThrownException thrown = assertThrows(JanitorScriptThrownException.class,
-                () -> OutputCatchingTestRuntime.fresh().compile("test", "throw 'foo';").run());
+                () -> OutputCatchingTestRuntime.fresh().compileAndRun("test", "throw 'foo';"));
         assertTrue(thrown.getMessage().startsWith("Traceback (most recent call last):"));
         assertTrue(thrown.getMessage().endsWith("ScriptThrownException: foo"));
         assertEquals("foo", thrown.getText());

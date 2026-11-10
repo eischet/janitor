@@ -191,7 +191,7 @@ public final class ReferenceGenerator {
     }
 
     private JanitorObject evaluate(final String source) throws JanitorCompilerException, JanitorRuntimeException {
-        return runtime.compile("reference-generator", source).run();
+        return runtime.compile("reference-generator", source).run(runtime);
     }
 
     private static @Nullable Dispatcher<?> dispatcherOf(final JanitorObject object) {

@@ -126,7 +126,7 @@ public final class JanitorCompletions {
         typeMembers.put(COMMON, DispatcherMembers.of(base, Set.of()));
         SAMPLES.forEach((type, sample) -> {
             try {
-                typeMembers.put(type, DispatcherMembers.of(dispatcherOf(runtime.compile("completions", sample).run()), commonNames));
+                typeMembers.put(type, DispatcherMembers.of(dispatcherOf(runtime.compile("completions", sample).run(runtime)), commonNames));
             } catch (Exception e) {
                 log.warn("cannot list the members of {}", type, e);
             }

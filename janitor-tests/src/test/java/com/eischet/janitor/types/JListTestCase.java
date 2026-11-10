@@ -76,7 +76,7 @@ public class JListTestCase extends JanitorTest {
                 print(slice);
                 """;
         final RunnableScript runnableScript = rt.compile("sliceMutation", script);
-        runnableScript.run();
+        runnableScript.run(rt);
         assertEquals("[1, 2, 3, 4, 5]\n[2, 3, 4, 999]\n", rt.getAllOutput());
     }
 

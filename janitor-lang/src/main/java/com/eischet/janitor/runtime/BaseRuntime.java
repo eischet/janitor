@@ -52,7 +52,7 @@ public abstract class BaseRuntime implements JanitorRuntime {
     @Override
     public RunnableScript compile(String moduleName, @Language("Janitor") String source) throws JanitorCompilerException {
         try {
-            return new JanitorScript(this, moduleName, source == null ? "" : source);
+            return new JanitorScript(getEnvironment(), moduleName, source == null ? "" : source);
         } catch (RuntimeException e) {
             throw new JanitorCompilerException(e.getMessage() == null ? "Compiler Error" : "Compiler Error: " + e.getMessage(), e);
         }
@@ -61,7 +61,7 @@ public abstract class BaseRuntime implements JanitorRuntime {
     @Override
     public RunnableScript checkCompile(String moduleName, @Language("Janitor") String source) throws JanitorCompilerException {
         try {
-            return new JanitorScript(this, moduleName, source == null ? "" : source, true, false);
+            return new JanitorScript(getEnvironment(), moduleName, source == null ? "" : source, true, false);
         } catch (RuntimeException e) {
             throw new JanitorCompilerException(e.getMessage() == null ? "Compiler Error" : "Compiler Error: " + e.getMessage(), e);
         }

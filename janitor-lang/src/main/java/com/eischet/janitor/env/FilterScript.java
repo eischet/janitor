@@ -36,7 +36,7 @@ public class FilterScript implements FilterPredicate {
         this.name = name;
         runtime = new SLFLoggingRuntime(env, log);
         this.setup = setup;
-        script = new JanitorScript(runtime, "filter", source);
+        script = new JanitorScript(runtime.getEnvironment(), "filter", source);
     }
 
 
@@ -45,7 +45,7 @@ public class FilterScript implements FilterPredicate {
         try {
             // the fields of the object are names in the script, below its own variables
             final JanitorEnvironment env = runtime.getEnvironment();
-            return JBool.TRUE == script.runInScope(process -> {
+            return JBool.TRUE == script.runInScope(runtime, process -> {
                 if (setup != null) {
                     setup.accept(process);
                 }

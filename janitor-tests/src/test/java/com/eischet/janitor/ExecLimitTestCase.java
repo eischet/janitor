@@ -38,7 +38,7 @@ public class ExecLimitTestCase extends JanitorTest{
     @Test void scriptCannotCatchTheLimit() throws Exception {
         final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
         final RunnableScript script = runtime.compile("test", "try { while (true) { } } catch (e) { print('caught'); }");
-        assertThrows(JanitorInstructionLimitExceededException.class, () -> script.run(proc -> proc.setMaxInstructionCount(1000)));
+        assertThrows(JanitorInstructionLimitExceededException.class, () -> script.run(runtime, proc -> proc.setMaxInstructionCount(1000)));
         assertEquals("", runtime.getAllOutput());
     }
 

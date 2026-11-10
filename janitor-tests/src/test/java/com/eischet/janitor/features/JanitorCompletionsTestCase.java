@@ -170,13 +170,14 @@ public class JanitorCompletionsTestCase extends JanitorTest {
 
     @Test
     void membersOfAModuleImportedByAString() throws Exception {
-        final VariableScope greetings = OutputCatchingTestRuntime.fresh().compile("greetings", """
+        final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
+        final VariableScope greetings = runtime.compile("greetings", """
                 title = "Hello";
                 _secret = 42;
                 function greet(name, polite) {
                     return title + " " + name;
                 }
-                """).runAndKeepGlobals(g -> { }).getScope();
+                """).runAndKeepGlobals(runtime, g -> { }).getScope();
         final ModuleResolver resolver = new ModuleResolver() {
             @Override
             public JanitorModule resolveModuleByStringName(final JanitorScriptProcess process, final String name) {
@@ -348,9 +349,9 @@ public class JanitorCompletionsTestCase extends JanitorTest {
     void bindingsBindEveryDeclaredNameAndNullForMissingValues() throws Exception {
         final ScriptBindings<String> bindings = ScriptBindings.extending(BINDINGS)
                 .declare("user", "string", "The user's name, upper case.", context -> context == null ? null : Janitor.string(context.toUpperCase()));
-        assertEquals("ADA", OutputCatchingTestRuntime.fresh().compile("test", "return user;").run(bindings.binder("ada")).janitorToString());
-        assertEquals(Janitor.NULL, OutputCatchingTestRuntime.fresh().compile("test", "return user;").run(bindings.binder(null)));
-        assertEquals("registry", OutputCatchingTestRuntime.fresh().compile("test", "return registry.class;").run(bindings.binder(null)).janitorToString().toLowerCase());
+        assertEquals("ADA", OutputCatchingTestRuntime.fresh().compileAndRun("test", "return user;", bindings.binder("ada")).janitorToString());
+        assertEquals(Janitor.NULL, OutputCatchingTestRuntime.fresh().compileAndRun("test", "return user;", bindings.binder(null)));
+        assertEquals("registry", OutputCatchingTestRuntime.fresh().compileAndRun("test", "return registry.class;", bindings.binder(null)).janitorToString().toLowerCase());
         assertEquals(List.of("registry", "user"), bindings.declarations().stream().map(ScriptBindings.Declaration::name).toList());
     }
 }

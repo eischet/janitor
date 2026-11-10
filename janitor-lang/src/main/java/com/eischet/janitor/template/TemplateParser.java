@@ -7,8 +7,8 @@ import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.JanitorRuntime;
 import com.eischet.janitor.api.JanitorScriptProcess;
+import com.eischet.janitor.api.RunnableScript;
 import com.eischet.janitor.api.scopes.ObjectScope;
-import com.eischet.janitor.api.scopes.VariableScope;
 import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
@@ -17,9 +17,7 @@ import com.eischet.janitor.api.types.functions.JCallable;
 import com.eischet.janitor.api.types.builtin.JNull;
 import com.eischet.janitor.api.types.builtin.JString;
 import com.eischet.janitor.api.types.JanitorObject;
-import com.eischet.janitor.compiler.ast.statement.Script;
 import com.eischet.janitor.runtime.JanitorScript;
-import com.eischet.janitor.runtime.RunningScriptProcess;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -143,9 +141,9 @@ public class TemplateParser {
      * The code of a template, for the environment it was compiled for; it runs with the runtime of the script that expands it.
      *
      * @param environment the environment
-     * @param script      the compiled code
+     * @param script      the compiled template
      */
-    private record TemplateCode(@NotNull JanitorEnvironment environment, @NotNull Script script) implements JString.CompiledTemplate {
+    private record TemplateCode(@NotNull JanitorEnvironment environment, @NotNull RunnableScript script) implements JString.CompiledTemplate {
     }
 
     /**
@@ -162,7 +160,7 @@ public class TemplateParser {
             throw new JanitorArgumentException(process, "invalid template");
         }
         @Language("Janitor") final String scriptSource = parser.toScript(TemplateParser::plainRenderer);
-        final TemplateCode code = new TemplateCode(environment, Objects.requireNonNull(new JanitorScript(runtime, TEMPLATE, scriptSource).getScriptObject()));
+        final TemplateCode code = new TemplateCode(environment, new JanitorScript(environment, TEMPLATE, scriptSource));
         templateString.setCompiledTemplate(code);
         return code;
     }
@@ -200,13 +198,11 @@ public class TemplateParser {
 
 
             // a template is code of the calling script, which merely runs in a process of its own, with the same runtime
-            final RunningScriptProcess template = new RunningScriptProcess(runtime,
-                    VariableScope.createMainScope(runtime.getEnvironment(), ObjectScope.withTemplateGlobals(runtime.getEnvironment(), values, process.getCurrentScope())),
-                    TEMPLATE, code.script());
-            template.inheritMetaData(process);
-            template.bind("__POP__", popper.asObject("__POP__"));
-            template.bind("__OUT__", writer.asObject("__OUT__"));
-            template.run();
+            code.script().runInScope(runtime, g -> {
+                g.inheritMetaData(process);
+                g.bind("__POP__", popper.asObject("__POP__"));
+                g.bind("__OUT__", writer.asObject("__OUT__"));
+            }, ObjectScope.withTemplateGlobals(runtime.getEnvironment(), values, process.getCurrentScope()));
             return Janitor.string(stringBuilder.toString());
         } catch (JanitorCompilerException e) {
             throw new JanitorArgumentException(process, "invalid template", e);

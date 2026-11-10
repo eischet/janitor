@@ -24,7 +24,7 @@ public class ClosureScopesTestCase extends JanitorTest {
                 stage1 = foo(10);
                 print(stage1(7));
                 """);
-        script.run();
+        script.run(runtime);
         assertEquals("17\n", runtime.getAllOutput());
         // This now works, thanks to Block::executeFunctionCall, which finally improves closure scope handling.
         // The problem was that arguments are bound into a scope, but the block created yet another additional scope.
@@ -36,7 +36,7 @@ public class ClosureScopesTestCase extends JanitorTest {
                 stage1 = foo(10);
                 print(stage1(7));
                 """);
-        script2.run();
+        script2.run(runtime);
         assertEquals("17\n", runtime.getAllOutput());
 
 
@@ -58,7 +58,7 @@ public class ClosureScopesTestCase extends JanitorTest {
                 print(pb("x"));
                 print(pa("x")); // Problem: returns bx at the moment, instead of ba.
                 """);
-        script.run();
+        script.run(runtime);
         assertEquals("ax\nbx\nax\n", runtime.getAllOutput());
     }
 
@@ -97,7 +97,7 @@ public class ClosureScopesTestCase extends JanitorTest {
                 print(pb("x"));
                 print(pc("x"));
                 """);
-        script.run();
+        script.run(runtime);
         // Actual (buggy) output as of this writing: "cx\ncx\ncx\n" -- pa, pb and pc are the
         // same object, so all three calls use pc's captured scope ("c").
         assertEquals("ax\nbx\ncx\n", runtime.getAllOutput());
@@ -121,7 +121,7 @@ public class ClosureScopesTestCase extends JanitorTest {
                 print(ha("hello"));
                 print(hb("hello"));
                 """);
-        script.run();
+        script.run(runtime);
         // Actual (buggy) output as of this writing: "Beta: hello\nBeta: hello\n" -- both handlers
         // are the same object and both use "Beta"'s captured scope, regardless of which key was used.
         assertEquals("Alpha: hello\nBeta: hello\n", runtime.getAllOutput());
@@ -146,7 +146,7 @@ public class ClosureScopesTestCase extends JanitorTest {
                 print(pa("x"));
                 print(pb("x"));
                 """);
-        script.run();
+        script.run(runtime);
         // Actual (buggy) output as of this writing: "bx\nbx\n"
         assertEquals("ax\nbx\n", runtime.getAllOutput());
     }

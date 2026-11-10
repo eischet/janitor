@@ -55,7 +55,7 @@ public class Demo {
                 scriptArgs.add(runtime.getBuiltinTypes().string(args[i]));
             }
 
-            script.run(g -> g.bind("args", scriptArgs));
+            script.run(runtime, g -> g.bind("args", scriptArgs));
         } catch (Exception e) {
 
             e.printStackTrace(System.err);

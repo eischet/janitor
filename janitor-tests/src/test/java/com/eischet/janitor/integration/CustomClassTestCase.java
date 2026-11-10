@@ -116,7 +116,7 @@ public class CustomClassTestCase extends JanitorTest {
                 assert(snoopy.ears == 2);
                 return snoopy;
                 """);
-        final @NotNull JanitorObject result = runnable.run(g -> g.bind("Dog", Dog.DISPATCH.getConstructor().asObject("Dog")));
+        final @NotNull JanitorObject result = runnable.run(rt, g -> g.bind("Dog", Dog.DISPATCH.getConstructor().asObject("Dog")));
         assertInstanceOf(Dog.class, result);
 
         assertEquals("woof\nwoof\n", rt.getAllOutput());
@@ -129,7 +129,7 @@ public class CustomClassTestCase extends JanitorTest {
         snoopy.setWalks(7);
         assertEquals(7, snoopy.walks);
 
-        rt.compile("check", "assert(snoopy.numberOfWalks == 7)").run(g -> g.bind("snoopy", snoopy));
+        rt.compile("check", "assert(snoopy.numberOfWalks == 7)").run(rt, g -> g.bind("snoopy", snoopy));
 
     }
 
@@ -154,7 +154,7 @@ public class CustomClassTestCase extends JanitorTest {
                 }
                 jane.walk(); // in a last second effort, Jane jumps ahead for the gold medal ;-)
                 """);
-        runnable.run(g -> g.bind("john", john).bind("jane", jane));
+        runnable.run(rt, g -> g.bind("john", john).bind("jane", jane));
         final Dog winner = Stream.of(john, jane).max(Comparator.comparing(dog -> dog.walks)).orElse(null);
         assertSame(winner, jane);
 

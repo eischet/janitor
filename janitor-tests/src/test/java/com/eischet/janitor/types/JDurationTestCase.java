@@ -29,7 +29,7 @@ public class JDurationTestCase extends JanitorTest {
 
     private void testDurationMethod(final @Language("Janitor") String script, final Object expectedResult) throws JanitorCompilerException, JanitorRuntimeException {
         final RunnableScript runnableScript = rt.compile("test", script);
-        final @NotNull JanitorObject result = runnableScript.run();
+        final @NotNull JanitorObject result = runnableScript.run(rt);
         final Object actualResult = result.janitorGetHostValue();
         assertEquals(expectedResult, actualResult, script);
     }

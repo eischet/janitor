@@ -24,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class DocCommentsTestCase extends JanitorTest {
 
     private static String run(final String source) throws JanitorCompilerException, JanitorRuntimeException {
-        return OutputCatchingTestRuntime.fresh().compile("test", source).run().janitorToString();
+        return OutputCatchingTestRuntime.fresh().compileAndRun("test", source).janitorToString();
     }
 
     @Test
@@ -156,13 +156,14 @@ public class DocCommentsTestCase extends JanitorTest {
 
     @Test
     void scopeDescriptionsUseTheDocumentation() throws Exception {
-        final VariableScope scope = OutputCatchingTestRuntime.fresh().compile("tools", """
+        final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
+        final VariableScope scope = runtime.compile("tools", """
                 /** Greets someone. */
                 function greet(name) { return name; }
                 function plain(a, b) { return a; }
                 /** The default greeting */
                 greeting = "Hello";
-                """).runAndKeepGlobals().getScope();
+                """).runAndKeepGlobals(runtime).getScope();
         final Dispatcher<?> description = ScopeDescription.of("tools", scope);
         assertEquals("greet(name): Greets someone.", description.getMetaData("greet", Janitor.MetaData.HELP));
         assertEquals("plain(a, b): A function of the module tools.", description.getMetaData("plain", Janitor.MetaData.HELP));

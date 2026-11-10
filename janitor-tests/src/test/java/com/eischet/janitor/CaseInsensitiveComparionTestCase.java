@@ -15,15 +15,15 @@ public class CaseInsensitiveComparionTestCase extends JanitorTest {
     @Test
     void testCaseInsensitiveComparison() throws JanitorCompilerException, JanitorRuntimeException {
         final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
-        Assertions.assertEquals(JBool.TRUE, rt.compile("test", "'x' ~= 'X'").run());
-        Assertions.assertEquals(JBool.TRUE, rt.compile("test", "'X' ~= 'X'").run());
-        Assertions.assertEquals(JBool.TRUE, rt.compile("test", "'x' ~= 'x'").run());
-        Assertions.assertEquals(JBool.TRUE, rt.compile("test", "'X' ~= 'x'").run());
+        Assertions.assertEquals(JBool.TRUE, rt.compile("test", "'x' ~= 'X'").run(rt));
+        Assertions.assertEquals(JBool.TRUE, rt.compile("test", "'X' ~= 'X'").run(rt));
+        Assertions.assertEquals(JBool.TRUE, rt.compile("test", "'x' ~= 'x'").run(rt));
+        Assertions.assertEquals(JBool.TRUE, rt.compile("test", "'X' ~= 'x'").run(rt));
 
-        Assertions.assertEquals(JBool.FALSE, rt.compile("test", "'x' ~= 'Y'").run());
-        Assertions.assertEquals(JBool.FALSE, rt.compile("test", "'X' ~= 'Y'").run());
-        Assertions.assertEquals(JBool.FALSE, rt.compile("test", "'x' ~= 'y'").run());
-        Assertions.assertEquals(JBool.FALSE, rt.compile("test", "'X' ~= 'y'").run());
+        Assertions.assertEquals(JBool.FALSE, rt.compile("test", "'x' ~= 'Y'").run(rt));
+        Assertions.assertEquals(JBool.FALSE, rt.compile("test", "'X' ~= 'Y'").run(rt));
+        Assertions.assertEquals(JBool.FALSE, rt.compile("test", "'x' ~= 'y'").run(rt));
+        Assertions.assertEquals(JBool.FALSE, rt.compile("test", "'X' ~= 'y'").run(rt));
     }
 
 }

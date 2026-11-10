@@ -21,7 +21,7 @@ public class ModuleDispatchTablesTestCase extends JanitorTest {
 
     private static String run(final String source) throws JanitorCompilerException, JanitorRuntimeException {
         return OutputCatchingTestRuntime.fresh(env -> env.addModule(HttpClientModule.REGISTRATION))
-                .compile("test", source).run().janitorToString();
+                .compileAndRun("test", source).janitorToString();
     }
 
     @Test

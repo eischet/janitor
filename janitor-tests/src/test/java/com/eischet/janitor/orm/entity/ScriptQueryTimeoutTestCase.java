@@ -51,7 +51,7 @@ public class ScriptQueryTimeoutTestCase extends JanitorTest {
     }
 
     private void run(final String script, final Duration maxRunTime) throws Exception {
-        OutputCatchingTestRuntime.fresh().compile("test", script).run(process -> {
+        OutputCatchingTestRuntime.fresh().compileAndRun("test", script, process -> {
             process.setMaxRunTime(maxRunTime);
             process.bind("teamDao", teams.getTeamDao());
         });
@@ -78,11 +78,11 @@ public class ScriptQueryTimeoutTestCase extends JanitorTest {
     @Test
     void remainingRunTime() throws Exception {
         final AtomicReference<JanitorScriptProcess> seen = new AtomicReference<>();
-        OutputCatchingTestRuntime.fresh().compile("test", "1;").run(seen::set);
+        OutputCatchingTestRuntime.fresh().compileAndRun("test", "1;", seen::set);
         assertNull(seen.get().getRemainingRunTime());
 
         final AtomicReference<Duration> remaining = new AtomicReference<>();
-        OutputCatchingTestRuntime.fresh().compile("test", "probe();").run(process -> {
+        OutputCatchingTestRuntime.fresh().compileAndRun("test", "probe();", process -> {
             process.setMaxRunTime(Duration.ofSeconds(5));
             process.bind("probe", new JNativeMethod((p, args) -> {
                 remaining.set(p.getRemainingRunTime());

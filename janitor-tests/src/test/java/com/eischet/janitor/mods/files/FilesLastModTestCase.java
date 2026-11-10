@@ -31,8 +31,7 @@ public class FilesLastModTestCase extends JanitorTest {
 
     private static JanitorObject lastmod(final Path path) throws JanitorCompilerException, JanitorRuntimeException {
         return OutputCatchingTestRuntime.fresh(env -> env.addModule(FilesModule.REGISTRATION))
-                .compile("test", "import files; files.lastmod(path)")
-                .run(globals -> globals.bind("path", path.toString()));
+                .compileAndRun("test", "import files; files.lastmod(path)", globals -> globals.bind("path", path.toString()));
     }
 
     @Test

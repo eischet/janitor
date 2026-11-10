@@ -33,24 +33,24 @@ public class AbortTestCase extends JanitorTest {
         final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
         final RunnableScript script = runtime.compile("test", ENDLESS);
         assertTimeoutPreemptively(Duration.ofSeconds(10), () ->
-                assertThrows(JanitorTimeLimitExceededException.class, () -> script.run(process -> process.setMaxRunTime(Duration.ofMillis(50)))));
+                assertThrows(JanitorTimeLimitExceededException.class, () -> script.run(runtime, process -> process.setMaxRunTime(Duration.ofMillis(50)))));
     }
 
     @Test
     void defaultTimeLimitOfTheEnvironment() throws Exception {
         final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh(env -> ((JanitorDefaultEnvironment) env).setMaxRunTime(Duration.ofMillis(50)));
         assertTimeoutPreemptively(Duration.ofSeconds(10), () ->
-                assertThrows(JanitorTimeLimitExceededException.class, () -> runtime.compile("test", ENDLESS).run()));
+                assertThrows(JanitorTimeLimitExceededException.class, () -> runtime.compile("test", ENDLESS).run(runtime)));
         // a run can override the default, here with "no limit"
         assertEquals(5000L, runtime.compile("test", "n = 0; while (n < 5000) { n++; } return n;")
-                .run(process -> process.setMaxRunTime(null)).janitorGetHostValue());
+                .run(runtime, process -> process.setMaxRunTime(null)).janitorGetHostValue());
     }
 
     @Test
     void setupDoesNotCountForTheTimeLimit() throws Exception {
         final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
         final RunnableScript script = runtime.compile("test", "n = 0; while (n < 5000) { n++; } return n;");
-        assertEquals(5000L, script.run(process -> {
+        assertEquals(5000L, script.run(runtime, process -> {
             process.setMaxRunTime(Duration.ofMillis(50));
             try {
                 Thread.sleep(100);
@@ -67,7 +67,7 @@ public class AbortTestCase extends JanitorTest {
         final AtomicBoolean token = new AtomicBoolean();
         final CompletableFuture<Object> run = CompletableFuture.supplyAsync(() -> {
             try {
-                return script.run(process -> process.setCancellation(token));
+                return script.run(runtime, process -> process.setCancellation(token));
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -83,16 +83,16 @@ public class AbortTestCase extends JanitorTest {
     void cancelThroughTheProcess() throws Exception {
         final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
         final RunnableScript script = runtime.compile("test", ENDLESS);
-        assertThrows(JanitorCancelledException.class, () -> script.run(process -> process.cancel()));
+        assertThrows(JanitorCancelledException.class, () -> script.run(runtime, process -> process.cancel()));
     }
 
     @Test
     void scriptCannotCatchAborts() throws Exception {
         final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
         final RunnableScript script = runtime.compile("test", ENDLESS_CAUGHT);
-        assertThrows(JanitorCancelledException.class, () -> script.run(process -> process.setCancellation(new AtomicBoolean(true))));
+        assertThrows(JanitorCancelledException.class, () -> script.run(runtime, process -> process.setCancellation(new AtomicBoolean(true))));
         assertTimeoutPreemptively(Duration.ofSeconds(10), () ->
-                assertThrows(JanitorTimeLimitExceededException.class, () -> script.run(process -> process.setMaxRunTime(Duration.ofMillis(50)))));
+                assertThrows(JanitorTimeLimitExceededException.class, () -> script.run(runtime, process -> process.setMaxRunTime(Duration.ofMillis(50)))));
         assertEquals("", runtime.getAllOutput());
     }
 
@@ -100,8 +100,8 @@ public class AbortTestCase extends JanitorTest {
     void oneTokenCancelsSeveralRuns() throws Exception {
         final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
         final AtomicBoolean token = new AtomicBoolean(true);
-        assertThrows(JanitorAbortException.class, () -> runtime.compile("a", ENDLESS).run(process -> process.setCancellation(token)));
-        assertThrows(JanitorAbortException.class, () -> runtime.compile("b", ENDLESS).run(process -> process.setCancellation(token)));
+        assertThrows(JanitorAbortException.class, () -> runtime.compile("a", ENDLESS).run(runtime, process -> process.setCancellation(token)));
+        assertThrows(JanitorAbortException.class, () -> runtime.compile("b", ENDLESS).run(runtime, process -> process.setCancellation(token)));
     }
 
 }

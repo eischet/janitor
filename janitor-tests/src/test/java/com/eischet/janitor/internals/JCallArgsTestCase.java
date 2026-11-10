@@ -41,7 +41,7 @@ public class JCallArgsTestCase extends JanitorTest {
     private int intArg(final String literal) throws JanitorRuntimeException, JanitorCompilerException {
         final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         final RunnableScript script = rt.compile("test", "return probe.intArg(" + literal + ");");
-        return ((Number) script.run(g -> g.bind("probe", new Probe())).janitorGetHostValue()).intValue();
+        return ((Number) script.run(rt, g -> g.bind("probe", new Probe())).janitorGetHostValue()).intValue();
     }
 
     @Test

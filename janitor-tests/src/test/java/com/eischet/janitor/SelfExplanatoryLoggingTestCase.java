@@ -75,11 +75,11 @@ class SelfExplanatoryLoggingTestCase {
     }
 
     private static JanitorRuntimeException scriptError() {
-        return assertThrows(JanitorNameException.class, () -> OutputCatchingTestRuntime.fresh().compile("broken", "print(nope);").run());
+        return assertThrows(JanitorNameException.class, () -> OutputCatchingTestRuntime.fresh().compileAndRun("broken", "print(nope);"));
     }
 
     private static JanitorRuntimeException failingNativeCall(final JNativeMethod method) {
-        return assertThrows(JanitorRuntimeException.class, () -> OutputCatchingTestRuntime.fresh().compile("broken", "fail();").run(g -> g.bind("fail", method)));
+        return assertThrows(JanitorRuntimeException.class, () -> OutputCatchingTestRuntime.fresh().compileAndRun("broken", "fail();", g -> g.bind("fail", method)));
     }
 
     @Test

@@ -105,7 +105,7 @@ public class RunScriptMojo extends AbstractMojo {
         try {
             final JanitorRuntime rt = MavenScriptingEnv.INSTANCE.newRuntime();
             final RunnableScript script = rt.compile(scriptFile == null ? "inline-script" : scriptFile.getName(), contents);
-            final @NotNull JanitorObject result = script.run(g -> {
+            final @NotNull JanitorObject result = script.run(rt, g -> {
                 /*
                 These were meant to be run after a build. e.g. to send a message via the brrr module, but I currently don't have
                 time do debug them through, so I'm commenting them out for now.

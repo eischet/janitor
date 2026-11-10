@@ -31,8 +31,12 @@ BaseRuntime runtime = new BaseRuntime(env) {
     }
 };
 RunnableScript script = runtime.compile("discount-rule", source);  // throws JanitorCompilerException
-JanitorObject result = script.run(process -> process.bind("order", orderObject));
+JanitorObject result = script.run(runtime, process -> process.bind("order", orderObject));
 ```
+
+A compiled script belongs to the environment, not to the runtime it was compiled with: every run names the runtime, and a
+host can keep compiled scripts as long as it likes, e.g. in a cache, and run them with a different runtime each time, such
+as one that logs into the log of the current job. Inside a running script, `process.getRuntime()` is the runtime to use.
 
 The `JanitorFormatting` passed to the environment decides how dates and numbers are formatted where a script does not
 give a pattern, e.g. `date.format()`.
@@ -109,13 +113,13 @@ globals nor private names show through.
 
 There are three places for globals:
 
-- **Per run**: `script.run(process -> process.bind("name", value))`. The run methods (`run`, `runAndKeepGlobals`,
+- **Per run**: `script.run(runtime, process -> process.bind("name", value))`. The run methods (`run`, `runAndKeepGlobals`,
   `runInScope`), `filterScript` and the `ScriptModule` classes take a callback that receives the script process after it
   has been created and before the script starts. Use it for the data a script works on, such as the current record.
   `bind` accepts Janitor objects and plain strings, numbers and booleans, `bindF` binds a function, and both return the
   process, so calls can be chained: `process.bind("order", order).bind("user", user)`. The callback can also configure
   the process, e.g. its [limits](#limits).
-- **An object the script runs for**: `script.runInScope(setup, ObjectScope.of(context, env.getBuiltinScope()))`. The
+- **An object the script runs for**: `script.runInScope(runtime, setup, ObjectScope.of(context, env.getBuiltinScope()))`. The
   attributes of the object become names in the script, below its own variables and above the built-in scope; they are
   computed when the script reads them, so an expensive attribute costs nothing in scripts that do not use it. A map
   offers its keys. Assigning to one of the names, e.g. `ticket = other;`, shadows it for the rest of the script and does
@@ -194,10 +198,10 @@ A host can abort a script in three ways, so that an endless loop or a slow scrip
 
 ```java
 env.setMaxInstructionCount(100_000);                                  // all scripts
-script.run(process -> process.bind("order", order).setMaxInstructionCount(1_000_000)); // this run
+script.run(runtime, process -> process.bind("order", order).setMaxInstructionCount(1_000_000)); // this run
 
 AtomicBoolean cancelled = new AtomicBoolean();                       // e.g. set by a "Cancel" button
-script.run(process -> {
+script.run(runtime, process -> {
     process.setMaxRunTime(Duration.ofSeconds(5));
     process.setCancellation(cancelled);
 });

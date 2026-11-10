@@ -77,7 +77,7 @@ Source text
 Key classes:
 - `JanitorRuntime` (interface) / `BaseRuntime` (abstract) — host provides a concrete subclass
 - `JanitorEnvironment` — sandbox, module registry, host-exposed globals
-- `RunnableScript` — compiled artifact; call `script.run(g -> g.bind("name", value))` to execute
+- `RunnableScript` — compiled artifact; call `script.run(runtime, g -> g.bind("name", value))` to execute; it holds no runtime, so it can be kept and run with another one
 - `JanitorObject` — root of the type system; all Janitor values implement this
 - `Scope` / `ScriptSource` — variable scoping and module isolation
 

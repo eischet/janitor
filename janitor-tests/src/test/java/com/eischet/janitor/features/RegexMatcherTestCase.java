@@ -21,7 +21,7 @@ public class RegexMatcherTestCase extends JanitorTest {
 
     private static String output(final String source) throws JanitorCompilerException, JanitorRuntimeException {
         final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
-        runtime.compile("test", source).run();
+        runtime.compile("test", source).run(runtime);
         return runtime.getAllOutput();
     }
 

@@ -76,12 +76,12 @@ public class TemplatingTestCase extends JanitorTest {
                     parts.add("<%= x %>".expand({"x": i}));
                 }
                 return parts.join(" ");
-                """).run().janitorToString());
+                """).run(runtime).janitorToString());
         final JanitorObject literal = runtime.compile("literal", """
                 t = "<%= x %>";
                 t.expand({"x": 1});
                 return t;
-                """).run();
+                """).run(runtime);
         final JString template = assertInstanceOf(JString.class, literal);
         assertNotNull(template.getCompiledTemplate(runtime.getEnvironment()));
         assertNull(template.getCompiledTemplate(OutputCatchingTestRuntime.fresh().getEnvironment()), "kept per environment");
@@ -97,9 +97,9 @@ public class TemplatingTestCase extends JanitorTest {
                 t = "<% print('in template'); %>";
                 t.expand();
                 return t;
-                """).run();
+                """).run(first);
         final OutputCatchingTestRuntime second = first.withSameEnvironment();
-        second.compile("second", "t.expand();").run(g -> g.bind("t", literal));
+        second.compile("second", "t.expand();").run(second, g -> g.bind("t", literal));
         assertEquals("in template\n", first.getAllOutput());
         assertEquals("in template\n", second.getAllOutput(), "the second expansion prints through the second runtime");
     }

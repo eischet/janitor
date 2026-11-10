@@ -44,7 +44,7 @@ public class ObjectScopeTestCase extends JanitorTest {
 
     private static String run(final JanitorRuntime runtime, final Context context, final String source) throws JanitorCompilerException, JanitorRuntimeException {
         final Scope scope = ObjectScope.of(context, runtime.getEnvironment().getBuiltinScope());
-        return runtime.compile("test", source).runInScope(process -> { }, scope).janitorToString();
+        return runtime.compile("test", source).runInScope(runtime, process -> { }, scope).janitorToString();
     }
 
     @Test
@@ -84,8 +84,8 @@ public class ObjectScopeTestCase extends JanitorTest {
     @Test
     void assigningToABuiltinShadowsIt() throws Exception {
         final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
-        assertEquals("1", runtime.compile("test", "print = 1; return print;").run().janitorToString());
-        assertEquals("hello\n", OutputCatchingTestRuntime.fresh().compile("test", "print(\"hello\");").run() == Janitor.NULL
+        assertEquals("1", runtime.compile("test", "print = 1; return print;").run(runtime).janitorToString());
+        assertEquals("hello\n", OutputCatchingTestRuntime.fresh().compileAndRun("test", "print(\"hello\");") == Janitor.NULL
                 ? "hello\n" : "unexpected");
     }
 
@@ -95,6 +95,6 @@ public class ObjectScopeTestCase extends JanitorTest {
         final var values = runtime.getEnvironment().getBuiltinTypes().map();
         values.put("colour", Janitor.string("blue"));
         final Scope scope = ObjectScope.of(values, runtime.getEnvironment().getBuiltinScope());
-        assertEquals("blue", runtime.compile("test", "return colour;").runInScope(process -> { }, scope).janitorToString());
+        assertEquals("blue", runtime.compile("test", "return colour;").runInScope(runtime, process -> { }, scope).janitorToString());
     }
 }

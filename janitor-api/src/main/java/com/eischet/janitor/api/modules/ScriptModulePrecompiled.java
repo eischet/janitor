@@ -62,7 +62,7 @@ public class ScriptModulePrecompiled extends JanitorModuleRegistration {
 
         @Override
         public JanitorModule getModule(final JanitorScriptProcess process) throws JanitorRuntimeException {
-            final ResultAndScope result = compiled.runAndKeepGlobals(bindings == null ? g -> {
+            final ResultAndScope result = compiled.runAndKeepGlobals(process.getRuntime(), bindings == null ? g -> {
             } : bindings);
             return new ScriptModule.ModuleFromScope(result.getScope(), compiled.getDocumentation());
         }

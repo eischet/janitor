@@ -94,7 +94,7 @@ public class ScriptModuleLazy extends JanitorModuleRegistration {
         @Override
         public JanitorModule getModule(final JanitorScriptProcess process) throws JanitorRuntimeException {
             final RunnableScript script = getCompiled(process);
-            final ResultAndScope result = script.runAndKeepGlobals(bindings == null ? g -> {
+            final ResultAndScope result = script.runAndKeepGlobals(process.getRuntime(), bindings == null ? g -> {
             } : bindings);
             return new ScriptModule.ModuleFromScope(result.getScope());
         }

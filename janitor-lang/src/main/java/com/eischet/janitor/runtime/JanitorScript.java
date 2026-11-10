@@ -4,6 +4,7 @@
 package com.eischet.janitor.runtime;
 
 import com.eischet.janitor.api.Janitor;
+import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.JanitorRuntime;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.RunnableScript;
@@ -40,7 +41,7 @@ public class JanitorScript implements RunnableScript, JsonExportableObject {
 
     private static final JanitorLogger log = JanitorLogger.getLogger(JanitorScript.class);
 
-    private final @NotNull JanitorRuntime runtime; // TODO: remove this. A compiled script should not be tied to a particular runtime. Only when *runnign* it, the runtime should be used.
+    private final @NotNull JanitorEnvironment environment;
     private final @NotNull ScriptSource module;
     private final @Nullable Script scriptObject;
     private final @NotNull List<String> issues;
@@ -48,18 +49,34 @@ public class JanitorScript implements RunnableScript, JsonExportableObject {
     private @Nullable Exception compilerException;
 
 
-    public JanitorScript(final @NotNull JanitorRuntime runtime,
+    /**
+     * Compiles a script.
+     * @param environment the environment the script runs in
+     * @param moduleName  the name of the script, for messages
+     * @param source      the source code
+     * @throws JanitorCompilerException if the script does not compile
+     */
+    public JanitorScript(final @NotNull JanitorEnvironment environment,
                          final @NotNull String moduleName,
                          final @NotNull String source) throws JanitorCompilerException {
-        this(runtime, moduleName, source, false, false);
+        this(environment, moduleName, source, false, false);
     }
 
-    public JanitorScript(final @NotNull JanitorRuntime runtime,
+    /**
+     * Compiles a script.
+     * @param environment the environment the script runs in
+     * @param moduleName  the name of the script, for messages
+     * @param source      the source code
+     * @param checking    only check: keep the problems instead of throwing them
+     * @param verbose     log details of the compilation
+     * @throws JanitorCompilerException if the script does not compile and this is not a check
+     */
+    public JanitorScript(final @NotNull JanitorEnvironment environment,
                          final @NotNull String moduleName,
                          final @NotNull String source,
                          final boolean checking,
                          final boolean verbose) throws JanitorCompilerException {
-        this.runtime = runtime;
+        this.environment = environment;
         this.module = new ScriptSource(moduleName, source);
 
         final JanitorANTLRErrorListener recorder = new JanitorANTLRErrorListener(source);
@@ -86,13 +103,13 @@ public class JanitorScript implements RunnableScript, JsonExportableObject {
         }
 
         if (!checking) {
-            scriptObject = JanitorCompiler.build(runtime.getEnvironment(), module, script, source, verbose);
+            scriptObject = JanitorCompiler.build(environment, module, script, source, verbose);
         } else if (issues.isEmpty()) {
             // after syntax errors, the compiler only trips over what the parser made of them (and logs warnings about it),
             // so a check stops at the syntax errors; editors check on every key stroke
             Script myScript = null;
             try {
-                myScript = JanitorCompiler.build(runtime.getEnvironment(), module, script, source, verbose);
+                myScript = JanitorCompiler.build(environment, module, script, source, verbose);
             } catch (RuntimeException compilerException) {
                 this.compilerException = compilerException;
                 log.debug("compiler check error in script {}", moduleName, compilerException);
@@ -104,13 +121,6 @@ public class JanitorScript implements RunnableScript, JsonExportableObject {
         } else {
             scriptObject = null;
         }
-    }
-
-    /**
-     * @return the compiled code, or null if a check found errors
-     */
-    public @Nullable Script getScriptObject() {
-        return scriptObject;
     }
 
     // LATER: it would be preferable to throw the exception during the check, because it is an error nevertheless
@@ -204,7 +214,7 @@ public class JanitorScript implements RunnableScript, JsonExportableObject {
 
 
     @Override
-    public @NotNull JanitorObject run(final @NotNull Consumer<JanitorScriptProcess> setup) throws JanitorRuntimeException {
+    public @NotNull JanitorObject run(final @NotNull JanitorRuntime runtime, final @NotNull Consumer<JanitorScriptProcess> setup) throws JanitorRuntimeException {
         // The process is constructed with wrapScope=false (the 4-arg constructor), so its main scope IS this global scope
         // instance, not a fresh child of it; the setup callback binds there. process.run() already calls
         // getMainScope().janitorLeaveScope() in its own finally block -- calling globalScope.janitorLeaveScope() again here
@@ -218,7 +228,7 @@ public class JanitorScript implements RunnableScript, JsonExportableObject {
     }
 
     @Override
-    public @NotNull JanitorObject runInScope(final @NotNull Consumer<JanitorScriptProcess> setup, final Scope parentScope) throws JanitorRuntimeException {
+    public @NotNull JanitorObject runInScope(final @NotNull JanitorRuntime runtime, final @NotNull Consumer<JanitorScriptProcess> setup, final Scope parentScope) throws JanitorRuntimeException {
         final VariableScope globalScope = VariableScope.createMainScope(runtime.getEnvironment(), parentScope);
         final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, module.getName(), scriptObject);
         setup.accept(process);
@@ -227,7 +237,7 @@ public class JanitorScript implements RunnableScript, JsonExportableObject {
 
 
     @Override
-    public @NotNull ResultAndScope runAndKeepGlobals(final @NotNull Consumer<JanitorScriptProcess> setup) throws JanitorRuntimeException {
+    public @NotNull ResultAndScope runAndKeepGlobals(final @NotNull JanitorRuntime runtime, final @NotNull Consumer<JanitorScriptProcess> setup) throws JanitorRuntimeException {
         final VariableScope globalScope = VariableScope.createGlobalScope(runtime.getEnvironment(), module);
         final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, module.getName(), scriptObject);
         setup.accept(process);
@@ -235,7 +245,7 @@ public class JanitorScript implements RunnableScript, JsonExportableObject {
     }
 
     @Override
-    public @NotNull ResultAndScope runInScopeAndKeepGlobals(final VariableScope parentScope) throws JanitorRuntimeException {
+    public @NotNull ResultAndScope runInScopeAndKeepGlobals(final @NotNull JanitorRuntime runtime, final VariableScope parentScope) throws JanitorRuntimeException {
         final RunningScriptProcess process = new RunningScriptProcess(runtime, parentScope, module.getName(), scriptObject);
         return new ResultAndScope(process.getMainScope(), process.run());
     }

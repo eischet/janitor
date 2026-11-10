@@ -19,6 +19,11 @@ import java.util.function.Consumer;
  * A script that is ready to run.
  * Unless it was compiled in test mode and produces issues, then it's likely not runnable and can be queried for issues.
  * <p>
+ * A compiled script belongs to the environment it was compiled for, not to a runtime: every run names the runtime it runs
+ * with, e.g. {@code script.run(runtime, p -> p.bind("order", order))}. A host can therefore keep compiled scripts as long as
+ * it likes without holding on to a runtime, e.g. one whose log belongs to a single run.
+ * </p>
+ * <p>
  * The run methods take a callback that receives the {@link JanitorScriptProcess} after it has been created and before the
  * script starts. It binds the script's global variables, e.g. {@code script.run(p -> p.bind("order", order))}, and can
  * configure the process, e.g. {@code p.setMaxInstructionCount(10_000)}, which overrides the environment's default.
@@ -29,49 +34,54 @@ public interface RunnableScript {
 
     /**
      * Runs the script.
+     * @param runtime the runtime to run with, of the environment the script was compiled for
      * @param setup receives the process before the script starts, to bind global variables and configure the process
      * @return the script's result
      * @throws JanitorRuntimeException on runtime errors
      */
-    @NotNull JanitorObject run(@NotNull Consumer<JanitorScriptProcess> setup) throws JanitorRuntimeException;
+    @NotNull JanitorObject run(@NotNull JanitorRuntime runtime, @NotNull Consumer<JanitorScriptProcess> setup) throws JanitorRuntimeException;
 
     /**
      * Runs the script, and keeps its global scope afterward.
+     * @param runtime the runtime to run with, of the environment the script was compiled for
      * @param setup receives the process before the script starts, to bind global variables and configure the process
      * @return the script's result and the global scope
      * @throws JanitorRuntimeException on runtime errors
      */
-    @NotNull ResultAndScope runAndKeepGlobals(@NotNull Consumer<JanitorScriptProcess> setup) throws JanitorRuntimeException;
+    @NotNull ResultAndScope runAndKeepGlobals(@NotNull JanitorRuntime runtime, @NotNull Consumer<JanitorScriptProcess> setup) throws JanitorRuntimeException;
 
     /**
      * Run the script with an empty global scope, and keep the global scope afterward.
-     * This is probably less useful than {@link #runAndKeepGlobals(Consumer)}, but might be usable for e.g. config files.
+     * This is probably less useful than {@link #runAndKeepGlobals(JanitorRuntime, Consumer)}, but might be usable for e.g. config files.
+     * @param runtime the runtime to run with, of the environment the script was compiled for
      * @return the script's result and the global scope
      * @throws JanitorRuntimeException on runtime errors
      */
-    default @NotNull ResultAndScope runAndKeepGlobals() throws JanitorRuntimeException {
-        return runAndKeepGlobals(process -> { });
+    default @NotNull ResultAndScope runAndKeepGlobals(final @NotNull JanitorRuntime runtime) throws JanitorRuntimeException {
+        return runAndKeepGlobals(runtime, process -> { });
     }
 
     /**
      * Runs the script in a new scope below the given one.
      * The usual way of obtaining such a scope is by using runAndKeepGlobals.
      *
+     * @param runtime the runtime to run with, of the environment the script was compiled for
      * @param setup receives the process before the script starts, to bind global variables and configure the process
      * @param parentScope the parent scope to use
      * @return the script's result
      * @throws JanitorRuntimeException on runtime errors
      */
-    @NotNull JanitorObject runInScope(@NotNull Consumer<JanitorScriptProcess> setup, Scope parentScope) throws JanitorRuntimeException;
+    @NotNull JanitorObject runInScope(@NotNull JanitorRuntime runtime, @NotNull Consumer<JanitorScriptProcess> setup, Scope parentScope) throws JanitorRuntimeException;
 
     /**
      * Run the script with an empty global scope.
-     * This is just shorthand for calling {@link #run(Consumer)} with an empty callback.
+     * This is just shorthand for calling {@link #run(JanitorRuntime, Consumer)} with an empty callback.
+     * @param runtime the runtime to run with, of the environment the script was compiled for
      * @return the script's result
      * @throws JanitorRuntimeException on runtime errors
      */
-    @NotNull default JanitorObject run() throws JanitorRuntimeException {
-        return run(process -> { });
+    @NotNull default JanitorObject run(final @NotNull JanitorRuntime runtime) throws JanitorRuntimeException {
+        return run(runtime, process -> { });
     }
 
     /**
@@ -106,9 +116,10 @@ public interface RunnableScript {
 
     /**
      * Experimental method for JSR223, because that needs a way of retrieving stuff from the original scope.
+     * @param runtime the runtime to run with, of the environment the script was compiled for
      * @param parentScope  the scope to run in
      * @return result and scope
      * @throws JanitorRuntimeException on errors
      */
-    @NotNull ResultAndScope runInScopeAndKeepGlobals(VariableScope parentScope) throws JanitorRuntimeException;
+    @NotNull ResultAndScope runInScopeAndKeepGlobals(@NotNull JanitorRuntime runtime, VariableScope parentScope) throws JanitorRuntimeException;
 }

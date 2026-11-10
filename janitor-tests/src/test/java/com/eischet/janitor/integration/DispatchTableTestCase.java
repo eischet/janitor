@@ -35,7 +35,7 @@ public class DispatchTableTestCase extends JanitorTest {
         final TestEnv.ScriptConsumer play = (script) -> {
             try {
                 final RunnableScript runnableScript = rt.compile("test", script);
-                runnableScript.run(g -> g.bind("obj", so));
+                runnableScript.run(rt, g -> g.bind("obj", so));
             } catch (JanitorCompilerException e) {
                 throw new RuntimeException(e); // RuntimeConsumers allow Runtime Errors, but not compile errors, so let's just convert
             }
@@ -111,7 +111,7 @@ public class DispatchTableTestCase extends JanitorTest {
         final TestEnv.ScriptConsumer play = (script) -> {
             try {
                 final RunnableScript runnableScript = rt.compile("test", script);
-                runnableScript.run(g -> g.bind("obj", so));
+                runnableScript.run(rt, g -> g.bind("obj", so));
             } catch (JanitorCompilerException e) {
                 throw new RuntimeException(e); // RuntimeConsumers allow Runtime Errors, but not compile errors, so let's just convert
             }

@@ -25,7 +25,7 @@ public class StringEscapesTestCase extends JanitorTest {
     private static final String BS = String.valueOf((char) 92);
 
     private static JanitorObject run(final String source) throws JanitorCompilerException, JanitorRuntimeException {
-        return OutputCatchingTestRuntime.fresh().compile("test", source).run();
+        return OutputCatchingTestRuntime.fresh().compileAndRun("test", source);
     }
 
     private static String unescape(final String literal) {

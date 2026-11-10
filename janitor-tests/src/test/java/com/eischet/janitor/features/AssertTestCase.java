@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class AssertTestCase extends JanitorTest {
 
     private static JanitorObject run(final String source) throws JanitorCompilerException, JanitorRuntimeException {
-        return OutputCatchingTestRuntime.fresh().compile("test", source).run();
+        return OutputCatchingTestRuntime.fresh().compileAndRun("test", source);
     }
 
     @Test
@@ -41,7 +41,7 @@ public class AssertTestCase extends JanitorTest {
     @Test
     void theMessageIsVisibleInCatch() throws Exception {
         final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
-        runtime.compile("test", "try { assert(false, \"total must be positive\"); } catch (e) { print(e.message); }").run();
+        runtime.compile("test", "try { assert(false, \"total must be positive\"); } catch (e) { print(e.message); }").run(runtime);
         assertEquals("assertion failed: total must be positive\n", runtime.getAllOutput());
     }
 

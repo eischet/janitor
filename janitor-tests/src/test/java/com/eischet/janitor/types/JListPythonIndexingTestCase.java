@@ -66,7 +66,7 @@ public class JListPythonIndexingTestCase extends JanitorTest {
     private String run(@Language("Janitor") final String script) throws Exception {
         final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         final RunnableScript runnableScript = rt.compile("test", script);
-        runnableScript.run();
+        runnableScript.run(rt);
         return rt.getAllOutput();
     }
 

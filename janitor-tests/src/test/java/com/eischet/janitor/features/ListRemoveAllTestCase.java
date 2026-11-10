@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class ListRemoveAllTestCase extends JanitorTest {
 
     private static JanitorObject run(final String source) throws JanitorCompilerException, JanitorRuntimeException {
-        return OutputCatchingTestRuntime.fresh().compile("test", source).run();
+        return OutputCatchingTestRuntime.fresh().compileAndRun("test", source);
     }
 
     @Test

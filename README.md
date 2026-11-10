@@ -49,7 +49,7 @@ The grammar in ANTLR4 format is here: janitor-lang/src/main/antlr4/com/eischet/j
 final DemoEnvironment env = new DemoEnvironment();
 final DemoRuntime runtime = new DemoRuntime(env);
 final RunnableScript script = runtime.compile(name, "print(foo);");
-script.run(g -> g.bind("foo", "bar"));
+script.run(runtime, g -> g.bind("foo", "bar"));
 ```
 
 This will print the Text "bar" to the console.

@@ -5,6 +5,8 @@ package com.eischet.janitor.runtime;
 
 import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.JanitorScriptProcess;
+import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
+import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.types.builtin.JNull;
 import com.eischet.janitor.api.types.JanitorObject;
@@ -47,6 +49,31 @@ public class OutputCatchingTestRuntime extends BaseRuntime {
      */
     public OutputCatchingTestRuntime withSameEnvironment() {
         return new OutputCatchingTestRuntime(getEnvironment());
+    }
+
+    /**
+     * Compiles a script and runs it with this runtime.
+     * @param name   the name of the script
+     * @param source the source code
+     * @return the script's result
+     * @throws JanitorCompilerException if the script does not compile
+     * @throws JanitorRuntimeException  if it fails
+     */
+    public JanitorObject compileAndRun(final String name, final String source) throws JanitorCompilerException, JanitorRuntimeException {
+        return compile(name, source).run(this);
+    }
+
+    /**
+     * Compiles a script and runs it with this runtime.
+     * @param name   the name of the script
+     * @param source the source code
+     * @param setup  receives the process before the script starts
+     * @return the script's result
+     * @throws JanitorCompilerException if the script does not compile
+     * @throws JanitorRuntimeException  if it fails
+     */
+    public JanitorObject compileAndRun(final String name, final String source, final Consumer<JanitorScriptProcess> setup) throws JanitorCompilerException, JanitorRuntimeException {
+        return compile(name, source).run(this, setup);
     }
 
     final StringBuffer output = new StringBuffer();

@@ -62,7 +62,7 @@ public class MapClassTestCase extends JanitorTest {
         final TestEnv.ScriptConsumer play = (@Language("Janitor") var script) -> {
             try {
                 final RunnableScript runnableScript = rt.compile("test", script);
-                runnableScript.run(g -> g.bind("map", map).bind("empty", empty));
+                runnableScript.run(rt, g -> g.bind("map", map).bind("empty", empty));
             } catch (JanitorCompilerException e) {
                 throw new RuntimeException(e); // RuntimeConsumers allow Runtime Errors, but not compile errors, so let's just convert
             }

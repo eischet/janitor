@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class DirAndHelpTestCase extends JanitorTest {
 
     private static String run(final String source) throws JanitorCompilerException, JanitorRuntimeException {
-        final JanitorObject result = OutputCatchingTestRuntime.fresh().compile("test", source).run();
+        final JanitorObject result = OutputCatchingTestRuntime.fresh().compileAndRun("test", source);
         return result.janitorToString();
     }
 

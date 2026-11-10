@@ -56,7 +56,7 @@ public class JanitorScriptEngine implements ScriptEngine {
             }
 
              */
-            final @NotNull ResultAndScope resultAndScope = compiled.runInScopeAndKeepGlobals(runtimeScope);
+            final @NotNull ResultAndScope resultAndScope = compiled.runInScopeAndKeepGlobals(runtime, runtimeScope);
             // System.out.println("scope after run: " + resultAndScope.getScope().dir());
 
             if (resultAndScope.getScope() != runtimeScope) {
@@ -65,7 +65,7 @@ public class JanitorScriptEngine implements ScriptEngine {
 
             // TODO: store the scope somewhere?
             return resultAndScope.getVariable();
-            // final @NotNull JanitorObject result = compiled.runInScope(g -> {}, runtimeScope);
+            // final @NotNull JanitorObject result = compiled.runInScope(runtime, g -> {}, runtimeScope);
             // return result;
         } catch (JanitorCompilerException | JanitorRuntimeException e) {
             throw new ScriptException(e);

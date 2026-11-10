@@ -28,8 +28,7 @@ public class ZipAddTextTestCase extends JanitorTest {
 
     private static void run(final String source, final Path zip) throws JanitorCompilerException, JanitorRuntimeException {
         OutputCatchingTestRuntime.fresh(env -> env.addModule(FilesModule.REGISTRATION))
-                .compile("test", source)
-                .run(globals -> globals.bind("path", zip.toString()));
+                .compileAndRun("test", source, globals -> globals.bind("path", zip.toString()));
     }
 
     private static byte[] entry(final Path zip, final String name) throws Exception {

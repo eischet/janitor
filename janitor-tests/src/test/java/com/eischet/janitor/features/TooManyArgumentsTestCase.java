@@ -47,7 +47,7 @@ public class TooManyArgumentsTestCase extends JanitorTest {
     private static final Set<String> VARIADIC = Set.of("string.format");
 
     private static JanitorObject run(final String source) throws JanitorCompilerException, JanitorRuntimeException {
-        return OutputCatchingTestRuntime.fresh().compile("test", source).run();
+        return OutputCatchingTestRuntime.fresh().compileAndRun("test", source);
     }
 
     private static Dispatcher<?> dispatcherOf(final JanitorObject object) {

@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class ImportFormsTestCase extends JanitorTest {
 
     private static String output(final OutputCatchingTestRuntime runtime, final String source) throws JanitorCompilerException, JanitorRuntimeException {
-        runtime.compile("test", source).run();
+        runtime.compile("test", source).run(runtime);
         return runtime.getAllOutput();
     }
 

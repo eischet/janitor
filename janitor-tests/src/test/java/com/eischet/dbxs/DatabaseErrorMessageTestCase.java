@@ -90,7 +90,7 @@ public class DatabaseErrorMessageTestCase extends JanitorTest {
         });
         final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
         final JanitorRuntimeException error = assertThrows(JanitorRuntimeException.class,
-                () -> runtime.compile("mergeScript", "merge();").run(g -> g.bind("merge", merge)));
+                () -> runtime.compile("mergeScript", "merge();").run(runtime, g -> g.bind("merge", merge)));
         final String message = error.getMessage();
         assertEquals(1, count(message, "statement: insert into e_item"), message);
         assertEquals(1, count(message, "caused by DatabaseError"), message);

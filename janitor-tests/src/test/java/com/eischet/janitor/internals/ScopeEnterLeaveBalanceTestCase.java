@@ -81,7 +81,7 @@ public class ScopeEnterLeaveBalanceTestCase extends JanitorTest {
         final RefCountedThing thing = new RefCountedThing();
         final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         final RunnableScript s = rt.compile("test", script);
-        s.run(globals -> globals.bind("obj", thing));
+        s.run(rt, globals -> globals.bind("obj", thing));
         return thing;
     }
 

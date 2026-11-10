@@ -43,7 +43,7 @@ public class ScriptModulePrecompiledTestCase extends JanitorTest {
 
     private String run(final ScriptModulePrecompiled module, @Language("Janitor") final String script) throws JanitorRuntimeException, JanitorCompilerException {
         final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh(env -> env.addModule(module));
-        rt.compile("test", script).run();
+        rt.compile("test", script).run(rt);
         return rt.getAllOutput();
     }
 

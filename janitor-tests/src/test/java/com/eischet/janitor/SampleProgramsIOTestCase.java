@@ -54,7 +54,7 @@ public class SampleProgramsIOTestCase extends JanitorTest {
             @Language("Janitor") final String scriptCode = Files.readString(scriptPath, StandardCharsets.UTF_8);
             final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
             final RunnableScript script = runtime.compile(scriptPath.getFileName().toString(), scriptCode);
-            script.run(globals -> globals.bind("args", runtime.getBuiltinTypes().list(args.stream().map(runtime.getBuiltinTypes()::string))));
+            script.run(runtime, globals -> globals.bind("args", runtime.getBuiltinTypes().list(args.stream().map(runtime.getBuiltinTypes()::string))));
             return trimTrailingNewline(runtime.getAllOutput());
         } catch (NoSuchFileException | FileNotFoundException e) {
             throw new RuntimeException("File not found: " + scriptPath.toAbsolutePath(), e);
@@ -283,7 +283,7 @@ public class SampleProgramsIOTestCase extends JanitorTest {
         // Run the script, and provide a function "quine" to it that, when called, returns the script code we just loaded.
         // This can safely be considered as cheating, and I bet it would make Glen Matthews proud.
         // What the script actually does is totally irrelevant, as long as it does not print anything but the quine() call's result.
-        script.run(globals -> globals.bindF("quine", (process, arguments) -> process.getBuiltins().string(scriptCode)));
+        script.run(runtime, globals -> globals.bindF("quine", (process, arguments) -> process.getBuiltins().string(scriptCode)));
         // We have to trim the final newline added by print(); alternatively, the quine function could remove the final newline
         // from the script code, but then this would break when the script file does not end on a newline.
         final String output = trimTrailingNewline(runtime.getAllOutput());

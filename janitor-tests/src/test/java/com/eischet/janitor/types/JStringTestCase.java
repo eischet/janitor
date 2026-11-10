@@ -34,7 +34,7 @@ public class JStringTestCase extends JanitorTest {
     private void testStringMethod(@Language("Janitor") final String script, final Object expectedResult) throws JanitorCompilerException, JanitorRuntimeException {
         final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         final RunnableScript runnableScript = rt.compile("test", script);
-        final @NotNull JanitorObject result = runnableScript.run();
+        final @NotNull JanitorObject result = runnableScript.run(rt);
         final Object actualResult = result.janitorGetHostValue();
         assertEquals(expectedResult, actualResult, script);
     }
@@ -42,7 +42,7 @@ public class JStringTestCase extends JanitorTest {
     private void testStringMethod(final String script, final byte[] expectedResult) throws JanitorCompilerException, JanitorRuntimeException {
         final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         final RunnableScript runnableScript = rt.compile("test", script);
-        final @NotNull JanitorObject result = runnableScript.run();
+        final @NotNull JanitorObject result = runnableScript.run(rt);
         final Object actualResult = result.janitorGetHostValue();
         if (actualResult instanceof byte[]) {
             assertArrayEquals(expectedResult, (byte[]) actualResult, script);
@@ -70,7 +70,7 @@ public class JStringTestCase extends JanitorTest {
         assertEquals(1, map.keySet().size());
         assertSame(string, map.keySet().stream().findFirst().orElse(null));
 
-        @NotNull JanitorObject map2raw = rt.compile("newmap", "{'foobar':1}").run();
+        @NotNull JanitorObject map2raw = rt.compile("newmap", "{'foobar':1}").run(rt);
         assertInstanceOf(JMap.class, map2raw);
         JMap map2 = (JMap) map2raw;
 
@@ -198,23 +198,23 @@ public class JStringTestCase extends JanitorTest {
     @Test
     public void wildcards() throws JanitorCompilerException, JanitorRuntimeException {
         final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
-        assertEquals(Boolean.TRUE, rt.compile("test", "'foo' ~ 'f*'").run().janitorGetHostValue());
-        assertEquals(Boolean.FALSE, rt.compile("test", "'bar' ~ 'f*'").run().janitorGetHostValue());
+        assertEquals(Boolean.TRUE, rt.compile("test", "'foo' ~ 'f*'").run(rt).janitorGetHostValue());
+        assertEquals(Boolean.FALSE, rt.compile("test", "'bar' ~ 'f*'").run(rt).janitorGetHostValue());
     }
 
     @Test
     public void regexes() throws JanitorCompilerException, JanitorRuntimeException {
         final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
-        assertEquals(Boolean.TRUE, rt.compile("test", "'foo' ~ re/foo/").run().janitorGetHostValue());
-        assertEquals(Boolean.TRUE, rt.compile("test", "'foo' ~ re/f../").run().janitorGetHostValue());
-        assertEquals(Boolean.FALSE, rt.compile("test", "'foo' ~ re/\\d+/").run().janitorGetHostValue());
-        assertEquals(Boolean.TRUE, rt.compile("test", "'12345' ~ re/\\d+/").run().janitorGetHostValue());
-        assertEquals(Boolean.FALSE, rt.compile("test", "'12345' !~ re/\\d+/").run().janitorGetHostValue());
-        assertEquals("245005", rt.compile("test", "re/[^1-9]+([0-9]+).*/.extract('SW245005-POS04')").run().janitorGetHostValue());
-        assertEquals(JBool.TRUE, rt.compile("test", " 'foo/bar' ~ re/foo.bar/").run());
-        assertEquals(JBool.FALSE, rt.compile("test", " 'foo/bar' !~ re/foo.bar/").run());
-        assertEquals(JBool.TRUE, rt.compile("test", " 'foo/bar' ~ re/foo\\/bar/").run());
-        assertEquals(JBool.FALSE, rt.compile("test", " 'foo/bar' !~ re/foo\\/bar/").run());
+        assertEquals(Boolean.TRUE, rt.compile("test", "'foo' ~ re/foo/").run(rt).janitorGetHostValue());
+        assertEquals(Boolean.TRUE, rt.compile("test", "'foo' ~ re/f../").run(rt).janitorGetHostValue());
+        assertEquals(Boolean.FALSE, rt.compile("test", "'foo' ~ re/\\d+/").run(rt).janitorGetHostValue());
+        assertEquals(Boolean.TRUE, rt.compile("test", "'12345' ~ re/\\d+/").run(rt).janitorGetHostValue());
+        assertEquals(Boolean.FALSE, rt.compile("test", "'12345' !~ re/\\d+/").run(rt).janitorGetHostValue());
+        assertEquals("245005", rt.compile("test", "re/[^1-9]+([0-9]+).*/.extract('SW245005-POS04')").run(rt).janitorGetHostValue());
+        assertEquals(JBool.TRUE, rt.compile("test", " 'foo/bar' ~ re/foo.bar/").run(rt));
+        assertEquals(JBool.FALSE, rt.compile("test", " 'foo/bar' !~ re/foo.bar/").run(rt));
+        assertEquals(JBool.TRUE, rt.compile("test", " 'foo/bar' ~ re/foo\\/bar/").run(rt));
+        assertEquals(JBool.FALSE, rt.compile("test", " 'foo/bar' !~ re/foo\\/bar/").run(rt));
     }
 
     @Test
@@ -222,18 +222,18 @@ public class JStringTestCase extends JanitorTest {
         final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
         Function<String, JanitorObject> str = it -> rt.getBuiltinTypes().nullableString(it);
         // Splitting by a string returns a list of strings, not including the separator string:
-        assertEquals(List.of(str.apply("a"), str.apply("b"), str.apply("c")), rt.compile("test", "'a,b,c'.split(',')").run().janitorGetHostValue());
-        assertEquals(List.of(str.apply("a"), str.apply("b")), rt.compile("test", "'a,b,'.split(',')").run().janitorGetHostValue());
+        assertEquals(List.of(str.apply("a"), str.apply("b"), str.apply("c")), rt.compile("test", "'a,b,c'.split(',')").run(rt).janitorGetHostValue());
+        assertEquals(List.of(str.apply("a"), str.apply("b")), rt.compile("test", "'a,b,'.split(',')").run(rt).janitorGetHostValue());
         // Splitting by an empty string returns a list of characters:
-        assertEquals(List.of(str.apply("a"), str.apply("b"), str.apply("c")), rt.compile("test", "'abc'.split('')").run().janitorGetHostValue());
+        assertEquals(List.of(str.apply("a"), str.apply("b"), str.apply("c")), rt.compile("test", "'abc'.split('')").run(rt).janitorGetHostValue());
         // Splitting an empty string returns an empty list:
-        assertEquals(List.of(), rt.compile("test", "''.split('')").run().janitorGetHostValue());
+        assertEquals(List.of(), rt.compile("test", "''.split('')").run(rt).janitorGetHostValue());
         // Split by a regular expression:
-        assertEquals(List.of(str.apply("a"), str.apply("b"), str.apply("c"), str.apply("d")), rt.compile("test", "'a1b2c3d'.split(re/\\d/)").run().janitorGetHostValue());
+        assertEquals(List.of(str.apply("a"), str.apply("b"), str.apply("c"), str.apply("d")), rt.compile("test", "'a1b2c3d'.split(re/\\d/)").run(rt).janitorGetHostValue());
         // same as:
-        assertEquals(List.of(str.apply("a"), str.apply("b"), str.apply("c"), str.apply("d")), rt.compile("test", "re/\\d/.split('a1b2c3d')").run().janitorGetHostValue());
+        assertEquals(List.of(str.apply("a"), str.apply("b"), str.apply("c"), str.apply("d")), rt.compile("test", "re/\\d/.split('a1b2c3d')").run(rt).janitorGetHostValue());
 
-        @NotNull final JanitorObject anomaly = rt.compile("test", "''.split('foobar')").run();
+        @NotNull final JanitorObject anomaly = rt.compile("test", "''.split('foobar')").run(rt);
         assertEquals(List.of().toString(), anomaly.janitorGetHostValue().toString());
 
 
@@ -246,7 +246,7 @@ public class JStringTestCase extends JanitorTest {
                 print("->", ''.split('foobar'), "<-");
                 assert('a1b2c3d'.split(re/\\d/) == ['a', 'b', 'c', 'd']);
                 assert(re/\\d/.split('a1b2c3d') == ['a', 'b', 'c', 'd']);
-                """).run();
+                """).run(rt);
         log.info(rt.getAllOutput());
     }
 

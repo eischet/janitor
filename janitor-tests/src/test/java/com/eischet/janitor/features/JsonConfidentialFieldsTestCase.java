@@ -68,18 +68,19 @@ public class JsonConfidentialFieldsTestCase extends JanitorTest {
 
     @Test
     public void scriptsWriteEverythingByDefault() throws Exception {
-        final RunnableScript script = OutputCatchingTestRuntime.fresh().compile("test", "return [login].toJson();");
+        final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
+        final RunnableScript script = runtime.compile("test", "return [login].toJson();");
         assertEquals("[{\"user\":\"stefan\",\"password\":\"geheim\",\"retries\":3}]",
-                script.run(process -> process.bind("login", new Login())).janitorGetHostValue());
+                script.run(runtime, process -> process.bind("login", new Login())).janitorGetHostValue());
     }
 
     @Test
     public void scriptsTakeOverTheEnvironmentDefault() throws Exception {
         final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh(env -> ((JanitorDefaultEnvironment) env).setJsonWriteOptions(OMIT));
         final RunnableScript script = runtime.compile("test", "return {login: login}.toJson();");
-        assertEquals("{\"login\":{\"user\":\"stefan\",\"retries\":3}}", script.run(process -> process.bind("login", new Login())).janitorGetHostValue());
+        assertEquals("{\"login\":{\"user\":\"stefan\",\"retries\":3}}", script.run(runtime, process -> process.bind("login", new Login())).janitorGetHostValue());
         // a run can override the default
-        assertEquals("{\"login\":{\"user\":\"stefan\",\"password\":\"geheim\",\"retries\":3}}", script.run(process -> {
+        assertEquals("{\"login\":{\"user\":\"stefan\",\"password\":\"geheim\",\"retries\":3}}", script.run(runtime, process -> {
             process.bind("login", new Login());
             process.setJsonWriteOptions(JsonWriteOptions.COMPACT);
         }).janitorGetHostValue());
@@ -87,8 +88,9 @@ public class JsonConfidentialFieldsTestCase extends JanitorTest {
 
     @Test
     public void aRunCanOmitConfidentialFields() throws Exception {
-        final RunnableScript script = OutputCatchingTestRuntime.fresh().compile("test", "return [login].toJson();");
-        assertEquals("[{\"user\":\"stefan\",\"retries\":3}]", script.run(process -> {
+        final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
+        final RunnableScript script = runtime.compile("test", "return [login].toJson();");
+        assertEquals("[{\"user\":\"stefan\",\"retries\":3}]", script.run(runtime, process -> {
             process.bind("login", new Login());
             process.setJsonWriteOptions(OMIT);
         }).janitorGetHostValue());

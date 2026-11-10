@@ -31,7 +31,7 @@ public class ProcessSetupTestCase extends JanitorTest {
     void bindThroughTheProcess() throws Exception {
         final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
         final String result = runtime.compile("test", "return a + \" \" + b + \" \" + c + \" \" + twice(21);")
-                .run(process -> process
+                .run(runtime, process -> process
                         .bind("a", 1)
                         .bind("b", "two")
                         .bind("c", true)
@@ -44,21 +44,21 @@ public class ProcessSetupTestCase extends JanitorTest {
     void limitPerRun() throws Exception {
         final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
         assertThrows(JanitorInstructionLimitExceededException.class,
-                () -> runtime.compile("test", ENDLESS).run(process -> process.setMaxInstructionCount(1000)));
+                () -> runtime.compile("test", ENDLESS).run(runtime, process -> process.setMaxInstructionCount(1000)));
     }
 
     @Test
     void defaultLimitOfTheEnvironment() throws Exception {
         final OutputCatchingTestRuntime runtime = runtimeWithLimit(1000);
-        assertThrows(JanitorInstructionLimitExceededException.class, () -> runtime.compile("test", ENDLESS).run());
-        assertThrows(JanitorInstructionLimitExceededException.class, () -> runtime.compile("test", FIVE_THOUSAND_STEPS).run());
+        assertThrows(JanitorInstructionLimitExceededException.class, () -> runtime.compile("test", ENDLESS).run(runtime));
+        assertThrows(JanitorInstructionLimitExceededException.class, () -> runtime.compile("test", FIVE_THOUSAND_STEPS).run(runtime));
         // a run can override the default, here with "no limit"
-        assertEquals(5000L, runtime.compile("test", FIVE_THOUSAND_STEPS).run(process -> process.setMaxInstructionCount(0)).janitorGetHostValue());
+        assertEquals(5000L, runtime.compile("test", FIVE_THOUSAND_STEPS).run(runtime, process -> process.setMaxInstructionCount(0)).janitorGetHostValue());
     }
 
     @Test
     void noLimitByDefault() throws Exception {
-        assertEquals(5000L, OutputCatchingTestRuntime.fresh().compile("test", FIVE_THOUSAND_STEPS).run().janitorGetHostValue());
+        assertEquals(5000L, OutputCatchingTestRuntime.fresh().compileAndRun("test", FIVE_THOUSAND_STEPS).janitorGetHostValue());
     }
 
     @Test
@@ -80,6 +80,6 @@ public class ProcessSetupTestCase extends JanitorTest {
     void scriptModuleBindings() throws Exception {
         final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh(env -> env.addModuleResolver((process, name) ->
                 "base".equals(name) ? ScriptModule.moduleFromScript(process, name, "answer = start + 1;", p -> p.bind("start", 41)) : null));
-        assertEquals("42", runtime.compile("test", "import \"base\" as base; return base.answer;").run().janitorToString());
+        assertEquals("42", runtime.compile("test", "import \"base\" as base; return base.answer;").run(runtime).janitorToString());
     }
 }

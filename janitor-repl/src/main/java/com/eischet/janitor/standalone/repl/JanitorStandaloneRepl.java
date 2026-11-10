@@ -147,9 +147,9 @@ public class JanitorStandaloneRepl {
             final String source = Files.readString(scriptPath, StandardCharsets.UTF_8);
             final RunnableScript script = runtime.compile(scriptPath.getFileName().toString(), source);
             if (interactive) {
-                return script.runAndKeepGlobals().getScope();
+                return script.runAndKeepGlobals(runtime).getScope();
             } else {
-                script.run(globals -> {
+                script.run(runtime, globals -> {
                 });
                 return null;
             }

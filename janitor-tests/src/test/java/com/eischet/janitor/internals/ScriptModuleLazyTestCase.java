@@ -31,7 +31,7 @@ public class ScriptModuleLazyTestCase extends JanitorTest {
 
     private String run(final ScriptModuleLazy module, @Language("Janitor") final String script) throws JanitorRuntimeException, JanitorCompilerException {
         final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh(env -> env.addModule(module));
-        rt.compile("test", script).run();
+        rt.compile("test", script).run(rt);
         return rt.getAllOutput();
     }
 

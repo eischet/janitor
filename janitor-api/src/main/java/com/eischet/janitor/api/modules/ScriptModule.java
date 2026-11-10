@@ -56,7 +56,7 @@ public class ScriptModule extends JanitorModuleRegistration {
                                                  @Nullable Consumer<JanitorScriptProcess> bindings) throws JanitorRuntimeException {
         try {
             @NotNull RunnableScript compiled = process.getRuntime().compile(qualifiedName, source);
-            @NotNull ResultAndScope result = compiled.runAndKeepGlobals(bindings == null ? g -> {} : bindings);
+            @NotNull ResultAndScope result = compiled.runAndKeepGlobals(process.getRuntime(), bindings == null ? g -> {} : bindings);
             return new ModuleFromScope(result.getScope(), compiled.getDocumentation());
         } catch (JanitorCompilerException e) {
             throw new JanitorScriptModuleException(process, e);

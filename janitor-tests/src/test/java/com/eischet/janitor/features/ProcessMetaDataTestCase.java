@@ -35,7 +35,7 @@ public class ProcessMetaDataTestCase extends JanitorTest {
     /** Runs a script whose native function reads the key from the process that calls it. */
     private static String seenByNativeCode(final OutputCatchingTestRuntime runtime, final Consumer<JanitorScriptProcess> setup) throws Exception {
         return runtime.compile("test", "return read();")
-                .run(process -> {
+                .run(runtime, process -> {
                     setup.accept(process);
                     process.bindF("read", (p, args) -> p.getBuiltins().nullableString(p.getMetaData(KEY)));
                 })
@@ -51,7 +51,7 @@ public class ProcessMetaDataTestCase extends JanitorTest {
                         } catch (e) {
                             return e.type + ": " + e.message;
                         }""")
-                .run(process -> {
+                .run(runtime, process -> {
                     setup.accept(process);
                     process.bindF("guarded", (p, args) -> {
                         p.require(RIGHT);
@@ -142,7 +142,7 @@ public class ProcessMetaDataTestCase extends JanitorTest {
     /** Runs a script just to get a process with the given value; the process has ended when this returns. */
     private static JanitorScriptProcess endedProcessWith(final OutputCatchingTestRuntime runtime, final String value) throws Exception {
         final AtomicReference<JanitorScriptProcess> parent = new AtomicReference<>();
-        runtime.compile("parent", "return 1;").run(process -> {
+        runtime.compile("parent", "return 1;").run(runtime, process -> {
             process.setMetaData(KEY, value);
             parent.set(process);
         });
@@ -188,7 +188,7 @@ public class ProcessMetaDataTestCase extends JanitorTest {
     void inheritingKeepsTheFallbackToTheEnvironment() throws Exception {
         final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh(env -> env.setMetaData(KEY, "environment"));
         final AtomicReference<JanitorScriptProcess> parent = new AtomicReference<>();
-        runtime.compile("parent", "return 1;").run(parent::set);
+        runtime.compile("parent", "return 1;").run(runtime, parent::set);
         assertEquals("environment", seenByNativeCode(runtime, process -> process.inheritMetaData(parent.get())));
     }
 
@@ -196,7 +196,7 @@ public class ProcessMetaDataTestCase extends JanitorTest {
     void callbackInheritsOnlyThroughTheSetup() throws Exception {
         final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
         final AtomicReference<JanitorScriptProcess> parent = new AtomicReference<>();
-        final ResultAndScope result = runtime.compile("parent", "callback = it -> read();").runAndKeepGlobals(process -> {
+        final ResultAndScope result = runtime.compile("parent", "callback = it -> read();").runAndKeepGlobals(runtime, process -> {
             process.setMetaData(KEY, "parent");
             process.bindF("read", (p, args) -> p.getBuiltins().nullableString(p.getMetaData(KEY)));
             parent.set(process);
@@ -213,7 +213,7 @@ public class ProcessMetaDataTestCase extends JanitorTest {
     void templateSeesTheMetaDataOfTheCaller() throws Exception {
         final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
         final String result = runtime.compile("test", "return \"${read()}\".expand();")
-                .run(process -> {
+                .run(runtime, process -> {
                     process.setMetaData(KEY, "caller");
                     process.bindF("read", (p, args) -> p.getBuiltins().nullableString(p.getMetaData(KEY)));
                 })
@@ -229,7 +229,7 @@ public class ProcessMetaDataTestCase extends JanitorTest {
                                 p -> p.bindF("read", (rs, args) -> rs.getBuiltins().nullableString(rs.getMetaData(KEY))))
                         : null));
         final String result = runtime.compile("test", "import \"base\" as base; return \"\" + base.atImport + \"/\" + base.later();")
-                .run(process -> process.setMetaData(KEY, "importer"))
+                .run(runtime, process -> process.setMetaData(KEY, "importer"))
                 .janitorToString();
         assertEquals("null/importer", result);
     }
