@@ -144,6 +144,8 @@
                             <skip>${install4j.skip}</skip>
                             <projectFile>./janitor.install4j</projectFile>
                             <release>${revision}</release>
+                            <!-- e.g. unknown bean properties in the project file must break the build -->
+                            <failOnWarning>true</failOnWarning>
                             <!-- <destination>./target</destination> -->
                             <!-- <buildSelected>true</buildSelected> -->
                         </configuration>
