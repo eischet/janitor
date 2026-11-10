@@ -9,6 +9,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -133,6 +134,20 @@ class ReplCommandLineTestCase {
         assertTrue(cli.isQuiet());
         assertTrue(cli.isVerbose());
         assertEquals("foo.janitor", cli.getScriptFile());
+    }
+
+    @Test
+    void dashCapitalITakesAModuleDirectoryAndCanBeRepeated() {
+        final ReplCommandLine cli = ReplCommandLine.parse(new String[]{"-I", "lib", "-I", "more", "foo.janitor", "-I", "x"});
+        assertNull(cli.getError());
+        assertEquals(List.of("lib", "more"), cli.getModuleDirectories());
+        assertEquals("foo.janitor", cli.getScriptFile());
+        assertEquals(List.of("-I", "x"), cli.getScriptArgs());
+    }
+
+    @Test
+    void dashCapitalIWithoutADirectoryIsAnError() {
+        assertNotNull(ReplCommandLine.parse(new String[]{"-I"}).getError());
     }
 
 }

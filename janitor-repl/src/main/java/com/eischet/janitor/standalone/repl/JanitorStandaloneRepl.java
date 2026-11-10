@@ -38,6 +38,7 @@ import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
@@ -80,7 +81,10 @@ public class JanitorStandaloneRepl {
         JanitorInternalsModule.host = JanitorInternalsModule.HOST_STANDALONE;
         JanitorInternalsModule.args = cli.getScriptArgs().toArray(new String[0]);
 
-        final JanitorEnvironment env = createEnvironment();
+        final JanitorEnvironment env = createEnvironment(FileModuleResolver.defaultSearchPath(
+                cli.getModuleDirectories().stream().map(Path::of).toList(),
+                System.getenv(FileModuleResolver.SEARCH_PATH_VARIABLE),
+                Path.of(System.getProperty("user.home"))));
         Janitor.setUserProvider(() -> env);
 
         final boolean ranAScript = cli.getScriptFile() != null;
@@ -118,6 +122,10 @@ public class JanitorStandaloneRepl {
                   -i            after running the script, drop into an interactive shell that
                                 retains the script's scope, instead of exiting
                   -q            suppress the welcome banner, even for a plain interactive shell
+                  -I <dir>      search <dir> for modules imported by name, e.g. import "foo" as foo;
+                                (repeatable; searched before JANITOR_PATH, or ~/.janitor/modules
+                                if JANITOR_PATH is not set). import "./foo" as foo; loads foo.janitor
+                                next to the importing script.
                   -h, --help    show this help and exit
                   -V, --version print the interpreter revision and exit
 
@@ -145,7 +153,7 @@ public class JanitorStandaloneRepl {
         final BaseRuntime runtime = createStdoutRuntime(env);
         try {
             final String source = Files.readString(scriptPath, StandardCharsets.UTF_8);
-            final RunnableScript script = runtime.compile(scriptPath.getFileName().toString(), source);
+            final RunnableScript script = runtime.compile(scriptPath.getFileName().toString(), source, scriptPath.toAbsolutePath().normalize().toString());
             if (interactive) {
                 return script.runAndKeepGlobals(runtime).getScope();
             } else {
@@ -172,7 +180,19 @@ public class JanitorStandaloneRepl {
 
     /**
      * Sets up an environment with all the modules the standalone REPL/launcher offers, shared by the
-     * jline console, the plain console, and non-interactive script execution.
+     * jline console, the plain console, and non-interactive script execution, with modules from files
+     * ({@code import "./foo" as foo;}) found as {@link FileModuleResolver} describes it.
+     *
+     * @param moduleSearchPath the directories for imports that are neither relative nor absolute
+     */
+    static JanitorEnvironment createEnvironment(final List<Path> moduleSearchPath) {
+        final JanitorEnvironment env = createEnvironment();
+        env.addModuleResolver(new FileModuleResolver(moduleSearchPath));
+        return env;
+    }
+
+    /**
+     * Sets up an environment with all the modules the standalone REPL/launcher offers, without modules from files.
      */
     static JanitorEnvironment createEnvironment() {
         final JanitorEnvironment env = new JanitorDefaultEnvironment(new JanitorFormattingLocale(Locale.getDefault())) {

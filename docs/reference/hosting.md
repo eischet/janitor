@@ -107,6 +107,13 @@ start with an underscore (`ScriptModule.isExported`). Hosts that build such modu
 `Scope.get`, which only answers the names a scope defines itself, and the same rule, so that neither the environment's
 globals nor private names show through.
 
+To resolve names relative to the importing script, e.g. `import "./helpers" as h;`, a resolver needs to know where that
+script came from. The host records it when compiling: `runtime.compile(name, source, origin)` stores `origin` (any string,
+e.g. the absolute path of a file or a key in a database) in the script's `ScriptSource`. While an import runs,
+`process.getCurrentLocation().getModule()` is the `ScriptSource` of the script that contains the import statement, so
+`getOrigin()` tells the resolver where the importer lives. A resolver that loads modules from scripts compiles them with
+their own origin, so that their imports are relative to them in turn. Without an origin, `getOrigin()` returns `null`.
+
 <a id="binding-globals"></a>
 
 ## Binding global variables

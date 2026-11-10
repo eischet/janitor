@@ -13,6 +13,7 @@ import com.eischet.janitor.api.types.functions.JCallable;
 import com.eischet.janitor.compiler.ast.statement.Script;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -50,9 +51,9 @@ public abstract class BaseRuntime implements JanitorRuntime {
     }
 
     @Override
-    public RunnableScript compile(String moduleName, @Language("Janitor") String source) throws JanitorCompilerException {
+    public RunnableScript compile(String moduleName, @Language("Janitor") String source, @Nullable String origin) throws JanitorCompilerException {
         try {
-            return new JanitorScript(getEnvironment(), moduleName, source == null ? "" : source);
+            return new JanitorScript(getEnvironment(), moduleName, source == null ? "" : source, origin);
         } catch (RuntimeException e) {
             throw new JanitorCompilerException(e.getMessage() == null ? "Compiler Error" : "Compiler Error: " + e.getMessage(), e);
         }

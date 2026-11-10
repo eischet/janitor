@@ -3,6 +3,7 @@
 
 package com.eischet.janitor.standalone.repl;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -21,13 +22,15 @@ final class ReplCommandLine {
     private final boolean quiet;
     private final boolean helpRequested;
     private final boolean versionRequested;
+    private final List<String> moduleDirectories;
     private final String scriptFile;
     private final List<String> scriptArgs;
     private final String error;
 
     private ReplCommandLine(final boolean verbose, final boolean plain, final boolean interactive, final boolean quiet,
-                            final boolean helpRequested, final boolean versionRequested,
+                            final boolean helpRequested, final boolean versionRequested, final List<String> moduleDirectories,
                             final String scriptFile, final List<String> scriptArgs, final String error) {
+        this.moduleDirectories = List.copyOf(moduleDirectories);
         this.verbose = verbose;
         this.plain = plain;
         this.interactive = interactive;
@@ -47,6 +50,7 @@ final class ReplCommandLine {
         boolean helpRequested = false;
         boolean versionRequested = false;
         String scriptFile = null;
+        final List<String> moduleDirectories = new ArrayList<>();
 
         int i = 0;
         for (; i < args.length; i++) {
@@ -63,14 +67,28 @@ final class ReplCommandLine {
                 case "-q" -> quiet = true;
                 case "-h", "--help" -> helpRequested = true;
                 case "-V", "--version" -> versionRequested = true;
+                case "-I" -> {
+                    if (i + 1 >= args.length) {
+                        return new ReplCommandLine(verbose, plain, false, false, false, false, List.of(), null, List.of(), "option -I needs a directory");
+                    }
+                    moduleDirectories.add(args[++i]);
+                }
                 default -> {
-                    return new ReplCommandLine(verbose, plain, false, false, false, false, null, List.of(), "unrecognized option: " + arg);
+                    return new ReplCommandLine(verbose, plain, false, false, false, false, List.of(), null, List.of(), "unrecognized option: " + arg);
                 }
             }
         }
 
         final List<String> scriptArgs = i < args.length ? Arrays.asList(args).subList(i, args.length) : List.of();
-        return new ReplCommandLine(verbose, plain, interactive, quiet, helpRequested, versionRequested, scriptFile, scriptArgs, null);
+        return new ReplCommandLine(verbose, plain, interactive, quiet, helpRequested, versionRequested, moduleDirectories, scriptFile, scriptArgs, null);
+    }
+
+    /**
+     * The directories given with -I, in order: they are searched first for modules imported by a name that is neither
+     * relative ({@code "./foo"}) nor absolute.
+     */
+    List<String> getModuleDirectories() {
+        return moduleDirectories;
     }
 
     boolean isVerbose() {

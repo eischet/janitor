@@ -12,6 +12,7 @@ import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.functions.JCallable;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -34,7 +35,21 @@ public interface JanitorRuntime {
      * @return the compiled script
      * @throws JanitorCompilerException if the source code cannot be compiled
      */
-    RunnableScript compile(String moduleName, @Language("Janitor") String source) throws JanitorCompilerException;
+    default RunnableScript compile(String moduleName, @Language("Janitor") String source) throws JanitorCompilerException {
+        return compile(moduleName, source, null);
+    }
+
+    /**
+     * Compiles a script and records where it came from.
+     * @param moduleName the name of the script, for error messages
+     * @param source the source code
+     * @param origin where the source came from, e.g. the absolute path of a file, or null; module resolvers read it from
+     *               {@link com.eischet.janitor.api.scopes.ScriptSource#getOrigin()} to resolve imports relative to the script
+     * @return the compiled script
+     * @throws JanitorCompilerException if the source code cannot be compiled
+     */
+    RunnableScript compile(String moduleName, @Language("Janitor") String source, @Nullable String origin) throws JanitorCompilerException;
+
     /**
      * Compiles a script to check it for errors, without running it.
      * @param moduleName the name of the script, for error messages

@@ -59,7 +59,22 @@ public class JanitorScript implements RunnableScript, JsonExportableObject {
     public JanitorScript(final @NotNull JanitorEnvironment environment,
                          final @NotNull String moduleName,
                          final @NotNull String source) throws JanitorCompilerException {
-        this(environment, moduleName, source, false, false);
+        this(environment, moduleName, source, null, false, false);
+    }
+
+    /**
+     * Compiles a script that knows where it came from.
+     * @param environment the environment the script runs in
+     * @param moduleName  the name of the script, for messages
+     * @param source      the source code
+     * @param origin      where the source came from, e.g. the absolute path of a file, or null; see {@link ScriptSource#getOrigin()}
+     * @throws JanitorCompilerException if the script does not compile
+     */
+    public JanitorScript(final @NotNull JanitorEnvironment environment,
+                         final @NotNull String moduleName,
+                         final @NotNull String source,
+                         final @Nullable String origin) throws JanitorCompilerException {
+        this(environment, moduleName, source, origin, false, false);
     }
 
     /**
@@ -76,8 +91,27 @@ public class JanitorScript implements RunnableScript, JsonExportableObject {
                          final @NotNull String source,
                          final boolean checking,
                          final boolean verbose) throws JanitorCompilerException {
+        this(environment, moduleName, source, null, checking, verbose);
+    }
+
+    /**
+     * Compiles a script.
+     * @param environment the environment the script runs in
+     * @param moduleName  the name of the script, for messages
+     * @param source      the source code
+     * @param origin      where the source came from, or null; see {@link ScriptSource#getOrigin()}
+     * @param checking    only check: keep the problems instead of throwing them
+     * @param verbose     log details of the compilation
+     * @throws JanitorCompilerException if the script does not compile and this is not a check
+     */
+    public JanitorScript(final @NotNull JanitorEnvironment environment,
+                         final @NotNull String moduleName,
+                         final @NotNull String source,
+                         final @Nullable String origin,
+                         final boolean checking,
+                         final boolean verbose) throws JanitorCompilerException {
         this.environment = environment;
-        this.module = new ScriptSource(moduleName, source);
+        this.module = new ScriptSource(moduleName, source, origin);
 
         final JanitorANTLRErrorListener recorder = new JanitorANTLRErrorListener(source);
 

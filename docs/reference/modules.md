@@ -44,6 +44,22 @@ import "crm" as crm;
 customer = crm.findCustomer("C-1001");
 ```
 
+The standalone interpreter resolves the string form to script files; `.janitor` is added to the name:
+
+- `"./name"` and `"../dir/name"` are relative to the directory of the importing script (in the interactive shell: the
+  working directory). Use this for modules that belong to a script.
+- Absolute paths are used as they are.
+- Any other name, e.g. `"name"` or `"dir/name"`, is looked up in the directories given with `-I <dir>`, then in those of
+  the environment variable `JANITOR_PATH` (separated like `PATH`), or in `~/.janitor/modules` if it is not set. The
+  directory of the importing script is not searched; local modules are imported with `./`.
+- A file is loaded once and the module is shared by all scripts that import it; when the file changes, the next import
+  loads it again. A module that imports itself, directly or through others, is an error.
+
+```janitor compile-only
+import "./helpers" as helpers;
+import "text/format" as fmt;
+```
+
 Rules:
 
 - `import` statements are only allowed at the top level of a script, not inside blocks, functions or loops. Put them at

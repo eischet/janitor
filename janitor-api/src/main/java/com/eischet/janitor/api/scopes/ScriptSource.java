@@ -19,6 +19,7 @@ public class ScriptSource {
 
     private final @NotNull String name;
     private final @NotNull String source;
+    private final @Nullable String origin;
     private final @NotNull Memoized<List<String>> sourceLines;
 
     /**
@@ -28,8 +29,20 @@ public class ScriptSource {
      * @param source the source code of the module
      */
     public ScriptSource(final @NotNull String name, final @NotNull String source) {
+        this(name, source, null);
+    }
+
+    /**
+     * Constructs a new ScriptModule that knows where it came from.
+     *
+     * @param name   the name of the module, for messages and stack traces
+     * @param source the source code of the module
+     * @param origin where the source came from, e.g. the absolute path of a file, or null; see {@link #getOrigin()}
+     */
+    public ScriptSource(final @NotNull String name, final @NotNull String source, final @Nullable String origin) {
         this.name = name;
         this.source = source;
+        this.origin = origin;
         this.sourceLines = new Memoized<>(() -> List.of(source.split("\r?\n\r?")));
     }
 
@@ -84,6 +97,17 @@ public class ScriptSource {
      */
     public @NotNull String getName() {
         return name;
+    }
+
+    /**
+     * Where the source came from, as the host that compiled it put it, e.g. the absolute path of a file.
+     * Module resolvers use it to resolve names relative to the importing script: while an import runs,
+     * {@code process.getCurrentLocation().getModule()} is the source of the importing script.
+     *
+     * @return the origin, or null if the host did not give one
+     */
+    public @Nullable String getOrigin() {
+        return origin;
     }
 
     @Override
