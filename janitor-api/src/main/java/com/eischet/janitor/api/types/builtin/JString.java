@@ -3,6 +3,8 @@
 
 package com.eischet.janitor.api.types.builtin;
 
+import com.eischet.janitor.api.JanitorEnvironment;
+import com.eischet.janitor.api.RunnableScript;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.api.util.WildCardMatcher;
@@ -11,6 +13,7 @@ import com.eischet.janitor.toolbox.json.api.JsonException;
 import com.eischet.janitor.toolbox.json.api.JsonExportablePrimitive;
 import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.function.Function;
@@ -34,14 +37,25 @@ public class JString extends JanitorComposed<JString> implements JConstant, Json
         return !wrapped.isEmpty();
     }
 
-    private WildCardMatcher wildCardMatcher;
+    /**
+     * A template compiled from a string, for the environment it was compiled in.
+     *
+     * @param environment the environment
+     * @param script      the compiled template
+     */
+    public record CompiledTemplate(@NotNull JanitorEnvironment environment, @NotNull RunnableScript script) {
+    }
+
+    // What the string compiles to when it is used as a wild card pattern or a template, kept so that a string literal is
+    // compiled once and not on every use. One field for both keeps every string small; a string rarely serves as both.
+    private volatile Object compiled;
 
     /**
      * Get the wild card matcher.
      * @return the wild card matcher, or null if none is set
      */
     public WildCardMatcher getWildCardMatcher() {
-        return wildCardMatcher;
+        return compiled instanceof WildCardMatcher matcher ? matcher : null;
     }
 
     /**
@@ -49,7 +63,23 @@ public class JString extends JanitorComposed<JString> implements JConstant, Json
      * @param wildCardMatcher the wild card matcher
      */
     public void setWildCardMatcher(final WildCardMatcher wildCardMatcher) {
-        this.wildCardMatcher = wildCardMatcher;
+        this.compiled = wildCardMatcher;
+    }
+
+    /**
+     * @param environment the environment the template runs in
+     * @return the template compiled from this string for that environment, or null if there is none yet
+     */
+    public @Nullable RunnableScript getCompiledTemplate(final @NotNull JanitorEnvironment environment) {
+        return compiled instanceof CompiledTemplate template && template.environment() == environment ? template.script() : null;
+    }
+
+    /**
+     * Keeps the template compiled from this string.
+     * @param template the compiled template
+     */
+    public void setCompiledTemplate(final @NotNull CompiledTemplate template) {
+        this.compiled = template;
     }
 
     /**

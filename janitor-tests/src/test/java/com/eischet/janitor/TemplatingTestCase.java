@@ -7,10 +7,17 @@ import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
 import com.eischet.janitor.api.errors.runtime.JanitorNameException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
+import com.eischet.janitor.api.types.JanitorObject;
+import com.eischet.janitor.api.types.builtin.JString;
 import com.eischet.janitor.api.types.functions.JCallable;
+import com.eischet.janitor.runtime.OutputCatchingTestRuntime;
 import com.eischet.janitor.template.TemplateParser;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class TemplatingTestCase extends JanitorTest {
@@ -53,4 +60,28 @@ public class TemplatingTestCase extends JanitorTest {
 
 
 
+
+    /**
+     * A template literal keeps its compiled template, so a template in a loop is compiled once, and still expands with the
+     * values of each call.
+     */
+    @Test
+    void templateLiteralsAreCompiledOnce() throws JanitorRuntimeException, JanitorCompilerException {
+        final OutputCatchingTestRuntime runtime = OutputCatchingTestRuntime.fresh();
+        assertEquals("1 2 3", runtime.compile("loop", """
+                parts = [];
+                for (i from 1 to 3) {
+                    parts.add("<%= x %>".expand({"x": i}));
+                }
+                return parts.join(" ");
+                """).run().janitorToString());
+        final JanitorObject literal = runtime.compile("literal", """
+                t = "<%= x %>";
+                t.expand({"x": 1});
+                return t;
+                """).run();
+        final JString template = assertInstanceOf(JString.class, literal);
+        assertNotNull(template.getCompiledTemplate(runtime.getEnvironment()));
+        assertNull(template.getCompiledTemplate(OutputCatchingTestRuntime.fresh().getEnvironment()), "kept per environment");
+    }
 }
