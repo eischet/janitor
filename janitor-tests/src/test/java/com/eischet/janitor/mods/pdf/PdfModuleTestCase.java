@@ -122,4 +122,55 @@ public class PdfModuleTestCase extends JanitorTest {
         assertEquals("[1, 1, 1, 15]", result.janitorToString());
     }
 
+    /**
+     * A PDF/A-1b document from a script must pass the PDF/A-1 check that Mustang runs before it turns a PDF into a
+     * ZUGFeRD invoice (PDFBox Preflight), which is the main reason scripts need PDF/A at all.
+     */
+    @Test
+    void setPdfAProducesValidPdfA1b() throws JanitorRuntimeException, JanitorCompilerException, IOException {
+        // a font that OpenPDF bundles; BaseFont finds it as a class path resource, a temp file would stay locked on Windows
+        final String font = "font-fallback/LiberationSans-Regular.ttf";
+        final byte[] pdfA = buildDocument(font, true);
+        assertEquals("%PDF-1.4", new String(pdfA, 0, 8, java.nio.charset.StandardCharsets.US_ASCII));
+        // throws "File is not a valid PDF/A-1 input file" if Preflight finds any error
+        new org.mustangproject.ZUGFeRD.ZUGFeRDExporterFromA1().load(pdfA);
+
+        // the counter-check: without setPdfA, the same document is rejected, so the check above really checks something
+        final byte[] plain = buildDocument(font, false);
+        org.junit.jupiter.api.Assertions.assertThrows(IOException.class, () -> new org.mustangproject.ZUGFeRD.ZUGFeRDExporterFromA1().load(plain));
+    }
+
+    private byte[] buildDocument(final String font, final boolean pdfA) throws JanitorRuntimeException, JanitorCompilerException {
+        final @Language("Janitor") String script = """
+            import pdf;
+            doc = pdf.Document(pdf.PageSize("A4"));
+            writer = pdf.Writer(doc);
+            if (pdfA) {
+                writer.setPdfA("1B");
+            }
+            doc.addTitle("PDF/A test");
+            doc.open();
+            doc.add(pdf.Paragraph("Hello, PDF/A! Grüße, 12,50 €", pdf.BaseFont(fontPath, "Cp1252", true).getFont(12.0)));
+            doc.close();
+            return writer.bytes;
+            """;
+        final JanitorObject result = evaluate(script, env -> env.addModule(PdfModule.REGISTRATION), globals -> {
+            globals.bind("fontPath", font);
+            globals.bind("pdfA", pdfA);
+        });
+        return ((JBinary) result).janitorGetHostValue();
+    }
+
+    @Test
+    void setPdfARejectsUnknownLevels() throws JanitorCompilerException {
+        final @Language("Janitor") String script = """
+            import pdf;
+            doc = pdf.Document();
+            pdf.Writer(doc).setPdfA("1A");
+            """;
+        final JanitorRuntimeException e = org.junit.jupiter.api.Assertions.assertThrows(JanitorRuntimeException.class,
+                () -> evaluate(script, env -> env.addModule(PdfModule.REGISTRATION), null));
+        assertTrue(e.getMessage().contains("unsupported level"), e.getMessage());
+    }
+
 }

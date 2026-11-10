@@ -1078,6 +1078,7 @@ This module defines no object types of its own.
 | `apply(map)` | method | Assigns each entry of the map to the property of the same name, and returns the object itself. |
 | `bytes` | property, read-only | The finished PDF as binary for a writer created without a path, available once the document has been closed; null for a writer that writes to a file; read-only. |
 | `close()` | method | Closes the writer. |
+| `setPdfA(level)` | method | Makes the writer produce PDF/A, level "1B", "2B" or "3B", with the matching PDF version, an sRGB output intent and XMP metadata; call it before document.open(), and use only embedded fonts (BaseFont with embedded true). Returns the writer. |
 
 <a id="types-mustang"></a>
 

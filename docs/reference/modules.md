@@ -429,6 +429,10 @@ The arguments of the element functions follow the constructors of OpenPDF; they 
 (see [open questions](open-questions.md#module-documentation)). `Document()` takes no arguments, a page size, or a
 page size and four margins (left, right, top, bottom).
 
+For an archivable PDF/A document, e.g. as the visible part of a ZUGFeRD invoice, call `writer.setPdfA("1B")` (or `"2B"`,
+`"3B"`) before `doc.open()`, and set all text in embedded fonts: `pdf.BaseFont(path, "Cp1252", true).getFont(size)`.
+The standard fonts like `pdf.HELVETICA` are not embedded, so OpenPDF refuses them in PDF/A.
+
 ```janitor compile-only
 import pdf;
 doc = pdf.Document(pdf.PageSize("A4"));
