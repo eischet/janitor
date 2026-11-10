@@ -430,8 +430,9 @@ The arguments of the element functions follow the constructors of OpenPDF; they 
 page size and four margins (left, right, top, bottom).
 
 For an archivable PDF/A document, e.g. as the visible part of a ZUGFeRD invoice, call `writer.setPdfA("1B")` (or `"2B"`,
-`"3B"`) before `doc.open()`, and set all text in embedded fonts: `pdf.BaseFont(path, "Cp1252", true).getFont(size)`.
-The standard fonts like `pdf.HELVETICA` are not embedded, so OpenPDF refuses them in PDF/A.
+`"3B"`) before `doc.open()`, and set all text in embedded fonts: `pdf.BaseFont(path, "Identity-H", true).getFont(size)`.
+The standard fonts like `pdf.HELVETICA` are not embedded, so OpenPDF refuses them in PDF/A. The encoding `"Identity-H"`
+also writes the Unicode mapping of the text, which PDF/A-3u needs; Mustang declares its ZUGFeRD invoices as PDF/A-3u.
 
 ```janitor compile-only
 import pdf;
