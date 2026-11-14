@@ -9,6 +9,7 @@ import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.JAssignable;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.TemporaryAssignable;
+import com.eischet.janitor.api.types.builtin.JBool;
 import com.eischet.janitor.api.types.builtin.JList;
 import com.eischet.janitor.api.types.builtin.JMap;
 import com.eischet.janitor.api.types.builtin.JNumber;
@@ -86,6 +87,12 @@ import java.util.Set;
 public final class OrmRestHandler<U> {
 
     private static final JanitorLogger log = JanitorLogger.getLogger(OrmRestHandler.class);
+
+    /**
+     * The query parameter (or field of the body of a search) with which a list also contains discontinued records, see
+     * {@link RestPolicy#activeOnly}.
+     */
+    public static final String INCLUDE_DISCONTINUED = "includeDiscontinued";
 
     private static final String JSON = "application/json";
     private static final String PROBLEM_JSON = "application/problem+json";
@@ -337,17 +344,30 @@ public final class OrmRestHandler<U> {
 
     // --- lists ---
 
-    private record ListParameters(@Nullable String filterJson, @Nullable FilterExpression filter, @Nullable String sort, @Nullable List<String> sortKeys, int page, @Nullable Integer size) {
+    private record ListParameters(@Nullable String filterJson, @Nullable FilterExpression filter, @Nullable String sort, @Nullable List<String> sortKeys, int page, @Nullable Integer size,
+                                  boolean includeDiscontinued) {
     }
 
     private ListParameters listParametersFromQuery(final RestRequest<U> request) {
-        return new ListParameters(request.param("filter"), null, request.param("sort"), null, parseInt(request.param("page"), "page", 0), parseOptionalInt(request.param("size"), "size"));
+        return new ListParameters(request.param("filter"), null, request.param("sort"), null, parseInt(request.param("page"), "page", 0), parseOptionalInt(request.param("size"), "size"),
+                parseBoolean(request.param(INCLUDE_DISCONTINUED), INCLUDE_DISCONTINUED));
+    }
+
+    private static boolean parseBoolean(final @Nullable String text, final @NotNull String name) {
+        if (text == null || text.isBlank()) {
+            return false;
+        }
+        return switch (text.trim().toLowerCase(java.util.Locale.ROOT)) {
+            case "true" -> true;
+            case "false" -> false;
+            default -> throw new RestException(400, "'" + name + "' must be true or false.");
+        };
     }
 
     private ListParameters listParametersFromBody(final RestRequest<U> request) throws JsonException {
         final String body = request.body();
         if (body == null || body.isBlank()) {
-            return new ListParameters(null, null, null, null, 0, null);
+            return new ListParameters(null, null, null, null, 0, null, false);
         }
         final JMap map = Janitor.current().parseJsonToMap(body);
         String filterJson = null;
@@ -370,7 +390,12 @@ public final class OrmRestHandler<U> {
         } else if (sort != null && sort != Janitor.NULL) {
             throw new RestException(400, "'sort' must be a list of property names.");
         }
-        return new ListParameters(filterJson, null, null, sortKeys, parseInt(numberText(map, "page"), "page", 0), parseOptionalInt(numberText(map, "size"), "size"));
+        final JanitorObject includeDiscontinued = map.get(Janitor.string(INCLUDE_DISCONTINUED));
+        if (includeDiscontinued != null && includeDiscontinued != Janitor.NULL && !(includeDiscontinued instanceof JBool)) {
+            throw new RestException(400, "'" + INCLUDE_DISCONTINUED + "' must be true or false.");
+        }
+        return new ListParameters(filterJson, null, null, sortKeys, parseInt(numberText(map, "page"), "page", 0), parseOptionalInt(numberText(map, "size"), "size"),
+                includeDiscontinued instanceof JBool flag && flag.janitorIsTrue());
     }
 
     private static @Nullable String numberText(final JMap map, final String key) {
@@ -411,6 +436,11 @@ public final class OrmRestHandler<U> {
             throw new RestException(400, "'page' must not be negative.");
         }
         FilterExpression expression = combine(entity, clientFilter(entity, parameters, denied), policy.restriction(request.user(), entity));
+        final @Nullable FilterExpression activeOnly = parameters.includeDiscontinued() ? null : policy.activeOnly(request.user(), entity);
+        if (activeOnly != null) {
+            // not subject to FILTERABLE: it is the policy's own condition, like the restriction
+            expression = FilterExpression.and(List.of(expression, activeOnly));
+        }
         if (scope != null) {
             // not subject to FILTERABLE: it is the API's own condition
             expression = FilterExpression.and(List.of(expression, FilterExpression.from(scope.subresource().field().name(), FilterOperator.EQ, scope.parentId())));

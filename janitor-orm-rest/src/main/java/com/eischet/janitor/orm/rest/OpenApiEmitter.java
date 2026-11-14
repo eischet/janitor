@@ -27,6 +27,8 @@ public final class OpenApiEmitter {
 
     private final @NotNull OrmApiModel model;
     private final @NotNull OpenApiOptions options;
+    private static final String DISCONTINUED_DESCRIPTION = "Also list discontinued records, where the records can be discontinued; without it, lists leave them out.";
+
     private final @NotNull RestSecurityDescription security;
     private boolean usesUnauthorized;
 
@@ -150,7 +152,8 @@ public final class OpenApiEmitter {
                         "sort", JsonTree.object("type", "array", "items", JsonTree.object("type", "string"),
                                 "description", "Property names; a leading minus sorts descending."),
                         "page", JsonTree.object("type", "integer", "minimum", 0L),
-                        "size", JsonTree.object("type", "integer", "minimum", 1L))));
+                        "size", JsonTree.object("type", "integer", "minimum", 1L),
+                        OrmRestHandler.INCLUDE_DISCONTINUED, JsonTree.object("type", "boolean", "default", Boolean.FALSE, "description", DISCONTINUED_DESCRIPTION))));
         schemas.put("Problem", JsonTree.object(
                 "type", "object",
                 "description", "An error, as in RFC 9457.",
@@ -219,6 +222,10 @@ public final class OpenApiEmitter {
                 "name", "size", "in", "query", "required", Boolean.FALSE,
                 "description", "The page size; at most " + entity.maxPageSize() + ".",
                 "schema", JsonTree.object("type", "integer", "minimum", 1L, "maximum", (long) entity.maxPageSize(), "default", (long) OrmApiModel.DEFAULT_PAGE_SIZE)));
+        listParameters.add(JsonTree.object(
+                "name", OrmRestHandler.INCLUDE_DISCONTINUED, "in", "query", "required", Boolean.FALSE,
+                "description", DISCONTINUED_DESCRIPTION,
+                "schema", JsonTree.object("type", "boolean", "default", Boolean.FALSE)));
         return listParameters;
     }
 

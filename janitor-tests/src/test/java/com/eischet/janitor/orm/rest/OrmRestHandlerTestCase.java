@@ -349,4 +349,48 @@ public class OrmRestHandlerTestCase extends JanitorTest {
         assertEquals(400, get("/items", "sort", "name").status());
         assertEquals(200, get("/items", "sort", "key").status());
     }
+
+    // --- discontinued records ---
+
+    /** A handler whose policy treats items of rank 1 as discontinued (rank is not filterable for clients, which the policy may ignore). */
+    private OrmRestHandler<Object> handlerWithDiscontinuedItems() {
+        return OrmRestHandler.of(collection, new RestPolicy<>() {
+            @Override
+            public boolean permits(final @Nullable Object user, final @NotNull ApiEntity entity, final @NotNull RestOperation operation) {
+                return true;
+            }
+
+            @Override
+            public @Nullable FilterExpression activeOnly(final @Nullable Object user, final @NotNull ApiEntity entity) {
+                return entity.className().endsWith("Item") ? FilterExpression.from("rank", FilterOperator.GT, 1L) : null;
+            }
+        });
+    }
+
+    @Test
+    public void listsLeaveOutDiscontinuedRecordsUnlessAsked() throws Exception {
+        final OrmRestHandler<Object> discontinuing = handlerWithDiscontinuedItems();
+        final RestResponse active = discontinuing.handle(new RestRequest<>("GET", "/items", Map.of(), Map.of(), null, null));
+        assertEquals(List.of("gadget", "hammer", "robot", "wrench"), names(active, "key"));
+        assertEquals(4L, ((Number) json(active).get(Janitor.string("total")).janitorGetHostValue()).longValue(), "the total counts active records only");
+
+        final RestResponse all = discontinuing.handle(new RestRequest<>("GET", "/items", query("includeDiscontinued", "true"), Map.of(), null, null));
+        assertEquals(List.of("gadget", "hammer", "robot", "saw", "wrench"), names(all, "key"));
+
+        final RestResponse searched = discontinuing.handle(new RestRequest<>("POST", "/items/search", Map.of(), Map.of(), "{\"includeDiscontinued\": true}", null));
+        assertEquals(5, names(searched, "key").size());
+        assertEquals(4, names(discontinuing.handle(new RestRequest<>("POST", "/items/search", Map.of(), Map.of(), "{}", null)), "key").size());
+
+        assertEquals(400, discontinuing.handle(new RestRequest<>("GET", "/items", query("includeDiscontinued", "maybe"), Map.of(), null, null)).status());
+        assertEquals(List.of("tools", "toys"), names(discontinuing.handle(new RestRequest<>("GET", "/categories", Map.of(), Map.of(), null, null)), "key"),
+                "entities without the condition are not affected");
+    }
+
+    @Test
+    public void aDiscontinuedRecordCanStillBeFetchedById() throws Exception {
+        final long sawId = collection.getDataManager().callTransaction(conn -> collection.getItemDao().findByKey(conn, "saw").getId());
+        final RestResponse response = handlerWithDiscontinuedItems().handle(new RestRequest<>("GET", "/items/" + sawId, Map.of(), Map.of(), null, null));
+        assertEquals(200, response.status());
+        assertEquals("saw", json(response).get(Janitor.string("key")).janitorGetHostValue());
+    }
 }

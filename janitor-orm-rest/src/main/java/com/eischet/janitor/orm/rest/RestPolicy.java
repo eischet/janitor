@@ -114,6 +114,20 @@ public interface RestPolicy<U> extends RestSecurityDescription {
     }
 
     /**
+     * The condition that a record of an entity meets while it is active, i.e. not discontinued (soft-deleted). Lists leave out the other
+     * records unless the request asks for them with {@value OrmRestHandler#INCLUDE_DISCONTINUED} (a query parameter, or a field of the body
+     * of a search). Getting a single entity and the records of links and joins are not affected, so that references can still be followed.
+     *
+     * @param user   the user of the request, or null if there is none (e.g. when the API is described)
+     * @param entity the entity
+     * @return the condition, or null (the default) if the records of the entity cannot be discontinued. It may only use properties that the
+     * API exposes.
+     */
+    default @Nullable FilterExpression activeOnly(@Nullable U user, @NotNull ApiEntity entity) {
+        return null;
+    }
+
+    /**
      * Whether the policy checks the entities of a kind one by one ({@link #reveal}), for rules that a filter cannot express, e.g. a script that
      * decides per record. Lists then work differently: they check at most {@link #scanLimit} candidates (those that match the filter and the
      * {@link #restriction}, in the order of the request), so that their {@code total} counts only the visible ones among those, and
