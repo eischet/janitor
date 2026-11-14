@@ -120,8 +120,8 @@ public interface RestPolicy<U> extends RestSecurityDescription {
      *
      * @param user   the user of the request, or null if there is none (e.g. when the API is described)
      * @param entity the entity
-     * @return the condition, or null (the default) if the records of the entity cannot be discontinued. It may only use properties that the
-     * API exposes.
+     * @return the condition, or null (the default) if the records of the entity cannot be discontinued. Like the {@link #restriction}, it goes
+     * to the DAO as it is, so it may also use properties that the API does not expose or let clients filter by.
      */
     default @Nullable FilterExpression activeOnly(@Nullable U user, @NotNull ApiEntity entity) {
         return null;
