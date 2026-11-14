@@ -802,7 +802,6 @@ public class FirstParserTestCase extends JanitorTest {
                   Module 'tryCatching4', line 3, column 8
                     i = 1/0;
                 ArithmeticException: / by zero
-                 caused by ArithmeticException: / by zero
                 always
                 """, rt4.getAllOutput());
 

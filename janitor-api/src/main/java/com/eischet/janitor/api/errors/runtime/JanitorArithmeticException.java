@@ -9,6 +9,10 @@ import org.jetbrains.annotations.NotNull;
 /**
  * An exception thrown when an arithmetic operation fails.
  * For example, division by zero.
+ * <p>
+ * It carries the message of the Java {@link ArithmeticException}, but not the exception itself: the error lies in the script, and
+ * a Java cause would only repeat the message and make loggers print the stack trace of the interpreter.
+ * </p>
  */
 public class JanitorArithmeticException extends JanitorRuntimeException {
 
@@ -16,9 +20,8 @@ public class JanitorArithmeticException extends JanitorRuntimeException {
      * Constructs a new JanitorArithmeticException.
      * @param process the running script
      * @param message the detail message
-     * @param e the cause
      */
-    public JanitorArithmeticException(final @NotNull JanitorScriptProcess process, final String message, final ArithmeticException e) {
-        super(process, message, e, JanitorArithmeticException.class);
+    public JanitorArithmeticException(final @NotNull JanitorScriptProcess process, final String message) {
+        super(process, message, JanitorArithmeticException.class);
     }
 }

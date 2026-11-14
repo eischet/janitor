@@ -180,7 +180,7 @@ public class JanitorSemantics {
                 throw new JanitorTypeException(process, "we can only %s numbers at the moment; got %s [%s] and %s [%s]".formatted(name, leftValue, ObjectUtilities.simpleClassNameOf(leftValue), rightValue, ObjectUtilities.simpleClassNameOf(rightValue)));
             }
         } catch (ArithmeticException e) {
-            throw new JanitorArithmeticException(process, e.getMessage() != null ? e.getMessage() : "arithmetic error", e);
+            throw new JanitorArithmeticException(process, e.getMessage() != null ? e.getMessage() : "arithmetic error");
         }
     }
 

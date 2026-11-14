@@ -92,6 +92,15 @@ class SelfExplanatoryLoggingTestCase {
     }
 
     @Test
+    void aDivisionByZeroIsLoggedWithoutStackTrace() {
+        final JanitorRuntimeException e = assertThrows(JanitorRuntimeException.class, () -> OutputCatchingTestRuntime.fresh().compileAndRun("broken", "x = 1 / 0;"));
+        log.warn("module cannot be built", e);
+        assertNull(recorder.throwable);
+        assertEquals("module cannot be built:\n" + e.getMessage().strip(), recorder.message);
+        assertEquals(1, recorder.message.split("/ by zero", -1).length - 1, recorder.message);
+    }
+
+    @Test
     void everyWayToPassTheExceptionIsCondensed() {
         final JanitorRuntimeException e = scriptError();
         final String expected = "failed:\n" + e.getMessage().strip();

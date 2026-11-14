@@ -1,3 +1,10 @@
+# 0.9.75 (in development)
+
+- logging: a division by zero, or another arithmetic error of a script, is logged without a Java stack trace. The
+  `JanitorArithmeticException` no longer carries the Java `ArithmeticException` as its cause; its message keeps the reason
+  ("/ by zero"), and the duplicate line "caused by ArithmeticException: / by zero" is gone from the message, also from
+  what a script sees when it prints a caught error. The constructor no longer takes the cause.
+
 # 0.9.74 (in development)
 
 - Doc comments: a comment that starts with `/**` documents the name defined by the statement after it, i.e. a variable
