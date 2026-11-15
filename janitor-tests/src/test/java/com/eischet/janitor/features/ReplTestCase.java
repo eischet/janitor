@@ -9,6 +9,9 @@ import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.logging.JanitorLogger;
 import com.eischet.janitor.api.metadata.ScriptType;
 import com.eischet.janitor.api.scopes.ScriptBindings;
+import com.eischet.janitor.api.errors.runtime.JanitorCancelledException;
+import com.eischet.janitor.api.errors.runtime.JanitorTimeLimitExceededException;
+import com.eischet.janitor.env.JanitorDefaultEnvironment;
 import com.eischet.janitor.repl.JanitorRepl;
 import com.eischet.janitor.repl.PartialParseResult;
 import com.eischet.janitor.repl.ReplIO;
@@ -16,12 +19,16 @@ import com.eischet.janitor.runtime.OutputCatchingTestRuntime;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.time.Duration;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 
 public class ReplTestCase extends JanitorTest {
 
@@ -214,6 +221,49 @@ public class ReplTestCase extends JanitorTest {
         assertEquals(0, shown.toString().lines().filter(line -> !line.startsWith("error: ")).count(), shown::toString);
         repl.parse("print(x);");
         assertEquals("1\n", rt.getAllOutput());
+    }
+
+
+    @Test
+    public void anEndlessInputEndsAtTheRunTimeLimitOfTheSetup() {
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
+        final JanitorRepl repl = new JanitorRepl(rt, new FakeLoggingIO());
+        repl.setProcessSetup(process -> process.setMaxRunTime(Duration.ofMillis(300)));
+        assertTimeoutPreemptively(Duration.ofSeconds(10), () ->
+                assertThrows(JanitorTimeLimitExceededException.class, () -> repl.parse("n = 0; while (true) { n = n + 1; }")));
+    }
+
+    @Test
+    public void anEndlessInputEndsAtTheRunTimeLimitOfTheEnvironment() {
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh(env -> ((JanitorDefaultEnvironment) env).setMaxRunTime(Duration.ofMillis(300)));
+        final JanitorRepl repl = new JanitorRepl(rt, new FakeLoggingIO());
+        assertTimeoutPreemptively(Duration.ofSeconds(10), () ->
+                assertThrows(JanitorTimeLimitExceededException.class, () -> repl.parse("while (true) { }")));
+    }
+
+    @Test
+    public void anotherThreadCanCancelARunningInput() throws JanitorControlFlowException, JanitorRuntimeException {
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
+        final JanitorRepl repl = new JanitorRepl(rt, new FakeLoggingIO());
+        final AtomicBoolean token = new AtomicBoolean();
+        repl.setProcessSetup(process -> process.setCancellation(token));
+        final Thread canceller = new Thread(() -> {
+            try {
+                Thread.sleep(300);
+            } catch (InterruptedException ignored) {
+                Thread.currentThread().interrupt();
+            }
+            token.set(true);
+        });
+        canceller.start();
+        assertTimeoutPreemptively(Duration.ofSeconds(10), () ->
+                assertThrows(JanitorCancelledException.class, () -> repl.parse("while (true) { }")));
+        // the session goes on with a fresh token
+        token.set(false);
+        repl.parse("x = 3;");
+        rt.resetOutput();
+        repl.parse("print(x);");
+        assertEquals("3\n", rt.getAllOutput());
     }
 
 }

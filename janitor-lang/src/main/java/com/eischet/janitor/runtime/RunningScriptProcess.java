@@ -147,16 +147,24 @@ public class RunningScriptProcess extends AbstractScriptProcess {
     }
 
     /**
+     * Starts the clock of the {@linkplain #setMaxRunTime run time limit}. {@link #run()} does this itself; a host that executes
+     * the script in another way, e.g. a REPL, calls it before it does.
+     */
+    public void startRunTimeLimit() {
+        if (maxRunTime != null && maxRunTime.isPositive()) {
+            deadline = System.nanoTime() + maxRunTime.toNanos();
+            deadlineLimit = maxRunTime;
+        }
+    }
+
+    /**
      * Runs the script.
      * @return the result of the script, i.e. the value that it returned or its last value
      * @throws JanitorRuntimeException if the script fails
      */
     public @NotNull JanitorObject run() throws JanitorRuntimeException {
         // the clock starts here, so that the host's setup callback does not count
-        if (maxRunTime != null && maxRunTime.isPositive()) {
-            deadline = System.nanoTime() + maxRunTime.toNanos();
-            deadlineLimit = maxRunTime;
-        }
+        startRunTimeLimit();
         try {
             script.execute(this);
             return getScriptResult();

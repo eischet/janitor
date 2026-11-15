@@ -4,6 +4,7 @@
 package com.eischet.janitor.repl;
 
 import com.eischet.janitor.api.JanitorRuntime;
+import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.glue.JanitorControlFlowException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.metadata.ScriptType;
@@ -34,6 +35,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Janitor REPL, read-evaluate-print-loop.
@@ -64,6 +66,7 @@ public class JanitorRepl {
     private String defaultPrompt = DEFAULT_PROMPT;
     private String continuePrompt = CONTINUE_PROMPT;
     private boolean quit;
+    private @Nullable Consumer<JanitorScriptProcess> processSetup;
     final StringBuilder buffer = new StringBuilder();
     String prompt = defaultPrompt;
 
@@ -200,6 +203,10 @@ public class JanitorRepl {
             final Location loc = Location.startOf(module);
             final Script partialScript = new Script(loc, List.of(compiledStatement), text);
             final RunningScriptProcess process = new RunningScriptProcess(runtime, globalScope, module.getName(), partialScript);
+            if (processSetup != null) {
+                processSetup.accept(process);
+            }
+            process.startRunTimeLimit();
             try {
                 partialScript.execute(process);
                 final JanitorObject result = process.getScriptResult();
@@ -432,6 +439,17 @@ public class JanitorRepl {
         prompt = defaultPrompt;
     }
 
+
+    /**
+     * Sets up the process of every input before it runs, e.g. with a run time limit
+     * ({@link JanitorScriptProcess#setMaxRunTime}) or a cancellation token ({@link JanitorScriptProcess#setCancellation}).
+     * The run time limit counts from the end of the setup.
+     *
+     * @param processSetup the setup, or null for none
+     */
+    public void setProcessSetup(final @Nullable Consumer<JanitorScriptProcess> processSetup) {
+        this.processSetup = processSetup;
+    }
 
     /**
      * The variables of the session so far, the ones the host bound into {@link #getGlobalScope()} and the ones that the
