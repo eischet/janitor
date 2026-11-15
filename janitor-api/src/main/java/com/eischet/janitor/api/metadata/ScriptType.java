@@ -4,7 +4,10 @@
 package com.eischet.janitor.api.metadata;
 
 import com.eischet.janitor.api.Janitor;
+import com.eischet.janitor.api.types.JanitorObject;
+import com.eischet.janitor.api.types.builtin.*;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
+import com.eischet.janitor.api.types.dispatch.HasDispatcher;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -163,6 +166,32 @@ public sealed interface ScriptType {
     static @NotNull ScriptType of(final @NotNull Dispatcher<?> dispatcher) {
         final String name = dispatcher.getMetaData(Janitor.MetaData.CLASS);
         return new Of(name == null ? "object" : name, dispatcher);
+    }
+
+    /**
+     * The type of a value that exists already, e.g. a variable an interactive session has defined, so that editors can suggest
+     * its members.
+     *
+     * @param value a value, may be null
+     * @return the built-in type of the value, the type of its dispatcher, or {@link #ANY}
+     */
+    static @NotNull ScriptType ofValue(final @Nullable JanitorObject value) {
+        return switch (value) {
+            case null -> ANY;
+            case JString ignored -> STRING;
+            case JInt ignored -> INT;
+            case JFloat ignored -> FLOAT;
+            case JBool ignored -> BOOL;
+            case JDateTime ignored -> DATETIME;
+            case JDate ignored -> DATE;
+            case JDuration ignored -> DURATION;
+            case JList ignored -> LIST;
+            case JMap ignored -> MAP;
+            case JBinary ignored -> new Builtin("binary");
+            case JRegex ignored -> new Builtin("regex");
+            case HasDispatcher<?> object -> of(object.getDispatcher());
+            default -> ANY;
+        };
     }
 
     /**

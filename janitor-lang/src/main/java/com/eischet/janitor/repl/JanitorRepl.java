@@ -6,7 +6,10 @@ package com.eischet.janitor.repl;
 import com.eischet.janitor.api.JanitorRuntime;
 import com.eischet.janitor.api.errors.glue.JanitorControlFlowException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
+import com.eischet.janitor.api.metadata.ScriptType;
 import com.eischet.janitor.api.scopes.Location;
+import com.eischet.janitor.api.scopes.NameDoc;
+import com.eischet.janitor.api.scopes.ScriptBindings;
 import com.eischet.janitor.api.scopes.VariableScope;
 import com.eischet.janitor.api.scopes.ScriptSource;
 import com.eischet.janitor.api.types.JanitorObject;
@@ -24,9 +27,11 @@ import com.eischet.janitor.version.Revision;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 
@@ -419,6 +424,22 @@ public class JanitorRepl {
         prompt = defaultPrompt;
     }
 
+
+    /**
+     * The variables of the session so far, the ones the host bound into {@link #getGlobalScope()} and the ones that the
+     * entered code defined, e.g. for the suggestions of an editor in which the next input is typed.
+     *
+     * @return the variables with the type of their current value and their documentation, in no particular order
+     */
+    public @NotNull List<ScriptBindings.Declaration> declarations() {
+        final List<ScriptBindings.Declaration> declarations = new ArrayList<>();
+        for (final String name : globalScope.names()) {
+            final NameDoc doc = globalScope.getNameDoc(name);
+            final String help = doc == null || doc.text() == null ? "" : doc.text();
+            declarations.add(new ScriptBindings.Declaration(name, ScriptType.ofValue(globalScope.getVariable(name)), help));
+        }
+        return declarations;
+    }
 
     /**
      * @return the banner that is shown when the REPL starts

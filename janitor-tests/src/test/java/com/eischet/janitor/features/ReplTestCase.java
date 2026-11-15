@@ -7,6 +7,8 @@ import com.eischet.janitor.JanitorTest;
 import com.eischet.janitor.api.errors.glue.JanitorControlFlowException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.logging.JanitorLogger;
+import com.eischet.janitor.api.metadata.ScriptType;
+import com.eischet.janitor.api.scopes.ScriptBindings;
 import com.eischet.janitor.repl.JanitorRepl;
 import com.eischet.janitor.repl.PartialParseResult;
 import com.eischet.janitor.repl.ReplIO;
@@ -14,8 +16,12 @@ import com.eischet.janitor.runtime.OutputCatchingTestRuntime;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
 public class ReplTestCase extends JanitorTest {
 
@@ -146,6 +152,41 @@ public class ReplTestCase extends JanitorTest {
         rt.resetOutput();
         repl.parse("print(x);");
         assertEquals("42\n", rt.getAllOutput(), "the global defined before getting stuck must still be there after resetBuffer()");
+    }
+
+
+    @Test
+    public void declarationsNameWhatTheHostBoundAndWhatTheSessionDefined() throws JanitorControlFlowException, JanitorRuntimeException {
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
+        final JanitorRepl repl = new JanitorRepl(rt, new FakeLoggingIO());
+        repl.getGlobalScope().bind("host", rt.getEnvironment().getBuiltinTypes().map());
+        repl.parse("/** the answer */ answer = 42;");
+        repl.parse("name = 'x';");
+        repl.parse("items = [1, 2];");
+        repl.parse("when = @2024-01-01;");
+        for (int i = 0; i < 200; i++) {
+            repl.parse("v" + i + " = " + i + ";");
+        }
+
+        final Map<String, ScriptBindings.Declaration> declared = repl.declarations().stream()
+                .collect(Collectors.toMap(ScriptBindings.Declaration::name, Function.identity()));
+        assertEquals(205, declared.size());
+        assertEquals(ScriptType.MAP, declared.get("host").type());
+        assertEquals(ScriptType.INT, declared.get("answer").type());
+        assertEquals("the answer", declared.get("answer").help());
+        assertEquals(ScriptType.STRING, declared.get("name").type());
+        assertInstanceOf(ScriptType.ListOf.class, declared.get("items").type());
+        assertEquals(ScriptType.DATE, declared.get("when").type());
+        assertEquals(ScriptType.INT, declared.get("v199").type());
+    }
+
+    @Test
+    public void declarationsFollowTheCurrentValue() throws JanitorControlFlowException, JanitorRuntimeException {
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
+        final JanitorRepl repl = new JanitorRepl(rt, new FakeLoggingIO());
+        repl.parse("x = 1;");
+        repl.parse("x = 'now a string';");
+        assertEquals(ScriptType.STRING, repl.declarations().stream().filter(d -> d.name().equals("x")).findFirst().orElseThrow().type());
     }
 
 }
