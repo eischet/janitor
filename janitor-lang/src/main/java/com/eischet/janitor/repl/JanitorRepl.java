@@ -83,6 +83,7 @@ public class JanitorRepl {
 
         final boolean[] incomplete = {false};
         final boolean[] missingTerminator = {false};
+        final boolean[] syntaxError = {false};
 
         parser.addErrorListener(new ANTLRErrorListener() {
             @Override
@@ -108,6 +109,7 @@ public class JanitorRepl {
                         return;
                     }
                 }
+                syntaxError[0] = true;
                 io.error("Syntax Error: " + msg);
             }
 
@@ -150,6 +152,10 @@ public class JanitorRepl {
             io.verbose("--> Incomplete!");
             return new Fragment(PartialParseResult.INCOMPLETE);
         }
+        if (syntaxError[0]) {
+            // the parser recovers from errors, but what it made of the text is not what the user wrote: run nothing
+            return new Fragment(PartialParseResult.OK);
+        }
         return new Fragment(scriptContext);
     }
 
@@ -181,7 +187,9 @@ public class JanitorRepl {
             return PartialParseResult.INCOMPLETE;
         }
 
-        // TODO: on 'missing STMT_TERM', try to parse the same text again
+        if (fragment.getScriptContext() == null) {
+            return PartialParseResult.OK; // a syntax error, already reported
+        }
 
 
         final ScriptSource module = new ScriptSource("repl", text);

@@ -189,4 +189,31 @@ public class ReplTestCase extends JanitorTest {
         assertEquals(ScriptType.STRING, repl.declarations().stream().filter(d -> d.name().equals("x")).findFirst().orElseThrow().type());
     }
 
+
+    @Test
+    public void anInputWithASyntaxErrorDoesNotRunAtAll() throws JanitorControlFlowException, JanitorRuntimeException {
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
+        final StringBuilder shown = new StringBuilder();
+        final JanitorRepl repl = new JanitorRepl(rt, new FakeLoggingIO() {
+            @Override
+            public void println(final String text) {
+                shown.append(text).append("\n");
+            }
+
+            @Override
+            public void error(final String text) {
+                shown.append("error: ").append(text).append("\n");
+            }
+        });
+        repl.parse("x = 1;");
+        rt.resetOutput();
+        assertEquals(PartialParseResult.OK, repl.parse("print('ran'); x = 2; 1 +* 2;"));
+        assertEquals("", rt.getAllOutput(), "nothing of an input with a syntax error runs");
+        assertEquals(PartialParseResult.OK, repl.parse("1 +* 2;"));
+        assertEquals(2, shown.toString().lines().filter(line -> line.startsWith("error: Syntax Error")).count(), shown::toString);
+        assertEquals(0, shown.toString().lines().filter(line -> !line.startsWith("error: ")).count(), shown::toString);
+        repl.parse("print(x);");
+        assertEquals("1\n", rt.getAllOutput());
+    }
+
 }
