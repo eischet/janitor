@@ -30,6 +30,14 @@ mvn verify
 mvn -pl janitor-tests -am verify -Dit.test=MsGraphModuleIT
 ```
 
+Coverage of the whole test suite (JaCoCo, report in `janitor-tests/target/site/jacoco-aggregate`) and mutation tests
+(PIT, slow, report in `janitor-tests/target/pit-reports`; narrow down with `-Dpit.targetClasses=com.eischet.janitor.runtime.*`):
+
+```bash
+mvn -pl janitor-tests -am -Pcoverage verify
+mvn -pl janitor-tests -am -Pmutation test
+```
+
 `mvn package` is the normal build; it runs the unit tests but not the integration tests. Integration tests run from `verify` on, so before every install and deploy.
 
 No linter or auto-formatter is enforced. Follow 4-space indentation, braces on the same line, packages under `com.eischet.janitor.*`.
