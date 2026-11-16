@@ -31,6 +31,15 @@ public final class ForeignKeyNull<T extends OrmEntity> implements ForeignKey<T> 
     }
 
     /**
+     * Replaces "other" with this object when it is null.
+     * @param other a foreign key
+     * @return a foreign key
+     */
+    public @NotNull ForeignKey<T> coalesce(final @Nullable ForeignKey<T> other) {
+        return other == null ? this : other;
+    }
+
+    /**
      * Returns a pointer to this object.
      * This comes in handy when you need a factory method for NULL objects, e.g.: {@code Branch.NULL::pointer} instead of {@code () -> new ForeignKeyNull<>()}.
      * @return a pointer to this object
