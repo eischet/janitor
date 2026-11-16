@@ -58,6 +58,9 @@ public class JanitorRepl {
             """;
 
     private final ScriptSource module;
+    private static final String LAST_RESULT = "_";
+
+    private final VariableScope resultScope;
     private final VariableScope globalScope;
     private final JanitorRuntime runtime;
     private final ReplIO io;
@@ -74,7 +77,11 @@ public class JanitorRepl {
         this.runtime = runtime;
         this.io = io;
         module = new ScriptSource("repl", "");
-        globalScope = VariableScope.createGlobalScope(runtime.getEnvironment(), module);
+        // Holds "_", the last result shown. Sealed, so that an assignment of the user to "_" lands in the global scope
+        // and shadows it from then on, as in Python.
+        resultScope = VariableScope.createMainScope(runtime.getEnvironment(), runtime.getEnvironment().getBuiltinScope());
+        resultScope.seal();
+        globalScope = VariableScope.createGlobalScope(runtime.getEnvironment(), module, resultScope);
     }
 
     private Fragment parseFragment(final String text) {
@@ -212,6 +219,7 @@ public class JanitorRepl {
                 final JanitorObject result = process.getScriptResult();
                 if (result != JNull.NULL) {
                     io.println(String.valueOf(result));
+                    resultScope.bind(LAST_RESULT, result);
                 }
             } catch (ReturnStatement.Return ret) {
                 final JanitorObject returnResult = ret.getValue();

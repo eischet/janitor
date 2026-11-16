@@ -75,6 +75,18 @@ public class VariableScope implements Scope {
     }
 
     /**
+     * Create a global scope below another scope, e.g. one in which a REPL keeps names of its own.
+     *
+     * @param env    the environment
+     * @param module the module
+     * @param parent the scope that is asked for names the global scope does not hold
+     * @return the global scope
+     */
+    public static VariableScope createGlobalScope(final JanitorEnvironment env, final ScriptSource module, final Scope parent) {
+        return new VariableScope(env, Location.startOf(module), parent, null, true);
+    }
+
+    /**
      * Create a builtin scope.
      *
      * @param env      the environment

@@ -266,4 +266,53 @@ public class ReplTestCase extends JanitorTest {
         assertEquals("3\n", rt.getAllOutput());
     }
 
+
+    @Test
+    public void underscoreHoldsTheLastShownResult() throws JanitorControlFlowException, JanitorRuntimeException {
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
+        final JanitorRepl repl = new JanitorRepl(rt, new FakeLoggingIO());
+        repl.parse("20 + 1;");
+        repl.parse("_ * 2;");
+        repl.parse("x = 'an assignment shows nothing';");
+        repl.parse("print('neither does a call that returns null');");
+        repl.parse("if (true) { y = 3; }");
+        rt.resetOutput();
+        repl.parse("print(_);");
+        assertEquals("42\n", rt.getAllOutput());
+    }
+
+    @Test
+    public void underscoreFollowsShownResultsThroughALongSession() throws JanitorControlFlowException, JanitorRuntimeException {
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
+        final JanitorRepl repl = new JanitorRepl(rt, new FakeLoggingIO());
+        repl.parse("0;");
+        for (int i = 0; i < 1000; i++) {
+            repl.parse("_ + 1;");
+        }
+        rt.resetOutput();
+        repl.parse("print(_);");
+        assertEquals("1000\n", rt.getAllOutput());
+    }
+
+    @Test
+    public void anUnderscoreOfTheUserIsNeverOverwritten() throws JanitorControlFlowException, JanitorRuntimeException {
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
+        final JanitorRepl repl = new JanitorRepl(rt, new FakeLoggingIO());
+        repl.parse("1;");
+        repl.parse("_ = 'mine';");
+        repl.parse("2;");
+        rt.resetOutput();
+        repl.parse("print(_);");
+        assertEquals("mine\n", rt.getAllOutput());
+        assertEquals(1, repl.declarations().stream().filter(d -> d.name().equals("_")).count(), "the user's own _ is a variable of the session");
+    }
+
+    @Test
+    public void theAutomaticUnderscoreIsNoVariableOfTheSession() throws JanitorControlFlowException, JanitorRuntimeException {
+        final OutputCatchingTestRuntime rt = OutputCatchingTestRuntime.fresh();
+        final JanitorRepl repl = new JanitorRepl(rt, new FakeLoggingIO());
+        repl.parse("1;");
+        assertEquals(0, repl.declarations().stream().filter(d -> d.name().equals("_")).count());
+    }
+
 }
