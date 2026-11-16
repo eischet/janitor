@@ -1,0 +1,114 @@
+// SPDX-FileCopyrightText: 2021-2026 Eischet Software e.K.
+// SPDX-License-Identifier: MIT
+
+package com.eischet.janitor.benchmarks;
+
+import com.eischet.janitor.api.Janitor;
+import com.eischet.janitor.api.JanitorEnvironment;
+import com.eischet.janitor.api.JanitorEnvironmentProvider;
+import com.eischet.janitor.api.RunnableScript;
+import com.eischet.janitor.api.modules.ScriptModule;
+import com.eischet.janitor.api.types.JanitorObject;
+import com.eischet.janitor.runtime.OutputCatchingTestRuntime;
+import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.BenchmarkMode;
+import org.openjdk.jmh.annotations.Fork;
+import org.openjdk.jmh.annotations.Measurement;
+import org.openjdk.jmh.annotations.Mode;
+import org.openjdk.jmh.annotations.OutputTimeUnit;
+import org.openjdk.jmh.annotations.Scope;
+import org.openjdk.jmh.annotations.Setup;
+import org.openjdk.jmh.annotations.State;
+import org.openjdk.jmh.annotations.Warmup;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Measures the interpreter on the things typical host scripts do all the time: loops that call script functions and
+ * lambdas, calls into an imported script module, and template expansion. Each benchmark runs one precompiled script.
+ * <p>
+ * Run with {@code mvn -pl janitor-tests -am -Pbench -DskipTests test "-Djmh.args=ScriptLookupsBenchmark"}.
+ * </p>
+ */
+@State(Scope.Benchmark)
+@BenchmarkMode(Mode.AverageTime)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 3, time = 2)
+@Measurement(iterations = 5, time = 2)
+@Fork(1)
+public class ScriptLookupsBenchmark {
+
+    private static final String MODULE = """
+            titel = "Hallo";
+            function gruss(name, hoeflich) {
+                return titel + " " + name;
+            }
+            farben = ["rot", "gruen"];
+            """;
+
+    private static final String LOOPS = """
+            function quad(x) { return x * x; }
+            add = (a, b) -> a + b;
+            summe = 0;
+            for (i from 1 to 100000) {
+                if (i > 0) {
+                    summe = add(summe, quad(i % 10));
+                    assert(true);
+                }
+            }
+            return summe;
+            """;
+
+    private static final String MODULE_CALLS = """
+            import zaehler as m;
+            g = null;
+            for (k from 1 to 50000) {
+                g = m.gruss("x", true);
+            }
+            return g;
+            """;
+
+    private static final String TEMPLATES = """
+            t = "";
+            for (j from 1 to 2000) {
+                t = "<%= wer %> <%= kunde %>".expand({"wer": j});
+            }
+            return t;
+            """;
+
+    private OutputCatchingTestRuntime runtime;
+    private RunnableScript loops;
+    private RunnableScript moduleCalls;
+    private RunnableScript templates;
+
+    @Setup
+    public void setup() throws Exception {
+        runtime = OutputCatchingTestRuntime.fresh(env -> env.addModule(new ScriptModule("zaehler", MODULE, null)));
+        final JanitorEnvironment environment = runtime.getEnvironment();
+        Janitor.setUserProvider(new JanitorEnvironmentProvider() {
+            @Override
+            public JanitorEnvironment getCurrentEnvironment() {
+                return environment;
+            }
+        });
+        loops = runtime.compile("loops", LOOPS);
+        moduleCalls = runtime.compile("moduleCalls", MODULE_CALLS);
+        templates = runtime.compile("templates", TEMPLATES);
+    }
+
+    @Benchmark
+    public JanitorObject loops() throws Exception {
+        return loops.run(runtime, p -> { });
+    }
+
+    @Benchmark
+    public JanitorObject moduleCalls() throws Exception {
+        return moduleCalls.run(runtime, p -> { });
+    }
+
+    @Benchmark
+    public JanitorObject templates() throws Exception {
+        return templates.run(runtime, p -> p.getMainScope().bind("kunde", "ACME"));
+    }
+
+}
