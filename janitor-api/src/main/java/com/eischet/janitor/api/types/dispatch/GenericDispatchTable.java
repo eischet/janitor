@@ -808,6 +808,19 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
     }
 
     /**
+     * Adds a read-only list property that is transient: scripts read it like any other property, but it is never written to
+     * JSON and not listed in the JSON schema, see {@link #addTransientObjectProperty(String, NullableGetter)}.
+     *
+     * @param name   property name
+     * @param getter property getter; null is seen as {@code NULL} by scripts
+     * @return a meta-data builder for further configuration
+     */
+    public PropertyHandle<T, JList> addTransientListProperty(final @NotNull String name, final NullableGetter<T, @Nullable JList> getter) {
+        return internalAddProperty(name, instance -> Janitor.nullableObject(getter.get(instance)), null, null, null, getter, null)
+                .setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.LIST);
+    }
+
+    /**
      * Add a list property.
      *
      * @param name                field name
@@ -1321,6 +1334,32 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
         // no jsonSupport when there's no setter!
     }
 
+    /**
+     * Adds a read-only object property that is transient: scripts read it like any other property, but it is never written to
+     * JSON and not listed in the JSON schema. Meant for values that are derived from other properties or loaded from elsewhere,
+     * like the navigation to related records, whose serialization would repeat what the object already holds, or never end.
+     *
+     * @param name   property name
+     * @param getter property getter; null is seen as {@code NULL} by scripts
+     * @param <X>    type of the property value
+     * @return a meta-data builder
+     */
+    public <X extends JanitorObject> PropertyHandle<T, X> addTransientObjectProperty(final String name, final NullableGetter<T, @Nullable X> getter) {
+        return internalAddProperty(name, instance -> Janitor.nullableObject(getter.get(instance)), null, null, null, getter, null).setMetaData(HOST_NULLABLE, true);
+    }
+
+    /**
+     * Like {@link #addTransientObjectProperty(String, NullableGetter)}, with the dispatcher of the value type.
+     *
+     * @param name       property name
+     * @param getter     property getter; null is seen as {@code NULL} by scripts
+     * @param dispatcher dispatcher for the object type
+     * @param <X>        type of the property value
+     * @return a meta-data builder
+     */
+    public <X extends JanitorObject> PropertyHandle<T, X> addTransientObjectProperty(final String name, final NullableGetter<T, @Nullable X> getter, final Dispatcher<X> dispatcher) {
+        return internalAddProperty(name, instance -> Janitor.nullableObject(getter.get(instance)), null, null, dispatcher, getter, null).setMetaData(HOST_NULLABLE, true);
+    }
 
     private <X extends JanitorObject> JsonAdapter<T> adaptGetterOnly(final String name, final NullableGetter<T, X> getter) {
         return new JsonAdapter<>() {
@@ -1621,8 +1660,8 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
             parent.writeSchemaToJson(stream);
         }
         for (final Attribute<T> attribute : attributes) {
-            if (isOmitted(stream, attribute)) {
-                continue;
+            if (attribute.jsonAdapter() == null || isOmitted(stream, attribute)) {
+                continue; // transient properties are never written, so they are not part of the schema either
             }
             final Dispatcher<?> subDispatch = getMetaData(attribute.name(), Janitor.MetaData.DISPATCHER);
             final JsonType jsonType = getMetaData(attribute.name, Janitor.MetaData.JSON_TYPE);
