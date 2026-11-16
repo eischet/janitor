@@ -13,6 +13,8 @@ import java.util.stream.Collectors;
 public class FormalParameters implements Iterable<FormalParameter> {
 
     private final List<FormalParameter> parameters;
+    private final List<FormalParameter> positionalParameters;
+    private final boolean collectsMore;
 
     protected FormalParameters(final List<FormalParameter> parameters) throws CompilerError {
         this.parameters = parameters;
@@ -36,6 +38,9 @@ public class FormalParameters implements Iterable<FormalParameter> {
             }
             previousKind = nextKind;
         }
+        // the list is immutable, and functions check their arguments on every call
+        this.positionalParameters = parameters.stream().filter(FormalParameter::isMinimallyRequired).toList();
+        this.collectsMore = parameters.stream().anyMatch(p -> p.getKind() == FormalParameter.Kind.VARARGS || p.getKind() == FormalParameter.Kind.KWARGS);
     }
 
     private boolean mayTransition(final FormalParameter.Kind currentKind, final FormalParameter.Kind nextKind) {
@@ -86,7 +91,7 @@ public class FormalParameters implements Iterable<FormalParameter> {
      * @return the parameters that callers must always supply
      */
     public @NotNull @Unmodifiable List<FormalParameter> getPositionalParameters() {
-        return parameters.stream().filter(FormalParameter::isMinimallyRequired).toList();
+        return positionalParameters;
     }
 
     @Override
@@ -98,7 +103,14 @@ public class FormalParameters implements Iterable<FormalParameter> {
      * @return the number of parameters that callers must always supply
      */
     public int minSize() {
-        return (int) parameters.stream().filter(it -> it.isMinimallyRequired()).count();
+        return positionalParameters.size();
+    }
+
+    /**
+     * @return true if the function collects additional arguments with *rest or **options
+     */
+    public boolean collectsMore() {
+        return collectsMore;
     }
 
     @Override

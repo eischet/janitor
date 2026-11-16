@@ -232,7 +232,8 @@ public class VariableScope implements Scope {
      * @return this scope (for chained, builder-style calls)
      */
     public VariableScope bind(final @NotNull JanitorScriptProcess process, final @NotNull String variableName, final @Nullable JanitorObject variable) {
-        final @NotNull String name = Objects.requireNonNull(process.getBuiltins().intern(variableName));
+        // The compiler interns the names it emits; interning again here would cost a JVM string table lookup per binding.
+        final @NotNull String name = Objects.requireNonNull(variableName);
         process.trace(() -> "binding in" + (sealed ? " SEALED" : "") + " scope " + this + ": " + name + " = " + variable);
         if (sealed) {
             process.warn("tried to rebind '%s' as %s in sealed scope %s".formatted(name, variable, this));
@@ -449,8 +450,12 @@ public class VariableScope implements Scope {
      */
     @Override
     public void janitorLeaveScope() {
-        if (!sealed) {
-            _variables.values().stream().filter(Objects::nonNull).forEach(JanitorObject::janitorLeaveScope);
+        if (!sealed && !_variables.isEmpty()) {
+            for (final JanitorObject variable : _variables.values()) {
+                if (variable != null) {
+                    variable.janitorLeaveScope();
+                }
+            }
         }
     }
 

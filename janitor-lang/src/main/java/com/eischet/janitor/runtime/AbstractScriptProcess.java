@@ -135,12 +135,15 @@ public abstract class AbstractScriptProcess implements JanitorScriptProcess {
      */
     private @Nullable JanitorObject find(final @NotNull Scope scope, final @NotNull String name, final @Nullable List<Scope> closures) {
         Scope at = scope;
+        boolean closuresChecked = closures == null || closures.isEmpty();
         while (at != null) {
             final JanitorObject own = at.get(this, name);
             if (own != null) {
                 return own;
             }
-            if (closures != null) {
+            // the closure scopes are the same on every level, so one look is enough
+            if (!closuresChecked) {
+                closuresChecked = true;
                 for (final Scope closureScope : closures) {
                     final JanitorObject closureVar = closureScope.get(this, name);
                     if (closureVar != null) {

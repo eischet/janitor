@@ -208,9 +208,7 @@ public class ScriptFunction extends AstNode implements Expression, JsonExportabl
             process.countInstruction();
             try {
                 // Too many arguments are an error, as in Python and Java, unless the function collects them with *rest or **options.
-                final boolean collectsMore = formalParameters.getParameters().stream()
-                        .anyMatch(p -> p.getKind() == FormalParameter.Kind.VARARGS || p.getKind() == FormalParameter.Kind.KWARGS);
-                if (collectsMore) {
+                if (formalParameters.collectsMore()) {
                     arguments.requireAtLeast(formalParameters.minSize());
                 } else if (formalParameters.minSize() == formalParameters.size()) {
                     arguments.require(formalParameters.size());

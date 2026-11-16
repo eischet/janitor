@@ -1,3 +1,11 @@
+# 0.9.77 (in development)
+
+- Performance: calling script functions and running blocks is faster, about half the time for loops that call functions
+  and lambdas (`ScriptLookupsBenchmark`). Binding a variable no longer interns its name again (the compiler already does),
+  functions check their arguments without recounting their parameters on every call, leaving a block no longer builds a
+  stream, and looking up a name consults the closure scopes of the running functions once instead of on every level of
+  the scope chain. Results are unchanged.
+
 # 0.9.75, 2026-11-16 (internal release only)
 
 - logging: a division by zero, or another arithmetic error of a script, is logged without a Java stack trace. The
