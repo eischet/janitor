@@ -1,11 +1,11 @@
-# 0.9.75 (in development)
+# 0.9.75, 2026-11-16 (internal release only)
 
 - logging: a division by zero, or another arithmetic error of a script, is logged without a Java stack trace. The
   `JanitorArithmeticException` no longer carries the Java `ArithmeticException` as its cause; its message keeps the reason
   ("/ by zero"), and the duplicate line "caused by ArithmeticException: / by zero" is gone from the message, also from
   what a script sees when it prints a caught error. The constructor no longer takes the cause.
 
-# 0.9.74 (in development)
+# 0.9.74, 2026-11-11 (internal release only)
 
 - Doc comments: a comment that starts with `/**` documents the name defined by the statement after it, i.e. a variable
   of any kind, a function, a member (`config.timeout = 30`), a key of a map literal, or a parameter
@@ -43,7 +43,7 @@
   field used the wrong way as an argument error before the query runs. `FilterExpression` gains `negated()` (De Morgan for
   groups; "startswith" and "endswith" have no negation), `testsForTrue()` and `withField(path)`.
 
-# 0.9.73,2026-11-06 (internal release only)
+# 0.9.73, 2026-11-06 (internal release only)
 
 - orm: join DAOs can filter, too. `JoinDao.findByFilter` and `countByFilter` take a `FilterExpression` on the fields of the
   join records, including paths through their references like `ticket.status`, which become sub-queries on the referenced
@@ -61,7 +61,7 @@
   (`atError()` etc.) is not affected. `SelfExplanatory.coversChain` and `describe` make the same decision and text available
   to hosts that report errors in other ways than through a logger.
 
-# 0.9.72,2026-11-04 (internal release only)
+# 0.9.72, 2026-11-04 (internal release only)
 
 - tooling: `JanitorCompletions` (package `com.eischet.janitor.tooling`) suggests what may be written at a position, for
   editors: keywords, the environment's global functions and the script's own names, and after a dot the members of the
