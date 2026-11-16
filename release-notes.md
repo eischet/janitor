@@ -5,6 +5,10 @@
   functions check their arguments without recounting their parameters on every call, leaving a block no longer builds a
   stream, and looking up a name consults the closure scopes of the running functions once instead of on every level of
   the scope chain. Results are unchanged.
+- Strings: only the string literals of a script are interned (by the compiler, through `BuiltinTypes.intern`). Strings a
+  script computes at run time, e.g. by concatenation, `format` or templates, are no longer interned: that cost a lookup
+  in the JVM's string table for every short string, about a third of the time of calls into a module function that
+  returns one. Equal strings still compare equal; only their identity differs.
 
 # 0.9.75, 2026-11-16 (internal release only)
 

@@ -105,7 +105,7 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
      * @return the string value
      */
     public static JString parseLiteral(final JanitorEnvironment env, final @NotNull String literal) {
-        return env.getBuiltinTypes().string(unescapeJava(literal));
+        return env.getBuiltinTypes().string(env.getBuiltinTypes().intern(unescapeJava(literal)));
     }
 
     /**

@@ -110,12 +110,14 @@ public class DefaultBuiltinTypes implements BuiltinTypes {
 
     @Override
     public @NotNull JString string(final @Nullable String value) {
-        return JString.newInstance(stringDispatcher, value == null ? "" : value, this::intern);
+        // Only the literals of a script are interned, by the compiler: interning every string a script computes would cost
+        // a lookup in the JVM's string table each time.
+        return JString.newInstance(stringDispatcher, value == null ? "" : value, it -> it);
     }
 
     @Override
     public @NotNull JanitorObject nullableString(final @Nullable String value) {
-        return value == null ? JNull.NULL : JString.newInstance(stringDispatcher, value, this::intern);
+        return value == null ? JNull.NULL : JString.newInstance(stringDispatcher, value, it -> it);
     }
 
     @Override
