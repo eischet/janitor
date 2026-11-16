@@ -11,6 +11,7 @@ import com.eischet.janitor.api.errors.runtime.JanitorInternalException;
 import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.JanitorCleanupRequired;
+import com.eischet.janitor.api.types.JanitorScopeAware;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.JMap;
 import com.eischet.janitor.api.types.builtin.JString;
@@ -46,7 +47,7 @@ import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 /**
  * Simple HTTP Client for the Janitor scripting language.
  */
-public class JanitorHttpClient extends JanitorComposed<JanitorHttpClient> implements JanitorCleanupRequired {
+public class JanitorHttpClient extends JanitorComposed<JanitorHttpClient> implements JanitorCleanupRequired, JanitorScopeAware {
 
     public static final DispatchTable<JanitorHttpClient> DISPATCH = new DispatchTable<>();
 

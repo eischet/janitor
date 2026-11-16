@@ -509,16 +509,6 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
         }
 
         @Override
-        public void janitorLeaveScope() {
-            JanitorObject.super.janitorLeaveScope();
-        }
-
-        @Override
-        public void janitorEnterScope() {
-            JanitorObject.super.janitorEnterScope();
-        }
-
-        @Override
         public @Nullable <T extends JanitorObject> T janitorCoerce(@NotNull Class<T> type) {
             return JanitorObject.super.janitorCoerce(type);
         }

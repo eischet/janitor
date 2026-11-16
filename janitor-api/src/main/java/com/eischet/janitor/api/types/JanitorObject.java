@@ -160,26 +160,6 @@ public interface JanitorObject {
         }
     }
 
-
-    /**
-     * Called on an Object when it leaves a scripting scope.
-     * <p>Intended Users: scripting runtime.</p>
-     * <p>
-     * This is a chance to release resources for objects that were <b>created by the script</b>.
-     * Global objects passed into a script should not react to this event to avoid becoming unusable in case they are reused!
-     * </p>
-     */
-    default void janitorLeaveScope() {
-        // ignored by default
-    }
-
-    /**
-     * Called on an Object when it enters a scripting scope.
-     */
-    default void janitorEnterScope() {
-        // ignored by default
-    }
-
     /**
      * Retrieve an attribute of an object, e.h. a method or a property.
      * <p>Intended Users: scripting runtime.</p>

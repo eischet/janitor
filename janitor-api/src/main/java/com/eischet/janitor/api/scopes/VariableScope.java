@@ -7,6 +7,7 @@ import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.types.JanitorCleanupRequired;
+import com.eischet.janitor.api.types.JanitorScopeAware;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.JMap;
 import com.eischet.janitor.api.types.builtin.JNull;
@@ -40,7 +41,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * which is the block scope they were created in, to be able to look up "foo" in this case.</li>
  * </ul>
  */
-public class VariableScope implements Scope {
+public class VariableScope implements Scope, JanitorScopeAware {
 
     private final @Nullable Scope parent;
     private final Map<String, JanitorObject> _variables;
@@ -49,6 +50,8 @@ public class VariableScope implements Scope {
     private final JanitorEnvironment env;
     private @Nullable Location ip;
     private boolean sealed = false;
+    // set once a binding of this scope held a JanitorScopeAware object, so leaving the scope can skip all others
+    private volatile boolean holdsScopeAware = false;
     private volatile @Nullable Map<String, NameDoc> nameDocs;
 
     private VariableScope(final JanitorEnvironment env, final @Nullable Location location, final @Nullable Scope parent, final @Nullable Scope moduleScope, final boolean threadEnabled) {
@@ -204,7 +207,10 @@ public class VariableScope implements Scope {
      */
     protected void setVariable(final @NotNull String variableName, final @NotNull JanitorObject value, final @Nullable JanitorScriptProcess process) {
         _variables.put(variableName, value);
-        value.janitorEnterScope();
+        if (value instanceof JanitorScopeAware aware) {
+            holdsScopeAware = true;
+            aware.janitorEnterScope();
+        }
         if (process != null && value instanceof JanitorCleanupRequired cleanable) {
             process.registerCleanable(cleanable);
         }
@@ -243,9 +249,9 @@ public class VariableScope implements Scope {
             setVariable(name, JNull.NULL, process);
         } else {
             final JanitorObject existing = getVariable(name);
-            if (existing != null) {
+            if (existing instanceof JanitorScopeAware aware) {
                 process.trace(() -> "replacing existing value " + name + " = " + existing + " with " + variable);
-                existing.janitorLeaveScope();
+                aware.janitorLeaveScope();
             }
             setVariable(name, variable, process);
         }
@@ -296,8 +302,8 @@ public class VariableScope implements Scope {
      */
     public JanitorObject unbind(final String variableName) {
         final JanitorObject existing = _variables.remove(variableName);
-        if (existing != null) {
-            existing.janitorLeaveScope();
+        if (existing instanceof JanitorScopeAware aware) {
+            aware.janitorLeaveScope();
         }
         return existing;
     }
@@ -306,7 +312,7 @@ public class VariableScope implements Scope {
      * Remove all variables from this scope.
      */
     public void unbindAll() {
-        _variables.values().forEach(JanitorObject::janitorLeaveScope);
+        leaveAll();
         _variables.clear();
     }
 
@@ -450,10 +456,16 @@ public class VariableScope implements Scope {
      */
     @Override
     public void janitorLeaveScope() {
-        if (!sealed && !_variables.isEmpty()) {
+        if (!sealed) {
+            leaveAll();
+        }
+    }
+
+    private void leaveAll() {
+        if (holdsScopeAware) {
             for (final JanitorObject variable : _variables.values()) {
-                if (variable != null) {
-                    variable.janitorLeaveScope();
+                if (variable instanceof JanitorScopeAware aware) {
+                    aware.janitorLeaveScope();
                 }
             }
         }

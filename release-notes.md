@@ -9,6 +9,10 @@
   script computes at run time, e.g. by concatenation, `format` or templates, are no longer interned: that cost a lookup
   in the JVM's string table for every short string, about a third of the time of calls into a module function that
   returns one. Equal strings still compare equal; only their identity differs.
+- API: `janitorEnterScope()` and `janitorLeaveScope()` moved from `JanitorObject` to the new interface
+  `JanitorScopeAware`. Objects that count references or release resources when their binding ends must implement it;
+  scopes no longer call these methods on other objects, and leaving a block that never held such an object costs
+  nothing (about 10 % faster loops and function calls). When and how often the methods are called is unchanged.
 
 # 0.9.75, 2026-11-16 (internal release only)
 

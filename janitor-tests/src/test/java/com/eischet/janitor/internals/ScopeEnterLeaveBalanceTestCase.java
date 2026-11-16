@@ -7,6 +7,7 @@ import com.eischet.janitor.api.scopes.VariableScope;
 import com.eischet.janitor.JanitorTest;
 import com.eischet.janitor.api.RunnableScript;
 import com.eischet.janitor.api.types.JanitorObject;
+import com.eischet.janitor.api.types.JanitorScopeAware;
 import com.eischet.janitor.runtime.OutputCatchingTestRuntime;
 import com.eischet.janitor.toolbox.memory.RefCounter;
 import org.junit.jupiter.api.Test;
@@ -15,6 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Regression test for a bug in {@code JanitorScript.run(Consumer<VariableScope>)}: it used to call
@@ -46,17 +48,22 @@ public class ScopeEnterLeaveBalanceTestCase extends JanitorTest {
      * implementation: acquire()/release() a real RefCounter, and record (rather than merely log) any
      * exception from a mismatched release() so the test can assert on it directly.
      */
-    static class RefCountedThing implements JanitorObject {
+    static class RefCountedThing implements JanitorObject, JanitorScopeAware {
         final int id = idGen.incrementAndGet();
         final RefCounter refCounter = new RefCounter(() -> {
         });
         Exception enterError;
         Exception leaveError;
+        int enters;
+        int leaves;
+        long maxReferences;
 
         @Override
         public void janitorEnterScope() {
+            enters++;
             try {
                 refCounter.acquire();
+                maxReferences = Math.max(maxReferences, refCounter.get());
             } catch (IllegalStateException e) {
                 enterError = e;
             }
@@ -64,6 +71,7 @@ public class ScopeEnterLeaveBalanceTestCase extends JanitorTest {
 
         @Override
         public void janitorLeaveScope() {
+            leaves++;
             try {
                 refCounter.release();
             } catch (IllegalStateException e) {
@@ -152,6 +160,49 @@ public class ScopeEnterLeaveBalanceTestCase extends JanitorTest {
                 """);
         assertNull(thing.leaveError);
         assertEquals(0, thing.refCounter.get());
+    }
+
+    @Test
+    public void bindingsInLoopBodiesAreReleasedAtTheEndOfEachPass() throws Exception {
+        // the object is bound in a block that also holds plain values, and in a function called from it
+        final RefCountedThing thing = runAndTrack("""
+                function f(p) {
+                    n = 1;
+                    return p;
+                }
+                for (i from 1 to 1000) {
+                    a = i * 2;
+                    b = "x";
+                    if (i > 0) {
+                        z = f(obj);
+                    }
+                    c = a + 1;
+                }
+                """);
+        assertNull(thing.enterError);
+        assertNull(thing.leaveError);
+        assertEquals(0, thing.refCounter.get());
+        assertEquals(thing.enters, thing.leaves, "every binding must end exactly once");
+        assertTrue(thing.enters >= 2001, "one binding for obj, plus parameter and z in every pass: " + thing.enters);
+        assertTrue(thing.maxReferences <= 3, "a pass must release its bindings before the next one: " + thing.maxReferences);
+    }
+
+    @Test
+    public void scopeAwareValuesAreReleasedAfterPlainValuesWereBoundFirst() throws Exception {
+        final RefCountedThing thing = runAndTrack("""
+                if (true) {
+                    a = 1;
+                    b = [1, 2, 3];
+                    c = {"k": "v"};
+                    d = obj;
+                    d = 5;
+                    e = obj;
+                }
+                """);
+        assertNull(thing.leaveError);
+        assertEquals(0, thing.refCounter.get());
+        assertEquals(thing.enters, thing.leaves);
+        assertEquals(3, thing.enters, "obj, d and e");
     }
 
 }
