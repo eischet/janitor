@@ -36,7 +36,7 @@
         <deps.azure-identity>1.18.7</deps.azure-identity>
         <deps.azure-core-http-jdk-httpclient>1.2.0</deps.azure-core-http-jdk-httpclient>
         <deps.mcp>2.1.0</deps.mcp>
-        <deps.jetty>12.1.14</deps.jetty>
+        <deps.jetty>12.1.15</deps.jetty>
 
     </properties>
 
