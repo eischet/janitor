@@ -22,7 +22,9 @@
 - Dispatch tables: `addTransientObjectProperty` and `addTransientListProperty` register read-only properties that
   scripts read like any other, but that are never written to JSON and not listed in the JSON schema. They are meant for
   navigation to related records and other derived values, whose serialization repeats data the object already holds, or
-  never ends when two objects point at each other. The JSON schema now leaves out every property without a JSON adapter.
+  never ends when two objects point at each other.
+- JSON schema: it now lists exactly the properties that are written to and read from JSON. Properties without JSON
+  support were never serialized, but the schema used to list them anyway.
 - REPL: every result the REPL shows is available as `_` in the next input, as in Python. Results that are not shown
   (null, assignments) leave it unchanged, and a `_` the user assigns shadows it. `VariableScope.createGlobalScope` has a
   new overload that takes the parent scope.
