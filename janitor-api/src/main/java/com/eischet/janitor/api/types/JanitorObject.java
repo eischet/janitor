@@ -120,11 +120,14 @@ public interface JanitorObject {
         if (matchingPredicate.test(this)) {
             return this;
         }
+        @NotNull JanitorObject current = this;
         @NotNull JanitorObject next = janitorUnpack();
-        while (next != this) {
+        // the innermost object unpacks to itself, which need not be this object, e.g. for a map entry holding null
+        while (next != current) {
             if (matchingPredicate.test(next)) {
                 return next;
             }
+            current = next;
             next = next.janitorUnpack();
         }
         return null;

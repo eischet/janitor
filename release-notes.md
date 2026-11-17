@@ -13,6 +13,9 @@
   `JanitorScopeAware`. Objects that count references or release resources when their binding ends must implement it;
   scopes no longer call these methods on other objects, and leaving a block that never held such an object costs
   nothing (about 10 % faster loops and function calls). When and how often the methods are called is unchanged.
+- Fix: calling a method on a map that has no such key (`{}.foo()`), or whose value is not callable (`{foo: 1}.foo()`),
+  no longer hangs the calling thread in an endless loop, which the instruction limit could not stop. It now fails with a
+  `NameException` ("member is not callable"), which scripts can catch (`JanitorObject.janitorUnpackUntil`).
 
 # 0.9.75, 2026-11-16 (internal release only)
 
