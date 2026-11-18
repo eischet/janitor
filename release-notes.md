@@ -18,6 +18,12 @@
   returns what the script gets instead: the value, a replacement or null. `inheritMetaData` takes the guard over as
   well. Without a guard nothing changes; `ScriptLookupsBenchmark` shows no measurable difference (parameter `guard`
   measures a guard that lets everything pass).
+- ORM: a DAO collection can refuse scripts that read. `OrmDaoCollection.checkScriptRead(process)` is asked before every
+  script method that fetches records (`findById`, `getById`, `findByIds`, `findByKey`, `getByKey`, `findAll`, `getAll`,
+  `select`, `count`, and the lookups of join DAOs), like `checkScriptWrite` before those that write. `checkScriptSql`
+  asks both by default, since SQL from a script can read and write. Following a reference from an entity the script
+  already has is not a script read, and Java code is not checked. By default every script may read, so nothing changes
+  for hosts that do not override it.
 - Fix: calling a method on a map that has no such key (`{}.foo()`), or whose value is not callable (`{foo: 1}.foo()`),
   no longer hangs the calling thread in an endless loop, which the instruction limit could not stop. It now fails with a
   `NameException` ("member is not callable"), which scripts can catch (`JanitorObject.janitorUnpackUntil`).

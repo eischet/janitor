@@ -1501,6 +1501,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
      * @throws JanitorRuntimeException if the arguments are invalid or the query fails
      */
     public JanitorObject scriptFindById(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+        collection.checkScriptRead(process);
         try {
             final T single = getDataManager().callTransaction(conn -> {
                 try {
@@ -1524,6 +1525,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
      * @throws JanitorRuntimeException if the argument is not a collection of numbers or the query fails
      */
     public JanitorObject scriptFindByIds(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+        collection.checkScriptRead(process);
         final JIterable source = arguments.require(1).getRequired(0, JIterable.class);
         final List<Long> ids = new ArrayList<>();
         for (final Iterator<? extends JanitorObject> it = source.getIterator(); it.hasNext(); ) {
@@ -1545,6 +1547,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
      * @throws JanitorRuntimeException if the arguments are invalid or the query fails
      */
     public JanitorObject scriptFindByKey(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+        collection.checkScriptRead(process);
         try {
             final T single = getDataManager().callTransaction(conn -> {
                 try {
@@ -1567,6 +1570,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
      * @throws JanitorRuntimeException if the query fails
      */
     public JanitorObject scriptFindAll(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+        collection.checkScriptRead(process);
         return callScriptTransaction(process, conn -> Janitor.list(findAll(conn, null).stream().map(this::forScript)));
     }
 
@@ -1579,6 +1583,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
      * @throws JanitorRuntimeException if the condition cannot be used as a query, or the query fails
      */
     public JanitorObject scriptSelect(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+        collection.checkScriptRead(process);
         final FilterExpression filter = scriptFilter(process, arguments);
         final FilterQuery query = FilterQuery.from(filter).withQueryTimeout(queryTimeoutFor(process));
         return callScriptTransaction(process, conn -> Janitor.list(findByFilter(conn, query).stream().map(this::forScript)));
@@ -1592,6 +1597,7 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
      * @throws JanitorRuntimeException if the condition cannot be used as a query, or the query fails
      */
     public JanitorObject scriptCount(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+        collection.checkScriptRead(process);
         final FilterExpression filter = scriptFilter(process, arguments);
         final Integer queryTimeout = queryTimeoutFor(process);
         return Janitor.integer(callScriptTransaction(process, conn -> countByFilter(conn, filter, queryTimeout)));

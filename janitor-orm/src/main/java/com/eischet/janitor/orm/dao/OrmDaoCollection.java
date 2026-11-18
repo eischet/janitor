@@ -110,14 +110,26 @@ public abstract class OrmDaoCollection<S extends OrmDaoCollection<S>> extends Ja
     }
 
     /**
+     * Called before a script reads through a DAO of this collection ({@code findById}, {@code select}, {@code count} and the like), and only
+     * then: Java code that calls the DAOs directly is not checked, and neither is following a reference from an entity the script already
+     * has. By default, every script may read; a host overrides this to refuse with an exception, like {@link #checkScriptWrite}.
+     *
+     * @param process the running script process
+     * @throws JanitorRuntimeException if the script must not read
+     */
+    public void checkScriptRead(final @NotNull JanitorScriptProcess process) throws JanitorRuntimeException {
+    }
+
+    /**
      * Called before a DAO of this collection runs SQL that a script supplied. Whatever the JDBC call is named, such SQL can write as well:
-     * {@code delete from x output deleted.id} is a query that returns IDs on SQL Server. So by default, this asks {@link #checkScriptWrite}.
+     * {@code delete from x output deleted.id} is a query that returns IDs on SQL Server. So by default, this asks {@link #checkScriptRead} and {@link #checkScriptWrite}.
      * A host overrides this if, for example, these queries run with a login that can only read.
      *
      * @param process the running script process
      * @throws JanitorRuntimeException if the script must not run its own SQL
      */
     public void checkScriptSql(final @NotNull JanitorScriptProcess process) throws JanitorRuntimeException {
+        checkScriptRead(process);
         checkScriptWrite(process);
     }
 

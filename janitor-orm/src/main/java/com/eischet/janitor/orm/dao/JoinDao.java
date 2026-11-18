@@ -474,6 +474,7 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
      * @throws JanitorRuntimeException if the condition cannot be used as a query, or the query fails
      */
     public JanitorObject scriptSelect(final @NotNull JanitorScriptProcess process, final @NotNull JCallArgs arguments) throws JanitorRuntimeException {
+        collection.checkScriptRead(process);
         final FilterExpression filter = scriptFilter(process, arguments);
         final Integer queryTimeout = GenericDao.queryTimeoutFor(process);
         try {
@@ -492,6 +493,7 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
      * @throws JanitorRuntimeException if the condition cannot be used as a query, or the query fails
      */
     public JanitorObject scriptCount(final @NotNull JanitorScriptProcess process, final @NotNull JCallArgs arguments) throws JanitorRuntimeException {
+        collection.checkScriptRead(process);
         final FilterExpression filter = scriptFilter(process, arguments);
         final Integer queryTimeout = GenericDao.queryTimeoutFor(process);
         try {
@@ -813,6 +815,7 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
                                    final @NotNull JCallArgs arguments,
                                    final @NotNull String columnName,
                                    final @NotNull Class<?> expected) throws JanitorRuntimeException {
+        collection.checkScriptRead(process);
         try {
             final long id = toId(process, arguments.require(1).get(0), expected);
             final List<T> results = getDataManager().callTransaction(conn -> findByColumn(conn, columnName, id));
@@ -837,6 +840,7 @@ public abstract class JoinDao<T extends OrmJoined> extends JanitorComposed<JoinD
                                    final @NotNull String columnName1,
                                    final @NotNull String columnName2,
                                    final @NotNull Class<?> expected) throws JanitorRuntimeException {
+        collection.checkScriptRead(process);
         try {
             final long id = toId(process, arguments.require(1).get(0), expected);
             final List<T> results1 = getDataManager().callTransaction(conn -> findByColumn(conn, columnName1, id));
