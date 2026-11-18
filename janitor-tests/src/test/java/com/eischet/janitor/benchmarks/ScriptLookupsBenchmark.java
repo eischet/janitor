@@ -25,7 +25,8 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Measures the interpreter on the things typical host scripts do all the time: loops that call script functions and
- * lambdas, calls into an imported script module, and template expansion. Each benchmark runs one precompiled script.
+ * lambdas, calls into an imported script module, template expansion, chains of member accesses and method calls on
+ * built-in values. Each benchmark runs one precompiled script.
  * <p>
  * Run with {@code mvn -pl janitor-tests -am -Pbench -DskipTests test "-Djmh.args=ScriptLookupsBenchmark"}.
  * </p>
@@ -76,10 +77,35 @@ public class ScriptLookupsBenchmark {
             return t;
             """;
 
+    private static final String MEMBER_ACCESS = """
+            import zaehler as m;
+            o = {"a": {"b": {"c": 1}}, "name": "x"};
+            summe = 0;
+            n = null;
+            for (i from 1 to 100000) {
+                summe = summe + o.a.b.c;
+                n = o.name;
+                n = m.titel;
+            }
+            return summe;
+            """;
+
+    private static final String MEMBER_CALLS = """
+            s = "Hallo Welt";
+            liste = [1, 2, 3];
+            summe = 0;
+            for (i from 1 to 100000) {
+                summe = summe + s.length() + liste.size() + liste[1];
+            }
+            return summe;
+            """;
+
     private OutputCatchingTestRuntime runtime;
     private RunnableScript loops;
     private RunnableScript moduleCalls;
     private RunnableScript templates;
+    private RunnableScript memberAccess;
+    private RunnableScript memberCalls;
 
     @Setup
     public void setup() throws Exception {
@@ -94,6 +120,8 @@ public class ScriptLookupsBenchmark {
         loops = runtime.compile("loops", LOOPS);
         moduleCalls = runtime.compile("moduleCalls", MODULE_CALLS);
         templates = runtime.compile("templates", TEMPLATES);
+        memberAccess = runtime.compile("memberAccess", MEMBER_ACCESS);
+        memberCalls = runtime.compile("memberCalls", MEMBER_CALLS);
     }
 
     @Benchmark
@@ -109,6 +137,16 @@ public class ScriptLookupsBenchmark {
     @Benchmark
     public JanitorObject templates() throws Exception {
         return templates.run(runtime, p -> p.getMainScope().bind("kunde", "ACME"));
+    }
+
+    @Benchmark
+    public JanitorObject memberAccess() throws Exception {
+        return memberAccess.run(runtime, p -> { });
+    }
+
+    @Benchmark
+    public JanitorObject memberCalls() throws Exception {
+        return memberCalls.run(runtime, p -> { });
     }
 
 }
