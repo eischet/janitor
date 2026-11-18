@@ -104,9 +104,9 @@ public class FunctionCallStatement extends Statement implements Expression, Json
 
                 // LATER: double-check where/when we need to unpack here!
                 if (result instanceof JAssignable) {
-                    return result;
+                    return process.guard(result);
                 }
-                return result.janitorUnpack();
+                return process.guard(result.janitorUnpack());
             } catch (RuntimeException e) {
                 throw new JanitorNativeException(process, "function call failed for " + functionName + "(" + args + ")", e);
             }

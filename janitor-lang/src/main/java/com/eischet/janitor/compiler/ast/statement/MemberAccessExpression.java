@@ -58,7 +58,7 @@ public class MemberAccessExpression extends AstNode implements Expression {
         }
         @Nullable final JanitorObject attribute = lookup(process, object, identifier, forAssignment);
         if (attribute != null) {
-            return attribute;
+            return forAssignment ? attribute : process.guard(attribute);
         }
         if (object instanceof JMap) {
             // for ease of use, {}.foo returns null instead of throwing an exception! I.e. Maps are always using guarded lookups.
@@ -71,7 +71,7 @@ public class MemberAccessExpression extends AstNode implements Expression {
             }
             @Nullable final JanitorObject unpackedAttribute = lookup(process, unpacked, identifier, forAssignment);
             if (unpackedAttribute != null) {
-                return unpackedAttribute;
+                return forAssignment ? unpackedAttribute : process.guard(unpackedAttribute);
             }
             if (unpacked instanceof JMap) {
                 // for ease of use, {}.foo returns null instead of throwing an exception! I.e. Maps are always using guarded lookups.

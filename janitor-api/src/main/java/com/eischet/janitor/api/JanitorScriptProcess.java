@@ -100,7 +100,8 @@ public interface JanitorScriptProcess {
     @NotNull MetaDataMap copyMetaData();
 
     /**
-     * Takes over the parent's own meta-data, replacing this process's values for the same keys. A new process does not
+     * Takes over the parent's own meta-data, replacing this process's values for the same keys, and the parent's
+     * {@linkplain #setValueGuard value guard}, if it has one. A new process does not
      * inherit anything by itself: whoever starts a script on behalf of another one decides, usually in the setup callback
      * of the run method. This is a one-time copy: later changes to either process do not reach the other, and the parent
      * may already have ended.
@@ -120,6 +121,27 @@ public interface JanitorScriptProcess {
             throw new JanitorPermissionException(this, "requires " + key.getName());
         }
     }
+
+    /**
+     * Sets a guard that sees every value the script obtains from a variable, a member, a method call, a function call or
+     * an index, and decides what the script gets instead. Hosts set it in the setup callback of the run method, for
+     * scripts that may only see part of the data they can reach. Without a guard, which is the default, nothing is checked.
+     * @param guard the guard, or null for none
+     */
+    void setValueGuard(final @Nullable ValueGuard guard);
+
+    /**
+     * @return the guard of this process, or null if it has none
+     */
+    @Nullable ValueGuard getValueGuard();
+
+    /**
+     * Passes a value through the {@linkplain #setValueGuard guard} of this process; the interpreter calls this.
+     * @param value the value the script is about to obtain
+     * @return what the script gets to see; the value itself if there is no guard
+     * @throws JanitorRuntimeException if the guard refuses
+     */
+    @NotNull JanitorObject guard(final @NotNull JanitorObject value) throws JanitorRuntimeException;
 
     /**
      * Enters a block of code, which gets its own scope.

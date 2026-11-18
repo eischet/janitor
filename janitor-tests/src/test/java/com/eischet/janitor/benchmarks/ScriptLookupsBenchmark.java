@@ -16,6 +16,7 @@ import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
+import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
@@ -100,6 +101,9 @@ public class ScriptLookupsBenchmark {
             return summe;
             """;
 
+    @Param({"false", "true"})
+    public boolean guard;
+
     private OutputCatchingTestRuntime runtime;
     private RunnableScript loops;
     private RunnableScript moduleCalls;
@@ -126,27 +130,27 @@ public class ScriptLookupsBenchmark {
 
     @Benchmark
     public JanitorObject loops() throws Exception {
-        return loops.run(runtime, p -> { });
+        return loops.run(runtime, p -> { if (guard) { p.setValueGuard((process, value) -> value); } });
     }
 
     @Benchmark
     public JanitorObject moduleCalls() throws Exception {
-        return moduleCalls.run(runtime, p -> { });
+        return moduleCalls.run(runtime, p -> { if (guard) { p.setValueGuard((process, value) -> value); } });
     }
 
     @Benchmark
     public JanitorObject templates() throws Exception {
-        return templates.run(runtime, p -> p.getMainScope().bind("kunde", "ACME"));
+        return templates.run(runtime, p -> { if (guard) { p.setValueGuard((process, value) -> value); } p.getMainScope().bind("kunde", "ACME"); });
     }
 
     @Benchmark
     public JanitorObject memberAccess() throws Exception {
-        return memberAccess.run(runtime, p -> { });
+        return memberAccess.run(runtime, p -> { if (guard) { p.setValueGuard((process, value) -> value); } });
     }
 
     @Benchmark
     public JanitorObject memberCalls() throws Exception {
-        return memberCalls.run(runtime, p -> { });
+        return memberCalls.run(runtime, p -> { if (guard) { p.setValueGuard((process, value) -> value); } });
     }
 
 }

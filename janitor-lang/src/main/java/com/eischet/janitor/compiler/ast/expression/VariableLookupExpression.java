@@ -36,7 +36,7 @@ public class VariableLookupExpression extends AstNode implements Expression, Jso
     public @NotNull JanitorObject evaluate(final JanitorScriptProcess process) throws JanitorRuntimeException {
         process.setCurrentLocation(getLocation());
         process.countInstruction();
-        return process.lookup(variableName).janitorUnpack();
+        return process.guard(process.lookup(variableName).janitorUnpack());
     }
 
     @Override

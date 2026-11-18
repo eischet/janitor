@@ -223,6 +223,35 @@ block, fails again. All three errors extend `JanitorAbortException`, so a host c
 the host calls later as a callback runs in a new process, which gets the environment's defaults, not the limits of the
 run that created the function.
 
+<a id="value-guard"></a>
+
+## Restricting what a script sees
+
+Some scripts may reach more data than they are allowed to see: a script gets a record it may see, and navigates from
+there to other records, which the current user may not see. For such scripts the host sets a `ValueGuard` on the
+process. The interpreter then passes every value through the guard that the script obtains from a variable (which
+includes loop variables and the parameters of functions and lambdas), a member, a method call, a function call or an
+index. The script only gets what the guard returns: the value itself, a replacement, or `Janitor.NULL`. The guard can
+also throw, e.g. a `JanitorPermissionException`.
+
+```java
+script.run(runtime, process -> {
+    process.bind("order", order);
+    process.setValueGuard((p, value) -> value.janitorUnpack() instanceof Customer customer && !mayBeSeen(customer) ? Janitor.NULL : value);
+});
+```
+
+- Without a guard, which is the default, nothing is checked.
+- Literals and the results of operators do not pass the guard, because the script made them itself.
+- The value can be a wrapper such as a property or a map entry; `janitorUnpack()` returns what is inside.
+- The guard is called very often. It should return values it does not care about right away, and remember what it has
+  already decided.
+- The guard sees lists and maps as one value, not their elements; these pass it one by one when the script takes them
+  out. A host method that returns a collection is responsible for what it puts in.
+- A new process does not have the guard of the script that caused it. Whoever starts it calls
+  `process.inheritMetaData(parent)`, which takes over the guard as well; template expansion does this. A function that
+  the host calls later as a callback runs in a new process without a guard, unless the host sets one.
+
 <a id="json-options"></a>
 
 ## JSON written by scripts

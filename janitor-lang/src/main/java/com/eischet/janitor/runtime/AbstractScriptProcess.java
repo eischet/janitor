@@ -23,6 +23,7 @@ import com.eischet.janitor.template.TemplateParser;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import com.eischet.janitor.api.ValueGuard;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -41,6 +42,7 @@ public abstract class AbstractScriptProcess implements JanitorScriptProcess {
     private final LinkedList<JanitorCleanupRequired> cleanupList = new LinkedList<>();
 
     private JanitorObject scriptResult = JNull.NULL;
+    private @Nullable ValueGuard valueGuard;
 
     /**
      * Constructor.
@@ -52,6 +54,22 @@ public abstract class AbstractScriptProcess implements JanitorScriptProcess {
         this.mainScope = mainScope;
         this.currentScope = mainScope;
         this.processName = processName;
+    }
+
+    @Override
+    public void setValueGuard(final @Nullable ValueGuard guard) {
+        this.valueGuard = guard;
+    }
+
+    @Override
+    public @Nullable ValueGuard getValueGuard() {
+        return valueGuard;
+    }
+
+    @Override
+    public @NotNull JanitorObject guard(final @NotNull JanitorObject value) throws JanitorRuntimeException {
+        final ValueGuard guard = valueGuard;
+        return guard == null ? value : guard.guard(this, value);
     }
 
     @Override
@@ -80,6 +98,10 @@ public abstract class AbstractScriptProcess implements JanitorScriptProcess {
     @Override
     public void inheritMetaData(final @NotNull JanitorScriptProcess parent) {
         metaData.putAll(parent.copyMetaData());
+        final ValueGuard parentGuard = parent.getValueGuard();
+        if (parentGuard != null) {
+            valueGuard = parentGuard;
+        }
     }
 
     @Override
