@@ -1,4 +1,4 @@
-# 0.9.77 (in development)
+# 0.9.77, 2026-11-18 (internal release only)
 
 - Performance: calling script functions and running blocks is faster, about half the time for loops that call functions
   and lambdas (`ScriptLookupsBenchmark`). Binding a variable no longer interns its name again (the compiler already does),

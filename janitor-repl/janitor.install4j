@@ -137,7 +137,7 @@ return console.askOkCancel(message, true);
           <screen id="103" beanClass="com.install4j.runtime.beans.screens.FormScreen" rollbackBarrierExitCode="0">
             <serializedBean>
               <property name="title" type="string">Additional Options</property>
-              <property name="subtitle" type="string">Integration with other programs</property>
+              <property name="subTitle" type="string">Integration with other programs</property>
             </serializedBean>
             <condition>// Windows only. Shown on every regular installation; on an update only while there is no saved answer,
 // i.e. on the first update after this option was introduced. Later updates apply the saved answer.
