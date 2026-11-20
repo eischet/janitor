@@ -4,6 +4,10 @@
 package com.eischet.janitor.modules.mcp;
 
 import com.eischet.janitor.api.Janitor;
+import com.eischet.janitor.api.credentials.JanitorCredential;
+import com.eischet.janitor.api.credentials.JanitorCredentials;
+import com.eischet.janitor.api.credentials.TokenCredential;
+import com.eischet.janitor.api.credentials.UsernamePasswordCredential;
 import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
 import com.eischet.janitor.api.modules.JanitorModule;
@@ -14,6 +18,9 @@ import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import org.jetbrains.annotations.NotNull;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.List;
 import java.util.function.Supplier;
 
 /**
@@ -53,6 +60,17 @@ public class McpModule extends JanitorComposed<McpModule> implements JanitorModu
                 } else if (headers != Janitor.NULL) {
                     throw new JanitorArgumentException(process, "mcp.connect: \"headers\" must be a map of strings");
                 }
+                final JanitorObject credentialName = properties.remove(Janitor.getBuiltins().string("credential"));
+                if (credentialName != null && credentialName != Janitor.NULL) {
+                    final JanitorCredential credential = JanitorCredentials.require(process, credentialName.janitorToString(), "mcp.connect",
+                            List.of(TokenCredential.class, UsernamePasswordCredential.class));
+                    if (credential instanceof TokenCredential token) {
+                        options.setHeader("Authorization", "Bearer " + token.token());
+                    } else if (credential instanceof UsernamePasswordCredential userAndPassword) {
+                        options.setHeader("Authorization", "Basic " + Base64.getEncoder().encodeToString(
+                                (userAndPassword.username() + ":" + userAndPassword.password()).getBytes(StandardCharsets.UTF_8)));
+                    }
+                }
                 properties.applyTo(process, options);
             }
             final String url = args.getRequiredStringValue(0);
@@ -65,7 +83,7 @@ public class McpModule extends JanitorComposed<McpModule> implements JanitorModu
             // close the connection when the script ends, even if it never lands in a variable
             process.registerCleanable(connection);
             return connection;
-        }).setMetaData(Janitor.MetaData.HELP, "connect(url, options): Connects to the MCP server at the URL and returns the connection; options is an optional map with headers, timeoutSeconds, clientName, clientVersion, transport and throwOnError.");
+        }).setMetaData(Janitor.MetaData.HELP, "connect(url, options): Connects to the MCP server at the URL and returns the connection; options is an optional map with headers, credential (the name of the host's credentials: a token is sent as \"Authorization: Bearer\", a user name and password as HTTP basic authentication), timeoutSeconds, clientName, clientVersion, transport and throwOnError.");
     }
 
     private final @NotNull Supplier<McpOptions> defaults;

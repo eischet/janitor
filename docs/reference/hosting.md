@@ -252,6 +252,25 @@ script.run(runtime, process -> {
   `process.inheritMetaData(parent)`, which takes over the guard as well; template expansion does this. A function that
   the host calls later as a callback runs in a new process without a guard, unless the host sets one.
 
+## Credentials
+
+Modules that log in somewhere accept credentials by name, so that passwords and tokens stay out of script code, output
+and logs: `client.credential("API")` in `httpclient`, the option `credential` of `mcp.connect`,
+`msgraph.connectWithCredential` and `loginWithCredential` of a `docusign` client. The host resolves the names with a
+`JanitorCredentialProvider`:
+
+```java
+env.setCredentialProvider((process, name) -> mayUseCredentials(process) ? store.find(name) : null);
+```
+
+- The provider returns an object of one of the kinds in `com.eischet.janitor.api.credentials`: `UsernamePasswordCredential`,
+  `TokenCredential`, `ClientSecretCredential` or `PrivateKeyCredential`. Each module names the kinds it accepts and
+  rejects the others with an error that names the credentials.
+- It returns null for unknown names, and throws, e.g. a `JanitorArgumentException`, if the script must not use them.
+- These are Java objects; scripts never get them, only the module that asked.
+- Without a provider, which is the default, every attempt to use credentials is an error.
+- A module of the host uses `JanitorCredentials.require(process, name, use, kind)` to do the same.
+
 <a id="json-options"></a>
 
 ## JSON written by scripts

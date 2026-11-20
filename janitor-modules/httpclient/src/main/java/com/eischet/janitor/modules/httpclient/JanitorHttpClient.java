@@ -5,6 +5,10 @@ package com.eischet.janitor.modules.httpclient;
 
 import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorScriptProcess;
+import com.eischet.janitor.api.credentials.JanitorCredential;
+import com.eischet.janitor.api.credentials.JanitorCredentials;
+import com.eischet.janitor.api.credentials.TokenCredential;
+import com.eischet.janitor.api.credentials.UsernamePasswordCredential;
 import com.eischet.janitor.api.errors.JanitorException;
 import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.errors.runtime.JanitorInternalException;
@@ -79,7 +83,16 @@ public class JanitorHttpClient extends JanitorComposed<JanitorHttpClient> implem
                 .setMetaData(Janitor.MetaData.HELP, "allowCookies(): Makes the client remember cookies set by servers and send them with later requests. Returns this client.");
         DISPATCH.addBuilderMethod("basic", (self, process, args) -> self.basic(args.getRequiredStringValue(0), args.getRequiredStringValue(1)))
                 .setMetaData(Janitor.MetaData.HELP, "basic(username, password): Enables HTTP basic authentication; an empty user name disables it. Returns this client.");
-        DISPATCH.addBuilderMethod("verbose", (self, process, args) -> self.verbose())
+        DISPATCH.addBuilderMethod("credential", (self, process, args) -> {
+            final JanitorCredential credential = JanitorCredentials.require(process, args.getRequiredStringValue(0), "httpclient.credential",
+                    List.of(UsernamePasswordCredential.class, TokenCredential.class));
+            if (credential instanceof UsernamePasswordCredential userAndPassword) {
+                self.basic(userAndPassword.username(), userAndPassword.password());
+            } else if (credential instanceof TokenCredential token) {
+                self.authHeaderContents = "Bearer " + token.token();
+            }
+        }).setMetaData(Janitor.MetaData.HELP, "credential(name): Authenticates every request with the host's credentials of that name: a user name and password as HTTP basic authentication, a token as \"Authorization: Bearer\" header. The script never sees the secret. Returns this client.");
+        DISPATCH.addBuilderMethod("verbose",(self, process, args) -> self.verbose())
                 .setMetaData(Janitor.MetaData.HELP, "verbose(): Logs every request and response in detail. Returns this client.");
         DISPATCH.addBuilderMethod("setTimeout", (self, process, args) -> self.setConnectTimeoutSeconds(args.getInt(0).getAsInt()))
                 .setMetaData(Janitor.MetaData.HELP, "setTimeout(seconds): Sets the timeout for connecting (default 60 seconds). Returns this client.");

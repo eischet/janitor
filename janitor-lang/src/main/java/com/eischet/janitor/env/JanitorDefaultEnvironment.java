@@ -3,6 +3,7 @@
 
 package com.eischet.janitor.env;
 
+import com.eischet.janitor.api.credentials.JanitorCredentialProvider;
 import com.eischet.janitor.api.FilterPredicate;
 import com.eischet.janitor.api.JanitorEnvironment;
 import com.eischet.janitor.api.JanitorScriptProcess;
@@ -66,6 +67,7 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
     private final List<JanitorModuleRegistration> moduleRegistrations = new ArrayList<>();
     private final List<ModuleResolver> resolvers = new ArrayList<>();
     private volatile @Nullable JanitorObject templateGlobals = null;
+    private volatile @Nullable JanitorCredentialProvider credentialProvider = null;
     private volatile @Nullable JsonStreamFactory jsonStreams = null;
     private final MetaDataMap metaData = new MetaDataMap();
 
@@ -186,6 +188,19 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
      */
     public void setMaxInstructionCount(final long maxInstructionCount) {
         this.maxInstructionCount = maxInstructionCount;
+    }
+
+    @Override
+    public @Nullable JanitorCredentialProvider getCredentialProvider() {
+        return credentialProvider;
+    }
+
+    /**
+     * Sets the credentials that scripts can name when a module needs to log in somewhere.
+     * @param credentialProvider the provider, or null to offer none
+     */
+    public void setCredentialProvider(final @Nullable JanitorCredentialProvider credentialProvider) {
+        this.credentialProvider = credentialProvider;
     }
 
     @Override

@@ -256,6 +256,31 @@ public class McpModuleIT extends JanitorTest {
     }
 
     @Test
+    void tokenFromHostCredentials() throws Exception {
+        final JanitorObject result = evaluate("""
+                import mcp;
+                srv = mcp.connect(url, {"credential": "MCP"});
+                srv.call("echo", {"text": "x"}).text;
+                """, env -> {
+            env.addModule(McpModule.REGISTRATION);
+            ((com.eischet.janitor.env.JanitorDefaultEnvironment) env).setCredentialProvider((process, name) -> "MCP".equals(name)
+                    ? new com.eischet.janitor.api.credentials.TokenCredential() {
+                        @Override
+                        public @org.jetbrains.annotations.NotNull String name() {
+                            return "MCP";
+                        }
+
+                        @Override
+                        public @org.jetbrains.annotations.NotNull String token() {
+                            return TOKEN.substring("Bearer ".length());
+                        }
+                    }
+                    : null);
+        }, globals -> globals.bind("url", url));
+        assertEquals("echo: x\nsecond part", result.janitorToString());
+    }
+
+    @Test
     void hostDefaultsApplyAndScriptsOverrideThem() throws Exception {
         final JanitorObject result = evaluate("""
                 import mcp;

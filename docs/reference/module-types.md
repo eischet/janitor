@@ -78,6 +78,7 @@ This module defines no object types of its own.
 | `basic(username, password)` | method | Enables HTTP basic authentication; an empty user name disables it. Returns this client. |
 | `close()` | method | Closes the underlying connection; the client can still be used and opens a new one when needed. |
 | `convertJsonToPureAscii(yes)` | method | Escapes all non-ASCII characters in JSON request bodies as \uXXXX when true. Returns this client. |
+| `credential(name)` | method | Authenticates every request with the host's credentials of that name: a user name and password as HTTP basic authentication, a token as "Authorization: Bearer" header. The script never sees the secret. Returns this client. |
 | `delete(url)` | method | Sends a DELETE request; a failed request is an error. |
 | `getBinary(url)` | method | Sends a GET request and returns the response body as binary data, or null if it is empty; a failed request is an error. |
 | `getJson(url)` | method | Sends a GET request that accepts JSON and returns the response body as a string; a failed request is an error. |
@@ -1786,6 +1787,7 @@ This module defines no object types of its own.
 | `envelopes()` | method | Returns the envelopes API, which uses this client. |
 | `getUserInfo(token)` | method | Returns the information about the user that the OAuth token belongs to, including their accounts. |
 | `login(clientId, userId, scopes, privateKey, expiresIn)` | method | Like requestJWTUserToken, but also makes the client use the new token; returns the OAuth token, expiresIn is optional and defaults to 3600 seconds. |
+| `loginWithCredential(credential, scopes, expiresIn)` | method | Like login, but takes the integration key, the user id and the private key from the host's credentials of that name, so the script never sees the key; returns the OAuth token, expiresIn is optional and defaults to 3600 seconds. |
 | `oauthBasePath` | property, string, writable | The base path of the DocuSign authentication server; write-only, reading it returns an empty string. |
 | `requestJWTUserToken(clientId, userId, scopes, privateKey, expiresIn)` | method | Requests an OAuth token for the user via JWT grant, with the scopes as a list and the private key as a string, and returns it; expiresIn is optional and defaults to 3600 seconds. |
 | `setAccessToken(token)` | method | Makes the client authenticate its requests with the token, given as an OAuth token or as an access token string; other values are ignored. |

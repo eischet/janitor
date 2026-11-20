@@ -3,6 +3,7 @@
 
 package com.eischet.janitor.api;
 
+import com.eischet.janitor.api.credentials.JanitorCredentialProvider;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.i18n.JanitorFormatting;
 import com.eischet.janitor.api.metadata.MetaDataKey;
@@ -179,6 +180,15 @@ public interface JanitorEnvironment extends JsonOutputSupport {
         return JsonWriteOptions.COMPACT;
     }
 
+
+    /**
+     * The credentials that scripts can name when a module needs to log in somewhere, e.g. {@code client.credential("API")}
+     * in the httpclient module. Scripts never see the secrets themselves.
+     * @return the provider, or null if this host offers no credentials (the default)
+     */
+    default @Nullable JanitorCredentialProvider getCredentialProvider() {
+        return null;
+    }
 
     /**
      * Emit a warning message.

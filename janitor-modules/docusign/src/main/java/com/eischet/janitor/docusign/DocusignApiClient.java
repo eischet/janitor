@@ -6,6 +6,8 @@ package com.eischet.janitor.docusign;
 import com.docusign.esign.client.ApiClient;
 import com.docusign.esign.client.auth.OAuth;
 import com.eischet.janitor.api.Janitor;
+import com.eischet.janitor.api.credentials.JanitorCredentials;
+import com.eischet.janitor.api.credentials.PrivateKeyCredential;
 import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.JList;
@@ -98,7 +100,26 @@ public class DocusignApiClient extends JanitorComposed<DocusignApiClient> {
             }
         })
                 .setMetaData(Janitor.MetaData.HELP, "login(clientId, userId, scopes, privateKey, expiresIn): Like requestJWTUserToken, but also makes the client use the new token; returns the OAuth token, expiresIn is optional and defaults to 3600 seconds.");
-        DISPATCHER.addMethod("envelopes", (self, process, arguments) -> new DocusignEnvelopesApi(self.wrapped))
+        DISPATCHER.addMethod("loginWithCredential", (self, process, arguments) -> {
+            arguments.require(2, 3);
+            final PrivateKeyCredential credential = JanitorCredentials.require(process, arguments.getRequiredStringValue(0), "docusign.loginWithCredential", PrivateKeyCredential.class);
+            final JList scopes = arguments.getRequired(1, JList.class);
+            final JNumber expiresIn = arguments.size() > 2 ? arguments.getRequired(2, JNumber.class) : Janitor.integer(3600);
+            try {
+                OAuth.OAuthToken oAuthToken = self.wrapped.requestJWTUserToken(
+                        credential.clientId(),
+                        credential.subject(),
+                        scopes.stream().map(Object::toString).collect(Collectors.toList()),
+                        credential.privateKey().getBytes(StandardCharsets.UTF_8),
+                        expiresIn.toLong());
+                self.wrapped.addDefaultHeader("Authorization", "Bearer " + oAuthToken.getAccessToken());
+                return new DocusignOAuthToken(oAuthToken);
+            } catch (Exception e) {
+                throw new JanitorNativeException(process, "error getting oauth token", e);
+            }
+        })
+                .setMetaData(Janitor.MetaData.HELP, "loginWithCredential(credential, scopes, expiresIn): Like login, but takes the integration key, the user id and the private key from the host's credentials of that name, so the script never sees the key; returns the OAuth token, expiresIn is optional and defaults to 3600 seconds.");
+        DISPATCHER.addMethod("envelopes",(self, process, arguments) -> new DocusignEnvelopesApi(self.wrapped))
                 .setMetaData(Janitor.MetaData.HELP, "envelopes(): Returns the envelopes API, which uses this client.");
     }
 

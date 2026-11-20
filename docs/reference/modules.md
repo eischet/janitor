@@ -625,6 +625,7 @@ for (message in graph.messages("support@example.com", "inbox")) {
 | Member | Kind | Description |
 | --- | --- | --- |
 | `connect(clientId, clientSecret, tenantId, options)` | method | Returns a Microsoft Graph client that authenticates with the client secret; options is an optional map with baseUrl, proxyHost, proxyPort, tokenCache, timeoutSeconds and maxRetries. |
+| `connectWithCredential(credential, tenantId, options)` | method | Like connect, but takes the client id and secret from the host's credentials of that name, so the script never sees the secret. |
 <!-- generated:end -->
 
 <a id="module-mcp"></a>
@@ -654,7 +655,7 @@ print(result.text);
 <!-- generated:begin modules/mcp -->
 | Member | Kind | Description |
 | --- | --- | --- |
-| `connect(url, options)` | method | Connects to the MCP server at the URL and returns the connection; options is an optional map with headers, timeoutSeconds, clientName, clientVersion, transport and throwOnError. |
+| `connect(url, options)` | method | Connects to the MCP server at the URL and returns the connection; options is an optional map with headers, credential (the name of the host's credentials: a token is sent as "Authorization: Bearer", a user name and password as HTTP basic authentication), timeoutSeconds, clientName, clientVersion, transport and throwOnError. |
 <!-- generated:end -->
 
 <a id="host-modules"></a>
