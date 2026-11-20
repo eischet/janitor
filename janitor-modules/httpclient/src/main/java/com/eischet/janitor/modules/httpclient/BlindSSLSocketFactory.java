@@ -45,9 +45,19 @@ public class BlindSSLSocketFactory extends SSLSocketFactory {
      * @throws KeyManagementException if the context cannot be initialized
      */
     public static SSLContext getSSLContext() throws NoSuchAlgorithmException, KeyManagementException {
+        return getSSLContext(null);
+    }
+
+    /**
+     * @param keyManagers the client certificate to present, or null for none
+     * @return a context that trusts every server certificate, which is insecure
+     * @throws NoSuchAlgorithmException if the JVM lacks TLS
+     * @throws KeyManagementException if the context cannot be set up
+     */
+    public static SSLContext getSSLContext(final KeyManager[] keyManagers) throws NoSuchAlgorithmException, KeyManagementException {
         final SSLContext sslContext = SSLContext.getInstance("SSL");
         final X509TrustManager[] trumanShow = { getBlindTrustManager() };
-        sslContext.init(null, trumanShow, new SecureRandom());
+        sslContext.init(keyManagers, trumanShow, new SecureRandom());
         return sslContext;
     }
 

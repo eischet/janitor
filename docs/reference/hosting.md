@@ -255,7 +255,7 @@ script.run(runtime, process -> {
 ## Credentials
 
 Modules that log in somewhere accept credentials by name, so that passwords and tokens stay out of script code, output
-and logs: `client.credential("API")` in `httpclient`, the option `credential` of `mcp.connect`,
+and logs: `client.credential("API")` and `client.clientCertificate("CERT")` in `httpclient`, the option `credential` of `mcp.connect`,
 `msgraph.connectWithCredential` and `loginWithCredential` of a `docusign` client. The host resolves the names with a
 `JanitorCredentialProvider`:
 
@@ -264,7 +264,7 @@ env.setCredentialProvider((process, name) -> mayUseCredentials(process) ? store.
 ```
 
 - The provider returns an object of one of the kinds in `com.eischet.janitor.api.credentials`: `UsernamePasswordCredential`,
-  `TokenCredential`, `ClientSecretCredential` or `PrivateKeyCredential`. Each module names the kinds it accepts and
+  `TokenCredential`, `ClientSecretCredential`, `PrivateKeyCredential` or `CertificateCredential`. Each module names the kinds it accepts and
   rejects the others with an error that names the credentials.
 - It returns null for unknown names, and throws, e.g. a `JanitorArgumentException`, if the script must not use them.
 - These are Java objects; scripts never get them, only the module that asked.

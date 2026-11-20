@@ -76,6 +76,7 @@ This module defines no object types of its own.
 | `allowCookies()` | method | Makes the client remember cookies set by servers and send them with later requests. Returns this client. |
 | `apply(map)` | method | Assigns each entry of the map to the property of the same name, and returns the object itself. |
 | `basic(username, password)` | method | Enables HTTP basic authentication; an empty user name disables it. Returns this client. |
+| `clientCertificate(name)` | method | Presents the certificate from the host's credentials of that name to servers that ask for one (TLS client authentication). The script never sees the key. Returns this client. |
 | `close()` | method | Closes the underlying connection; the client can still be used and opens a new one when needed. |
 | `convertJsonToPureAscii(yes)` | method | Escapes all non-ASCII characters in JSON request bodies as \uXXXX when true. Returns this client. |
 | `credential(name)` | method | Authenticates every request with the host's credentials of that name: a user name and password as HTTP basic authentication, a token as "Authorization: Bearer" header. The script never sees the secret. Returns this client. |

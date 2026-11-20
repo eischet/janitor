@@ -5,6 +5,7 @@ package com.eischet.janitor.modules.httpclient;
 
 import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorScriptProcess;
+import com.eischet.janitor.api.credentials.CertificateCredential;
 import com.eischet.janitor.api.credentials.JanitorCredential;
 import com.eischet.janitor.api.credentials.JanitorCredentials;
 import com.eischet.janitor.api.credentials.TokenCredential;
@@ -38,6 +39,11 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.PrivateKey;
+import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -45,6 +51,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
 
 import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
@@ -92,6 +102,14 @@ public class JanitorHttpClient extends JanitorComposed<JanitorHttpClient> implem
                 self.authHeaderContents = "Bearer " + token.token();
             }
         }).setMetaData(Janitor.MetaData.HELP, "credential(name): Authenticates every request with the host's credentials of that name: a user name and password as HTTP basic authentication, a token as \"Authorization: Bearer\" header. The script never sees the secret. Returns this client.");
+        DISPATCH.addBuilderMethod("clientCertificate", (self, process, args) -> {
+            final CertificateCredential credential = JanitorCredentials.require(process, args.getRequiredStringValue(0), "httpclient.clientCertificate", CertificateCredential.class);
+            try {
+                self.clientCertificate(credential.privateKey(), credential.certificateChain());
+            } catch (GeneralSecurityException e) {
+                throw new JanitorArgumentException(process, "httpclient.clientCertificate: credentials " + credential.name() + " cannot be used: " + e.getMessage(), e);
+            }
+        }).setMetaData(Janitor.MetaData.HELP, "clientCertificate(name): Presents the certificate from the host's credentials of that name to servers that ask for one (TLS client authentication). The script never sees the key. Returns this client.");
         DISPATCH.addBuilderMethod("verbose",(self, process, args) -> self.verbose())
                 .setMetaData(Janitor.MetaData.HELP, "verbose(): Logs every request and response in detail. Returns this client.");
         DISPATCH.addBuilderMethod("setTimeout", (self, process, args) -> self.setConnectTimeoutSeconds(Math.toIntExact(args.getSeconds(0))))
@@ -190,6 +208,7 @@ public class JanitorHttpClient extends JanitorComposed<JanitorHttpClient> implem
     private boolean verbose = false;
     private boolean prettyJson = false;
     private boolean insecure;
+    private volatile KeyManager[] keyManagers;
     private InetSocketAddress proxy;
     private boolean convertJsonToPureAscii = false;
     // builtClient/mustRebuild can be read/written from concurrently running scripts that share the
@@ -320,7 +339,7 @@ public class JanitorHttpClient extends JanitorComposed<JanitorHttpClient> implem
                 // The JDK still offers no proper way to disable hostname verification, so we need this workaround:
                 // https://stackoverflow.com/questions/52988677/allow-insecure-https-connection-for-java-jdk-11-httpclient
                 System.setProperty("jdk.internal.httpclient.disableHostnameVerification", "true");
-                return HttpClient.newBuilder().sslContext(BlindSSLSocketFactory.getSSLContext())
+                return HttpClient.newBuilder().sslContext(BlindSSLSocketFactory.getSSLContext(keyManagers))
                         .connectTimeout(Duration.of(connectTimeoutSeconds, ChronoUnit.SECONDS))
                         .followRedirects(HttpClient.Redirect.ALWAYS)
                         .build();
@@ -334,7 +353,39 @@ public class JanitorHttpClient extends JanitorComposed<JanitorHttpClient> implem
         if (proxy != null) {
             builder.proxy(ProxySelector.of(proxy));
         }
+        if (keyManagers != null) {
+            try {
+                final SSLContext context = SSLContext.getInstance("TLS");
+                context.init(keyManagers, null, null);
+                builder.sslContext(context);
+            } catch (GeneralSecurityException e) {
+                throw new IllegalStateException("cannot set up the client certificate: " + e.getMessage(), e);
+            }
+        }
         return builder.build();
+    }
+
+    /**
+     * Makes this client present a certificate to servers that ask for one (TLS client authentication).
+     * @param key the private key of the certificate
+     * @param chain the certificate, followed by its chain
+     * @return this client
+     * @throws GeneralSecurityException if the key and the certificate cannot be used together
+     */
+    public JanitorHttpClient clientCertificate(final PrivateKey key, final List<X509Certificate> chain) throws GeneralSecurityException {
+        final char[] password = new char[0];
+        final KeyStore store = KeyStore.getInstance("PKCS12");
+        try {
+            store.load(null, null);
+        } catch (IOException e) {
+            throw new KeyStoreException(e);
+        }
+        store.setKeyEntry("client", key, password, chain.toArray(new X509Certificate[0]));
+        final KeyManagerFactory factory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+        factory.init(store, password);
+        keyManagers = factory.getKeyManagers();
+        mustRebuild = true;
+        return this;
     }
 
     /**
