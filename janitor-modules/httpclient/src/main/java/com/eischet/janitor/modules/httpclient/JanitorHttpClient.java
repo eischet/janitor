@@ -94,10 +94,10 @@ public class JanitorHttpClient extends JanitorComposed<JanitorHttpClient> implem
         }).setMetaData(Janitor.MetaData.HELP, "credential(name): Authenticates every request with the host's credentials of that name: a user name and password as HTTP basic authentication, a token as \"Authorization: Bearer\" header. The script never sees the secret. Returns this client.");
         DISPATCH.addBuilderMethod("verbose",(self, process, args) -> self.verbose())
                 .setMetaData(Janitor.MetaData.HELP, "verbose(): Logs every request and response in detail. Returns this client.");
-        DISPATCH.addBuilderMethod("setTimeout", (self, process, args) -> self.setConnectTimeoutSeconds(args.getInt(0).getAsInt()))
-                .setMetaData(Janitor.MetaData.HELP, "setTimeout(seconds): Sets the timeout for connecting (default 60 seconds). Returns this client.");
-        DISPATCH.addBuilderMethod("setRequestTimeout", (self, process, args) -> self.requestTimeoutSeconds = args.getInt(0).getAsInt())
-                .setMetaData(Janitor.MetaData.HELP, "setRequestTimeout(seconds): Sets the timeout for a whole request (default 300 seconds). Returns this client.");
+        DISPATCH.addBuilderMethod("setTimeout", (self, process, args) -> self.setConnectTimeoutSeconds(Math.toIntExact(args.getSeconds(0))))
+                .setMetaData(Janitor.MetaData.HELP, "setTimeout(seconds): Sets the timeout for connecting, as a number of seconds or a duration like @60s (default 60 seconds). Returns this client.");
+        DISPATCH.addBuilderMethod("setRequestTimeout", (self, process, args) -> self.requestTimeoutSeconds = Math.toIntExact(args.getSeconds(0)))
+                .setMetaData(Janitor.MetaData.HELP, "setRequestTimeout(seconds): Sets the timeout for a whole request, as a number of seconds or a duration like @5mi (default 300 seconds). Returns this client.");
         DISPATCH.addBuilderMethod("ignoreSecurityIssues", (self, process, args) -> {
             if (!ALLOW_IGNORE_SECURITY_ISSUES) {
                 throw new JanitorArgumentException(process, "ignoreSecurityIssues is not allowed");
@@ -234,6 +234,13 @@ public class JanitorHttpClient extends JanitorComposed<JanitorHttpClient> implem
     public JanitorHttpClient addHeader(final String header, final String value) {
         additionalHeaders.put(header, value);
         return this;
+    }
+
+    /**
+     * @return the timeout for connecting, in seconds
+     */
+    public int getConnectTimeoutSeconds() {
+        return connectTimeoutSeconds;
     }
 
     /**

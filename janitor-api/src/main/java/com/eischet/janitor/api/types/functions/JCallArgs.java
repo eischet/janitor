@@ -331,6 +331,25 @@ public class JCallArgs {
     }
 
     /**
+     * Get a number of seconds at the given position, written either as an integer or as a duration like {@code @60s}.
+     * @param i the position of the argument to get.
+     * @return the number of seconds.
+     * @throws JanitorRuntimeException if the argument is neither an integer nor a duration.
+     */
+    public long getSeconds(final int i) throws JanitorRuntimeException {
+        final JanitorObject value = get(i);
+        final JDuration duration = value.janitorCoerce(JDuration.class);
+        if (duration != null) {
+            return duration.toSeconds();
+        }
+        final JInt intValue = value.janitorCoerce(JInt.class);
+        if (intValue == null) {
+            throw new JanitorArgumentException(process, "%s: argument %s must be a number of seconds or a duration, but the caller provided: %s".formatted(functionName, i, args));
+        }
+        return intValue.janitorGetHostValue();
+    }
+
+    /**
      * Get a string value at the given position.
      * If it's not a String, try to coerce it to a string.
      * @param i the position of the argument to get.

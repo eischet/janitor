@@ -9,12 +9,15 @@ import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.credentials.JanitorCredentials;
 import com.eischet.janitor.api.credentials.PrivateKeyCredential;
 import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
+import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.JanitorObject;
+import com.eischet.janitor.api.types.builtin.JDuration;
 import com.eischet.janitor.api.types.builtin.JList;
 import com.eischet.janitor.api.types.builtin.JNumber;
 import com.eischet.janitor.api.types.builtin.JString;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
+import com.eischet.janitor.api.types.functions.JCallArgs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,20 +58,20 @@ public class DocusignApiClient extends JanitorComposed<DocusignApiClient> {
             final String userId = arguments.getRequiredStringValue(1);
             final JList scopes = arguments.getRequired(2, JList.class);
             final String privateKey = arguments.getRequiredStringValue(3);
-            final JNumber expiresIn = arguments.size() > 4 ? arguments.getRequired(4, JNumber.class) : Janitor.integer(3600);
+            final long expiresIn = arguments.size() > 4 ? expiresInSeconds(arguments, 4) : 3600;
             try {
                 OAuth.OAuthToken oAuthToken = self.wrapped.requestJWTUserToken(
                         clientId,
                         userId,
                         scopes.stream().map(Object::toString).collect(Collectors.toList()),
                         privateKey.getBytes(StandardCharsets.UTF_8),
-                        expiresIn.toLong());
+                        expiresIn);
                 return new DocusignOAuthToken(oAuthToken);
             } catch (Exception e) {
                 throw new JanitorNativeException(process, "error getting oauth token", e);
             }
         })
-                .setMetaData(Janitor.MetaData.HELP, "requestJWTUserToken(clientId, userId, scopes, privateKey, expiresIn): Requests an OAuth token for the user via JWT grant, with the scopes as a list and the private key as a string, and returns it; expiresIn is optional and defaults to 3600 seconds.");
+                .setMetaData(Janitor.MetaData.HELP, "requestJWTUserToken(clientId, userId, scopes, privateKey, expiresIn): Requests an OAuth token for the user via JWT grant, with the scopes as a list and the private key as a string, and returns it; expiresIn is optional, a number of seconds or a duration like @1h, and defaults to 3600 seconds.");
         DISPATCHER.addVoidMethod("setAccessToken", (self, process, arguments) -> {
             final JanitorObject arg = arguments.get(0);
             if (arg instanceof JString string) {
@@ -85,40 +88,40 @@ public class DocusignApiClient extends JanitorComposed<DocusignApiClient> {
             final String userId = arguments.getRequiredStringValue(1);
             final JList scopes = arguments.getRequired(2, JList.class);
             final String privateKey = arguments.getRequiredStringValue(3);
-            final JNumber expiresIn = arguments.size() > 4 ? arguments.getRequired(4, JNumber.class) : Janitor.integer(3600);
+            final long expiresIn = arguments.size() > 4 ? expiresInSeconds(arguments, 4) : 3600;
             try {
                 OAuth.OAuthToken oAuthToken = self.wrapped.requestJWTUserToken(
                         clientId,
                         userId,
                         scopes.stream().map(Object::toString).collect(Collectors.toList()),
                         privateKey.getBytes(StandardCharsets.UTF_8),
-                        expiresIn.toLong());
+                        expiresIn);
                 self.wrapped.addDefaultHeader("Authorization", "Bearer " + oAuthToken.getAccessToken());
                 return new DocusignOAuthToken(oAuthToken);
             } catch (Exception e) {
                 throw new JanitorNativeException(process, "error getting oauth token", e);
             }
         })
-                .setMetaData(Janitor.MetaData.HELP, "login(clientId, userId, scopes, privateKey, expiresIn): Like requestJWTUserToken, but also makes the client use the new token; returns the OAuth token, expiresIn is optional and defaults to 3600 seconds.");
+                .setMetaData(Janitor.MetaData.HELP, "login(clientId, userId, scopes, privateKey, expiresIn): Like requestJWTUserToken, but also makes the client use the new token; returns the OAuth token, expiresIn is optional, a number of seconds or a duration like @1h, and defaults to 3600 seconds.");
         DISPATCHER.addMethod("loginWithCredential", (self, process, arguments) -> {
             arguments.require(2, 3);
             final PrivateKeyCredential credential = JanitorCredentials.require(process, arguments.getRequiredStringValue(0), "docusign.loginWithCredential", PrivateKeyCredential.class);
             final JList scopes = arguments.getRequired(1, JList.class);
-            final JNumber expiresIn = arguments.size() > 2 ? arguments.getRequired(2, JNumber.class) : Janitor.integer(3600);
+            final long expiresIn = arguments.size() > 2 ? expiresInSeconds(arguments, 2) : 3600;
             try {
                 OAuth.OAuthToken oAuthToken = self.wrapped.requestJWTUserToken(
                         credential.clientId(),
                         credential.subject(),
                         scopes.stream().map(Object::toString).collect(Collectors.toList()),
                         credential.privateKey().getBytes(StandardCharsets.UTF_8),
-                        expiresIn.toLong());
+                        expiresIn);
                 self.wrapped.addDefaultHeader("Authorization", "Bearer " + oAuthToken.getAccessToken());
                 return new DocusignOAuthToken(oAuthToken);
             } catch (Exception e) {
                 throw new JanitorNativeException(process, "error getting oauth token", e);
             }
         })
-                .setMetaData(Janitor.MetaData.HELP, "loginWithCredential(credential, scopes, expiresIn): Like login, but takes the integration key, the user id and the private key from the host's credentials of that name, so the script never sees the key; returns the OAuth token, expiresIn is optional and defaults to 3600 seconds.");
+                .setMetaData(Janitor.MetaData.HELP, "loginWithCredential(credential, scopes, expiresIn): Like login, but takes the integration key, the user id and the private key from the host's credentials of that name, so the script never sees the key; returns the OAuth token, expiresIn is optional, a number of seconds or a duration like @1h, and defaults to 3600 seconds.");
         DISPATCHER.addMethod("envelopes",(self, process, arguments) -> new DocusignEnvelopesApi(self.wrapped))
                 .setMetaData(Janitor.MetaData.HELP, "envelopes(): Returns the envelopes API, which uses this client.");
     }
@@ -127,5 +130,16 @@ public class DocusignApiClient extends JanitorComposed<DocusignApiClient> {
 
     public DocusignApiClient() {
         super(DISPATCHER);
+    }
+
+    /**
+     * Reads the lifetime of a token, given as a number of seconds or as a duration like {@code @1h}.
+     */
+    private static long expiresInSeconds(final JCallArgs arguments, final int position) throws JanitorRuntimeException {
+        final JDuration duration = arguments.get(position).janitorCoerce(JDuration.class);
+        if (duration != null) {
+            return duration.toSeconds();
+        }
+        return arguments.getRequired(position, JNumber.class).toLong();
     }
 }

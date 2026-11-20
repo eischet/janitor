@@ -559,6 +559,34 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
     }
 
     /**
+     * Adds a read-write integer property holding a number of seconds, e.g. a timeout.
+     * Scripts read an integer; they may assign either an integer or a duration like {@code @60s} or {@code @5mi}.
+     * In JSON, the property is an integer.
+     *
+     * @param name   property name
+     * @param getter property getter
+     * @param setter property setter
+     * @return a metadata builder for further configuration
+     */
+    public PropertyHandle<T, Integer> addSecondsProperty(final @NotNull String name,
+                                                 final @NotNull PrimitiveIntGetter<T> getter,
+                                                 final @NotNull PrimitiveIntSetter<T> setter) {
+        return internalAddProperty(
+                name,
+                instance -> TemporaryAssignable.lazy(
+                        name,
+                        () -> Janitor.integer(getter.get(instance)),
+                        value -> setter.set(instance, Janitor.requireIntSeconds(value))
+                ),
+                adapt(name, JSON_INT, getter::get, NullableSetter.guard(setter)),
+                JsonType.NUMBER,
+                null,
+                NullableGetter.of(getter),
+                NullableSetter.guard(setter)
+        ).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.INTEGER).setMetaData(HOST_NULLABLE, false);
+    }
+
+    /**
      * Adds a read-write, nullable integer property.
      *
      * @param name   property name

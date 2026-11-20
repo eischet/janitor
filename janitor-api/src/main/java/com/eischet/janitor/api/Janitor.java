@@ -898,6 +898,41 @@ public final class Janitor {
     }
 
     /**
+     * Returns a number of seconds, given either as an integer or as a duration like {@code @60s} or {@code @5mi}.
+     * Meant for timeouts and similar settings that scripts may write either way.
+     *
+     * @param value the value from a script
+     * @return the number of seconds
+     * @throws JanitorGlueException if the value is neither an integer nor a duration
+     */
+    public static long requireSeconds(final JanitorObject value) throws JanitorGlueException {
+        final JDuration duration = value == null ? null : value.janitorCoerce(JDuration.class);
+        if (duration != null) {
+            return duration.toSeconds();
+        }
+        try {
+            return requireInt(value).janitorGetHostValue();
+        } catch (JanitorGlueException e) {
+            throw new JanitorGlueException(JanitorArgumentException::fromGlue, "Expected a number of seconds or a duration but got " + ( value == null ? "<null>" : value.janitorClassName() ) + " ["+simpleClassNameOf(value)+"].");
+        }
+    }
+
+    /**
+     * Returns a number of seconds as an int, given either as an integer or as a duration like {@code @60s}.
+     *
+     * @param value the value from a script
+     * @return the number of seconds
+     * @throws JanitorGlueException if the value is neither an integer nor a duration, or too large for an int
+     */
+    public static int requireIntSeconds(final JanitorObject value) throws JanitorGlueException {
+        final long seconds = requireSeconds(value);
+        if (seconds > Integer.MAX_VALUE || seconds < Integer.MIN_VALUE) {
+            throw new JanitorGlueException(JanitorArgumentException::fromGlue, "Too many seconds: " + seconds + ".");
+        }
+        return (int) seconds;
+    }
+
+    /**
      * Compiles a script (source code) to a runnable script (an executable AST in the default implementation).
      *
      * @param runtime    a runtime to use [TODO: this is actually only used to retrieve an environment, so this could and should be dropped soon!]

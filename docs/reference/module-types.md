@@ -92,8 +92,8 @@ This module defines no object types of its own.
 | `putJson(url, body)` | method | Sends a PUT request with a JSON body (a JSON string or a value that can be written as JSON) and returns the response body as a string; a failed request is an error. |
 | `setBearerToken(token)` | method | Sends the token as "Authorization: Bearer" header with every request. Returns this client. |
 | `setPrettyJson(yes)` | method | Indents JSON that the client creates from script values when true. Returns this client. |
-| `setRequestTimeout(seconds)` | method | Sets the timeout for a whole request (default 300 seconds). Returns this client. |
-| `setTimeout(seconds)` | method | Sets the timeout for connecting (default 60 seconds). Returns this client. |
+| `setRequestTimeout(seconds)` | method | Sets the timeout for a whole request, as a number of seconds or a duration like @5mi (default 300 seconds). Returns this client. |
+| `setTimeout(seconds)` | method | Sets the timeout for connecting, as a number of seconds or a duration like @60s (default 60 seconds). Returns this client. |
 | `verbose()` | method | Logs every request and response in detail. Returns this client. |
 
 <a id="types-brrr"></a>
@@ -1786,10 +1786,10 @@ This module defines no object types of its own.
 | `basePath` | property, string, writable | The base path of the DocuSign REST API that the client calls; writable. |
 | `envelopes()` | method | Returns the envelopes API, which uses this client. |
 | `getUserInfo(token)` | method | Returns the information about the user that the OAuth token belongs to, including their accounts. |
-| `login(clientId, userId, scopes, privateKey, expiresIn)` | method | Like requestJWTUserToken, but also makes the client use the new token; returns the OAuth token, expiresIn is optional and defaults to 3600 seconds. |
-| `loginWithCredential(credential, scopes, expiresIn)` | method | Like login, but takes the integration key, the user id and the private key from the host's credentials of that name, so the script never sees the key; returns the OAuth token, expiresIn is optional and defaults to 3600 seconds. |
+| `login(clientId, userId, scopes, privateKey, expiresIn)` | method | Like requestJWTUserToken, but also makes the client use the new token; returns the OAuth token, expiresIn is optional, a number of seconds or a duration like @1h, and defaults to 3600 seconds. |
+| `loginWithCredential(credential, scopes, expiresIn)` | method | Like login, but takes the integration key, the user id and the private key from the host's credentials of that name, so the script never sees the key; returns the OAuth token, expiresIn is optional, a number of seconds or a duration like @1h, and defaults to 3600 seconds. |
 | `oauthBasePath` | property, string, writable | The base path of the DocuSign authentication server; write-only, reading it returns an empty string. |
-| `requestJWTUserToken(clientId, userId, scopes, privateKey, expiresIn)` | method | Requests an OAuth token for the user via JWT grant, with the scopes as a list and the private key as a string, and returns it; expiresIn is optional and defaults to 3600 seconds. |
+| `requestJWTUserToken(clientId, userId, scopes, privateKey, expiresIn)` | method | Requests an OAuth token for the user via JWT grant, with the scopes as a list and the private key as a string, and returns it; expiresIn is optional, a number of seconds or a duration like @1h, and defaults to 3600 seconds. |
 | `setAccessToken(token)` | method | Makes the client authenticate its requests with the token, given as an OAuth token or as an access token string; other values are ignored. |
 
 <a id="types-docusign-docusignbulkenvelopestatus"></a>
@@ -2423,7 +2423,7 @@ This module defines no object types of its own.
 | `maxRetries` | property, int, writable | How often a throttled (429) or unavailable (503, 504) request is retried (default 4); writable. |
 | `proxyHost` | property, string, writable | Host name of the HTTP proxy; null or blank means no proxy; writable. |
 | `proxyPort` | property, int, writable | Port of the HTTP proxy; writable. |
-| `timeoutSeconds` | property, int, writable | Timeout for requests in seconds (default 60); writable. |
+| `timeoutSeconds` | property, int, writable | Timeout for requests in seconds (default 60); writable, also as a duration like @30s. |
 | `tokenCache` | property, bool, writable | If true, tokens are also stored on disk in the operating system's secure store, so they survive restarts (default false); writable. |
 
 <a id="types-msgraph-recipient"></a>
@@ -2465,7 +2465,7 @@ This module defines no object types of its own.
 | `clientName` | property, string, writable | The name this client reports to the server (default "Janitor"; blank restores it); writable. |
 | `clientVersion` | property, string, writable | The version this client reports to the server (blank restores the default); writable. |
 | `throwOnError` | property, bool, writable | If true, a tool result flagged as an error becomes a script error instead of a result with isError = true; writable. |
-| `timeoutSeconds` | property, int, writable | Time limit in seconds for connecting and for each request (default 60; 0 or less means 60); writable. |
+| `timeoutSeconds` | property, int, writable | Time limit in seconds for connecting and for each request (default 60; 0 or less means 60); writable, also as a duration like @30s. |
 | `transport` | property, string, writable | "streamable" (the default) or "sse" for older servers; writable. |
 
 <a id="types-mcp-mcptoolresult"></a>

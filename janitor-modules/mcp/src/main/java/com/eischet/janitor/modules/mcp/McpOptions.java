@@ -31,8 +31,8 @@ public class McpOptions extends JanitorComposed<McpOptions> {
     public static final DispatchTable<McpOptions> DISPATCH = new DispatchTable<>(McpOptions::new);
 
     static {
-        DISPATCH.addIntegerProperty("timeoutSeconds", McpOptions::getTimeoutSeconds, McpOptions::setTimeoutSeconds)
-                .setMetaData(Janitor.MetaData.HELP, "timeoutSeconds: Time limit in seconds for connecting and for each request (default 60; 0 or less means 60); writable.");
+        DISPATCH.addSecondsProperty("timeoutSeconds", McpOptions::getTimeoutSeconds, McpOptions::setTimeoutSeconds)
+                .setMetaData(Janitor.MetaData.HELP, "timeoutSeconds: Time limit in seconds for connecting and for each request (default 60; 0 or less means 60); writable, also as a duration like @30s.");
         DISPATCH.addStringProperty("clientName", McpOptions::getClientName, McpOptions::setClientName)
                 .setMetaData(Janitor.MetaData.HELP, "clientName: The name this client reports to the server (default \"Janitor\"; blank restores it); writable.");
         DISPATCH.addStringProperty("clientVersion", McpOptions::getClientVersion, McpOptions::setClientVersion)
