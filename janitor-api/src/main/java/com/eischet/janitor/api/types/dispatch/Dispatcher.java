@@ -195,7 +195,7 @@ public interface Dispatcher<T extends JanitorObject> extends HasMetaData {
 
             @Override
             public Stream<String> streamAttributeNames() {
-                return Stream.concat(child.streamAttributeNames(), parent.streamAttributeNames());
+                return Stream.concat(child.streamAttributeNames(), parent.streamAttributeNames()).distinct();
             }
 
             @Override

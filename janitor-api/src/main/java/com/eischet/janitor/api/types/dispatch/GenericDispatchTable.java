@@ -366,7 +366,10 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
     }
 
     private void registerAttribute(final @NotNull String name, final @NotNull AttributeLookupHandler<T> handler, final @Nullable JsonAdapter<T> jsonSupport) {
-        attributeNames.add(name);
+        // a member that is defined again keeps its place in the list of names
+        if (!map.containsKey(name)) {
+            attributeNames.add(name);
+        }
         map.put(name, handler);
         attributes.removeIf(element -> Objects.equals(element.name, name));
         attributes.add(new Attribute<>(name, handler, jsonSupport));
@@ -1796,7 +1799,8 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
     @Override
     public Stream<String> streamAttributeNames() {
         if (parent != null) {
-            return Stream.concat(parent.streamAttributeNames(), attributeNames.stream());
+            // a member that overrides the parent's is listed once, in the parent's place
+            return Stream.concat(parent.streamAttributeNames(), attributeNames.stream()).distinct();
         } else {
             return attributeNames.stream();
         }
