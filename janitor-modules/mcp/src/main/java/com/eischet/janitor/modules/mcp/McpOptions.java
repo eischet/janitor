@@ -15,7 +15,7 @@ import java.util.Map;
 
 /**
  * Connection options for {@link McpConnection}. Scripts pass them as a map, e.g.
- * {@code mcp.connect(url, {headers: {"Authorization": "Bearer ..."}, timeoutSeconds: 30})}.
+ * {@code mcp.connect(url, {headers: {"Authorization": "Bearer ..."}, timeout: @30s})}.
  * <p>
  * The headers are not a dispatch property, because they are a map of strings; {@link McpModule} copies them from the
  * script's options map with {@link #setHeader(String, String)}.
@@ -31,8 +31,10 @@ public class McpOptions extends JanitorComposed<McpOptions> {
     public static final DispatchTable<McpOptions> DISPATCH = new DispatchTable<>(McpOptions::new);
 
     static {
+        DISPATCH.addSecondsProperty("timeout", McpOptions::getTimeoutSeconds, McpOptions::setTimeoutSeconds)
+                .setMetaData(Janitor.MetaData.HELP, "timeout: Time limit in seconds for connecting and for each request (default 60; 0 or less means 60); writable, as a number of seconds or a duration like @30s.");
         DISPATCH.addSecondsProperty("timeoutSeconds", McpOptions::getTimeoutSeconds, McpOptions::setTimeoutSeconds)
-                .setMetaData(Janitor.MetaData.HELP, "timeoutSeconds: Time limit in seconds for connecting and for each request (default 60; 0 or less means 60); writable, also as a duration like @30s.");
+                .setMetaData(Janitor.MetaData.HELP, "timeoutSeconds: The older name of timeout, kept for existing scripts; writable.");
         DISPATCH.addStringProperty("clientName", McpOptions::getClientName, McpOptions::setClientName)
                 .setMetaData(Janitor.MetaData.HELP, "clientName: The name this client reports to the server (default \"Janitor\"; blank restores it); writable.");
         DISPATCH.addStringProperty("clientVersion", McpOptions::getClientVersion, McpOptions::setClientVersion)

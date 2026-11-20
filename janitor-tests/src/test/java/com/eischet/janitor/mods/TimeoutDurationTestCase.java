@@ -62,6 +62,25 @@ public class TimeoutDurationTestCase extends JanitorTest {
     }
 
     @Test
+    void mcpTimeoutHasShortName() throws JanitorCompilerException, JanitorRuntimeException {
+        final McpOptions options = new McpOptions();
+        assertEquals(60L, evaluate("return opts.timeout;", g -> g.bind("opts", options)).janitorGetHostValue());
+        evaluate("opts.timeout = @2mi;", g -> g.bind("opts", options));
+        assertEquals(120, options.getTimeoutSeconds());
+        evaluate("opts.timeout = 45;", g -> g.bind("opts", options));
+        assertEquals(45, options.getTimeoutSeconds());
+        assertEquals(45L, evaluate("return opts.timeoutSeconds;", g -> g.bind("opts", options)).janitorGetHostValue());
+    }
+
+    @Test
+    void msGraphTimeoutHasShortName() throws JanitorCompilerException, JanitorRuntimeException {
+        final MsGraphOptions options = new MsGraphOptions();
+        evaluate("opts.timeout = @90s;", g -> g.bind("opts", options));
+        assertEquals(90, options.getTimeoutSeconds());
+        assertEquals(90L, evaluate("return opts.timeoutSeconds;", g -> g.bind("opts", options)).janitorGetHostValue());
+    }
+
+    @Test
     void timeoutRejectsOtherTypes() {
         final McpOptions options = new McpOptions();
         assertThrows(JanitorRuntimeException.class, () -> evaluate("opts.timeoutSeconds = 'soon';", g -> g.bind("opts", options)));

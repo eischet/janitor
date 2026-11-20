@@ -27,7 +27,7 @@ import java.util.function.Supplier;
  * The script module "mcp", a client for MCP (Model Context Protocol) servers:
  * <pre>
  * import mcp;
- * srv = mcp.connect("https://example.com/mcp", {"headers": {"Authorization": "Bearer ..."}, "timeoutSeconds": 30});
+ * srv = mcp.connect("https://example.com/mcp", {"headers": {"Authorization": "Bearer ..."}, "timeout": @30s});
  * res = srv.call("search", {"text": "printer"});
  * </pre>
  * The options map may contain "headers" (a map of strings) and the properties of {@link McpOptions}.
@@ -83,7 +83,7 @@ public class McpModule extends JanitorComposed<McpModule> implements JanitorModu
             // close the connection when the script ends, even if it never lands in a variable
             process.registerCleanable(connection);
             return connection;
-        }).setMetaData(Janitor.MetaData.HELP, "connect(url, options): Connects to the MCP server at the URL and returns the connection; options is an optional map with headers, credential (the name of the host's credentials: a token is sent as \"Authorization: Bearer\", a user name and password as HTTP basic authentication), timeoutSeconds, clientName, clientVersion, transport and throwOnError.");
+        }).setMetaData(Janitor.MetaData.HELP, "connect(url, options): Connects to the MCP server at the URL and returns the connection; options is an optional map with headers, credential (the name of the host's credentials: a token is sent as \"Authorization: Bearer\", a user name and password as HTTP basic authentication), timeout (or timeoutSeconds), clientName, clientVersion, transport and throwOnError.");
     }
 
     private final @NotNull Supplier<McpOptions> defaults;

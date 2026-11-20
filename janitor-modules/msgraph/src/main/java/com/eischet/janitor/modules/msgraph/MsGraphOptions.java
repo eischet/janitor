@@ -28,8 +28,10 @@ public class MsGraphOptions extends JanitorComposed<MsGraphOptions> {
                 .setMetaData(Janitor.MetaData.HELP, "proxyPort: Port of the HTTP proxy; writable.");
         DISPATCH.addBooleanProperty("tokenCache", MsGraphOptions::isTokenCache, MsGraphOptions::setTokenCache)
                 .setMetaData(Janitor.MetaData.HELP, "tokenCache: If true, tokens are also stored on disk in the operating system's secure store, so they survive restarts (default false); writable.");
+        DISPATCH.addSecondsProperty("timeout", MsGraphOptions::getTimeoutSeconds, MsGraphOptions::setTimeoutSeconds)
+                .setMetaData(Janitor.MetaData.HELP, "timeout: Timeout for requests (default 60 seconds); writable, as a number of seconds or a duration like @30s.");
         DISPATCH.addSecondsProperty("timeoutSeconds", MsGraphOptions::getTimeoutSeconds, MsGraphOptions::setTimeoutSeconds)
-                .setMetaData(Janitor.MetaData.HELP, "timeoutSeconds: Timeout for requests in seconds (default 60); writable, also as a duration like @30s.");
+                .setMetaData(Janitor.MetaData.HELP, "timeoutSeconds: The older name of timeout, kept for existing scripts; writable.");
         DISPATCH.addIntegerProperty("maxRetries", MsGraphOptions::getMaxRetries, MsGraphOptions::setMaxRetries)
                 .setMetaData(Janitor.MetaData.HELP, "maxRetries: How often a throttled (429) or unavailable (503, 504) request is retried (default 4); writable.");
     }

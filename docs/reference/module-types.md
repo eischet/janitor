@@ -2424,7 +2424,8 @@ This module defines no object types of its own.
 | `maxRetries` | property, int, writable | How often a throttled (429) or unavailable (503, 504) request is retried (default 4); writable. |
 | `proxyHost` | property, string, writable | Host name of the HTTP proxy; null or blank means no proxy; writable. |
 | `proxyPort` | property, int, writable | Port of the HTTP proxy; writable. |
-| `timeoutSeconds` | property, int, writable | Timeout for requests in seconds (default 60); writable, also as a duration like @30s. |
+| `timeout` | property, int, writable | Timeout for requests (default 60 seconds); writable, as a number of seconds or a duration like @30s. |
+| `timeoutSeconds` | property, int, writable | The older name of timeout, kept for existing scripts; writable. |
 | `tokenCache` | property, bool, writable | If true, tokens are also stored on disk in the operating system's secure store, so they survive restarts (default false); writable. |
 
 <a id="types-msgraph-recipient"></a>
@@ -2466,7 +2467,8 @@ This module defines no object types of its own.
 | `clientName` | property, string, writable | The name this client reports to the server (default "Janitor"; blank restores it); writable. |
 | `clientVersion` | property, string, writable | The version this client reports to the server (blank restores the default); writable. |
 | `throwOnError` | property, bool, writable | If true, a tool result flagged as an error becomes a script error instead of a result with isError = true; writable. |
-| `timeoutSeconds` | property, int, writable | Time limit in seconds for connecting and for each request (default 60; 0 or less means 60); writable, also as a duration like @30s. |
+| `timeout` | property, int, writable | Time limit in seconds for connecting and for each request (default 60; 0 or less means 60); writable, as a number of seconds or a duration like @30s. |
+| `timeoutSeconds` | property, int, writable | The older name of timeout, kept for existing scripts; writable. |
 | `transport` | property, string, writable | "streamable" (the default) or "sse" for older servers; writable. |
 
 <a id="types-mcp-mcptoolresult"></a>

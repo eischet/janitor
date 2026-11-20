@@ -244,11 +244,11 @@ public class McpModuleIT extends JanitorTest {
     }
 
     @Test
-    void slowToolTimesOutWithDuration() {
+    void slowToolTimesOutWithShortTimeoutName() {
         final long start = System.nanoTime();
         final JanitorRuntimeException e = assertThrows(JanitorRuntimeException.class, () -> run("""
                 import mcp;
-                srv = mcp.connect(url, {"headers": {"Authorization": token}, "timeoutSeconds": @1s});
+                srv = mcp.connect(url, {"headers": {"Authorization": token}, "timeout": @1s});
                 srv.call("slow", {});
                 """));
         final long millis = (System.nanoTime() - start) / 1_000_000;

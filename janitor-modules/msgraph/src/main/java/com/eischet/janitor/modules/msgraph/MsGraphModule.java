@@ -41,7 +41,7 @@ public class MsGraphModule extends JanitorComposed<MsGraphModule> implements Jan
                 args.getRequired(3, JMap.class).applyTo(process, options);
             }
             return MsGraphClient.forClientSecret(args.getRequiredStringValue(0), args.getRequiredStringValue(1), args.getRequiredStringValue(2), options);
-        }).setMetaData(Janitor.MetaData.HELP, "connect(clientId, clientSecret, tenantId, options): Returns a Microsoft Graph client that authenticates with the client secret; options is an optional map with baseUrl, proxyHost, proxyPort, tokenCache, timeoutSeconds and maxRetries.");
+        }).setMetaData(Janitor.MetaData.HELP, "connect(clientId, clientSecret, tenantId, options): Returns a Microsoft Graph client that authenticates with the client secret; options is an optional map with baseUrl, proxyHost, proxyPort, tokenCache, timeout (or timeoutSeconds) and maxRetries.");
         DISPATCH.addMethod("connectWithCredential", (self, process, args) -> {
             args.require(2, 3);
             final ClientSecretCredential credential = JanitorCredentials.require(process, args.getRequiredStringValue(0), "msgraph.connectWithCredential", ClientSecretCredential.class);
