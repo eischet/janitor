@@ -192,6 +192,15 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
     }
 
     /**
+     * Returns the table this one extends, e.g. through {@link DispatchTable#extend()}; together with {@link #getDirectAttributes()}, tools
+     * can tell which members a table defines itself and which it inherits.
+     * @return the parent table, or null if this table extends none
+     */
+    public @Nullable Dispatcher<?> getParent() {
+        return parent;
+    }
+
+    /**
      * Creates a JSON adapter for a property, based on a getter, a setter and a JSON delegate.
      * <p>
      * A JSON {@code null} is read like a missing field: the setter is not called, so the property keeps the value it has (for a new
