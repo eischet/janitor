@@ -8,11 +8,13 @@ public class SnapshotLoggingContext implements ILoggingContext {
     private final String app;
     private final String user;
     private final String entity;
+    private final String tag;
 
     public SnapshotLoggingContext(final LocalLoggingContext localLoggingContext, final boolean forError) {
         this.app = localLoggingContext.getApp();
         this.user = localLoggingContext.getUser();
         this.entity = localLoggingContext.getEntity();
+        this.tag = localLoggingContext.getTag();
     }
 
     @Override
@@ -28,5 +30,10 @@ public class SnapshotLoggingContext implements ILoggingContext {
     @Override
     public String getEntity() {
         return entity;
+    }
+
+    @Override
+    public String getTag() {
+        return tag;
     }
 }

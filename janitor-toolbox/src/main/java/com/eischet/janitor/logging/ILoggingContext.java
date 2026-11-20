@@ -14,6 +14,10 @@ import org.jetbrains.annotations.Nullable;
  *     <li><strong>Entity:</strong> An acting entity in whose context the action happens.</li>
  * </ul>
  * <p>
+ *     Besides these, a context may carry the tag of the logger that writes a message, e.g. the name of a debug flag
+ *     ({@link #getTag()}); it is shown next to the entity instead of replacing it.
+ * </p>
+ * <p>
  *     The {@code com.eischet.janitor.logging.formatter.ColoredConsoleFormatter}
  *     and {@code com.eischet.janitor.logging.formatter.PlainConsoleFormatter}
  *     in module {@code }janitor-logging} are responsible for rendering these values
@@ -27,4 +31,12 @@ public interface ILoggingContext {
     @Nullable String getApp();
     @Nullable String getUser();
     @Nullable String getEntity();
+
+    /**
+     * Returns the tag of the logger that writes the message, e.g. the name of a debug flag.
+     * @return the tag, or null
+     */
+    default @Nullable String getTag() {
+        return null;
+    }
 }

@@ -11,6 +11,7 @@ public class LocalLoggingContext implements ILoggingContext {
     private @Nullable String app;
     private @Nullable String user;
     private @Nullable String entity;
+    private @Nullable String tag;
 
     /**
      * @return the application name, or null
@@ -58,6 +59,21 @@ public class LocalLoggingContext implements ILoggingContext {
      */
     public LocalLoggingContext setEntity(final @Nullable String entity) {
         this.entity = entity;
+        return this;
+    }
+
+    @Override
+    public @Nullable String getTag() {
+        return tag;
+    }
+
+    /**
+     * Sets the tag of the logger that is writing.
+     * @param tag the tag, e.g. the name of a debug flag, or null
+     * @return this context
+     */
+    public LocalLoggingContext setTag(final @Nullable String tag) {
+        this.tag = tag;
         return this;
     }
 

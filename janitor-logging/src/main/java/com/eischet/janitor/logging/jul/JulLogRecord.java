@@ -21,9 +21,19 @@ public class JulLogRecord extends LogRecord {
     private Map<String, String> contextMap;
 
     private com.eischet.janitor.logging.ILoggingContext loggingContext;
+    private final String threadName;
 
     public JulLogRecord(final Level level, final String msg) {
         super(level, msg);
+        // taken now: the thread may be gone when the record is formatted, and virtual threads are not known by id later
+        threadName = Thread.currentThread().getName();
+    }
+
+    /**
+     * @return the name of the thread that created the record, possibly empty (unnamed virtual threads)
+     */
+    public String getThreadName() {
+        return threadName;
     }
 
     @Override

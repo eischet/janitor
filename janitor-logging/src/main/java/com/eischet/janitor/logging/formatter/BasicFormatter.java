@@ -67,7 +67,9 @@ public abstract class BasicFormatter extends Formatter {
     public String format(final LogRecord record) {
         final ToolLogCategory cat = ToolLogCategory.forLevel(record.getLevel());
         String thread = "";
-        if (threadManagementBean != null) {
+        if (record instanceof JulLogRecord julRecord) {
+            thread = formatThreadName(julRecord.getThreadName());
+        } else if (threadManagementBean != null) {
             final ThreadInfo ti = threadManagementBean.getThreadInfo(record.getLongThreadID());
             if (ti != null) {
                 thread = formatThreadName(ti.getThreadName());

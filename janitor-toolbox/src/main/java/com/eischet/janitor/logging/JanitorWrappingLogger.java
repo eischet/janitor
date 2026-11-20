@@ -16,7 +16,8 @@ import org.slf4j.spi.LoggingEventBuilder;
 import java.util.function.Consumer;
 
 /**
- * Like a logger, but with an optional configurable "entity" prefix output with every log message when JanitorLogging is used.
+ * Like a logger, but with an optional tag (e.g. the name of a debug flag) output with every log message when JanitorLogging is used,
+ * next to the entity of the logging context.
  * A "verbose mode" is inherited from the {@link JanitorLogger} interface, which extends the original SLF4J Logger interface.
  */
 public class JanitorWrappingLogger implements JanitorLogger {
@@ -67,14 +68,15 @@ public class JanitorWrappingLogger implements JanitorLogger {
     }
 
     /**
-     * Runs the code with the entity of this logger set as the current entity of the logging context, if it has one.
+     * Runs the code with the entity of this logger set as the tag of the logging context, if it has one; the entity of the
+     * context, i.e. what the thread is working on, stays.
      * @param runnable the code to run
      */
     protected void withEntity(final Runnable runnable) {
         if (entity == null) {
             runnable.run();
         } else {
-            LoggingContext.withEntity(entity, runnable);
+            LoggingContext.withTag(entity, runnable);
         }
     }
 

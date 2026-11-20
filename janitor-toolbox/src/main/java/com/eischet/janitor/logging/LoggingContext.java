@@ -69,4 +69,21 @@ public class LoggingContext {
         }
     }
 
+    /**
+     * Runs some code with the given tag set as the tag of the writing logger, and restores the previous tag afterwards.
+     * Unlike {@link #withEntity(String, Runnable)}, this leaves the entity alone.
+     * @param tag the tag, e.g. the name of a debug flag
+     * @param runnable the code to run
+     */
+    public static void withTag(final String tag, final Runnable runnable) {
+        final LocalLoggingContext myContext = localContext.get();
+        final String previousTag = myContext.getTag();
+        myContext.setTag(tag);
+        try {
+            runnable.run();
+        } finally {
+            myContext.setTag(previousTag);
+        }
+    }
+
 }

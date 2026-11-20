@@ -24,7 +24,8 @@ public class PlainConsoleFormatter extends BasicFormatter {
             @Nullable final String app = loggingContext.getApp();
             @Nullable final String user = loggingContext.getUser();
             @Nullable final String entity = loggingContext.getEntity();
-            if (app != null || user != null || entity != null) {
+            @Nullable final String tag = loggingContext.getTag();
+            if (app != null || user != null || entity != null || tag != null) {
                 boolean wrote = false;
                 result.append(" <");
                 if (app != null) {
@@ -43,6 +44,13 @@ public class PlainConsoleFormatter extends BasicFormatter {
                         result.append(", ");
                     }
                     result.append(entity);
+                    wrote = true;
+                }
+                if (tag != null) {
+                    if (wrote) {
+                        result.append(" | ");
+                    }
+                    result.append(tag);
                 }
                 result.append('>');
             }

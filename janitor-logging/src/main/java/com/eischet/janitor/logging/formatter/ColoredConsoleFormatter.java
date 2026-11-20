@@ -21,12 +21,13 @@ public class ColoredConsoleFormatter extends BasicFormatter {
     @Override
     protected String formatLogRecord(final ToolLogCategory cat, final String thread, final String ts, final String loggerName, final String message, final List<Object> arguments, final List<KeyValuePair> keyValuePairs, final List<Marker> markers, final Map<String, String> contextMap, final ILoggingContext loggingContext) {
         return Ansi.ansi().reset().fg(Ansi.Color.WHITE).a(ts).a(" ").apply(ansi -> applyCategory(ansi, cat)).a(" ").a(cat.getCompactRepresentation()).a(" ").reset().a(" ").fg(Ansi.Color.WHITE).a(thread).apply(ansi -> {
-                    if (loggingContext != null && loggingContext.getApp() != null) {
+                    if (loggingContext != null) {
                         @Nullable final String app = loggingContext.getApp();
                         @Nullable final String user = loggingContext.getUser();
                         @Nullable final String entity = loggingContext.getEntity();
+                        @Nullable final String tag = loggingContext.getTag();
 
-                        if (app != null || user != null || entity != null) {
+                        if (app != null || user != null || entity != null || tag != null) {
                             ansi.a(" <").fg(Ansi.Color.BLUE);
                             boolean wrote = false;
                             if (app != null) {
@@ -41,6 +42,11 @@ public class ColoredConsoleFormatter extends BasicFormatter {
                             if (entity != null) {
                                 if (wrote) ansi.fg(Ansi.Color.WHITE).a(", ").fg(Ansi.Color.BLUE);
                                 ansi.a(entity);
+                                wrote = true;
+                            }
+                            if (tag != null) {
+                                if (wrote) ansi.fg(Ansi.Color.WHITE).a(" | ").fg(Ansi.Color.BLUE);
+                                ansi.a(tag);
                             }
                             ansi.fg(Ansi.Color.WHITE).a(">");
                         }
