@@ -8,10 +8,19 @@ import com.eischet.janitor.api.modules.JanitorModule;
 import com.eischet.janitor.api.modules.JanitorModuleRegistration;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
+import org.commonmark.Extension;
+import org.commonmark.ext.gfm.tables.TablesExtension;
 import org.commonmark.parser.Parser;
+
+import java.util.List;
 
 /** The script module "commonmark", which parses Markdown and offers the document as a tree of nodes. */
 public class CommonMarkModule extends JanitorComposed<CommonMarkModule> implements JanitorModule {
+
+    /**
+     * The extensions the parser and all renderers use: GitHub-flavored tables.
+     */
+    static final List<Extension> EXTENSIONS = List.of(TablesExtension.create());
 
     private static final DispatchTable<CommonMarkModule> dispatch = new DispatchTable<>(CommonMarkModule::new, false);
 
@@ -59,6 +68,16 @@ public class CommonMarkModule extends JanitorComposed<CommonMarkModule> implemen
                 .setMetaData(Janitor.MetaData.HELP, "SoftLineBreak(properties): Creates a new, empty soft line break node; an optional map argument is applied to its properties.");
         dispatch.addConstructor("StrongEmphasis", CMStrongEmphasis::new)
                 .setMetaData(Janitor.MetaData.HELP, "StrongEmphasis(properties): Creates a new, empty strong emphasis node; an optional map argument is applied to its properties.");
+        dispatch.addConstructor("TableBlock", CMTableBlock::new)
+                .setMetaData(Janitor.MetaData.HELP, "TableBlock(properties): Creates a new, empty table node; an optional map argument is applied to its properties.");
+        dispatch.addConstructor("TableBody", CMTableBody::new)
+                .setMetaData(Janitor.MetaData.HELP, "TableBody(properties): Creates a new, empty table body node; an optional map argument is applied to its properties.");
+        dispatch.addConstructor("TableCell", CMTableCell::new)
+                .setMetaData(Janitor.MetaData.HELP, "TableCell(properties): Creates a new, empty table cell node; an optional map argument is applied to its properties.");
+        dispatch.addConstructor("TableHead", CMTableHead::new)
+                .setMetaData(Janitor.MetaData.HELP, "TableHead(properties): Creates a new, empty table head node; an optional map argument is applied to its properties.");
+        dispatch.addConstructor("TableRow", CMTableRow::new)
+                .setMetaData(Janitor.MetaData.HELP, "TableRow(properties): Creates a new, empty table row node; an optional map argument is applied to its properties.");
         dispatch.addConstructor("Text", CMText::new)
                 .setMetaData(Janitor.MetaData.HELP, "Text(properties): Creates a new, empty text node; an optional map argument is applied to its properties.");
         dispatch.addConstructor("ThematicBreak", CMThematicBreak::new)
@@ -66,13 +85,13 @@ public class CommonMarkModule extends JanitorComposed<CommonMarkModule> implemen
 
         // main parser entry point
         dispatch.addMethod("parse", (self, process, args) -> {
-            final var parser = Parser.builder().build();
+            final var parser = Parser.builder().extensions(EXTENSIONS).build();
             final var text = args.getRequiredStringValue(0);
             final var doc = parser.parse(text);
             return CMNode.createNullable(doc);
 
         })
-                .setMetaData(Janitor.MetaData.HELP, "parse(markdown): Parses the Markdown text and returns the document node of the resulting tree.");
+                .setMetaData(Janitor.MetaData.HELP, "parse(markdown): Parses the Markdown text, including GitHub-flavored tables, and returns the document node of the resulting tree.");
     }
 
     public CommonMarkModule() {

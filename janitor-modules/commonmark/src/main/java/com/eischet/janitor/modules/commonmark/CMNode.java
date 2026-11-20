@@ -11,6 +11,11 @@ import com.eischet.janitor.api.types.functions.JCallable;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import com.eischet.janitor.logging.JanitorLogger;
+import org.commonmark.ext.gfm.tables.TableBlock;
+import org.commonmark.ext.gfm.tables.TableBody;
+import org.commonmark.ext.gfm.tables.TableCell;
+import org.commonmark.ext.gfm.tables.TableHead;
+import org.commonmark.ext.gfm.tables.TableRow;
 import org.commonmark.node.Block;
 import org.commonmark.node.BlockQuote;
 import org.commonmark.node.BulletList;
@@ -80,15 +85,15 @@ public abstract class CMNode extends JanitorWrapper<Node> {
         })
                 .setMetaData(Janitor.MetaData.HELP, "prependChild(node): Adds the given node as the first child of this node.");
         dispatch.addMethod("toHtml", (self, process, args) -> {
-            var renderer = HtmlRenderer.builder().build();
+            var renderer = HtmlRenderer.builder().extensions(CommonMarkModule.EXTENSIONS).build();
             return Janitor.nullableString(renderer.render(self.janitorGetHostValue()));
         }).setMetaData(Janitor.MetaData.HELP, "Converts the node to html representation");
         dispatch.addMethod("toMarkdown", (self, process, args) -> {
-            var renderer = MarkdownRenderer.builder().build();
+            var renderer = MarkdownRenderer.builder().extensions(CommonMarkModule.EXTENSIONS).build();
             return Janitor.nullableString(renderer.render(self.janitorGetHostValue()));
         }).setMetaData(Janitor.MetaData.HELP, "Converts the node to markdown representation");
         dispatch.addMethod("toText", (self, process, args) -> {
-            var renderer = TextContentRenderer.builder().build();
+            var renderer = TextContentRenderer.builder().extensions(CommonMarkModule.EXTENSIONS).build();
             return Janitor.nullableString(renderer.render(self.janitorGetHostValue()));
         }).setMetaData(Janitor.MetaData.HELP, "Converts the node to plain text representation");
         dispatch.addVoidMethod("visit", (self, process, args) -> {
@@ -133,7 +138,7 @@ public abstract class CMNode extends JanitorWrapper<Node> {
      * @return the node and its children, rendered as HTML
      */
     public String toHtml() {
-        var renderer = HtmlRenderer.builder().build();
+        var renderer = HtmlRenderer.builder().extensions(CommonMarkModule.EXTENSIONS).build();
         return renderer.render(janitorGetHostValue());
     }
 
@@ -152,6 +157,16 @@ public abstract class CMNode extends JanitorWrapper<Node> {
             return new CMBulletList(bulletList);
         } else if (node instanceof Code code) {
             return new CMCode(code);
+        } else if (node instanceof TableBlock tableBlock) {
+            return new CMTableBlock(tableBlock);
+        } else if (node instanceof TableHead tableHead) {
+            return new CMTableHead(tableHead);
+        } else if (node instanceof TableBody tableBody) {
+            return new CMTableBody(tableBody);
+        } else if (node instanceof TableRow tableRow) {
+            return new CMTableRow(tableRow);
+        } else if (node instanceof TableCell tableCell) {
+            return new CMTableCell(tableCell);
         } else if (node instanceof CustomBlock customBlock) {
             return new CMCustomBlock(customBlock);
         } else if (node instanceof CustomNode customNode) {

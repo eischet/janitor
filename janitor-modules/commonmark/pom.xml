@@ -14,11 +14,20 @@
     <name>${project.groupId}:${project.artifactId}</name>
     <description>Janitor module: commonmark-java wrapper for parsing markdown</description>
 
+    <properties>
+        <commonmark.version>0.30.1</commonmark.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.commonmark</groupId>
             <artifactId>commonmark</artifactId>
-            <version>0.30.1</version>
+            <version>${commonmark.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.commonmark</groupId>
+            <artifactId>commonmark-ext-gfm-tables</artifactId>
+            <version>${commonmark.version}</version>
         </dependency>
     </dependencies>
 

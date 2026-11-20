@@ -1,3 +1,11 @@
+# 0.9.78 (in progress)
+
+- Module `commonmark`: GitHub-flavored tables. `parse` now recognizes pipe tables and returns them as nodes of the new
+  types `TableBlock`, `TableHead`, `TableBody`, `TableRow` and `TableCell` (with `header`, `alignment` and `width`), which
+  scripts can also create. `toHtml`, `toMarkdown` and `toText` render them. Text that forms a pipe table with a delimiter
+  row was a paragraph before and is a table now. New dependency: `commonmark-ext-gfm-tables` 0.30.1, same version and
+  license as `commonmark`.
+
 # 0.9.77, 2026-11-18 (internal release only)
 
 - Performance: calling script functions and running blocks is faster, about half the time for loops that call functions

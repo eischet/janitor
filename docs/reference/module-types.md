@@ -641,6 +641,124 @@ This module defines no object types of its own.
 | `unlink()` | method | Removes the node, with its children, from its parent and siblings. |
 | `visit(...)` | method |  |
 
+<a id="types-commonmark-cmtableblock"></a>
+
+### CMTableBlock
+
+| Member | Kind | Description |
+| --- | --- | --- |
+| `appendChild(node)` | method | Adds the given node as the last child of this node. |
+| `apply(map)` | method | Assigns each entry of the map to the property of the same name, and returns the object itself. |
+| `firstChild` | property | The first child node, or null if the node has no children; read-only. |
+| `insertAfter(node)` | method | Inserts the given node as the next sibling of this node. |
+| `insertBefore(node)` | method | Inserts the given node as the previous sibling of this node. |
+| `lastChild` | property | The last child node, or null if the node has no children; read-only. |
+| `next` | property | The next sibling node, or null if there is none; read-only. |
+| `parent` | property | The parent node, or null if the node has none; read-only. |
+| `prependChild(node)` | method | Adds the given node as the first child of this node. |
+| `previous` | property | The previous sibling node, or null if there is none; read-only. |
+| `toHtml(...)` | method | Converts the node to html representation |
+| `toMarkdown(...)` | method | Converts the node to markdown representation |
+| `toText(...)` | method | Converts the node to plain text representation |
+| `type` | property, string | The kind of node, e.g. "Paragraph", "Heading" or "Text"; read-only. |
+| `unlink()` | method | Removes the node, with its children, from its parent and siblings. |
+| `visit(...)` | method |  |
+
+<a id="types-commonmark-cmtablebody"></a>
+
+### CMTableBody
+
+| Member | Kind | Description |
+| --- | --- | --- |
+| `appendChild(node)` | method | Adds the given node as the last child of this node. |
+| `apply(map)` | method | Assigns each entry of the map to the property of the same name, and returns the object itself. |
+| `firstChild` | property | The first child node, or null if the node has no children; read-only. |
+| `insertAfter(node)` | method | Inserts the given node as the next sibling of this node. |
+| `insertBefore(node)` | method | Inserts the given node as the previous sibling of this node. |
+| `lastChild` | property | The last child node, or null if the node has no children; read-only. |
+| `next` | property | The next sibling node, or null if there is none; read-only. |
+| `parent` | property | The parent node, or null if the node has none; read-only. |
+| `prependChild(node)` | method | Adds the given node as the first child of this node. |
+| `previous` | property | The previous sibling node, or null if there is none; read-only. |
+| `toHtml(...)` | method | Converts the node to html representation |
+| `toMarkdown(...)` | method | Converts the node to markdown representation |
+| `toText(...)` | method | Converts the node to plain text representation |
+| `type` | property, string | The kind of node, e.g. "Paragraph", "Heading" or "Text"; read-only. |
+| `unlink()` | method | Removes the node, with its children, from its parent and siblings. |
+| `visit(...)` | method |  |
+
+<a id="types-commonmark-cmtablecell"></a>
+
+### CMTableCell
+
+| Member | Kind | Description |
+| --- | --- | --- |
+| `alignment` | property, string | The alignment of the cell's column, "left", "center" or "right", or null if the table does not specify one; writable. |
+| `appendChild(node)` | method | Adds the given node as the last child of this node. |
+| `apply(map)` | method | Assigns each entry of the map to the property of the same name, and returns the object itself. |
+| `firstChild` | property | The first child node, or null if the node has no children; read-only. |
+| `header` | property, bool | True if the cell is in the head of the table; writable. |
+| `insertAfter(node)` | method | Inserts the given node as the next sibling of this node. |
+| `insertBefore(node)` | method | Inserts the given node as the previous sibling of this node. |
+| `lastChild` | property | The last child node, or null if the node has no children; read-only. |
+| `next` | property | The next sibling node, or null if there is none; read-only. |
+| `parent` | property | The parent node, or null if the node has none; read-only. |
+| `prependChild(node)` | method | Adds the given node as the first child of this node. |
+| `previous` | property | The previous sibling node, or null if there is none; read-only. |
+| `toHtml(...)` | method | Converts the node to html representation |
+| `toMarkdown(...)` | method | Converts the node to markdown representation |
+| `toText(...)` | method | Converts the node to plain text representation |
+| `type` | property, string | The kind of node, e.g. "Paragraph", "Heading" or "Text"; read-only. |
+| `unlink()` | method | Removes the node, with its children, from its parent and siblings. |
+| `visit(...)` | method |  |
+| `width` | property, int | The number of dashes in the delimiter row below the head for this column, 0 if unknown; writable. |
+
+<a id="types-commonmark-cmtablehead"></a>
+
+### CMTableHead
+
+| Member | Kind | Description |
+| --- | --- | --- |
+| `appendChild(node)` | method | Adds the given node as the last child of this node. |
+| `apply(map)` | method | Assigns each entry of the map to the property of the same name, and returns the object itself. |
+| `firstChild` | property | The first child node, or null if the node has no children; read-only. |
+| `insertAfter(node)` | method | Inserts the given node as the next sibling of this node. |
+| `insertBefore(node)` | method | Inserts the given node as the previous sibling of this node. |
+| `lastChild` | property | The last child node, or null if the node has no children; read-only. |
+| `next` | property | The next sibling node, or null if there is none; read-only. |
+| `parent` | property | The parent node, or null if the node has none; read-only. |
+| `prependChild(node)` | method | Adds the given node as the first child of this node. |
+| `previous` | property | The previous sibling node, or null if there is none; read-only. |
+| `toHtml(...)` | method | Converts the node to html representation |
+| `toMarkdown(...)` | method | Converts the node to markdown representation |
+| `toText(...)` | method | Converts the node to plain text representation |
+| `type` | property, string | The kind of node, e.g. "Paragraph", "Heading" or "Text"; read-only. |
+| `unlink()` | method | Removes the node, with its children, from its parent and siblings. |
+| `visit(...)` | method |  |
+
+<a id="types-commonmark-cmtablerow"></a>
+
+### CMTableRow
+
+| Member | Kind | Description |
+| --- | --- | --- |
+| `appendChild(node)` | method | Adds the given node as the last child of this node. |
+| `apply(map)` | method | Assigns each entry of the map to the property of the same name, and returns the object itself. |
+| `firstChild` | property | The first child node, or null if the node has no children; read-only. |
+| `insertAfter(node)` | method | Inserts the given node as the next sibling of this node. |
+| `insertBefore(node)` | method | Inserts the given node as the previous sibling of this node. |
+| `lastChild` | property | The last child node, or null if the node has no children; read-only. |
+| `next` | property | The next sibling node, or null if there is none; read-only. |
+| `parent` | property | The parent node, or null if the node has none; read-only. |
+| `prependChild(node)` | method | Adds the given node as the first child of this node. |
+| `previous` | property | The previous sibling node, or null if there is none; read-only. |
+| `toHtml(...)` | method | Converts the node to html representation |
+| `toMarkdown(...)` | method | Converts the node to markdown representation |
+| `toText(...)` | method | Converts the node to plain text representation |
+| `type` | property, string | The kind of node, e.g. "Paragraph", "Heading" or "Text"; read-only. |
+| `unlink()` | method | Removes the node, with its children, from its parent and siblings. |
+| `visit(...)` | method |  |
+
 <a id="types-commonmark-cmtext"></a>
 
 ### CMText

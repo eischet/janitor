@@ -426,9 +426,14 @@ Some emphasis.
 | `Paragraph(properties)` | method | Creates a new, empty paragraph node; an optional map argument is applied to its properties. |
 | `SoftLineBreak(properties)` | method | Creates a new, empty soft line break node; an optional map argument is applied to its properties. |
 | `StrongEmphasis(properties)` | method | Creates a new, empty strong emphasis node; an optional map argument is applied to its properties. |
+| `TableBlock(properties)` | method | Creates a new, empty table node; an optional map argument is applied to its properties. |
+| `TableBody(properties)` | method | Creates a new, empty table body node; an optional map argument is applied to its properties. |
+| `TableCell(properties)` | method | Creates a new, empty table cell node; an optional map argument is applied to its properties. |
+| `TableHead(properties)` | method | Creates a new, empty table head node; an optional map argument is applied to its properties. |
+| `TableRow(properties)` | method | Creates a new, empty table row node; an optional map argument is applied to its properties. |
 | `Text(properties)` | method | Creates a new, empty text node; an optional map argument is applied to its properties. |
 | `ThematicBreak(properties)` | method | Creates a new, empty thematic break node; an optional map argument is applied to its properties. |
-| `parse(markdown)` | method | Parses the Markdown text and returns the document node of the resulting tree. |
+| `parse(markdown)` | method | Parses the Markdown text, including GitHub-flavored tables, and returns the document node of the resulting tree. |
 <!-- generated:end -->
 
 <a id="module-pdf"></a>
