@@ -1,5 +1,9 @@
 # 0.9.78 (in progress)
 
+- dbxs: `SimpleDataManager` can be read-only (new constructor argument `readOnly`, `DataManager.isReadOnly()`). Updates
+  and inserts then fail with a `DatabaseError` before they reach the database, independent of whether the JDBC driver
+  honours `Connection.setReadOnly`. Raw JDBC through `getJdbcConnection()` is not covered. Existing constructors are
+  unchanged (not read-only).
 - Named arguments are bound by name, as in Python. `f(b = 1, a = 2)` binds `a` to 2; before, arguments were bound in
   the order they were written, so `range(to = 10, from = 1)` gave `from` the value 10. A named argument can fill any
   parameter, not only one with a default value. `*rest` gets only the positional arguments that are left (before, also

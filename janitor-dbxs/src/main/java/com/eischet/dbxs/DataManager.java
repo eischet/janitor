@@ -52,4 +52,13 @@ public interface DataManager {
      * @return the schema that statements are run against
      */
     String getSchema();
+
+    /**
+     * Whether this data manager refuses to write: updates and inserts then fail before they reach the database.
+     *
+     * @return true if the database must only be read
+     */
+    default boolean isReadOnly() {
+        return false;
+    }
 }

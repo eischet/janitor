@@ -42,12 +42,27 @@ public class SimpleDataManager implements DataManager {
     protected final DataSource dataSource;
     protected final List<String> initStatements;
     protected final DatabaseDialect dialect;
+    protected final boolean readOnly;
 
     public SimpleDataManager(final @NotNull String name,
                              final @NotNull DataSource dataSource,
                              final @NotNull DatabaseDialect dialect,
                              final @Nullable String defaultSchema,
                              final @Nullable List<String> initStatements) {
+        this(name, dataSource, dialect, defaultSchema, initStatements, false);
+    }
+
+    /**
+     * @param readOnly true to refuse every update and insert, before it reaches the database; a JDBC driver may treat
+     *                 {@link Connection#setReadOnly} as a mere hint, so this does not rely on it
+     */
+    public SimpleDataManager(final @NotNull String name,
+                             final @NotNull DataSource dataSource,
+                             final @NotNull DatabaseDialect dialect,
+                             final @Nullable String defaultSchema,
+                             final @Nullable List<String> initStatements,
+                             final boolean readOnly) {
+        this.readOnly = readOnly;
         this.name = name;
         this.log = JanitorLogger.getLogger(SimpleDataManager.class, name);
         this.dataSource = dataSource;
@@ -71,6 +86,11 @@ public class SimpleDataManager implements DataManager {
     @Override
     public @NotNull DatabaseDialect getDialect() {
         return dialect;
+    }
+
+    @Override
+    public boolean isReadOnly() {
+        return readOnly;
     }
 
     @Override
@@ -434,6 +454,7 @@ public class SimpleDataManager implements DataManager {
 
         @Override
         public int update(final @NotNull UpdateStatement sql, @NotNull final StatementConfigurator sc) throws DatabaseError {
+            refuseIfReadOnly(sql);
             conn.countUpdate();
             PreparedStatement stmt = null;
             SimplePreparedStatement sps = null;
@@ -458,6 +479,7 @@ public class SimpleDataManager implements DataManager {
         public <T> T insertOneRowAndReturnGeneratedKey(final @NotNull UpdateStatement sql,
                                                        final @NotNull StatementConfigurator sc,
                                                        final @NotNull ResultSetReader<T> consumer) throws DatabaseError {
+            refuseIfReadOnly(sql);
             conn.countUpdate();
             PreparedStatement stmt = null;
             SimplePreparedStatement sps = null;
@@ -481,6 +503,12 @@ public class SimpleDataManager implements DataManager {
                 }
             } finally {
                 close(stmt);
+            }
+        }
+
+        private void refuseIfReadOnly(final @NotNull UpdateStatement sql) throws DatabaseError {
+            if (readOnly) {
+                throw new DatabaseError(name + " is read-only, refusing to run: " + sql.getSql());
             }
         }
 
