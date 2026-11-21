@@ -7,6 +7,7 @@ import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
+import com.eischet.janitor.api.metadata.ScriptType;
 import com.eischet.janitor.api.modules.JanitorModule;
 import com.eischet.janitor.api.modules.JanitorModuleRegistration;
 import com.eischet.janitor.api.types.JanitorObject;
@@ -18,6 +19,8 @@ import com.eischet.janitor.api.types.builtin.JString;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import com.eischet.janitor.api.types.functions.JCallArgs;
+import com.eischet.janitor.api.types.functions.Signature;
+import com.eischet.janitor.api.types.functions.SignatureArguments;
 import com.eischet.janitor.env.JElement;
 import com.eischet.janitor.env.JanitorXmlParser;
 import com.eischet.janitor.toolbox.time.DateTimeUtils;
@@ -41,6 +44,10 @@ import java.time.LocalDateTime;
  * behind explicit opt-in (GraalVM's {@code allowIO}/{@code allowCreateProcess}/...) or omit unsafe
  * functionality from the sandbox entirely, rather than restricting what a granted capability can
  * reach. The host is responsible for not registering this module for untrusted scripts.
+ * </p>
+ * <p>
+ * Every method is described by a {@link Signature}, which writes its HELP text and binds its arguments.
+ * </p>
  */
 public class FilesModule extends JanitorComposed<FilesModule> implements JanitorModule {
 
@@ -52,42 +59,88 @@ public class FilesModule extends JanitorComposed<FilesModule> implements Janitor
 
     public static final JanitorModuleRegistration REGISTRATION = new JanitorModuleRegistration("files", FilesModule::new).withDispatcher(() -> FilesModule.dispatcher);
 
+    private static final String UTF_8 = "UTF-8";
+    private static final ScriptType BINARY = new ScriptType.Builtin("binary");
+    private static final ScriptType ELEMENT = ScriptType.of(JElement.DISPATCH);
+
+    private static final Signature EXISTS = Signature.method("exists")
+            .param("path", ScriptType.STRING)
+            .returns(ScriptType.BOOL)
+            .help("Returns true if a file or folder exists at the path.");
+    private static final Signature WRITE = Signature.method("write")
+            .param("path", ScriptType.STRING)
+            .param("text", ScriptType.STRING)
+            .optional("charset", ScriptType.STRING, UTF_8)
+            .help("Writes the text to a file, replacing its contents. Returns null.");
+    private static final Signature READ = Signature.method("read")
+            .param("path", ScriptType.STRING)
+            .optional("charset", ScriptType.STRING, UTF_8)
+            .returns(ScriptType.STRING)
+            .help("Returns the contents of a file as text.");
+    private static final Signature READ_XML = Signature.method("readXml")
+            .param("path", ScriptType.STRING)
+            .optional("charset", ScriptType.STRING, UTF_8)
+            .returns(ELEMENT)
+            .help("Reads an XML file and returns its root element.");
+    private static final Signature WRITE_BINARY = Signature.method("writeBinary")
+            .param("path", ScriptType.STRING)
+            .param("data", BINARY)
+            .help("Writes binary data to a file, replacing its contents. Returns null.");
+    private static final Signature READ_BINARY = Signature.method("readBinary")
+            .param("path", ScriptType.STRING)
+            .returns(BINARY)
+            .help("Returns the contents of a file as binary data.");
+    private static final Signature LIST = Signature.method("list")
+            .param("folder", ScriptType.STRING)
+            .returns(ScriptType.listOf(ScriptType.STRING))
+            .help("Returns a list of the names of the entries in a folder; empty if the folder does not exist.");
+    private static final Signature MKDIRS = Signature.method("mkdirs")
+            .param("folder", ScriptType.STRING)
+            .returns(ScriptType.BOOL)
+            .help("Creates a folder including missing parent folders; returns true if it was created.");
+    private static final Signature NORMALIZE = Signature.method("normalize")
+            .param("path", ScriptType.STRING)
+            .returns(ScriptType.STRING)
+            .help("Returns the canonical absolute form of the path.");
+    private static final Signature LASTMOD = Signature.method("lastmod")
+            .param("path", ScriptType.STRING)
+            .returns(ScriptType.DATETIME)
+            .help("Returns the last modification time of a file as a date-time, or null if it does not exist.");
+    private static final Signature DELETE = Signature.method("delete")
+            .param("path", ScriptType.STRING)
+            .returns(ScriptType.BOOL)
+            .help("Deletes a file or an empty folder; returns true if it was deleted.");
+    private static final Signature MOVE = Signature.method("move")
+            .param("source", ScriptType.STRING)
+            .param("target", ScriptType.STRING)
+            .help("Moves a file; fails if the target already exists.");
+    private static final Signature COPY = Signature.method("copy")
+            .param("source", ScriptType.STRING)
+            .param("target", ScriptType.STRING)
+            .help("Copies a file; fails if the target already exists.");
+    private static final Signature ZIP = Signature.method("Zip")
+            .param("path", ScriptType.STRING)
+            .help("Creates a new ZIP file at the path and returns it for adding entries; it is closed when the script ends.");
+
     static {
-        dispatcher.addMethod("exists", FilesModule::fileExists)
-                .setMetaData(Janitor.MetaData.HELP, "exists(path): Returns true if a file or folder exists at the path.");
-        dispatcher.addMethod("write", FilesModule::writeString)
-                .setMetaData(Janitor.MetaData.HELP, "write(path, text, charset): Writes the text to a file, replacing its contents; charset defaults to UTF-8. Returns null.");
-        dispatcher.addMethod("read", FilesModule::readString)
-                .setMetaData(Janitor.MetaData.HELP, "read(path, charset): Returns the contents of a file as text; charset defaults to UTF-8.");
-        dispatcher.addMethod("readXml", FilesModule::readXml)
-                .setMetaData(Janitor.MetaData.HELP, "readXml(path, charset): Reads an XML file and returns its root element; charset defaults to UTF-8.");
-        dispatcher.addMethod("writeBinary", FilesModule::writeBinary)
-                .setMetaData(Janitor.MetaData.HELP, "writeBinary(path, data): Writes binary data to a file, replacing its contents. Returns null.");
-        dispatcher.addMethod("readBinary", FilesModule::readBinary)
-                .setMetaData(Janitor.MetaData.HELP, "readBinary(path): Returns the contents of a file as binary data.");
-        dispatcher.addMethod("list", FilesModule::list)
-                .setMetaData(Janitor.MetaData.HELP, "list(folder): Returns a list of the names of the entries in a folder; empty if the folder does not exist.");
-        dispatcher.addMethod("mkdirs", FilesModule::mkdir)
-                .setMetaData(Janitor.MetaData.HELP, "mkdirs(folder): Creates a folder including missing parent folders; returns true if it was created.");
-        dispatcher.addMethod("normalize", FilesModule::normalize)
-                .setMetaData(Janitor.MetaData.HELP, "normalize(path): Returns the canonical absolute form of the path.");
-        dispatcher.addMethod("lastmod", FilesModule::lastMod)
-                .setMetaData(Janitor.MetaData.HELP, "lastmod(path): Returns the last modification time of a file as a date-time, or null if it does not exist.");
-
-        dispatcher.addMethod("delete", FilesModule::delete)
-                .setMetaData(Janitor.MetaData.HELP, "delete(path): Deletes a file or an empty folder; returns true if it was deleted.");
-        dispatcher.addVoidMethod("move", FilesModule::move)
-                .setMetaData(Janitor.MetaData.HELP, "move(source, target): Moves a file; fails if the target already exists.");
-        dispatcher.addVoidMethod("copy", FilesModule::copy)
-                .setMetaData(Janitor.MetaData.HELP, "copy(source, target): Copies a file; fails if the target already exists.");
-
-        dispatcher.addMethod("Zip", FilesModule::zip)
-                .setMetaData(Janitor.MetaData.HELP, "Zip(path): Creates a new ZIP file at the path and returns it for adding entries; it is closed when the script ends.");
-
+        dispatcher.addMethod(EXISTS, FilesModule::fileExists);
+        dispatcher.addMethod(WRITE, FilesModule::writeString);
+        dispatcher.addMethod(READ, FilesModule::readString);
+        dispatcher.addMethod(READ_XML, FilesModule::readXml);
+        dispatcher.addMethod(WRITE_BINARY, FilesModule::writeBinary);
+        dispatcher.addMethod(READ_BINARY, FilesModule::readBinary);
+        dispatcher.addMethod(LIST, FilesModule::list);
+        dispatcher.addMethod(MKDIRS, FilesModule::mkdir);
+        dispatcher.addMethod(NORMALIZE, FilesModule::normalize);
+        dispatcher.addMethod(LASTMOD, FilesModule::lastMod);
+        dispatcher.addMethod(DELETE, FilesModule::delete);
+        dispatcher.addVoidMethod(MOVE, FilesModule::move);
+        dispatcher.addVoidMethod(COPY, FilesModule::copy);
+        dispatcher.addMethod(ZIP, FilesModule::zip);
     }
 
-    private JanitorObject zip(JanitorScriptProcess process, JCallArgs args) throws JanitorRuntimeException {
-        final String zipFilename = args.getRequiredStringValue(0);
+    private JanitorObject zip(final JanitorScriptProcess process, final SignatureArguments args) throws JanitorRuntimeException {
+        final String zipFilename = args.requiredString("path");
         try {
             return new ZipFile(zipFilename);
         } catch (Exception e) {
@@ -107,8 +160,8 @@ public class FilesModule extends JanitorComposed<FilesModule> implements Janitor
      * @return true if it exists
      * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
      */
-    public JBool fileExists(final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
-        final File f = new File(arguments.require(1).getString(0).janitorGetHostValue());
+    public JBool fileExists(final JanitorScriptProcess runningScript, final SignatureArguments arguments) throws JanitorRuntimeException {
+        final File f = new File(arguments.requiredString("path"));
         return Janitor.toBool(f.exists());
     }
 
@@ -119,12 +172,12 @@ public class FilesModule extends JanitorComposed<FilesModule> implements Janitor
      * @return null
      * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
      */
-    public JNull writeString(final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
+    public JNull writeString(final JanitorScriptProcess runningScript, final SignatureArguments arguments) throws JanitorRuntimeException {
         try {
             Files.writeString(
-                    Path.of(arguments.require(2, 3).getString(0).janitorGetHostValue()),
-                    arguments.getString(1).janitorGetHostValue(),
-                    Charset.forName(arguments.getOptionalStringValue(2, "UTF-8"))
+                    Path.of(arguments.requiredString("path")),
+                    arguments.requiredString("text"),
+                    Charset.forName(arguments.requiredString("charset"))
             );
             return JNull.NULL;
         } catch (IOException e) {
@@ -139,12 +192,12 @@ public class FilesModule extends JanitorComposed<FilesModule> implements Janitor
      * @return the text
      * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
      */
-    public JanitorObject readString(final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
+    public JanitorObject readString(final JanitorScriptProcess runningScript, final SignatureArguments arguments) throws JanitorRuntimeException {
         try {
             return runningScript.getBuiltins().nullableString(
                     Files.readString(
-                            Path.of(arguments.require(1, 2).getString(0).janitorGetHostValue()),
-                            Charset.forName(arguments.getOptionalStringValue(1, "UTF-8"))
+                            Path.of(arguments.requiredString("path")),
+                            Charset.forName(arguments.requiredString("charset"))
                     )
             );
         } catch (IOException e) {
@@ -159,11 +212,11 @@ public class FilesModule extends JanitorComposed<FilesModule> implements Janitor
      * @return the root element
      * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
      */
-    public JElement readXml(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+    public JElement readXml(final JanitorScriptProcess process, final SignatureArguments arguments) throws JanitorRuntimeException {
         try {
             final String contents = Files.readString(
-                Path.of(arguments.require(1, 2).getString(0).janitorGetHostValue()),
-                Charset.forName(arguments.getOptionalStringValue(1, "UTF-8"))
+                Path.of(arguments.requiredString("path")),
+                Charset.forName(arguments.requiredString("charset"))
             );
             return JanitorXmlParser.parseXml(contents);
         } catch (IOException | XMLStreamException e) {
@@ -194,11 +247,11 @@ public class FilesModule extends JanitorComposed<FilesModule> implements Janitor
      * @return null
      * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
      */
-    public JNull writeBinary(final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
+    public JNull writeBinary(final JanitorScriptProcess runningScript, final SignatureArguments arguments) throws JanitorRuntimeException {
         try {
             Files.write(
-                    Path.of(arguments.require(2).getString(0).janitorGetHostValue()),
-                    arguments.getRequired(1, JBinary.class).janitorGetHostValue()
+                    Path.of(arguments.requiredString("path")),
+                    arguments.required("data", JBinary.class).janitorGetHostValue()
             );
             return JNull.NULL;
         } catch (IOException e) {
@@ -213,11 +266,11 @@ public class FilesModule extends JanitorComposed<FilesModule> implements Janitor
      * @return the data
      * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
      */
-    public JanitorObject readBinary(final JanitorScriptProcess runningScript, final JCallArgs arguments) throws JanitorRuntimeException {
+    public JanitorObject readBinary(final JanitorScriptProcess runningScript, final SignatureArguments arguments) throws JanitorRuntimeException {
         try {
             return runningScript.getBuiltins().binary(
                     Files.readAllBytes(
-                            Path.of(arguments.require(1).getString(0).janitorGetHostValue())
+                            Path.of(arguments.requiredString("path"))
                     )
             );
         } catch (IOException e) {
@@ -232,9 +285,8 @@ public class FilesModule extends JanitorComposed<FilesModule> implements Janitor
      * @return a list of the names; empty if the folder does not exist
      * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
      */
-    public JanitorObject list(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
-        final String folderName = arguments.require(1).getRequiredStringValue(0);
-        // TODO: final String glob = arguments.getOptionalStringValue(1, ""); ...
+    public JanitorObject list(final JanitorScriptProcess process, final SignatureArguments arguments) throws JanitorRuntimeException {
+        final String folderName = arguments.requiredString("folder");
         final JList result = process.getBuiltins().list();
         final String[] listing = new File(folderName).list();
         if (listing != null) {
@@ -252,14 +304,12 @@ public class FilesModule extends JanitorComposed<FilesModule> implements Janitor
      * @return true if the folder was created
      * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
      */
-    public JBool mkdir(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
-        final String folderName = arguments.require(1).getRequiredStringValue(0);
-        return Janitor.toBool(new File(folderName).mkdirs());
+    public JBool mkdir(final JanitorScriptProcess process, final SignatureArguments arguments) throws JanitorRuntimeException {
+        return Janitor.toBool(new File(arguments.requiredString("folder")).mkdirs());
     }
 
-    private JanitorObject lastMod(JanitorScriptProcess process, JCallArgs arguments) throws JanitorRuntimeException {
-        final String fileName = arguments.require(1).getRequiredStringValue(0);
-        final File file = new File(fileName);
+    private JanitorObject lastMod(final JanitorScriptProcess process, final SignatureArguments arguments) throws JanitorRuntimeException {
+        final File file = new File(arguments.requiredString("path"));
         if (!file.exists()) {
             return JNull.NULL;
         }
@@ -268,8 +318,8 @@ public class FilesModule extends JanitorComposed<FilesModule> implements Janitor
         return process.getBuiltins().dateTime(date);
     }
 
-    private JString normalize(JanitorScriptProcess process, JCallArgs arguments) throws JanitorRuntimeException {
-        final String fileName = arguments.require(1).getRequiredStringValue(0);
+    private JString normalize(final JanitorScriptProcess process, final SignatureArguments arguments) throws JanitorRuntimeException {
+        final String fileName = arguments.requiredString("path");
         final String normalized;
         try {
             normalized = new File(fileName).getCanonicalPath();
@@ -286,10 +336,8 @@ public class FilesModule extends JanitorComposed<FilesModule> implements Janitor
      * @return true if it was deleted
      * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
      */
-    public JanitorObject delete(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
-        final String fileName = arguments.require(1).getRequiredStringValue(0);
-        final boolean success = new File(fileName).delete();
-        return Janitor.toBool(success);
+    public JanitorObject delete(final JanitorScriptProcess process, final SignatureArguments arguments) throws JanitorRuntimeException {
+        return Janitor.toBool(new File(arguments.requiredString("path")).delete());
     }
 
     /**
@@ -298,12 +346,9 @@ public class FilesModule extends JanitorComposed<FilesModule> implements Janitor
      * @param arguments the call arguments
      * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
      */
-    public void move(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
-        arguments.require(2);
-        final String source = arguments.getRequiredStringValue(0);
-        final String target = arguments.getRequiredStringValue(1);
+    public void move(final JanitorScriptProcess process, final SignatureArguments arguments) throws JanitorRuntimeException {
         try {
-            Files.move(Path.of(source), Path.of(target));
+            Files.move(Path.of(arguments.requiredString("source")), Path.of(arguments.requiredString("target")));
         } catch (IOException e) {
             throw new JanitorNativeException(process, "error moving file", e);
         }
@@ -315,12 +360,9 @@ public class FilesModule extends JanitorComposed<FilesModule> implements Janitor
      * @param arguments the call arguments
      * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
      */
-    public void copy(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
-        arguments.require(2);
-        final String source = arguments.getRequiredStringValue(0);
-        final String target = arguments.getRequiredStringValue(1);
+    public void copy(final JanitorScriptProcess process, final SignatureArguments arguments) throws JanitorRuntimeException {
         try {
-            Files.copy(Path.of(source), Path.of(target));
+            Files.copy(Path.of(arguments.requiredString("source")), Path.of(arguments.requiredString("target")));
         } catch (IOException e) {
             throw new JanitorNativeException(process, "error copying file", e);
         }

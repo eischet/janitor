@@ -21,6 +21,10 @@
   and binds the arguments before the method runs, by the same rules as for script functions (now shared in
   `ParameterLayout`). The method reads them by name from `SignatureArguments`. Unknown, missing and surplus arguments
   fail before the method is called. Existing methods are unchanged.
+- Module `files`: all methods use signatures. They take their arguments by name, too (`files.read(path, charset =
+  "ISO-8859-1")`), a wrong call fails before anything is read or written, and the HELP texts show the default charset in
+  the call form. Error messages for wrong arguments are worded like those of script functions and name the parameter.
+  Before, `files.write(path, text, charst = "UTF-8")` wrote the file and only then failed on the unknown name.
 
 - Module `commonmark`: GitHub-flavored tables. `parse` now recognizes pipe tables and returns them as nodes of the new
   types `TableBlock`, `TableHead`, `TableBody`, `TableRow` and `TableCell` (with `header`, `alignment` and `width`), which

@@ -344,10 +344,10 @@ print(files.list(folder));
 | `mkdirs(folder)` | method | Creates a folder including missing parent folders; returns true if it was created. |
 | `move(source, target)` | method | Moves a file; fails if the target already exists. |
 | `normalize(path)` | method | Returns the canonical absolute form of the path. |
-| `read(path, charset)` | method | Returns the contents of a file as text; charset defaults to UTF-8. |
+| `read(path, charset = "UTF-8")` | method | Returns the contents of a file as text. |
 | `readBinary(path)` | method | Returns the contents of a file as binary data. |
-| `readXml(path, charset)` | method | Reads an XML file and returns its root element; charset defaults to UTF-8. |
-| `write(path, text, charset)` | method | Writes the text to a file, replacing its contents; charset defaults to UTF-8. Returns null. |
+| `readXml(path, charset = "UTF-8")` | method | Reads an XML file and returns its root element. |
+| `write(path, text, charset = "UTF-8")` | method | Writes the text to a file, replacing its contents. Returns null. |
 | `writeBinary(path, data)` | method | Writes binary data to a file, replacing its contents. Returns null. |
 <!-- generated:end -->
 
