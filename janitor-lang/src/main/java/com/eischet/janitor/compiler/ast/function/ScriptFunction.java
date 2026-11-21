@@ -3,20 +3,15 @@
 
 package com.eischet.janitor.compiler.ast.function;
 
-import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.glue.JanitorControlFlowException;
-import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.errors.runtime.JanitorInternalException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.modules.ModuleScopeAware;
 import com.eischet.janitor.api.scopes.Location;
 import com.eischet.janitor.api.scopes.Scope;
 import com.eischet.janitor.api.types.JanitorObject;
-import com.eischet.janitor.api.types.builtin.JList;
-import com.eischet.janitor.api.types.builtin.JMap;
 import com.eischet.janitor.api.types.builtin.JNull;
-import com.eischet.janitor.api.types.functions.EvaluatedArgument;
 import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.types.functions.tree.ConstantNode;
 import com.eischet.janitor.api.types.functions.tree.ExpressionNode;
@@ -209,7 +204,7 @@ public class ScriptFunction extends AstNode implements Expression, JsonExportabl
             process.countInstruction();
             try {
                 // Arguments are matched before the function's scope exists, so that a wrong call fails at the caller.
-                final JanitorObject[] values = matchArguments(process, arguments);
+                final JanitorObject[] values = formalParameters.layout().match(process, arguments);
                 try {
                     if (moduleScope != null) {
                         process.pushModuleScope(moduleScope);
@@ -245,75 +240,6 @@ public class ScriptFunction extends AstNode implements Expression, JsonExportabl
             return JNull.NULL;
         }
 
-    }
-
-    /**
-     * Matches the arguments of a call to the parameters, as in Python: positional arguments fill the parameters in their
-     * order, then each named argument goes to the parameter of that name. {@code *rest} gets the positional arguments
-     * that are left, {@code **options} the named arguments that match no parameter.
-     *
-     * @param arguments the arguments of the call
-     * @return the value of each parameter, in the order of the parameters; null where the default value applies
-     * @throws JanitorArgumentException if arguments are missing, surplus, or given twice
-     */
-    private JanitorObject[] matchArguments(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorArgumentException {
-        final List<FormalParameter> parameters = formalParameters.getParameters();
-        final JanitorObject[] values = new JanitorObject[parameters.size()];
-        final int positionalCount = arguments.size();
-        int position = 0;
-        int optionsIndex = -1;
-        boolean collectsRest = false;
-        for (int i = 0; i < values.length; i++) {
-            final FormalParameter.Kind kind = parameters.get(i).getKind();
-            if (kind == FormalParameter.Kind.VARARGS) {
-                final JList rest = Janitor.list();
-                while (position < positionalCount) {
-                    rest.add(arguments.get(position++));
-                }
-                values[i] = rest;
-                collectsRest = true;
-            } else if (kind == FormalParameter.Kind.KWARGS) {
-                values[i] = Janitor.map();
-                optionsIndex = i;
-            } else if (position < positionalCount) {
-                values[i] = arguments.get(position++);
-            }
-        }
-        if (!collectsRest && position < positionalCount) {
-            throw new JanitorArgumentException(process, "%s: accepts at most %s positional arguments, but got %s".formatted(arguments.getFunctionName(), position, positionalCount));
-        }
-        if (arguments.hasNamed()) {
-            for (final EvaluatedArgument named : arguments.takeNamed()) {
-                final int index = indexOfNamedParameter(parameters, named.getName());
-                final JanitorObject value = named.getValue().janitorUnpack();
-                if (index >= 0) {
-                    if (values[index] != null) {
-                        throw new JanitorArgumentException(process, "%s: more than one value for '%s'".formatted(arguments.getFunctionName(), named.getName()));
-                    }
-                    values[index] = value;
-                } else if (optionsIndex >= 0) {
-                    ((JMap) values[optionsIndex]).put(named.getName(), value);
-                } else {
-                    throw new JanitorArgumentException(process, "%s: unexpected named argument '%s'".formatted(arguments.getFunctionName(), named.getName()));
-                }
-            }
-        }
-        for (int i = 0; i < values.length; i++) {
-            if (values[i] == null && parameters.get(i).getKind() == FormalParameter.Kind.POSITIONAL) {
-                throw new JanitorArgumentException(process, "%s: missing argument '%s'".formatted(arguments.getFunctionName(), parameters.get(i).getName()));
-            }
-        }
-        return values;
-    }
-
-    private static int indexOfNamedParameter(final List<FormalParameter> parameters, final String name) {
-        for (int i = 0; i < parameters.size(); i++) {
-            final FormalParameter parameter = parameters.get(i);
-            if ((parameter.getKind() == FormalParameter.Kind.POSITIONAL || parameter.getKind() == FormalParameter.Kind.DEFAULTED) && parameter.getName().equals(name)) {
-                return i;
-            }
-        }
-        return -1;
     }
 
 }

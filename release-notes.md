@@ -15,6 +15,12 @@
   string, which the host's `JanitorRuntime.print` gets as its only argument, so hosts need no change; a host that
   formats some values in its own way (e.g. exceptions) sees them already as text then. Without `sep`, or with
   `sep = null`, the host gets the values as before.
+- API: native methods can be described by a `Signature` (`Signature.method("read").param(...).optional(...).returns(...)
+  .help(...)`), registered with `DispatchTable.addMethod(signature, method)` or `addVoidMethod`. The signature writes the
+  HELP text with the call form (e.g. `read(path, charset = "UTF-8"): ...`), sets the `PARAMETERS` and `RETURNS` metadata,
+  and binds the arguments before the method runs, by the same rules as for script functions (now shared in
+  `ParameterLayout`). The method reads them by name from `SignatureArguments`. Unknown, missing and surplus arguments
+  fail before the method is called. Existing methods are unchanged.
 
 - Module `commonmark`: GitHub-flavored tables. `parse` now recognizes pipe tables and returns them as nodes of the new
   types `TableBlock`, `TableHead`, `TableBody`, `TableRow` and `TableCell` (with `header`, `alignment` and `width`), which

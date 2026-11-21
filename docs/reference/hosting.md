@@ -65,19 +65,27 @@ env.addModule(new JanitorModuleRegistration("billing", BillingModule::new));
 
 ## Writing a module
 
-A module is a `JanitorModule`, usually a `JanitorComposed` with a dispatch table. Give every method and property a HELP
+A module is a `JanitorModule`, usually a `JanitorComposed` with a dispatch table. Every method and property needs a HELP
 text that starts with its call form, as the built-in types do: then `help(...)` works in scripts, and the host can
 generate tables like those in [builtins.md](builtins.md) from it.
+
+The simplest way is a `Signature` for each method. It names the parameters, their types and default values, what the
+method returns, and what it does. The dispatch table takes the HELP text (with the call form), the parameter metadata
+for editors and the binding of the arguments from it, so the three cannot drift apart:
 
 ```java
 public class BillingModule extends JanitorComposed<BillingModule> implements JanitorModule {
     private static final DispatchTable<BillingModule> DISPATCH = new DispatchTable<>(BillingModule::new, false);
 
+    private static final Signature INVOICE_TOTAL = Signature.method("invoiceTotal")
+            .param("invoiceNumber", ScriptType.STRING)
+            .optional("currency", ScriptType.STRING, "EUR")
+            .returns(ScriptType.FLOAT)
+            .help("Returns the total of the invoice, as a float.");
+
     static {
-        DISPATCH.addMethod("invoiceTotal", (self, process, args) -> {
-            String invoiceNumber = args.getRequiredStringValue(0);
-            return process.getBuiltins().floatingPoint(lookUpTotal(invoiceNumber));
-        }).setMetaData(Janitor.MetaData.HELP, "invoiceTotal(invoiceNumber): Returns the total of the invoice, as a float.");
+        DISPATCH.addMethod(INVOICE_TOTAL, (self, process, args) ->
+                process.getBuiltins().floatingPoint(lookUpTotal(args.requiredString("invoiceNumber"), args.string("currency"))));
     }
 
     public BillingModule() {
@@ -86,10 +94,19 @@ public class BillingModule extends JanitorComposed<BillingModule> implements Jan
 }
 ```
 
-`args.size()` and `args.get(i)` see only the positional arguments. A method reads named arguments
-(`invoiceTotal("R-1", currency = "EUR")`) with `args.getByName("currency")`, or all of them with `args.asKwargs(...)`.
-A named argument that the method has not read when it returns fails the call with "unexpected named argument", so a
-misspelled name is not ignored.
+The HELP text becomes `invoiceTotal(invoiceNumber, currency = "EUR"): Returns the total of the invoice, as a float.`
+Scripts may call `invoiceTotal("R-1")`, `invoiceTotal("R-1", "USD")` or `invoiceTotal("R-1", currency = "USD")`. The
+arguments are bound by the same rules as for script functions, before the method runs: missing, surplus and unknown
+arguments fail the call without the method being called. `SignatureArguments` reads them by name: `string`,
+`requiredString`, `integer`, `bool`, `seconds` (a duration or a number), `object`/`required` for a given class, `get`,
+`has`, and `rest`/`options` for `*rest` and `**options` parameters, which the builder adds with `rest(...)` and
+`options(...)`. Default values are null, strings, integers, floats or booleans.
+
+Methods registered with `addMethod(name, ...)` get the raw `JCallArgs` instead and set the HELP text themselves.
+`args.size()` and `args.get(i)` see only the positional arguments; named arguments are read with
+`args.getByName("currency")`, or all of them with `args.asKwargs(...)`. A named argument that such a method has not read
+when it returns fails the call with "unexpected named argument", so a misspelled name is not ignored, but only after the
+method has run.
 
 <a id="module-resolvers"></a>
 

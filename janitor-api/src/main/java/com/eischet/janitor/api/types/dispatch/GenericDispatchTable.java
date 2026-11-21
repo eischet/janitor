@@ -20,7 +20,10 @@ import com.eischet.janitor.api.types.builtin.*;
 import com.eischet.janitor.api.types.functions.JBoundMethod;
 import com.eischet.janitor.api.types.functions.JConstructor;
 import com.eischet.janitor.api.types.functions.JUnboundMethod;
+import com.eischet.janitor.api.types.functions.JSignatureMethod;
+import com.eischet.janitor.api.types.functions.JSignatureVoidMethod;
 import com.eischet.janitor.api.types.functions.JVoidMethod;
+import com.eischet.janitor.api.types.functions.Signature;
 import com.eischet.janitor.api.types.interop.*;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 import com.eischet.janitor.logging.JanitorLogger;
@@ -461,6 +464,42 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
             }
         }), null, null, null)
                 .setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.METHOD);
+    }
+
+    /**
+     * Adds a method that a signature describes. The signature sets the HELP text, the {@code PARAMETERS} and (if it names one)
+     * the {@code RETURNS} metadata, and binds the arguments of every call before the method runs.
+     *
+     * @param signature the signature, usually kept in a static field
+     * @param method    the method
+     * @return a meta-data builder
+     */
+    public MetaDataBuilder<T> addMethod(final @NotNull Signature signature, final @NotNull JSignatureMethod<T> method) {
+        return describedBy(signature, addMethod(signature.name(), (self, process, arguments) -> method.call(self, process, signature.bind(process, arguments))));
+    }
+
+    /**
+     * Adds a method without a result that a signature describes, see {@link #addMethod(Signature, JSignatureMethod)}; scripts
+     * get null.
+     *
+     * @param signature the signature, usually kept in a static field
+     * @param method    the method
+     * @return a meta-data builder
+     */
+    public MetaDataBuilder<T> addVoidMethod(final @NotNull Signature signature, final @NotNull JSignatureVoidMethod<T> method) {
+        return describedBy(signature, addMethod(signature.name(), (self, process, arguments) -> {
+            method.call(self, process, signature.bind(process, arguments));
+            return JNull.NULL;
+        }));
+    }
+
+    private static <T> MetaDataBuilder<T> describedBy(final Signature signature, final MetaDataBuilder<T> builder) {
+        builder.setMetaData(Janitor.MetaData.HELP, signature.helpText());
+        builder.setMetaData(Janitor.MetaData.PARAMETERS, signature.parameters());
+        if (signature.returns() != null) {
+            builder.setMetaData(Janitor.MetaData.RETURNS, signature.returns());
+        }
+        return builder;
     }
 
     /**

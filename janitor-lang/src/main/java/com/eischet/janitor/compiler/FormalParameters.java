@@ -3,6 +3,8 @@
 
 package com.eischet.janitor.compiler;
 
+import com.eischet.janitor.api.types.functions.ParameterKind;
+import com.eischet.janitor.api.types.functions.ParameterLayout;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
 
@@ -15,6 +17,7 @@ public class FormalParameters implements Iterable<FormalParameter> {
     private final List<FormalParameter> parameters;
     private final List<FormalParameter> positionalParameters;
     private final boolean collectsMore;
+    private final ParameterLayout layout;
 
     protected FormalParameters(final List<FormalParameter> parameters) throws CompilerError {
         this.parameters = parameters;
@@ -41,6 +44,21 @@ public class FormalParameters implements Iterable<FormalParameter> {
         // the list is immutable, and functions check their arguments on every call
         this.positionalParameters = parameters.stream().filter(FormalParameter::isMinimallyRequired).toList();
         this.collectsMore = parameters.stream().anyMatch(p -> p.getKind() == FormalParameter.Kind.VARARGS || p.getKind() == FormalParameter.Kind.KWARGS);
+        this.layout = ParameterLayout.of(
+                parameters.stream().map(FormalParameter::getName).toList(),
+                parameters.stream().map(p -> switch (p.getKind()) {
+                    case POSITIONAL -> ParameterKind.REQUIRED;
+                    case DEFAULTED -> ParameterKind.OPTIONAL;
+                    case VARARGS -> ParameterKind.REST;
+                    case KWARGS -> ParameterKind.OPTIONS;
+                }).toList());
+    }
+
+    /**
+     * @return the parameters as the rules for matching the arguments of a call see them
+     */
+    public @NotNull ParameterLayout layout() {
+        return layout;
     }
 
     private boolean mayTransition(final FormalParameter.Kind currentKind, final FormalParameter.Kind nextKind) {
