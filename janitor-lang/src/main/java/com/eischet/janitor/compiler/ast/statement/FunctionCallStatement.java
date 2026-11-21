@@ -96,6 +96,7 @@ public class FunctionCallStatement extends Statement implements Expression, Json
         if (function instanceof JCallable) {
             try {
                 final JanitorObject result = ((JCallable) function).call(process, args);
+                args.requireNamesUsed();
                 process.trace(() -> "function call result: " + result);
 
                 if (result == null) {

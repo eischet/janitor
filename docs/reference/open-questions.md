@@ -8,16 +8,6 @@ the code it comes from.
 
 ## Language
 
-<a id="named-arguments"></a>
-
-### Named arguments are bound by position
-
-In a call, `name = value` does not bind the value to the parameter `name`. Parameters are filled in the order of the
-arguments, whatever their names; for a parameter with a default value, a named argument of the same name is used if
-there is no positional one. So `f(b = "B", a = "A")` for `function f(a, b)` binds `a` to `"B"`, and with a default for
-`b` the same call fails with "Default parameters are not yet implemented". `*rest` also receives the values of named
-arguments, which `**options` gets, too. The code has a TODO for the missing cases. (`ScriptFunction`, argument binding)
-
 <a id="deprecated-operators"></a>
 
 ### Deprecated operators `&&`, `||`, `!` and `<>`

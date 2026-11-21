@@ -48,9 +48,11 @@ import org.jetbrains.annotations.Nullable;
 import java.time.DateTimeException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
@@ -290,8 +292,12 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
         // validIdentifier. However, I could put in an intermediate rule that allows the prefixes, enabling people
         // to use *args and *kwargs like in Python when calling functions. Not sure if that's ever needed in reality.
         if (ctx.keywordArgs() != null) {
+            final Set<String> names = new HashSet<>();
             for (final JanitorParser.KeywordArgContext keywordArgContext : ctx.keywordArgs().keywordArg()) {
                 final String parameterName = keywordArgContext.validIdentifier().getText();
+                if (!names.add(parameterName)) {
+                    throw new CompilerError("duplicate named argument: " + parameterName);
+                }
                 final Ast construct = visit(keywordArgContext.expression());
                 if (construct instanceof final Expression expression) {
                     argumentList.addNamedExpression(parameterName, expression);

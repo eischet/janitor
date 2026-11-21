@@ -1100,10 +1100,9 @@ Welcome, Linus!
   holds for lambdas passed to methods: `list.map((a, b) -> a)` fails, because `map` passes one argument.
 - Functions are values: they can be stored in variables, lists and maps, and passed to other functions.
 
-**Named arguments** (`name = value` in a call) are not matched by name as in Python. Arguments are bound to the
-parameters **in the order in which they are written**, named or not; the name only lets a parameter with a default value
-be skipped. So write named arguments in the order of the parameters, after the positional ones, and use them only for
-parameters with defaults (see [open questions](open-questions.md#named-arguments)):
+**Named arguments** (`name = value` in a call) are bound to the parameter of that name, as in Python. They come after
+the positional arguments, in any order. The positional arguments fill the parameters from the left; a named argument
+can then fill any parameter that is still open, with or without a default value:
 
 ```janitor
 function range(from, to, step = 1) {
@@ -1115,11 +1114,16 @@ print(range(to = 10, from = 1));
 
 ```output
 1..10 by 2
-10..1 by 1
+1..10 by 1
 ```
 
-`*rest` collects the remaining arguments in a list, and `**options` collects the named arguments in a map. Named
-arguments end up in both:
+These are errors (`JanitorArgumentException`): a name that matches no parameter, a parameter that gets a value both by
+position and by name, and a parameter without a default that gets no value. The same name twice in one call does not
+compile. Functions and methods of the host take named arguments only where their documentation says so; any other
+name is an error, too.
+
+`*rest` collects the remaining positional arguments in a list, and `**options` collects the named arguments that match
+no parameter in a map:
 
 ```janitor
 function describe(first, *rest, **options) {
@@ -1127,11 +1131,13 @@ function describe(first, *rest, **options) {
 }
 print(describe(1, 2, 3));
 print(describe(1, 2, sep = "-"));
+print(describe(first = 1, sep = "-"));
 ```
 
 ```output
 1 [2, 3] {}
-1 [2, -] {sep=-}
+1 [2] {sep=-}
+1 [] {sep=-}
 ```
 
 <a id="lambdas"></a>

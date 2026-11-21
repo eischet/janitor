@@ -1,5 +1,17 @@
 # 0.9.78 (in progress)
 
+- Named arguments are bound by name, as in Python. `f(b = 1, a = 2)` binds `a` to 2; before, arguments were bound in
+  the order they were written, so `range(to = 10, from = 1)` gave `from` the value 10. A named argument can fill any
+  parameter, not only one with a default value. `*rest` gets only the positional arguments that are left (before, also
+  the values of named ones), and `**options` only the names that match no parameter (before, all of them). New errors:
+  a name that matches no parameter, a parameter given by position and by name, a missing parameter (naming it), and the
+  same name twice in one call, which does not compile.
+- API: `JCallArgs.size()` and `get(i)` count only the positional arguments; named arguments are read with
+  `getByName` and `asKwargs`. Before, a named argument also took a position, so `list.join(sep = "/")` worked like
+  `list.join("/")`. A named argument that the called function or method has not read when it returns now fails the
+  call ("unexpected named argument"). New: `hasNamed()`, `takeNamed()` and `requireNamesUsed()`.
+  `JCallArgs.ofSingleArgument` passes its argument by position, as its callers expect.
+
 - Module `commonmark`: GitHub-flavored tables. `parse` now recognizes pipe tables and returns them as nodes of the new
   types `TableBlock`, `TableHead`, `TableBody`, `TableRow` and `TableCell` (with `header`, `alignment` and `width`), which
   scripts can also create. `toHtml`, `toMarkdown` and `toText` render them. Text that forms a pipe table with a delimiter

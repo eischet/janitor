@@ -17,7 +17,7 @@ Before you hand over a script, check it against this list:
 6. `return` at the top level ends the script and sets its result. ([details](#top-level-return))
 7. There is no string interpolation. ([details](#no-interpolation))
 8. Methods that change a list return `null`. ([details](#null-returning-methods))
-9. Functions must be defined before they are called, and named arguments are bound by position. ([details](#no-hoisting))
+9. Functions must be defined before they are called. ([details](#no-hoisting))
 10. Only use modules that the host registers. ([details](#modules-are-optional))
 
 <a id="block-scope"></a>
@@ -232,9 +232,6 @@ invalid callable: square
 
 Also note:
 
-- Named arguments are bound by position, not by name: `f(b = 1, a = 2)` passes `1` to the first parameter. Write
-  arguments in the order of the parameters, and use `name = value` only for parameters with default values.
-  ([language.md](language.md#function-declarations))
 - Lambdas use `->`, not `=>`, and there is no `lambda` keyword and no `function (x) { ... }` expression.
 - A lambda cannot be called where it is written, `((x) -> x)(1)`; store it in a variable first.
 - Calling a function or method with too many arguments is an error, as in Python and Java (JavaScript ignores them).

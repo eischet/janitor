@@ -16,6 +16,7 @@ import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.JList;
 import com.eischet.janitor.api.types.builtin.JMap;
 import com.eischet.janitor.api.types.builtin.JNull;
+import com.eischet.janitor.api.types.functions.EvaluatedArgument;
 import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.types.functions.tree.ConstantNode;
 import com.eischet.janitor.api.types.functions.tree.ExpressionNode;
@@ -207,14 +208,8 @@ public class ScriptFunction extends AstNode implements Expression, JsonExportabl
         public JanitorObject call(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
             process.countInstruction();
             try {
-                // Too many arguments are an error, as in Python and Java, unless the function collects them with *rest or **options.
-                if (formalParameters.collectsMore()) {
-                    arguments.requireAtLeast(formalParameters.minSize());
-                } else if (formalParameters.minSize() == formalParameters.size()) {
-                    arguments.require(formalParameters.size());
-                } else {
-                    arguments.require(formalParameters.minSize(), formalParameters.size());
-                }
+                // Arguments are matched before the function's scope exists, so that a wrong call fails at the caller.
+                final JanitorObject[] values = matchArguments(process, arguments);
                 try {
                     if (moduleScope != null) {
                         process.pushModuleScope(moduleScope);
@@ -225,86 +220,13 @@ public class ScriptFunction extends AstNode implements Expression, JsonExportabl
                         process.enterBlock(null); // do NOT put anonymous blocks into the stack trace
                     }
                     process.pushClosureScope(closureScope);
-                    final int nonDefaultSize = formalParameters.minSize();
-
-                    if (!formalParameters.getParameters().isEmpty()) {
-                        // start at the first argument:
-                        int argPos = 0;
-                        // go though all parameters that the function needs:
-
-                        // TODO: do not let these go into kwargs, or don't care, have to decide what's better: final Set<String> usedNames = new HashSet<>();
-
-                        for (final FormalParameter parameter : formalParameters) {
-                            if (parameter.getKind() == FormalParameter.Kind.POSITIONAL) {
-                                final JanitorObject matched = arguments.get(argPos++).janitorUnpack();
-                                process.getCurrentScope().bind(process, parameter.getName(), matched);
-                            } else if (parameter.getKind() == FormalParameter.Kind.VARARGS) {
-                                @NotNull final JList list = Janitor.list();
-                                while (argPos < arguments.size()) {
-                                    final JanitorObject matched = arguments.get(argPos++).janitorUnpack();
-                                    list.add(matched);
-                                }
-                                process.getCurrentScope().bind(process, parameter.getName(), list);
-                            } else if (parameter.getKind() == FormalParameter.Kind.DEFAULTED) {
-                                // these are a bit tricky, because (stealing the idea from Python without thinking it through first ;-) )
-                                // these can be positional or named, but not both.
-
-                                // Get the possible named argument, but don't use it yet:
-                                JanitorObject valueByName = arguments.getByName(parameter.getName());
-
-                                // First, check if there is a named argument matching our name
-                                JanitorObject valueByPosition = null;
-                                if (argPos < arguments.size()) {
-                                    valueByPosition = arguments.get(argPos++).janitorUnpack();
-                                }
-
-                                JanitorObject defaultValue = parameter.getDefaultValue().evaluate(process).janitorUnpack();
-
-                                if (valueByName == null && valueByPosition == null) {
-                                    // Simple: neither matching position nor name is found, use the default value.
-                                    // System.out.println("using default value for parameter " + parameter.getName());
-                                    process.getCurrentScope().bind(process, parameter.getName(), defaultValue);
-                                } else if (valueByName == null && valueByPosition != null) {
-                                    // Simple, too: only a matching positional argument is found, use that
-                                    process.getCurrentScope().bind(process, parameter.getName(), valueByPosition);
-                                } else if (valueByName != null && valueByPosition != null && valueByName == valueByPosition) {
-                                    // It's the same thing, no need to worry
-                                    process.getCurrentScope().bind(process, parameter.getName(), valueByPosition);
-                                } else {
-                                    System.err.println("don't know what to do: valueByName=" + valueByName + ", valueByPosition=" + valueByPosition);
-                                    // TODO: there are missing cases!
-                                    throw new JanitorArgumentException(process, "Default parameters are not yet implemented");
-                                }
-                            } else if (parameter.getKind() == FormalParameter.Kind.KWARGS) {
-                                // my first impulse was to keep all "used" args out of the map, but it cannot hurt us at all to use them, too
-                                @NotNull final JMap kwargs = arguments.asKwargs(null);
-                                process.getCurrentScope().bind(process, parameter.getName(), kwargs);
-                                // throw new JanitorArgumentException(process, "kwargs parameters are not yet implemented");
-                            }
-                        }
+                    // Bound in the order of the parameters, so that a default value can use the parameters before it.
+                    final List<FormalParameter> parameters = formalParameters.getParameters();
+                    for (int i = 0; i < values.length; i++) {
+                        final FormalParameter parameter = parameters.get(i);
+                        final JanitorObject value = values[i] != null ? values[i] : parameter.getDefaultValue().evaluate(process).janitorUnpack();
+                        process.getCurrentScope().bind(process, parameter.getName(), value);
                     }
-
-
-                    /*
-
-                    for (int i = 0; i < nonDefaultSize; i++) {
-                        process.getCurrentScope().bind(process, formalParameters.get(i).getName(), arguments.get(i).janitorUnpack());
-                        //if (closureScope != null) {
-                        //    // Bind this to the closure scope, too, so it can later be referenced.
-                        //    // Yes, having this here is a sign that the scoping needs more work in general...
-                        //    closureScope.bind(process, parameterNames.get(i), arguments.get(i).janitorUnpack());
-                        //}
-                    // TODO: bind additional parameters to *args, if that is available
-                    if (formalParameters.size() > nonDefaultSize) {
-
-                    }
-
-
-                    // TODO: bind **kwargs, as soon as they are in the Grammar for calling
-
-                    }
-                         */
-
 
                     block.executeFunctionCall(process);
                 } finally {
@@ -323,6 +245,75 @@ public class ScriptFunction extends AstNode implements Expression, JsonExportabl
             return JNull.NULL;
         }
 
+    }
+
+    /**
+     * Matches the arguments of a call to the parameters, as in Python: positional arguments fill the parameters in their
+     * order, then each named argument goes to the parameter of that name. {@code *rest} gets the positional arguments
+     * that are left, {@code **options} the named arguments that match no parameter.
+     *
+     * @param arguments the arguments of the call
+     * @return the value of each parameter, in the order of the parameters; null where the default value applies
+     * @throws JanitorArgumentException if arguments are missing, surplus, or given twice
+     */
+    private JanitorObject[] matchArguments(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorArgumentException {
+        final List<FormalParameter> parameters = formalParameters.getParameters();
+        final JanitorObject[] values = new JanitorObject[parameters.size()];
+        final int positionalCount = arguments.size();
+        int position = 0;
+        int optionsIndex = -1;
+        boolean collectsRest = false;
+        for (int i = 0; i < values.length; i++) {
+            final FormalParameter.Kind kind = parameters.get(i).getKind();
+            if (kind == FormalParameter.Kind.VARARGS) {
+                final JList rest = Janitor.list();
+                while (position < positionalCount) {
+                    rest.add(arguments.get(position++));
+                }
+                values[i] = rest;
+                collectsRest = true;
+            } else if (kind == FormalParameter.Kind.KWARGS) {
+                values[i] = Janitor.map();
+                optionsIndex = i;
+            } else if (position < positionalCount) {
+                values[i] = arguments.get(position++);
+            }
+        }
+        if (!collectsRest && position < positionalCount) {
+            throw new JanitorArgumentException(process, "%s: accepts at most %s positional arguments, but got %s".formatted(arguments.getFunctionName(), position, positionalCount));
+        }
+        if (arguments.hasNamed()) {
+            for (final EvaluatedArgument named : arguments.takeNamed()) {
+                final int index = indexOfNamedParameter(parameters, named.getName());
+                final JanitorObject value = named.getValue().janitorUnpack();
+                if (index >= 0) {
+                    if (values[index] != null) {
+                        throw new JanitorArgumentException(process, "%s: more than one value for '%s'".formatted(arguments.getFunctionName(), named.getName()));
+                    }
+                    values[index] = value;
+                } else if (optionsIndex >= 0) {
+                    ((JMap) values[optionsIndex]).put(named.getName(), value);
+                } else {
+                    throw new JanitorArgumentException(process, "%s: unexpected named argument '%s'".formatted(arguments.getFunctionName(), named.getName()));
+                }
+            }
+        }
+        for (int i = 0; i < values.length; i++) {
+            if (values[i] == null && parameters.get(i).getKind() == FormalParameter.Kind.POSITIONAL) {
+                throw new JanitorArgumentException(process, "%s: missing argument '%s'".formatted(arguments.getFunctionName(), parameters.get(i).getName()));
+            }
+        }
+        return values;
+    }
+
+    private static int indexOfNamedParameter(final List<FormalParameter> parameters, final String name) {
+        for (int i = 0; i < parameters.size(); i++) {
+            final FormalParameter parameter = parameters.get(i);
+            if ((parameter.getKind() == FormalParameter.Kind.POSITIONAL || parameter.getKind() == FormalParameter.Kind.DEFAULTED) && parameter.getName().equals(name)) {
+                return i;
+            }
+        }
+        return -1;
     }
 
 }

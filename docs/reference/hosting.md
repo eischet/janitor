@@ -86,6 +86,11 @@ public class BillingModule extends JanitorComposed<BillingModule> implements Jan
 }
 ```
 
+`args.size()` and `args.get(i)` see only the positional arguments. A method reads named arguments
+(`invoiceTotal("R-1", currency = "EUR")`) with `args.getByName("currency")`, or all of them with `args.asKwargs(...)`.
+A named argument that the method has not read when it returns fails the call with "unexpected named argument", so a
+misspelled name is not ignored.
+
 <a id="module-resolvers"></a>
 
 ## Resolving modules by name

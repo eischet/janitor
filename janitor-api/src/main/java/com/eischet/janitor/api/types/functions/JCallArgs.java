@@ -25,7 +25,11 @@ public class JCallArgs {
 
     private final String functionName;
     private final @NotNull List<EvaluatedArgument> args;
+    private final @NotNull List<EvaluatedArgument> positional;
+    private final @NotNull List<EvaluatedArgument> named;
     private final @NotNull JanitorScriptProcess process;
+    /** Names of the named arguments that the called function has read; shared with the copies made by {@link #shift()}. */
+    private final @Nullable Set<String> usedNames;
 
     /**
      * Create a new call arguments object.
@@ -38,12 +42,42 @@ public class JCallArgs {
         this.functionName = functionName;
         this.process = process;
         this.args = args == null ? Collections.emptyList() : args.stream().map(value -> new EvaluatedArgument(null, value)).toList();
+        this.positional = this.args;
+        this.named = Collections.emptyList();
+        this.usedNames = null;
     }
 
+    /**
+     * Create a new call arguments object from evaluated arguments, which may be positional or named.
+     *
+     * @param process            the script that is running.
+     * @param identifier         the name of the function being called.
+     * @param evaluatedArguments the arguments: positional ones (without a name) and named ones.
+     */
     public JCallArgs(final @NotNull JanitorScriptProcess process, final String identifier, final @NotNull List<EvaluatedArgument> evaluatedArguments) {
+        this(process, identifier, evaluatedArguments, null);
+    }
+
+    private JCallArgs(final @NotNull JanitorScriptProcess process, final String identifier, final @NotNull List<EvaluatedArgument> evaluatedArguments, final @Nullable Set<String> sharedUsedNames) {
         this.functionName = identifier;
         this.process = process;
         this.args = evaluatedArguments;
+        boolean anyNamed = false;
+        for (final EvaluatedArgument argument : evaluatedArguments) {
+            if (argument.getName() != null) {
+                anyNamed = true;
+                break;
+            }
+        }
+        if (anyNamed) {
+            this.positional = evaluatedArguments.stream().filter(argument -> argument.getName() == null).toList();
+            this.named = evaluatedArguments.stream().filter(argument -> argument.getName() != null).toList();
+            this.usedNames = sharedUsedNames != null ? sharedUsedNames : new HashSet<>();
+        } else {
+            this.positional = evaluatedArguments;
+            this.named = Collections.emptyList();
+            this.usedNames = sharedUsedNames;
+        }
     }
 
     /**
@@ -64,7 +98,7 @@ public class JCallArgs {
      * @return the call arguments
      */
     public static @NotNull JCallArgs ofSingleArgument(final JanitorScriptProcess process, final JanitorObject arg) {
-        return new JCallArgs(process, "anonymous", List.of(new EvaluatedArgument("arg0", arg)));
+        return new JCallArgs(process, "anonymous", List.of(new EvaluatedArgument(null, arg)));
     }
 
     /**
@@ -77,12 +111,49 @@ public class JCallArgs {
     }
 
     /**
-     * Get the number of arguments in the call.
+     * Get the number of positional arguments in the call; named arguments do not count.
      *
-     * @return the number of arguments in the call.
+     * @return the number of positional arguments in the call.
      */
     public int size() {
-        return args == null ? 0 : args.size();
+        return positional.size();
+    }
+
+    /**
+     * @return true if the call has named arguments ({@code name = value})
+     */
+    public boolean hasNamed() {
+        return !named.isEmpty();
+    }
+
+    /**
+     * Returns the named arguments in the order in which they were written, and counts them all as used, see
+     * {@link #requireNamesUsed()}. This is for functions that bind all names themselves.
+     *
+     * @return the named arguments
+     */
+    public @NotNull List<EvaluatedArgument> takeNamed() {
+        if (usedNames != null) {
+            for (final EvaluatedArgument argument : named) {
+                usedNames.add(argument.getName());
+            }
+        }
+        return named;
+    }
+
+    /**
+     * Requires that the called function has read every named argument, by {@link #getByName}, {@link #asKwargs} or
+     * {@link #takeNamed()}. Script calls check this after the function returns, so that a name the function does not
+     * know fails instead of being ignored.
+     *
+     * @throws JanitorArgumentException if a named argument was not read
+     */
+    public void requireNamesUsed() throws JanitorArgumentException {
+        for (final EvaluatedArgument argument : named) {
+            if (usedNames == null || !usedNames.contains(argument.getName())) {
+                throw new JanitorArgumentException(process, "%s: unexpected named argument '%s'".formatted(functionName, argument.getName()));
+            }
+        }
     }
 
     /**
@@ -128,18 +199,14 @@ public class JCallArgs {
     }
 
     /**
-     * Get the argument at the given position.
+     * Get the positional argument at the given position; named arguments do not count.
      *
      * @param position the position of the argument to get.
      * @return the argument at the given position.
      * @throws IndexOutOfBoundsException if the position is out of bounds.
      */
     public JanitorObject get(final int position) throws IndexOutOfBoundsException {
-        if (args == null) {
-            throw new IndexOutOfBoundsException("No arguments provided");
-        }
-        // TODO: I'm pretty sure this will fail when named args with defaults come in...
-        return args.get(position).getValue().janitorUnpack(); // unpacking is super-important, so that we store the actual value instead of a property reference, for example (!)
+        return positional.get(position).getValue().janitorUnpack(); // unpacking is super-important, so that we store the actual value instead of a property reference, for example (!)
     }
 
     /**
@@ -370,7 +437,7 @@ public class JCallArgs {
      */
     @Deprecated(since = "0.9.34", forRemoval = true) // "missing out on named arguments"
     public List<JanitorObject> getList() {
-        return args == null ? Collections.emptyList() : args.stream().map(EvaluatedArgument::getValue).toList();
+        return positional.stream().map(EvaluatedArgument::getValue).toList();
     }
 
 
@@ -388,26 +455,26 @@ public class JCallArgs {
      * @return the value, or null if there is no argument of this name
      */
     public JanitorObject getByName(final @NotNull String name) {
-        return args.stream()
-                .filter(element -> Objects.nonNull(element.getName()))
-                .filter(element -> Objects.equals(element.getName(), name))
-                .map(EvaluatedArgument::getValue)
-                .findFirst()
-                .orElse(null);
+        for (final EvaluatedArgument argument : named) {
+            if (name.equals(argument.getName())) {
+                usedNames.add(name);
+                return argument.getValue();
+            }
+        }
+        return null;
     }
 
     /**
-     * Collects all keyword arguments into a map.
+     * Collects all keyword arguments into a map; they count as used, see {@link #requireNamesUsed()}.
      * @param except names of arguments to leave out, may be null
      * @return a map of all named arguments
      */
     public JMap asKwargs(final Set<String> except) {
         @NotNull final JMap map = Janitor.map();
-        for (final EvaluatedArgument arg : args) {
-            if (arg.getName() != null) {
-                if (except == null || !except.contains(arg.getName())) {
-                    map.put(arg.getName(), arg.getValue());
-                }
+        for (final EvaluatedArgument arg : named) {
+            if (except == null || !except.contains(arg.getName())) {
+                usedNames.add(arg.getName());
+                map.put(arg.getName(), arg.getValue());
             }
         }
         return map;
@@ -420,22 +487,21 @@ public class JCallArgs {
      * @return the same instance, optionally populated with values from the map.
      */
     public JanitorObject applyOptionalMap(final JanitorScriptProcess process, final JanitorObject instance) throws JanitorNameException {
-        if (args != null && args.size() == 1 && args.get(0).getValue() instanceof JMap map) {
+        if (positional.size() == 1 && positional.get(0).getValue() instanceof JMap map) {
             map.applyTo(process, instance);
         }
         return instance;
     }
 
     /**
-     * Return JCallArgs with the first argument removed.
-     * @return the arguments, with the first argument removed
+     * Return JCallArgs with the first positional argument removed. The named arguments stay, and reading them in the
+     * copy counts for this object, too.
+     * @return the arguments, with the first positional argument removed
      */
     public JCallArgs shift() {
-        if (args.size() == 1) {
-            return new JCallArgs(process, functionName, Collections.emptyList());
-        } else {
-            return new JCallArgs(process, functionName, args.subList(1, args.size()));
-        }
+        final List<EvaluatedArgument> rest = new ArrayList<>(positional.subList(1, positional.size()));
+        rest.addAll(named);
+        return new JCallArgs(process, functionName, rest, usedNames);
     }
 
     /**

@@ -70,7 +70,10 @@ public class MemberCallExpression extends Statement implements Expression {
         attribute = attribute.janitorUnpackUntil(it -> it instanceof JCallable);
 
         if (attribute instanceof JCallable callable) {
-            return process.guard(callable.call(process, args == null ? JCallArgs.empty(identifier, process) : args.toCallArguments(identifier, process)));
+            final JCallArgs callArgs = args == null ? JCallArgs.empty(identifier, process) : args.toCallArguments(identifier, process);
+            final JanitorObject result = callable.call(process, callArgs);
+            callArgs.requireNamesUsed();
+            return process.guard(result);
         }
         throw new JanitorNameException(process, "member is not callable: " + identifier +
                                                 "; on: " + object + "[" + simpleClassNameOf(object) + "] = " +
