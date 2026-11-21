@@ -15,6 +15,7 @@ import com.eischet.janitor.api.modules.DiscoverableModules;
 import com.eischet.janitor.api.types.dispatch.HasDispatcher;
 import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.errors.compiler.JanitorCompilerException;
+import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.errors.runtime.JanitorAssertionException;
 import com.eischet.janitor.api.errors.runtime.JanitorNameException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
@@ -28,6 +29,7 @@ import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.JList;
 import com.eischet.janitor.api.types.builtin.JMap;
 import com.eischet.janitor.api.types.builtin.JNull;
+import com.eischet.janitor.api.types.builtin.JString;
 import com.eischet.janitor.api.util.ObjectUtilities;
 import com.eischet.janitor.logging.JanitorLogger;
 import com.eischet.janitor.toolbox.time.DateTimeUtils;
@@ -74,8 +76,8 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
     private final VariableScope builtinScope = VariableScope.createBuiltinScope(this, Location.virtual(ScriptSource.builtin()));
 
     {
-        builtinScope.bindF("print", "print(values...): Prints the values, separated by spaces; where the output goes is up to the host, e.g. the console or a log.",
-                (rs, args) -> rs.getRuntime().print(rs, args));
+        builtinScope.bindF("print", "print(values..., sep = null): Prints the values, separated by spaces or by sep; where the output goes is up to the host, e.g. the console or a log.",
+                JanitorDefaultEnvironment::doPrint);
         builtinScope.bindF("assert", "assert(condition, message): Fails the script with an assertion error unless the condition is truthy; the message is optional. Returns the condition.",
                 JanitorDefaultEnvironment::doAssert);
         builtinScope.bind("__builtin__", builtinScope); // not sure if this is actually a good idea, because that's a perfect circle of references.
@@ -139,6 +141,29 @@ public abstract class JanitorDefaultEnvironment implements JanitorEnvironment {
      * @return the condition
      * @throws JanitorRuntimeException if the condition is not true
      */
+    /**
+     * The built-in function {@code print(values..., sep = null)}. Without a separator the host gets the arguments as they
+     * are and separates them in its own way. With one, the values are joined into a single string first.
+     * @param process the running script
+     * @param args the arguments of the call
+     * @return what the host's print returns, usually null
+     * @throws JanitorRuntimeException if sep is not a string, or the host fails
+     */
+    public static JanitorObject doPrint(final JanitorScriptProcess process, final JCallArgs args) throws JanitorRuntimeException {
+        final JanitorObject separator = args.getByName("sep");
+        if (separator == null || separator == JNull.NULL) {
+            return process.getRuntime().print(process, args);
+        }
+        if (!(separator instanceof JString sep)) {
+            throw new JanitorArgumentException(process, "print: sep must be a string or null, but is: " + separator.janitorToString());
+        }
+        final StringJoiner joined = new StringJoiner(sep.janitorGetHostValue());
+        for (int i = 0; i < args.size(); i++) {
+            joined.add(args.get(i).janitorToString());
+        }
+        return process.getRuntime().print(process, new JCallArgs("print", process, List.of(Janitor.string(joined.toString()))));
+    }
+
     public static JanitorObject doAssert(final JanitorScriptProcess process, final JCallArgs args) throws JanitorRuntimeException {
         // TODO: this is really not the right place to put this method, because it is not at all related to the scope. JanitorSemantics would be better, for example.
         // the condition is required, the message optional; this used to be require(0, 1), which rejected every message

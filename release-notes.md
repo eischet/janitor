@@ -11,6 +11,10 @@
   `list.join("/")`. A named argument that the called function or method has not read when it returns now fails the
   call ("unexpected named argument"). New: `hasNamed()`, `takeNamed()` and `requireNamesUsed()`.
   `JCallArgs.ofSingleArgument` passes its argument by position, as its callers expect.
+- `print` takes a separator: `print(a, b, c, sep = "/")` prints `a/b/c`. The values are joined with `sep` into one
+  string, which the host's `JanitorRuntime.print` gets as its only argument, so hosts need no change; a host that
+  formats some values in its own way (e.g. exceptions) sees them already as text then. Without `sep`, or with
+  `sep = null`, the host gets the values as before.
 
 - Module `commonmark`: GitHub-flavored tables. `parse` now recognizes pipe tables and returns them as nodes of the new
   types `TableBlock`, `TableHead`, `TableBody`, `TableRow` and `TableCell` (with `header`, `alignment` and `width`), which

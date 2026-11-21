@@ -266,7 +266,7 @@ public class JanitorCompletionsTestCase extends JanitorTest {
     @Test
     void globalsHaveTheirHelpTexts() {
         final Completion print = find(suggestions.complete("pri", 1, 3), "print").orElseThrow();
-        assertEquals("print(values...)", print.signature());
+        assertEquals("print(values..., sep = null)", print.signature());
         assertFalse(print.description().isEmpty());
     }
 

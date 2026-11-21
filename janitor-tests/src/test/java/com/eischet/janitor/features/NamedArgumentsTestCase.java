@@ -98,6 +98,17 @@ public class NamedArgumentsTestCase extends JanitorTest {
     }
 
     @Test
+    void printJoinsTheValuesWithTheSeparator() throws Exception {
+        assertEquals("a/b/c\n", getOutput("a = \"a\"; b = \"b\"; c = \"c\"; print(a, b, c, sep = '/');"));
+        assertEquals("1, [2, 3], null\n", getOutput("print(1, [2, 3], null, sep = \", \");"));
+        assertEquals("12\n", getOutput("print(1, 2, sep = \"\");"));
+        assertEquals("1 2\n", getOutput("print(1, 2, sep = null);"));
+        assertEquals("1 2\n", getOutput("print(1, 2);"));
+        assertTrue(argumentError("print(1, 2, sep = 3);").contains("sep"));
+        assertTrue(argumentError("print(1, 2, end = \"\");").contains("named argument 'end'"));
+    }
+
+    @Test
     void namesThatANativeFunctionDoesNotReadAreErrors() throws Exception {
         assertEquals("1/2", eval("return [1, 2].join(\"/\");"));
         assertTrue(argumentError("return [1, 2].join(sep = \"/\");").contains("named argument 'sep'"));

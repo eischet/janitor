@@ -21,11 +21,21 @@ Hosts usually add more globals; see [hosting.md](hosting.md#host-provided-global
 
 <a id="global-print"></a>
 
-### `print(values...)`
+### `print(values..., sep = null)`
 
 Hands the values to the host as output and returns `null`. What happens with the output depends on the host: it may go
-to a console, a log, or nowhere. With several arguments, the separator also depends on the host; pass a single string
-to be sure of the result.
+to a console, a log, or nowhere. With several arguments, the separator also depends on the host, unless `sep` gives
+one: then the values are joined with it into a single string, which the host gets as the only value.
+
+```janitor
+print("a", "b", "c", sep = "/");
+print(1, [2, 3], sep = ", ");
+```
+
+```output
+a/b/c
+1, [2, 3]
+```
 
 <a id="global-assert"></a>
 
