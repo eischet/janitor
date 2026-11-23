@@ -75,6 +75,27 @@ public class JanitorCompletionsTestCase extends JanitorTest {
         }
     }
 
+    // a message whose builder methods come from a parent table, as in a hierarchy of wrappers
+    private static final class Mail extends JanitorComposed<Mail> {
+        public static final DispatchTable<Mail> BASE = new DispatchTable<>(true);
+        public static final DispatchTable<Mail> OWN = new DispatchTable<>();
+        public static final Dispatcher<?> TYPE;
+
+        static {
+            BASE.setMetaData(Janitor.MetaData.CLASS, "Message");
+            BASE.addBuilderMethod("setTitle", (self, process, args) -> {})
+                    .setMetaData(Janitor.MetaData.HELP, "setTitle(title): Sets the title and returns the message.");
+            OWN.setMetaData(Janitor.MetaData.CLASS, "Mail");
+            OWN.addBuilderMethod("send", (self, process, args) -> {})
+                    .setMetaData(Janitor.MetaData.HELP, "send(): Sends the mail and returns it.");
+            TYPE = Dispatcher.inherit(BASE, OWN);
+        }
+
+        private Mail() {
+            super(OWN);
+        }
+    }
+
     private static final class Registry extends JanitorComposed<Registry> {
         public static final DispatchTable<Registry> DISPATCH = new DispatchTable<>();
 
@@ -83,6 +104,8 @@ public class JanitorCompletionsTestCase extends JanitorTest {
                     .setMetaData(Janitor.MetaData.HELP, "Ticket: The tickets.");
             DISPATCH.addObjectProperty("Tickets", self -> new Tickets(), castDispatcher(Tickets.TYPE))
                     .setMetaData(Janitor.MetaData.HELP, "Tickets: The DAO of the tickets.");
+            DISPATCH.addObjectProperty("mail", self -> new Mail(), castDispatcher(Mail.TYPE))
+                    .setMetaData(Janitor.MetaData.HELP, "mail: A new mail.");
             DISPATCH.addMethod("lookup", (self, process, args) -> Janitor.NULL)
                     .setMetaData(Janitor.MetaData.HELP, "lookup(key): Find an entry.");
         }
@@ -109,6 +132,15 @@ public class JanitorCompletionsTestCase extends JanitorTest {
     private List<Completion> atEnd(final String source) {
         final String[] lines = source.split("\n", -1);
         return suggestions.complete(source, lines.length, lines[lines.length - 1].length(), BINDINGS.declarations());
+    }
+
+    @Test
+    void aBuilderChainKeepsTheTypeOfTheObjectItWasCalledOn() {
+        assertEquals("Mail", find(atEnd("registry.mail.setTitle(\"Hallo\")."), "send").orElseThrow().owners(),
+                "a builder method of the parent table returns the mail, not a message");
+        assertTrue(find(atEnd("registry.mail.send().setTitle(\"x\")."), "setTitle").isPresent());
+        assertTrue(find(atEnd("registry.mail.apply({\"title\": \"x\"})."), "send").isPresent(), "apply returns the object, too");
+        assertTrue(find(atEnd("registry.lookup(\"x\")."), "send").isEmpty(), "a method without a known type tells nothing");
     }
 
     @Test

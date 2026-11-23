@@ -108,6 +108,10 @@ Methods registered with `addMethod(name, ...)` get the raw `JCallArgs` instead a
 when it returns fails the call with "unexpected named argument", so a misspelled name is not ignored, but only after the
 method has run.
 
+Methods registered with `addBuilderMethod(name, ...)` return the object they are called on, for chains like
+`mail.setTitle("Hello").send()`. Their `RETURNS` metadata is `ScriptType.SELF`, so editors know the type of the result: the
+object's own type, also where the method comes from a parent table. The same holds for `apply(map)`.
+
 <a id="module-resolvers"></a>
 
 ## Resolving modules by name

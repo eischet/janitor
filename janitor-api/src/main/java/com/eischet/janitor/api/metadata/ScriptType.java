@@ -52,10 +52,18 @@ public sealed interface ScriptType {
     ScriptType ENTITY = new Entity();
 
     /**
-     * Replaces {@link #ENTITY} with the objects of a receiver.
+     * The object the method is called on, e.g. what a builder method returns, so that tools can follow a chain like
+     * {@code button.setWidth("10em").}. Like {@link #ENTITY} it depends on the receiver: one method registered at a parent
+     * table returns the object of the subclass it is called on.
+     */
+    ScriptType SELF = new Self();
+
+    /**
+     * Replaces {@link #ENTITY} and {@link #SELF} with the objects of a receiver.
      *
      * @param receiver the dispatcher of the object the method is called on, may be null
-     * @return the type with the receiver's objects, or {@link #ANY} in place of an entity the receiver does not name
+     * @return the type with the receiver's objects, or {@link #ANY} in place of an entity the receiver does not name and of
+     * {@link #SELF} without a receiver
      */
     @NotNull ScriptType resolve(@Nullable Dispatcher<?> receiver);
 
@@ -147,6 +155,21 @@ public sealed interface ScriptType {
         @Override
         public @NotNull String describe() {
             return "entity";
+        }
+    }
+
+    /**
+     * The object the method is called on, see {@link #SELF}.
+     */
+    record Self() implements ScriptType {
+        @Override
+        public @NotNull ScriptType resolve(final @Nullable Dispatcher<?> receiver) {
+            return receiver == null ? ANY : of(receiver);
+        }
+
+        @Override
+        public @NotNull String describe() {
+            return "self";
         }
     }
 

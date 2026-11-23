@@ -14,6 +14,7 @@ import com.eischet.janitor.api.metadata.MetaDataKey;
 import com.eischet.janitor.api.metadata.MetaDataMap;
 import com.eischet.janitor.api.metadata.MetaDataRetriever;
 import com.eischet.janitor.api.metadata.PropertyHandle;
+import com.eischet.janitor.api.metadata.ScriptType;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.TemporaryAssignable;
 import com.eischet.janitor.api.types.builtin.*;
@@ -184,7 +185,8 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
             final JMap data = args.require(1).getRequired(0, JMap.class);
             data.applyTo(process, self);
             return self;
-        }).setMetaData(Janitor.MetaData.HELP, "apply(map): Assigns each entry of the map to the property of the same name, and returns the object itself.");
+        }).setMetaData(Janitor.MetaData.HELP, "apply(map): Assigns each entry of the map to the property of the same name, and returns the object itself.")
+                .setMetaData(Janitor.MetaData.RETURNS, ScriptType.SELF);
     }
 
     /**
@@ -504,6 +506,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
 
     /**
      * Adds a method to the dispatch table that automatically returns the instance, useful for fluent interfaces.
+     * Editors know that it returns the instance: its {@link Janitor.MetaData#RETURNS} is {@link ScriptType#SELF}.
      *
      * @param name   the name of the method
      * @param method the method
@@ -519,7 +522,8 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
                 return GenericDispatchTable.this.getMetaData(name, key);
             }
         }), null, null, null)
-                .setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.METHOD);
+                .setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.METHOD)
+                .setMetaData(Janitor.MetaData.RETURNS, ScriptType.SELF);
     }
 
     /**
