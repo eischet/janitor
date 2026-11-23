@@ -17,7 +17,7 @@ public class CollectionsModule extends JanitorComposed<CollectionsModule> implem
 
     public static final JanitorModuleRegistration REGISTRATION = new JanitorModuleRegistration("collections", CollectionsModule::new).withDispatcher(() -> CollectionsModule.DISPATCH);
 
-    private static final DispatchTable<CollectionsModule> DISPATCH = new DispatchTable<>(CollectionsModule::new, false);
+    public static final DispatchTable<CollectionsModule> DISPATCH = new DispatchTable<>(CollectionsModule::new, false);
 
     static {
         DISPATCH.setMetaData(com.eischet.janitor.api.Janitor.MetaData.HELP, "Factory functions for collections.");

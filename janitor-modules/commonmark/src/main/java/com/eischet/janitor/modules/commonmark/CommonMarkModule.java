@@ -20,9 +20,9 @@ public class CommonMarkModule extends JanitorComposed<CommonMarkModule> implemen
     /**
      * The extensions the parser and all renderers use: GitHub-flavored tables.
      */
-    static final List<Extension> EXTENSIONS = List.of(TablesExtension.create());
+    public static final List<Extension> EXTENSIONS = List.of(TablesExtension.create());
 
-    private static final DispatchTable<CommonMarkModule> dispatch = new DispatchTable<>(CommonMarkModule::new, false);
+    public static final DispatchTable<CommonMarkModule> dispatch = new DispatchTable<>(CommonMarkModule::new, false);
 
     static {
         dispatch.setMetaData(com.eischet.janitor.api.Janitor.MetaData.HELP, "Reads, changes and writes Markdown documents (CommonMark).");

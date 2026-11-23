@@ -51,7 +51,7 @@ import java.time.LocalDateTime;
  */
 public class FilesModule extends JanitorComposed<FilesModule> implements JanitorModule {
 
-    private static final DispatchTable<FilesModule> dispatcher = new DispatchTable<>(FilesModule::new, false);
+    public static final DispatchTable<FilesModule> dispatcher = new DispatchTable<>(FilesModule::new, false);
 
     static {
         dispatcher.setMetaData(com.eischet.janitor.api.Janitor.MetaData.HELP, "Access to the file system.");
