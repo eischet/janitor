@@ -114,7 +114,7 @@ public class StatementSemanticsTestCase extends JanitorTest {
     // --- compound assignments on host objects
 
     private static class Failing extends JanitorComposed<Failing> {
-        private static final DispatchTable<Failing> DISPATCH = new DispatchTable<>(Failing::new);
+        public static final DispatchTable<Failing> DISPATCH = new DispatchTable<>(Failing::new);
 
         static {
             DISPATCH.addIntegerProperty("n", Failing::getN, Failing::setN);

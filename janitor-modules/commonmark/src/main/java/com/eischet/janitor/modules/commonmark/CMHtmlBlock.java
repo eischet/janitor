@@ -10,7 +10,7 @@ import org.commonmark.node.HtmlBlock;
 
 /** Wrapper for the CommonMark html block node. */
 public class CMHtmlBlock extends CMNode {
-    private static final WrapperDispatchTable<HtmlBlock> dispatch = new WrapperDispatchTable<>();
+    public static final WrapperDispatchTable<HtmlBlock> dispatch = new WrapperDispatchTable<>();
 
     static {
         // TODO: method accept

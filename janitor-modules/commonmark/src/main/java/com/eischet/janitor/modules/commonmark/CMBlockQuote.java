@@ -9,7 +9,7 @@ import org.commonmark.node.BlockQuote;
 
 /** Wrapper for the CommonMark block quote node. */
 public class CMBlockQuote extends CMNode {
-    private static final WrapperDispatchTable<BlockQuote> dispatch = new WrapperDispatchTable<>();
+    public static final WrapperDispatchTable<BlockQuote> dispatch = new WrapperDispatchTable<>();
 
     static {
         // TODO: method accept

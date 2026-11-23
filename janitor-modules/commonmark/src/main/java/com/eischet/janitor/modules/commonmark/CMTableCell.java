@@ -14,7 +14,7 @@ import java.util.Locale;
  * Wrapper for the GFM table cell node; its children are the inline contents of the cell.
  */
 public class CMTableCell extends CMNode {
-    private static final WrapperDispatchTable<TableCell> dispatch = new WrapperDispatchTable<>();
+    public static final WrapperDispatchTable<TableCell> dispatch = new WrapperDispatchTable<>();
 
     static {
         dispatch.addBooleanProperty("header",

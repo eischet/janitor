@@ -34,7 +34,7 @@ public class OrmSchemaVersioningTestCase extends JanitorTest {
 
     static class TargetEntity implements OrmEntity {
         static final ForeignKeyNull<TargetEntity> NULL = new ForeignKeyNull<>(TargetEntity.class);
-        static final EntityDispatchTable<TargetEntity, VersionedTestCollection> DISPATCH =
+        public static final EntityDispatchTable<TargetEntity, VersionedTestCollection> DISPATCH =
                 new EntityDispatchTable<>(TargetEntity.class, TargetEntity::new, NULL, up -> null);
 
         static {
@@ -62,7 +62,7 @@ public class OrmSchemaVersioningTestCase extends JanitorTest {
 
     static class VersionedEntity implements OrmEntity {
         static final ForeignKeyNull<VersionedEntity> NULL = new ForeignKeyNull<>(VersionedEntity.class);
-        static final EntityDispatchTable<VersionedEntity, VersionedTestCollection> DISPATCH =
+        public static final EntityDispatchTable<VersionedEntity, VersionedTestCollection> DISPATCH =
                 new EntityDispatchTable<>(VersionedEntity.class, VersionedEntity::new, NULL, up -> null);
 
         static {
@@ -110,7 +110,7 @@ public class OrmSchemaVersioningTestCase extends JanitorTest {
     }
 
     static class VersionedJoin implements OrmJoined {
-        static final OrmDispatchTable<VersionedJoin, VersionedTestCollection> DISPATCH = new OrmDispatchTable<>(VersionedJoin.class, VersionedJoin::new);
+        public static final OrmDispatchTable<VersionedJoin, VersionedTestCollection> DISPATCH = new OrmDispatchTable<>(VersionedJoin.class, VersionedJoin::new);
 
         static {
             DISPATCH.setMetaData(JanitorOrm.MetaData.TABLE_NAME, "versioned_join");
@@ -158,7 +158,7 @@ public class OrmSchemaVersioningTestCase extends JanitorTest {
     }
 
     static class VersionedTestCollection extends OrmDaoCollection<VersionedTestCollection> implements Uplink {
-        static final DispatchTable<VersionedTestCollection> DISPATCH = new DispatchTable<>();
+        public static final DispatchTable<VersionedTestCollection> DISPATCH = new DispatchTable<>();
         private final VersionedEntityDao entityDao;
         private final VersionedJoinDao joinDao;
 

@@ -10,7 +10,7 @@ import org.commonmark.node.IndentedCodeBlock;
 
 /** Wrapper for the CommonMark indented code block node. */
 public class CMIndentedCodeBlock extends CMNode {
-    private static final WrapperDispatchTable<IndentedCodeBlock> dispatch = new WrapperDispatchTable<>();
+    public static final WrapperDispatchTable<IndentedCodeBlock> dispatch = new WrapperDispatchTable<>();
 
     static {
         // TODO: method accept

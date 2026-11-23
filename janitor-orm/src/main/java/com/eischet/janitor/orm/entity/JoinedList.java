@@ -240,7 +240,7 @@ public class JoinedList<T extends OrmJoined, U extends Uplink, V extends JoinDao
 
     /** The script view of a {@link JoinedList}, which offers the methods size and add. */
     protected static class JanitorJoinedList extends JanitorComposed<JanitorJoinedList> implements JIterable {
-        public static DispatchTable<JanitorJoinedList> DISPATCH = new DispatchTable<>();
+        public static final DispatchTable<JanitorJoinedList> DISPATCH = new DispatchTable<>();
 
         static {
             //DISPATCH.addBuilderMethod("add", (self, process, args) -> self.parent.addGeneric(args.get(0)));

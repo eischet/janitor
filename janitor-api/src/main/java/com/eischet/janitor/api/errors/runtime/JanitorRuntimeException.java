@@ -24,7 +24,7 @@ import java.util.Collections;
  */
 public abstract class JanitorRuntimeException extends JanitorException implements JanitorObject, HasDispatcher<JanitorRuntimeException> {
 
-    private static final DispatchTable<JanitorRuntimeException> DISPATCH = new DispatchTable<>(false);
+    public static final DispatchTable<JanitorRuntimeException> DISPATCH = new DispatchTable<>(false);
 
     static {
         DISPATCH.addStringProperty("message", JanitorRuntimeException::getText)

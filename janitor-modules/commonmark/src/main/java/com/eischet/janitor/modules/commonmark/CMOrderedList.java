@@ -10,7 +10,7 @@ import org.commonmark.node.OrderedList;
 
 /** Wrapper for the CommonMark ordered list node. */
 public class CMOrderedList extends CMListBlock {
-    private static final WrapperDispatchTable<OrderedList> dispatch = new WrapperDispatchTable<>();
+    public static final WrapperDispatchTable<OrderedList> dispatch = new WrapperDispatchTable<>();
 
     static {
         // TODO: method accept

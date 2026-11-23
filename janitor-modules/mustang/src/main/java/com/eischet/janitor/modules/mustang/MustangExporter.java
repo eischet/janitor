@@ -21,7 +21,7 @@ public class MustangExporter extends JanitorWrapper<IZUGFeRDExporter> {
 
     public static final JanitorLogger log = JanitorLogger.getLogger(MustangExporter.class);
 
-    public static WrapperDispatchTable<IZUGFeRDExporter> DISPATCH = new WrapperDispatchTable<>(MustangExporter::new);
+    public static final WrapperDispatchTable<IZUGFeRDExporter> DISPATCH = new WrapperDispatchTable<>(MustangExporter::new);
 
     static {
         DISPATCH.addBuilderMethod("setProducer", (self, process, args) ->

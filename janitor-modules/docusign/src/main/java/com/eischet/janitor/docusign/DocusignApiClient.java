@@ -29,7 +29,7 @@ public class DocusignApiClient extends JanitorComposed<DocusignApiClient> {
 
     protected static final Logger log = LoggerFactory.getLogger(DocusignApiClient.class);
 
-    public static DispatchTable<DocusignApiClient> DISPATCHER = new DispatchTable<DocusignApiClient>();
+    public static final DispatchTable<DocusignApiClient> DISPATCHER = new DispatchTable<DocusignApiClient>();
 
     static {
         DISPATCHER.addStringProperty("basePath", self -> self.wrapped.getBasePath(), (self, value) -> self.wrapped.setBasePath(value))

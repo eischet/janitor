@@ -45,7 +45,7 @@ public class PathFilterTestCase extends JanitorTest {
 
     public static class Vendor extends JanitorComposed<Vendor> implements OrmEntity, ForeignKeyIdentity<Vendor> {
         static final ForeignKeyNull<Vendor> NULL = new ForeignKeyNull<>(Vendor.class);
-        static final EntityDispatchTable<Vendor, Shop> DISPATCH = new EntityDispatchTable<>(Vendor.class, up -> new Vendor(), NULL, Shop::getVendorDao);
+        public static final EntityDispatchTable<Vendor, Shop> DISPATCH = new EntityDispatchTable<>(Vendor.class, up -> new Vendor(), NULL, Shop::getVendorDao);
 
         static {
             DISPATCH.dbTable("p_vendor", "vendor_id", "vendor_key", "vendor_name", "seq_p_vendor");
@@ -73,7 +73,7 @@ public class PathFilterTestCase extends JanitorTest {
 
     public static class Product extends JanitorComposed<Product> implements OrmEntity, ForeignKeyIdentity<Product> {
         static final ForeignKeyNull<Product> NULL = new ForeignKeyNull<>(Product.class);
-        static final EntityDispatchTable<Product, Shop> DISPATCH = new EntityDispatchTable<>(Product.class, Product::new, NULL, Shop::getProductDao);
+        public static final EntityDispatchTable<Product, Shop> DISPATCH = new EntityDispatchTable<>(Product.class, Product::new, NULL, Shop::getProductDao);
 
         static {
             DISPATCH.dbTable("p_product", "product_id", "product_key", "product_name", "seq_p_product");
@@ -110,7 +110,7 @@ public class PathFilterTestCase extends JanitorTest {
 
     public static class Item extends JanitorComposed<Item> implements OrmEntity, ForeignKeyIdentity<Item> {
         static final ForeignKeyNull<Item> NULL = new ForeignKeyNull<>(Item.class);
-        static final EntityDispatchTable<Item, Shop> DISPATCH = new EntityDispatchTable<>(Item.class, Item::new, NULL, Shop::getItemDao);
+        public static final EntityDispatchTable<Item, Shop> DISPATCH = new EntityDispatchTable<>(Item.class, Item::new, NULL, Shop::getItemDao);
 
         static {
             DISPATCH.dbTable("p_item", "item_id", "item_key", "item_name", "seq_p_item");
@@ -164,7 +164,7 @@ public class PathFilterTestCase extends JanitorTest {
     }
 
     public static class Shop extends OrmDaoCollection<Shop> implements Uplink {
-        static final DispatchTable<Shop> DISPATCH = new DispatchTable<>();
+        public static final DispatchTable<Shop> DISPATCH = new DispatchTable<>();
         private final DataManager dataManager;
         private final VendorDao vendorDao;
         private final ProductDao productDao;

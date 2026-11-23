@@ -9,7 +9,7 @@ import org.commonmark.node.Document;
 
 /** Wrapper for the CommonMark document node. */
 public class CMDocument extends CMNode {
-    private static final WrapperDispatchTable<Document> dispatch = new WrapperDispatchTable<>();
+    public static final WrapperDispatchTable<Document> dispatch = new WrapperDispatchTable<>();
 
     static {
         // TODO: method accept

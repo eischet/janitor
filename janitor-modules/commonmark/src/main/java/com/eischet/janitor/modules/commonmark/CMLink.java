@@ -10,7 +10,7 @@ import org.commonmark.node.Link;
 
 /** Wrapper for the CommonMark link node. */
 public class CMLink extends CMNode {
-    private static final WrapperDispatchTable<Link> dispatch = new WrapperDispatchTable<>();
+    public static final WrapperDispatchTable<Link> dispatch = new WrapperDispatchTable<>();
 
     static {
         // TODO: method accept

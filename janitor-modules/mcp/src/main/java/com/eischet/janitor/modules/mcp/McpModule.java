@@ -37,7 +37,7 @@ public class McpModule extends JanitorComposed<McpModule> implements JanitorModu
 
     public static final JanitorModuleRegistration REGISTRATION = new JanitorModuleRegistration("mcp", () -> new McpModule()).withDispatcher(() -> McpModule.DISPATCH);
 
-    private static final DispatchTable<McpModule> DISPATCH = new DispatchTable<>(() -> new McpModule(), false);
+    public static final DispatchTable<McpModule> DISPATCH = new DispatchTable<>(() -> new McpModule(), false);
 
     static {
         DISPATCH.setMetaData(com.eischet.janitor.api.Janitor.MetaData.HELP, "A client for servers of the Model Context Protocol (MCP), which offer tools that can be called.");

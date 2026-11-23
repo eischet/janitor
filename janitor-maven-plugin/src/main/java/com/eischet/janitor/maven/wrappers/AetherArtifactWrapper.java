@@ -14,7 +14,7 @@ import java.util.Map;
 
 /** Makes a Maven Aether artifact available to scripts. */
 public class AetherArtifactWrapper extends JanitorWrapper<Artifact> {
-    private static final WrapperDispatchTable<Artifact> dispatcher = new WrapperDispatchTable<>(null);
+    public static final WrapperDispatchTable<Artifact> dispatcher = new WrapperDispatchTable<>(null);
 
     static {
         dispatcher.addStringProperty("groupId", self -> self.janitorGetHostValue().getGroupId())

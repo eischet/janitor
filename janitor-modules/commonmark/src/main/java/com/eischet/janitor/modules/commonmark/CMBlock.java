@@ -11,7 +11,7 @@ import org.commonmark.node.Block;
 /** Wrapper for CommonMark blocks that have no more specific wrapper. */
 public class CMBlock extends CMNode {
 
-    private static final WrapperDispatchTable<Block> dispatch = new WrapperDispatchTable<>();
+    public static final WrapperDispatchTable<Block> dispatch = new WrapperDispatchTable<>();
 
     static {
         // TODO: method accept

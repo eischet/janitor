@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class JCallArgsTestCase extends JanitorTest {
 
     private static final class Probe extends JanitorComposed<Probe> {
-        private static final DispatchTable<Probe> DISPATCH = new DispatchTable<>(null);
+        public static final DispatchTable<Probe> DISPATCH = new DispatchTable<>(null);
 
         static {
             DISPATCH.addMethod("intArg", (self, process, arguments) -> Janitor.integer(arguments.getRequiredIntValue(0)));

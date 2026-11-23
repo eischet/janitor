@@ -9,7 +9,7 @@ import org.commonmark.node.HardLineBreak;
 
 /** Wrapper for the CommonMark hard line break node. */
 public class CMHardLineBreak extends CMNode {
-    private static final WrapperDispatchTable<HardLineBreak> dispatch = new WrapperDispatchTable<>();
+    public static final WrapperDispatchTable<HardLineBreak> dispatch = new WrapperDispatchTable<>();
 
     public CMHardLineBreak(final HardLineBreak node) {
         super(Dispatcher.inherit(CMNode.dispatch, dispatch), node);

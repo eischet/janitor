@@ -14,7 +14,7 @@ import org.apache.maven.model.*;
 /** Makes a Maven model, i.e. the contents of a POM, available to scripts. */
 public class ModelWrapper extends JanitorWrapper<Model> {
 
-    private static final WrapperDispatchTable<Model> dispatcher = new WrapperDispatchTable<>();
+    public static final WrapperDispatchTable<Model> dispatcher = new WrapperDispatchTable<>();
 
     static {
         dispatcher.setConstructor((process, args) -> ModelWrapper.construct(process, args));

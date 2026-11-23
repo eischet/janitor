@@ -11,7 +11,7 @@ import org.mustangproject.BankDetails;
 /** Wrapper for the Mustang bank details of a trade party. */
 public class MustangBankDetails extends JanitorWrapper<BankDetails> {
 
-    public static WrapperDispatchTable<BankDetails> DISPATCH = new WrapperDispatchTable<>(MustangBankDetails::new);
+    public static final WrapperDispatchTable<BankDetails> DISPATCH = new WrapperDispatchTable<>(MustangBankDetails::new);
 
     static {
         DISPATCH.addBuilderMethod("setIban", (self, process, args) -> self.janitorGetHostValue().setIBAN(args.getRequiredStringValue(0)))

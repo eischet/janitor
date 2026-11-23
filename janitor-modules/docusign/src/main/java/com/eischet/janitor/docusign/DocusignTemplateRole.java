@@ -13,7 +13,7 @@ import java.util.Objects;
 /** Wrapper for the DocuSign template role. */
 public class DocusignTemplateRole extends JanitorComposed<DocusignTemplateRole> {
 
-    public static DispatchTable<DocusignTemplateRole> DISPATCH = new DispatchTable<>();
+    public static final DispatchTable<DocusignTemplateRole> DISPATCH = new DispatchTable<>();
 
     static {
         DISPATCH.addStringProperty("accessCode", self -> self.wrapped.getAccessCode(), (self, value) -> self.wrapped.setAccessCode(value))

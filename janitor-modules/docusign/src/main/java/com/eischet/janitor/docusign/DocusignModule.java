@@ -20,7 +20,7 @@ public class DocusignModule extends JanitorComposed<DocusignModule> implements J
 
     public static final JanitorModuleRegistration REGISTRATION = new JanitorModuleRegistration("docusign", DocusignModule::new).withDispatcher(() -> DocusignModule.DISPATCHER);
 
-    private static final DispatchTable<DocusignModule> DISPATCHER = new DispatchTable<>(DocusignModule::new, false);
+    public static final DispatchTable<DocusignModule> DISPATCHER = new DispatchTable<>(DocusignModule::new, false);
 
     static {
         DISPATCHER.setMetaData(com.eischet.janitor.api.Janitor.MetaData.HELP, "Sends documents for electronic signature through DocuSign.");

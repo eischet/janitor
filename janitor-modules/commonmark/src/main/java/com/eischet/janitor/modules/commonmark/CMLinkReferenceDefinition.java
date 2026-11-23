@@ -10,7 +10,7 @@ import org.commonmark.node.LinkReferenceDefinition;
 
 /** Wrapper for the CommonMark link reference definition node. */
 public class CMLinkReferenceDefinition extends CMNode {
-    private static final WrapperDispatchTable<LinkReferenceDefinition> dispatch = new WrapperDispatchTable<>();
+    public static final WrapperDispatchTable<LinkReferenceDefinition> dispatch = new WrapperDispatchTable<>();
 
     static {
         // TODO: method accept

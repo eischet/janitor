@@ -10,7 +10,7 @@ import org.commonmark.node.Image;
 
 /** Wrapper for the CommonMark image node. */
 public class CMImage extends CMNode {
-    private static final WrapperDispatchTable<Image> dispatch = new WrapperDispatchTable<>();
+    public static final WrapperDispatchTable<Image> dispatch = new WrapperDispatchTable<>();
 
     static {
         // TODO: method accept

@@ -60,7 +60,7 @@ public class JsonTransientPropertiesTestCase extends JanitorTest {
     }
 
     private static class Ticket extends JanitorComposed<Ticket> {
-        private static final DispatchTable<Ticket> DISPATCH = new DispatchTable<>(null);
+        public static final DispatchTable<Ticket> DISPATCH = new DispatchTable<>(null);
 
         static {
             DISPATCH.addIntegerProperty("id", self -> self.id, (self, value) -> self.id = value);
@@ -87,7 +87,7 @@ public class JsonTransientPropertiesTestCase extends JanitorTest {
     }
 
     private static class Action extends JanitorComposed<Action> {
-        private static final DispatchTable<Action> DISPATCH = new DispatchTable<>(null);
+        public static final DispatchTable<Action> DISPATCH = new DispatchTable<>(null);
 
         static {
             DISPATCH.addIntegerProperty("id", self -> self.id, (self, value) -> self.id = value);

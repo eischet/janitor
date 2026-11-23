@@ -51,7 +51,7 @@ class JoinDaoSelectTestCase extends JanitorTest {
 
     public static class Team extends JanitorComposed<Team> implements OrmEntity, ForeignKeyIdentity<Team> {
         static final ForeignKeyNull<Team> NULL = new ForeignKeyNull<>(Team.class);
-        static final EntityDispatchTable<Team, Teams> DISPATCH = new EntityDispatchTable<>(Team.class, up -> new Team(), NULL, Teams::getTeamDao);
+        public static final EntityDispatchTable<Team, Teams> DISPATCH = new EntityDispatchTable<>(Team.class, up -> new Team(), NULL, Teams::getTeamDao);
 
         static {
             DISPATCH.dbTable("f_team", "team_id", "team_key", "team_name", "seq_f_team");
@@ -86,7 +86,7 @@ class JoinDaoSelectTestCase extends JanitorTest {
 
     public static class Member extends JanitorComposed<Member> implements OrmEntity, ForeignKeyIdentity<Member> {
         static final ForeignKeyNull<Member> NULL = new ForeignKeyNull<>(Member.class);
-        static final EntityDispatchTable<Member, Teams> DISPATCH = new EntityDispatchTable<>(Member.class, up -> new Member(), NULL, Teams::getMemberDao);
+        public static final EntityDispatchTable<Member, Teams> DISPATCH = new EntityDispatchTable<>(Member.class, up -> new Member(), NULL, Teams::getMemberDao);
 
         static {
             DISPATCH.dbTable("f_member", "member_id", "member_key", "member_name", "seq_f_member");
@@ -122,7 +122,7 @@ class JoinDaoSelectTestCase extends JanitorTest {
      * The join record: a member belongs to a team, in a role.
      */
     public static class Membership implements OrmJoined {
-        static final OrmDispatchTable<Membership, Teams> DISPATCH = new OrmDispatchTable<>(Membership.class, Membership::new);
+        public static final OrmDispatchTable<Membership, Teams> DISPATCH = new OrmDispatchTable<>(Membership.class, Membership::new);
 
         static {
             DISPATCH.setMetaData(JanitorOrm.MetaData.TABLE_NAME, "f_membership");
@@ -178,7 +178,7 @@ class JoinDaoSelectTestCase extends JanitorTest {
     }
 
     public static class Teams extends OrmDaoCollection<Teams> implements Uplink {
-        static final DispatchTable<Teams> DISPATCH = new DispatchTable<>();
+        public static final DispatchTable<Teams> DISPATCH = new DispatchTable<>();
         private final DataManager dataManager;
         private final TeamDao teamDao;
         private final MemberDao memberDao;

@@ -10,7 +10,7 @@ import org.commonmark.node.FencedCodeBlock;
 
 /** Wrapper for the CommonMark fenced code block node. */
 public class CMFencedCodeBlock extends CMNode {
-    private static final WrapperDispatchTable<FencedCodeBlock> dispatch = new WrapperDispatchTable<>();
+    public static final WrapperDispatchTable<FencedCodeBlock> dispatch = new WrapperDispatchTable<>();
 
     static {
         // TODO: method accept

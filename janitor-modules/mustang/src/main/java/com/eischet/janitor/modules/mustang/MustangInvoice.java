@@ -18,7 +18,7 @@ import java.util.List;
 
 /** Wrapper for the Mustang invoice, i.e. an electronic invoice in the ZUGFeRD/Factur-X format. */
 public class MustangInvoice extends JanitorWrapper<Invoice> {
-    public static WrapperDispatchTable<Invoice> DISPATCH = new WrapperDispatchTable<>(MustangInvoice::new);
+    public static final WrapperDispatchTable<Invoice> DISPATCH = new WrapperDispatchTable<>(MustangInvoice::new);
 
     static {
         DISPATCH.addBuilderMethod("setNumber", (self, process, args) ->

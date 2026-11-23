@@ -46,7 +46,7 @@ public class OrmRestWriteTestCase extends JanitorTest {
 
     public static class Folder implements OrmEntity {
         static final ForeignKeyNull<Folder> NULL = new ForeignKeyNull<>(Folder.class);
-        static final EntityDispatchTable<Folder, WriteCollection> DISPATCH = new EntityDispatchTable<>(Folder.class, up -> new Folder(), NULL, WriteCollection::getFolderDao);
+        public static final EntityDispatchTable<Folder, WriteCollection> DISPATCH = new EntityDispatchTable<>(Folder.class, up -> new Folder(), NULL, WriteCollection::getFolderDao);
 
         static {
             DISPATCH.dbTable("w_folder", "folder_id", "folder_key", "folder_name", "seq_w_folder");
@@ -72,7 +72,7 @@ public class OrmRestWriteTestCase extends JanitorTest {
 
     public static class Doc implements OrmEntity, HasModifiedDate, Versioned {
         static final ForeignKeyNull<Doc> NULL = new ForeignKeyNull<>(Doc.class);
-        static final EntityDispatchTable<Doc, WriteCollection> DISPATCH = new EntityDispatchTable<>(Doc.class, Doc::new, NULL, WriteCollection::getDocDao);
+        public static final EntityDispatchTable<Doc, WriteCollection> DISPATCH = new EntityDispatchTable<>(Doc.class, Doc::new, NULL, WriteCollection::getDocDao);
 
         static {
             DISPATCH.dbTable("w_doc", "doc_id", "doc_key", "doc_title", "seq_w_doc").versionColumn("version_no").modifiedColumn("modified_at");
@@ -140,7 +140,7 @@ public class OrmRestWriteTestCase extends JanitorTest {
     }
 
     public static class WriteCollection extends OrmDaoCollection<WriteCollection> implements Uplink {
-        static final DispatchTable<WriteCollection> DISPATCH = new DispatchTable<>();
+        public static final DispatchTable<WriteCollection> DISPATCH = new DispatchTable<>();
         private final DataManager dataManager;
         private final FolderDao folderDao;
         private final DocDao docDao;

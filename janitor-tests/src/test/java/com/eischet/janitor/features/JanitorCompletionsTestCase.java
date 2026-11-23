@@ -38,7 +38,7 @@ public class JanitorCompletionsTestCase extends JanitorTest {
 
     // a ticket and a registry that leads to it, like a collection of DAOs
     private static final class Ticket extends JanitorComposed<Ticket> {
-        private static final DispatchTable<Ticket> DISPATCH = new DispatchTable<>();
+        public static final DispatchTable<Ticket> DISPATCH = new DispatchTable<>();
 
         static {
             DISPATCH.setMetaData(Janitor.MetaData.CLASS, "Ticket");
@@ -53,9 +53,9 @@ public class JanitorCompletionsTestCase extends JanitorTest {
 
     // like a DAO: the methods every DAO has, those of one DAO class, and the entities they hold
     private static final class Tickets extends JanitorComposed<Tickets> {
-        private static final DispatchTable<Tickets> COMMON = new DispatchTable<>();
-        private static final DispatchTable<Tickets> OWN = new DispatchTable<>();
-        private static final Dispatcher<?> TYPE;
+        public static final DispatchTable<Tickets> COMMON = new DispatchTable<>();
+        public static final DispatchTable<Tickets> OWN = new DispatchTable<>();
+        public static final Dispatcher<?> TYPE;
 
         static {
             COMMON.addMethod("select", (self, process, args) -> Janitor.NULL)
@@ -76,7 +76,7 @@ public class JanitorCompletionsTestCase extends JanitorTest {
     }
 
     private static final class Registry extends JanitorComposed<Registry> {
-        private static final DispatchTable<Registry> DISPATCH = new DispatchTable<>();
+        public static final DispatchTable<Registry> DISPATCH = new DispatchTable<>();
 
         static {
             DISPATCH.addObjectProperty("Ticket", self -> new Ticket(), Ticket.DISPATCH)

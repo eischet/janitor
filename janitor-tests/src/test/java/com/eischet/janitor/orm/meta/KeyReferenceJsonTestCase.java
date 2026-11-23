@@ -39,7 +39,7 @@ public class KeyReferenceJsonTestCase extends JanitorTest {
 
     static class Target implements OrmEntity {
         static final ForeignKeyNull<Target> NULL = new ForeignKeyNull<>(Target.class);
-        static final EntityDispatchTable<Target, TestUplink> DISPATCH = new EntityDispatchTable<>(Target.class, up -> new Target(), NULL, up -> up.dao);
+        public static final EntityDispatchTable<Target, TestUplink> DISPATCH = new EntityDispatchTable<>(Target.class, up -> new Target(), NULL, up -> up.dao);
 
         private long id;
         private String key;
@@ -66,7 +66,7 @@ public class KeyReferenceJsonTestCase extends JanitorTest {
 
     /** Some object that holds a reference, but is not an entity -- like a JSON settings class. */
     static class Holder extends JanitorComposed<Holder> {
-        static final DispatchTable<Holder> DISPATCH = new DispatchTable<>();
+        public static final DispatchTable<Holder> DISPATCH = new DispatchTable<>();
         static final TestUplink UPLINK = new TestUplink(new StubDao("FROM-ID"));
         static final OrmPropertyHandle<Holder, ForeignKey<Target>> TARGET = Target.DISPATCH.addKeyReference(DISPATCH, "target", Holder::getTarget, Holder::setTarget, holder -> UPLINK);
 

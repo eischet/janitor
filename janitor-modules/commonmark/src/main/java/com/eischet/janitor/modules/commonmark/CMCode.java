@@ -10,7 +10,7 @@ import org.commonmark.node.Code;
 
 /** Wrapper for the CommonMark code node. */
 public class CMCode extends CMNode {
-    private static final WrapperDispatchTable<Code> dispatch = new WrapperDispatchTable<>();
+    public static final WrapperDispatchTable<Code> dispatch = new WrapperDispatchTable<>();
 
     static {
         // TODO: method accept

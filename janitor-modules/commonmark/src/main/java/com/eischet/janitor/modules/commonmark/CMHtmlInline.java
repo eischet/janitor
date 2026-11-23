@@ -10,7 +10,7 @@ import org.commonmark.node.HtmlInline;
 
 /** Wrapper for the CommonMark html inline node. */
 public class CMHtmlInline extends CMNode {
-    private static final WrapperDispatchTable<HtmlInline> dispatch = new WrapperDispatchTable<>();
+    public static final WrapperDispatchTable<HtmlInline> dispatch = new WrapperDispatchTable<>();
 
     static {
         // TODO: method accept

@@ -170,7 +170,7 @@ public class AssociatedList<T extends OrmEntity, U extends Uplink> implements As
 
     /** The script view of an {@link AssociatedList}, which offers methods such as add, size and clear. */
     protected static class JanitorAssociatedList extends JanitorComposed<JanitorAssociatedList> implements JIterable {
-        public static DispatchTable<JanitorAssociatedList> DISPATCH = new DispatchTable<>();
+        public static final DispatchTable<JanitorAssociatedList> DISPATCH = new DispatchTable<>();
         static {
             DISPATCH.addBuilderMethod("add", (self, process, args) -> self.parent.addGeneric(args.get(0)))
                     .setMetaData(Janitor.MetaData.HELP, "add(entity): Adds the entity to the list in memory without saving it in the database; returns the list.");

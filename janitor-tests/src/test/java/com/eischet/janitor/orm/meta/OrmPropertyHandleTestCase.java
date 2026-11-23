@@ -22,7 +22,7 @@ public class OrmPropertyHandleTestCase extends JanitorTest {
 
     static class Target implements OrmEntity {
         static final ForeignKeyNull<Target> NULL = new ForeignKeyNull<>(Target.class);
-        static final EntityDispatchTable<Target, Uplink> DISPATCH = new EntityDispatchTable<>(Target.class, up -> new Target(), NULL, up -> null);
+        public static final EntityDispatchTable<Target, Uplink> DISPATCH = new EntityDispatchTable<>(Target.class, up -> new Target(), NULL, up -> null);
 
         private long id;
         private String key;
@@ -41,7 +41,7 @@ public class OrmPropertyHandleTestCase extends JanitorTest {
 
     static class Thing implements OrmEntity {
         static final ForeignKeyNull<Thing> NULL = new ForeignKeyNull<>(Thing.class);
-        static final EntityDispatchTable<Thing, Uplink> DISPATCH = new EntityDispatchTable<>(Thing.class, up -> new Thing(), NULL, up -> null);
+        public static final EntityDispatchTable<Thing, Uplink> DISPATCH = new EntityDispatchTable<>(Thing.class, up -> new Thing(), NULL, up -> null);
 
         static final OrmPropertyHandle<Thing, String> LABEL = DISPATCH.addStringColumn("label", "label_col", Thing::getLabel, Thing::setLabel, 42);
         static final OrmPropertyHandle<Thing, String> NOTES = DISPATCH.addTextColumn("notes", "notes_col", Thing::getNotes, Thing::setNotes);

@@ -11,7 +11,7 @@ import org.commonmark.node.Text;
 /** Wrapper for the CommonMark text node. */
 public class CMText extends CMNode {
 
-    private static final WrapperDispatchTable<Text> dispatch = new WrapperDispatchTable<>();
+    public static final WrapperDispatchTable<Text> dispatch = new WrapperDispatchTable<>();
 
     static {
         // TODO: method accept

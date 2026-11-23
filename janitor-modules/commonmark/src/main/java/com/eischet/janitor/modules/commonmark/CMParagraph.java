@@ -9,7 +9,7 @@ import org.commonmark.node.Paragraph;
 
 /** Wrapper for the CommonMark paragraph node. */
 public class CMParagraph extends CMNode {
-    private static final WrapperDispatchTable<Paragraph> dispatch = new WrapperDispatchTable<>();
+    public static final WrapperDispatchTable<Paragraph> dispatch = new WrapperDispatchTable<>();
 
     static {
         // TODO: method accept

@@ -10,7 +10,7 @@ import org.commonmark.node.StrongEmphasis;
 
 /** Wrapper for the CommonMark strong emphasis node. */
 public class CMStrongEmphasis extends CMNode {
-    private static final WrapperDispatchTable<StrongEmphasis> dispatch = new WrapperDispatchTable<>();
+    public static final WrapperDispatchTable<StrongEmphasis> dispatch = new WrapperDispatchTable<>();
 
     static {
         // TODO: method accept

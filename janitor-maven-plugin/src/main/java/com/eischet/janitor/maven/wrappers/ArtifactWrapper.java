@@ -15,7 +15,7 @@ import org.jetbrains.annotations.NotNull;
 /** Makes a Maven artifact available to scripts. */
 public class ArtifactWrapper extends JanitorWrapper<Artifact> {
 
-    private static final WrapperDispatchTable<Artifact> dispatcher = new WrapperDispatchTable<>();
+    public static final WrapperDispatchTable<Artifact> dispatcher = new WrapperDispatchTable<>();
 
     static {
         dispatcher.addStringProperty("id", self -> self.janitorGetHostValue().getId())

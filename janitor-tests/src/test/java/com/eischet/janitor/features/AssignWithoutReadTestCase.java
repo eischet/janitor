@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class AssignWithoutReadTestCase extends JanitorTest {
 
     private static class Attachment extends JanitorComposed<Attachment> {
-        private static final DispatchTable<Attachment> DISPATCH = new DispatchTable<>(Attachment::new);
+        public static final DispatchTable<Attachment> DISPATCH = new DispatchTable<>(Attachment::new);
 
         static {
             DISPATCH.addObjectProperty("data",

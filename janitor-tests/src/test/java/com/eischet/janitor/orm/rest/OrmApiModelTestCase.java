@@ -40,7 +40,7 @@ public class OrmApiModelTestCase extends JanitorTest {
 
     public static class Category implements OrmEntity {
         static final ForeignKeyNull<Category> NULL = new ForeignKeyNull<>(Category.class);
-        static final EntityDispatchTable<Category, TestCollection> DISPATCH = new EntityDispatchTable<>(Category.class, up -> new Category(), NULL, TestCollection::getCategoryDao);
+        public static final EntityDispatchTable<Category, TestCollection> DISPATCH = new EntityDispatchTable<>(Category.class, up -> new Category(), NULL, TestCollection::getCategoryDao);
 
         static {
             DISPATCH.dbTable("test_category", "category_id", "category_key", "category_name", "seq_category");
@@ -66,7 +66,7 @@ public class OrmApiModelTestCase extends JanitorTest {
 
     public static class Tag implements OrmEntity {
         static final ForeignKeyNull<Tag> NULL = new ForeignKeyNull<>(Tag.class);
-        static final EntityDispatchTable<Tag, TestCollection> DISPATCH = new EntityDispatchTable<>(Tag.class, up -> new Tag(), NULL, TestCollection::getTagDao);
+        public static final EntityDispatchTable<Tag, TestCollection> DISPATCH = new EntityDispatchTable<>(Tag.class, up -> new Tag(), NULL, TestCollection::getTagDao);
 
         static {
             DISPATCH.dbTable("test_tag", "tag_id", null, "tag_name", "seq_tag"); // no key column, and not exposed (no path)
@@ -89,7 +89,7 @@ public class OrmApiModelTestCase extends JanitorTest {
 
     public static class Item implements OrmEntity, HasModifiedDate, Versioned {
         static final ForeignKeyNull<Item> NULL = new ForeignKeyNull<>(Item.class);
-        static final EntityDispatchTable<Item, TestCollection> DISPATCH = new EntityDispatchTable<>(Item.class, up -> new Item(up), NULL, TestCollection::getItemDao);
+        public static final EntityDispatchTable<Item, TestCollection> DISPATCH = new EntityDispatchTable<>(Item.class, up -> new Item(up), NULL, TestCollection::getItemDao);
 
         static {
             DISPATCH.dbTable("test_item", "item_id", "item_key", "item_name", "seq_item")
@@ -166,7 +166,7 @@ public class OrmApiModelTestCase extends JanitorTest {
     }
 
     public static class TestCollection extends OrmDaoCollection<TestCollection> implements Uplink {
-        static final DispatchTable<TestCollection> DISPATCH = new DispatchTable<>();
+        public static final DispatchTable<TestCollection> DISPATCH = new DispatchTable<>();
         private final DataManager dataManager;
         private final CategoryDao categoryDao;
         private final TagDao tagDao;

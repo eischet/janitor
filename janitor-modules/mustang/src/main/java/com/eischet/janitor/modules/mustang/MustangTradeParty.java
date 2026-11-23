@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 
 /** Wrapper for a Mustang trade party, i.e. the sender or recipient of an invoice. */
 public class MustangTradeParty extends JanitorWrapper<TradeParty> {
-    public static WrapperDispatchTable<TradeParty> DISPATCH = new WrapperDispatchTable<>(MustangTradeParty::new);
+    public static final WrapperDispatchTable<TradeParty> DISPATCH = new WrapperDispatchTable<>(MustangTradeParty::new);
 
     static {
         DISPATCH.addBuilderMethod("setName", (self, process, args) ->

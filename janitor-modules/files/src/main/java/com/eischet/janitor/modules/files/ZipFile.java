@@ -27,7 +27,7 @@ public class ZipFile extends JanitorComposed<ZipFile> implements JanitorCleanupR
 
     private static final JanitorLogger log = JanitorLogger.getLogger(ZipFile.class);
 
-    private static final DispatchTable<ZipFile> dispatcher = new DispatchTable<>(null);
+    public static final DispatchTable<ZipFile> dispatcher = new DispatchTable<>(null);
 
     static {
         dispatcher.addMethod("addFile", (self, process, arguments) -> {

@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class ObjectScopeTestCase extends JanitorTest {
 
     private static class Context extends JanitorComposed<Context> {
-        private static final DispatchTable<Context> DISPATCH = new DispatchTable<>(Context::new);
+        public static final DispatchTable<Context> DISPATCH = new DispatchTable<>(Context::new);
 
         static {
             DISPATCH.addStringProperty("ticket", self -> {

@@ -10,7 +10,7 @@ import org.commonmark.node.ListItem;
 
 /** Wrapper for the CommonMark list item node. */
 public class CMListItem extends CMNode {
-    private static final WrapperDispatchTable<ListItem> dispatch = new WrapperDispatchTable<>();
+    public static final WrapperDispatchTable<ListItem> dispatch = new WrapperDispatchTable<>();
 
     static {
         // TODO: method accept

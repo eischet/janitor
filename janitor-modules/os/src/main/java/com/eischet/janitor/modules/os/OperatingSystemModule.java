@@ -35,7 +35,7 @@ import java.util.List;
  */
 public class OperatingSystemModule extends JanitorComposed<OperatingSystemModule> implements JanitorModule {
 
-    private static final DispatchTable<OperatingSystemModule> dispatcher = new DispatchTable<>(OperatingSystemModule::new, false);
+    public static final DispatchTable<OperatingSystemModule> dispatcher = new DispatchTable<>(OperatingSystemModule::new, false);
 
     static {
         dispatcher.setMetaData(com.eischet.janitor.api.Janitor.MetaData.HELP, "Access to the operating system.");

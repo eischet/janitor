@@ -15,7 +15,7 @@ public class HttpClientModule extends JanitorComposed<HttpClientModule> implemen
 
     public static final JanitorModuleRegistration REGISTRATION = new JanitorModuleRegistration("httpclient", HttpClientModule::new).withDispatcher(() -> HttpClientModule.DISPATCH);
 
-    private static final DispatchTable<HttpClientModule> DISPATCH = new DispatchTable<>(HttpClientModule::new, false);
+    public static final DispatchTable<HttpClientModule> DISPATCH = new DispatchTable<>(HttpClientModule::new, false);
 
     static {
         DISPATCH.setMetaData(com.eischet.janitor.api.Janitor.MetaData.HELP, "HTTP requests.");

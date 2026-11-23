@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class CompoundMemberAssignmentTestCase extends JanitorTest {
 
     private static class Counter extends JanitorComposed<Counter> {
-        private static final DispatchTable<Counter> DISPATCH = new DispatchTable<>(Counter::new);
+        public static final DispatchTable<Counter> DISPATCH = new DispatchTable<>(Counter::new);
 
         static {
             DISPATCH.addIntegerProperty("n", Counter::getN, Counter::setN);

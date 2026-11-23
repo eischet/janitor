@@ -10,7 +10,7 @@ import org.commonmark.node.ListBlock;
 
 /** Base class for the script wrappers of CommonMark list blocks, i.e. bullet lists and ordered lists. */
 public abstract class CMListBlock extends CMNode {
-    protected static final WrapperDispatchTable<ListBlock> dispatch = new WrapperDispatchTable<>();
+    public static final WrapperDispatchTable<ListBlock> dispatch = new WrapperDispatchTable<>();
 
     static {
         dispatch.addBooleanProperty("tight",

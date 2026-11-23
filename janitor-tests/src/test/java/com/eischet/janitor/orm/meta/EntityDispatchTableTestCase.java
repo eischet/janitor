@@ -27,7 +27,7 @@ public class EntityDispatchTableTestCase extends JanitorTest {
 
     static class Thing implements OrmEntity {
         static final ForeignKeyNull<Thing> NULL = new ForeignKeyNull<>(Thing.class);
-        static final EntityDispatchTable<Thing, TestCollection> DISPATCH =
+        public static final EntityDispatchTable<Thing, TestCollection> DISPATCH =
                 new EntityDispatchTable<>(Thing.class, up -> new Thing(), NULL, up -> null);
 
         static {
@@ -121,7 +121,7 @@ public class EntityDispatchTableTestCase extends JanitorTest {
     }
 
     static class TestCollection extends OrmDaoCollection<TestCollection> implements Uplink {
-        static final DispatchTable<TestCollection> DISPATCH = new DispatchTable<>();
+        public static final DispatchTable<TestCollection> DISPATCH = new DispatchTable<>();
 
         static {
             OrmDaoCollection.addRegistryProperties(DISPATCH);

@@ -39,7 +39,7 @@ public class ModifiedDateTestCase extends JanitorTest {
 
     public static class Note implements OrmEntity, HasModifiedDate, Versioned {
         static final ForeignKeyNull<Note> NULL = new ForeignKeyNull<>(Note.class);
-        static final EntityDispatchTable<Note, NoteCollection> DISPATCH = new EntityDispatchTable<>(Note.class, up -> new Note(), NULL, NoteCollection::getNoteDao);
+        public static final EntityDispatchTable<Note, NoteCollection> DISPATCH = new EntityDispatchTable<>(Note.class, up -> new Note(), NULL, NoteCollection::getNoteDao);
 
         static {
             DISPATCH.dbTable("test_note", "note_id", "note_key", "note_name", "seq_test_note_id")
@@ -82,7 +82,7 @@ public class ModifiedDateTestCase extends JanitorTest {
     }
 
     public static class NoteCollection extends OrmDaoCollection<NoteCollection> implements Uplink {
-        static final DispatchTable<NoteCollection> DISPATCH = new DispatchTable<>();
+        public static final DispatchTable<NoteCollection> DISPATCH = new DispatchTable<>();
 
         private final DataManager dataManager;
         private final NoteDao noteDao;

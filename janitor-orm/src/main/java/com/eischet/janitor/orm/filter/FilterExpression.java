@@ -30,7 +30,7 @@ public class FilterExpression extends JanitorComposed<FilterExpression> {
 
     private static final JanitorLogger log = JanitorLogger.getLogger(FilterExpression.class);
 
-    public static DispatchTable<FilterExpression> DISPATCH = new DispatchTable<>(FilterExpression::new);
+    public static final DispatchTable<FilterExpression> DISPATCH = new DispatchTable<>(FilterExpression::new);
 
     static {
         DISPATCH.setMetaData(Janitor.MetaData.CLASS, FilterExpression.class.getSimpleName());

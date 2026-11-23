@@ -32,7 +32,7 @@ public class MetaDataTestCase extends JanitorTest {
     }
 
     static class Simpleton extends JanitorComposed<Simpleton> {
-        private static final DispatchTable<Simpleton> DISPATCH = new DispatchTable<>(null);
+        public static final DispatchTable<Simpleton> DISPATCH = new DispatchTable<>(null);
 
         static {
             DISPATCH.setMetaData(Janitor.MetaData.NAME, "Simpleton");

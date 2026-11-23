@@ -152,7 +152,7 @@ public class HttpException extends JanitorException implements JanitorAware {
 
     private static class Wrapper extends JanitorWrapper<HttpException> {
 
-        private static final WrapperDispatchTable<HttpException> DISPATCHER = new WrapperDispatchTable<>();
+        public static final WrapperDispatchTable<HttpException> DISPATCHER = new WrapperDispatchTable<>();
 
         static {
             DISPATCHER.addStringProperty("url", self -> self.janitorGetHostValue().getUrl())

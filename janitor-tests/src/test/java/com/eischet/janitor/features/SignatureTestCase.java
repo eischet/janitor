@@ -39,7 +39,7 @@ public class SignatureTestCase extends JanitorTest {
             .help("Joins things.");
 
     private static final class Probe extends JanitorComposed<Probe> {
-        private static final DispatchTable<Probe> DISPATCH = new DispatchTable<>();
+        public static final DispatchTable<Probe> DISPATCH = new DispatchTable<>();
         private int calls = 0;
 
         static {

@@ -10,7 +10,7 @@ import org.commonmark.node.ThematicBreak;
 
 /** Wrapper for the CommonMark thematic break node. */
 public class CMThematicBreak extends CMNode {
-    private static final WrapperDispatchTable<ThematicBreak> dispatch = new WrapperDispatchTable<>();
+    public static final WrapperDispatchTable<ThematicBreak> dispatch = new WrapperDispatchTable<>();
 
     static {
         // TODO: method accept

@@ -25,7 +25,7 @@ import java.util.regex.Matcher;
  */
 public class JMatcherWrapper extends JanitorWrapper<Matcher> {
 
-    private static final WrapperDispatchTable<Matcher> DISPATCH = new WrapperDispatchTable<>(null);
+    public static final WrapperDispatchTable<Matcher> DISPATCH = new WrapperDispatchTable<>(null);
 
     /** Reads something about a group given by number. */
     @FunctionalInterface

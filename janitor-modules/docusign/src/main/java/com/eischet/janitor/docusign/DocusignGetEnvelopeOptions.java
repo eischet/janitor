@@ -10,7 +10,7 @@ import com.eischet.janitor.api.types.dispatch.DispatchTable;
 
 /** Wrapper for the DocuSign get envelope options. */
 public class DocusignGetEnvelopeOptions extends JanitorComposed<DocusignGetEnvelopeOptions> {
-    public static DispatchTable<DocusignGetEnvelopeOptions> DISPATCH = new  DispatchTable<>();
+    public static final DispatchTable<DocusignGetEnvelopeOptions> DISPATCH = new  DispatchTable<>();
 
     protected final EnvelopesApi.GetEnvelopeOptions wrapped;
 

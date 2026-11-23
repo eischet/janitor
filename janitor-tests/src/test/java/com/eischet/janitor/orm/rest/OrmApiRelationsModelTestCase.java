@@ -97,7 +97,7 @@ public class OrmApiRelationsModelTestCase extends JanitorTest {
     /** A small collection in which the pieces of a link can be broken in turn. */
     static class Other implements OrmEntity {
         static final ForeignKeyNull<Other> NULL = new ForeignKeyNull<>(Other.class);
-        static final EntityDispatchTable<Other, BrokenCollection> DISPATCH = new EntityDispatchTable<>(Other.class, up -> new Other(), NULL, BrokenCollection::getOtherDao);
+        public static final EntityDispatchTable<Other, BrokenCollection> DISPATCH = new EntityDispatchTable<>(Other.class, up -> new Other(), NULL, BrokenCollection::getOtherDao);
 
         static {
             DISPATCH.dbTable("b_other", "other_id", "other_key", "other_name", "seq_b_other");
@@ -120,7 +120,7 @@ public class OrmApiRelationsModelTestCase extends JanitorTest {
     }
 
     static class Join implements OrmJoined {
-        static final OrmDispatchTable<Join, BrokenCollection> DISPATCH = new OrmDispatchTable<>(Join.class, up -> new Join(up));
+        public static final OrmDispatchTable<Join, BrokenCollection> DISPATCH = new OrmDispatchTable<>(Join.class, up -> new Join(up));
 
         final BrokenCollection source;
         ForeignKey<Other> left = Other.NULL;
@@ -150,7 +150,7 @@ public class OrmApiRelationsModelTestCase extends JanitorTest {
     }
 
     static class BrokenCollection extends OrmDaoCollection<BrokenCollection> implements Uplink {
-        static final DispatchTable<BrokenCollection> DISPATCH = new DispatchTable<>();
+        public static final DispatchTable<BrokenCollection> DISPATCH = new DispatchTable<>();
         private final DataManager dataManager = TestDb.newManager();
         private final OtherDao otherDao;
 

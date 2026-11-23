@@ -10,7 +10,7 @@ import org.commonmark.node.BulletList;
 
 /** Wrapper for the CommonMark bullet list node. */
 public class CMBulletList extends CMListBlock {
-    private static final WrapperDispatchTable<BulletList> dispatch = new WrapperDispatchTable<>();
+    public static final WrapperDispatchTable<BulletList> dispatch = new WrapperDispatchTable<>();
 
     static {
         // TODO: method accept

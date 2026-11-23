@@ -16,7 +16,7 @@ import java.util.List;
 
 /** Wrapper for the Mustang product of an invoice item. */
 public class MustangProduct extends JanitorWrapper<Product> {
-    public static WrapperDispatchTable<Product> DISPATCH = new WrapperDispatchTable<>(MustangProduct::new);
+    public static final WrapperDispatchTable<Product> DISPATCH = new WrapperDispatchTable<>(MustangProduct::new);
 
     static {
         DISPATCH.addBuilderMethod("setName", (self, process, args) -> self.janitorGetHostValue().setName(args.getRequiredStringValue(0)))

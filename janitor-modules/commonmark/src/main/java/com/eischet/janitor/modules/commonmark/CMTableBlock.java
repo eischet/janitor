@@ -11,7 +11,7 @@ import org.commonmark.ext.gfm.tables.TableBlock;
  * Wrapper for the GFM table block node: the whole table; its children are the TableHead and the TableBody.
  */
 public class CMTableBlock extends CMNode {
-    private static final WrapperDispatchTable<TableBlock> dispatch = new WrapperDispatchTable<>();
+    public static final WrapperDispatchTable<TableBlock> dispatch = new WrapperDispatchTable<>();
 
     public CMTableBlock(final TableBlock node) {
         super(Dispatcher.inherit(CMNode.dispatch, dispatch), node);

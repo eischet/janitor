@@ -40,7 +40,7 @@ public final class OrmRestRelationsFixture {
 
     public static class Team implements OrmEntity {
         static final ForeignKeyNull<Team> NULL = new ForeignKeyNull<>(Team.class);
-        static final EntityDispatchTable<Team, RelationsCollection> DISPATCH = new EntityDispatchTable<>(Team.class, up -> new Team(), NULL, RelationsCollection::getTeamDao);
+        public static final EntityDispatchTable<Team, RelationsCollection> DISPATCH = new EntityDispatchTable<>(Team.class, up -> new Team(), NULL, RelationsCollection::getTeamDao);
 
         static {
             DISPATCH.dbTable("r_team", "team_id", "team_key", "team_name", "seq_r_team");
@@ -66,7 +66,7 @@ public final class OrmRestRelationsFixture {
 
     public static class Member implements OrmEntity {
         static final ForeignKeyNull<Member> NULL = new ForeignKeyNull<>(Member.class);
-        static final EntityDispatchTable<Member, RelationsCollection> DISPATCH = new EntityDispatchTable<>(Member.class, up -> new Member(), NULL, RelationsCollection::getMemberDao);
+        public static final EntityDispatchTable<Member, RelationsCollection> DISPATCH = new EntityDispatchTable<>(Member.class, up -> new Member(), NULL, RelationsCollection::getMemberDao);
 
         static {
             DISPATCH.dbTable("r_member", "member_id", "member_key", "member_name", "seq_r_member");
@@ -92,7 +92,7 @@ public final class OrmRestRelationsFixture {
 
     public static class Task implements OrmEntity {
         static final ForeignKeyNull<Task> NULL = new ForeignKeyNull<>(Task.class);
-        static final EntityDispatchTable<Task, RelationsCollection> DISPATCH = new EntityDispatchTable<>(Task.class, up -> new Task(up), NULL, RelationsCollection::getTaskDao);
+        public static final EntityDispatchTable<Task, RelationsCollection> DISPATCH = new EntityDispatchTable<>(Task.class, up -> new Task(up), NULL, RelationsCollection::getTaskDao);
 
         static {
             DISPATCH.dbTable("r_task", "task_id", "task_key", "task_name", "seq_r_task");
@@ -126,7 +126,7 @@ public final class OrmRestRelationsFixture {
     /** A note on a task, which refers to its task by a plain number, not by a reference. */
     public static class Note implements OrmEntity {
         static final ForeignKeyNull<Note> NULL = new ForeignKeyNull<>(Note.class);
-        static final EntityDispatchTable<Note, RelationsCollection> DISPATCH = new EntityDispatchTable<>(Note.class, up -> new Note(), NULL, RelationsCollection::getNoteDao);
+        public static final EntityDispatchTable<Note, RelationsCollection> DISPATCH = new EntityDispatchTable<>(Note.class, up -> new Note(), NULL, RelationsCollection::getNoteDao);
 
         static {
             DISPATCH.dbTable("r_note", "note_id", "note_key", "note_text", "seq_r_note");
@@ -156,7 +156,7 @@ public final class OrmRestRelationsFixture {
 
     /** The join record: a member belongs to a team, in a role. */
     public static class Membership implements OrmJoined {
-        static final OrmDispatchTable<Membership, RelationsCollection> DISPATCH = new OrmDispatchTable<>(Membership.class, Membership::new);
+        public static final OrmDispatchTable<Membership, RelationsCollection> DISPATCH = new OrmDispatchTable<>(Membership.class, Membership::new);
 
         static {
             DISPATCH.setMetaData(JanitorOrm.MetaData.TABLE_NAME, "r_membership");
@@ -219,7 +219,7 @@ public final class OrmRestRelationsFixture {
     }
 
     public static class RelationsCollection extends OrmDaoCollection<RelationsCollection> implements Uplink {
-        static final DispatchTable<RelationsCollection> DISPATCH = new DispatchTable<>();
+        public static final DispatchTable<RelationsCollection> DISPATCH = new DispatchTable<>();
         private final DataManager dataManager;
         private final TeamDao teamDao;
         private final MemberDao memberDao;

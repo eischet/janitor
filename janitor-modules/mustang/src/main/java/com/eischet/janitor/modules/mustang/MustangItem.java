@@ -24,7 +24,7 @@ import java.util.List;
 
 /** Wrapper for an item (line) of a Mustang invoice. */
 public class MustangItem extends JanitorWrapper<Item> {
-    public static WrapperDispatchTable<Item> DISPATCH = new WrapperDispatchTable<>(MustangItem::new);
+    public static final WrapperDispatchTable<Item> DISPATCH = new WrapperDispatchTable<>(MustangItem::new);
 
     static {
         DISPATCH.addBuilderMethod("setQuantity", (self, process, args) ->

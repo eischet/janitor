@@ -97,7 +97,7 @@ public class JsonConfidentialFieldsTestCase extends JanitorTest {
     }
 
     private static class Login extends JanitorComposed<Login> {
-        private static final DispatchTable<Login> DISPATCH = new DispatchTable<>(null);
+        public static final DispatchTable<Login> DISPATCH = new DispatchTable<>(null);
 
         static {
             DISPATCH.addStringProperty("user", self -> self.user, (self, value) -> self.user = value);
@@ -120,7 +120,7 @@ public class JsonConfidentialFieldsTestCase extends JanitorTest {
     }
 
     private static class AdminLogin extends Login {
-        private static final DispatchTable<AdminLogin> DISPATCH = new DispatchTable<>(Login.DISPATCH, self -> self, true);
+        public static final DispatchTable<AdminLogin> DISPATCH = new DispatchTable<>(Login.DISPATCH, self -> self, true);
 
         static {
             DISPATCH.addStringProperty("token", self -> self.token, (self, value) -> self.token = value)

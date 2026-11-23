@@ -53,7 +53,7 @@ public class JsonNullFieldsTestCase extends JanitorTest {
     }
 
     private static class Thing extends JanitorComposed<Thing> {
-        private static final DispatchTable<Thing> DISPATCH = new DispatchTable<>(null);
+        public static final DispatchTable<Thing> DISPATCH = new DispatchTable<>(null);
 
         static {
             DISPATCH.addStringProperty("text", self -> self.text, (self, value) -> self.text = value);

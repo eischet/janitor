@@ -24,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class OrmDaoCollectionDatabaseVersionTestCase {
 
     static class Collection extends OrmDaoCollection<Collection> {
-        static final DispatchTable<Collection> DISPATCH = new DispatchTable<>();
+        public static final DispatchTable<Collection> DISPATCH = new DispatchTable<>();
 
         Collection(final DatabaseDialect dialect, final @Nullable DatabaseVersion version) {
             super(DISPATCH, dialect, null, version);

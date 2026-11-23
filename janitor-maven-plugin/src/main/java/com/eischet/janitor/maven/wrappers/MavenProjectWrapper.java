@@ -16,7 +16,7 @@ import java.io.File;
 /** Makes a Maven project available to scripts. */
 public class MavenProjectWrapper extends JanitorWrapper<MavenProject> {
 
-    private static final WrapperDispatchTable<MavenProject> dispatcher = new WrapperDispatchTable<>();
+    public static final WrapperDispatchTable<MavenProject> dispatcher = new WrapperDispatchTable<>();
 
     static {
         dispatcher.addStringProperty("artifactId", self -> self.janitorGetHostValue().getArtifactId(), (self, value) -> self.janitorGetHostValue().setArtifactId(value))

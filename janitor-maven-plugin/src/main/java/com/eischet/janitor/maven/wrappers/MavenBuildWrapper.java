@@ -11,7 +11,7 @@ import org.apache.maven.model.Build;
 /** Makes the build section of a Maven project available to scripts. */
 public class MavenBuildWrapper extends JanitorWrapper<Build> {
 
-    private static final WrapperDispatchTable<Build> dispatcher = new WrapperDispatchTable<>();
+    public static final WrapperDispatchTable<Build> dispatcher = new WrapperDispatchTable<>();
 
     static {
         dispatcher.addStringProperty("directory", self -> self.janitorGetHostValue().getDirectory(), (self, value) -> self.janitorGetHostValue().setDirectory(value))

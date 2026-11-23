@@ -20,7 +20,7 @@ public class EntityDuplicateLazyTestCase extends JanitorTest {
 
     static class Holder implements OrmEntity {
         static final ForeignKeyNull<Holder> NULL = new ForeignKeyNull<>(Holder.class);
-        static final EntityDispatchTable<Holder, EntityDispatchTableTestCase.TestCollection> DISPATCH =
+        public static final EntityDispatchTable<Holder, EntityDispatchTableTestCase.TestCollection> DISPATCH =
                 new EntityDispatchTable<>(Holder.class, up -> new Holder(), NULL, up -> null);
         static final List<Long> IDS_SEEN_BY_GETTER = new ArrayList<>();
 

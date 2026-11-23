@@ -39,7 +39,7 @@ public class NullReferenceIdTestCase extends JanitorTest {
 
     public static class Owner implements OrmEntity {
         static final ForeignKeyNull<Owner> NULL = new ForeignKeyNull<>(Owner.class);
-        static final EntityDispatchTable<Owner, Things> DISPATCH = new EntityDispatchTable<>(Owner.class, up -> new Owner(), NULL, Things::getOwnerDao);
+        public static final EntityDispatchTable<Owner, Things> DISPATCH = new EntityDispatchTable<>(Owner.class, up -> new Owner(), NULL, Things::getOwnerDao);
 
         static {
             DISPATCH.dbTable("n_owner", "owner_id", "owner_key", "owner_name", "seq_n_owner");
@@ -64,7 +64,7 @@ public class NullReferenceIdTestCase extends JanitorTest {
 
     public static class Thing implements OrmEntity {
         static final ForeignKeyNull<Thing> NULL = new ForeignKeyNull<>(Thing.class);
-        static final EntityDispatchTable<Thing, Things> DISPATCH = new EntityDispatchTable<>(Thing.class, Thing::new, NULL, Things::getThingDao);
+        public static final EntityDispatchTable<Thing, Things> DISPATCH = new EntityDispatchTable<>(Thing.class, Thing::new, NULL, Things::getThingDao);
 
         static {
             DISPATCH.dbTable("n_thing", "thing_id", "thing_key", "thing_name", "seq_n_thing");
@@ -113,7 +113,7 @@ public class NullReferenceIdTestCase extends JanitorTest {
 
     /** A collection that writes NULL for references to nothing, unless a column says otherwise. */
     public static class Things extends OrmDaoCollection<Things> implements Uplink {
-        static final DispatchTable<Things> DISPATCH = new DispatchTable<>();
+        public static final DispatchTable<Things> DISPATCH = new DispatchTable<>();
         private final DataManager dataManager;
         private final OwnerDao ownerDao;
         private final ThingDao thingDao;

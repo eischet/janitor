@@ -12,7 +12,7 @@ import org.jetbrains.annotations.NotNull;
 /** Makes a Maven dependency available to scripts. */
 public class DependencyWrapper extends JanitorWrapper<Dependency> {
 
-    private static final WrapperDispatchTable<Dependency> dispatcher = new WrapperDispatchTable<>();
+    public static final WrapperDispatchTable<Dependency> dispatcher = new WrapperDispatchTable<>();
 
     static {
         dispatcher.addStringProperty("artifactId", self -> self.janitorGetHostValue().getArtifactId(), (self, value) -> self.janitorGetHostValue().setArtifactId(value))

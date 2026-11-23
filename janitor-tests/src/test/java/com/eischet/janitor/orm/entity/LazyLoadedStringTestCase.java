@@ -35,7 +35,7 @@ public class LazyLoadedStringTestCase extends JanitorTest {
 
     static class LazyThing implements OrmEntity {
         static final ForeignKeyNull<LazyThing> NULL = new ForeignKeyNull<>(LazyThing.class);
-        static final EntityDispatchTable<LazyThing, TestCollection> DISPATCH =
+        public static final EntityDispatchTable<LazyThing, TestCollection> DISPATCH =
                 new EntityDispatchTable<>(LazyThing.class, LazyThing::new, NULL, up -> null);
 
         static {
@@ -163,7 +163,7 @@ public class LazyLoadedStringTestCase extends JanitorTest {
     }
 
     static class TestCollection extends OrmDaoCollection<TestCollection> implements Uplink {
-        static final DispatchTable<TestCollection> DISPATCH = new DispatchTable<>();
+        public static final DispatchTable<TestCollection> DISPATCH = new DispatchTable<>();
 
         static {
             OrmDaoCollection.addRegistryProperties(DISPATCH);
