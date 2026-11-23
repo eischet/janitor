@@ -13,8 +13,8 @@ import java.util.List;
 /**
  * A Graph "message" resource, reduced to the properties this module uses.
  * Graph only returns the properties named in "$select"; everything else stays null.
- * Date/time properties are deliberately left out for now, because Graph sends them in UTC and the time zone handling
- * has not been decided yet.
+ * The received date is kept as the ISO 8601 string Graph sends (in UTC, e.g. "2026-11-23T09:15:00Z"), so that no time zone
+ * is decided here.
  */
 public class MailMessage extends JanitorComposed<MailMessage> {
 
@@ -39,6 +39,12 @@ public class MailMessage extends JanitorComposed<MailMessage> {
                 .setMetaData(Janitor.MetaData.HELP, "uniqueBody: The part of the body that is unique to this message, without quoted earlier messages, or null if not selected; writable.");
         DISPATCH.addObjectProperty("body", MailMessage::getBody, MailMessage::setBody, ItemBody::new)
                 .setMetaData(Janitor.MetaData.HELP, "body: The body of the message, or null if not selected; writable.");
+        DISPATCH.addObjectProperty("from", MailMessage::getFrom, MailMessage::setFrom, Recipient::new)
+                .setMetaData(Janitor.MetaData.HELP, "from: The author as a recipient with an emailAddress, which may differ from the sender, or null if not selected; writable.");
+        DISPATCH.addStringProperty("receivedDateTime", MailMessage::getReceivedDateTime, MailMessage::setReceivedDateTime)
+                .setMetaData(Janitor.MetaData.HELP, "receivedDateTime: When the message arrived, as the ISO 8601 string in UTC that Graph sends, or null if not selected; writable.");
+        DISPATCH.addNullableBooleanProperty("hasAttachments", MailMessage::getHasAttachments, MailMessage::setHasAttachments)
+                .setMetaData(Janitor.MetaData.HELP, "hasAttachments: True if the message has attachments that are not inline, or null if not selected; writable.");
     }
 
     private @Nullable String id;
@@ -50,6 +56,9 @@ public class MailMessage extends JanitorComposed<MailMessage> {
     private @Nullable String parentFolderId;
     private @Nullable ItemBody uniqueBody;
     private @Nullable ItemBody body;
+    private @Nullable Recipient from;
+    private @Nullable String receivedDateTime;
+    private @Nullable Boolean hasAttachments;
 
     public MailMessage() {
         super(DISPATCH);
@@ -125,6 +134,36 @@ public class MailMessage extends JanitorComposed<MailMessage> {
 
     public void setBody(final @Nullable ItemBody body) {
         this.body = body;
+    }
+
+    public @Nullable Recipient getFrom() {
+        return from;
+    }
+
+    public void setFrom(final @Nullable Recipient from) {
+        this.from = from;
+    }
+
+    /**
+     * @return when the message arrived, as the ISO 8601 string in UTC that Graph sends
+     */
+    public @Nullable String getReceivedDateTime() {
+        return receivedDateTime;
+    }
+
+    public void setReceivedDateTime(final @Nullable String receivedDateTime) {
+        this.receivedDateTime = receivedDateTime;
+    }
+
+    /**
+     * @return true if the message has attachments that are not inline (Graph does not count inline images)
+     */
+    public @Nullable Boolean getHasAttachments() {
+        return hasAttachments;
+    }
+
+    public void setHasAttachments(final @Nullable Boolean hasAttachments) {
+        this.hasAttachments = hasAttachments;
     }
 
     @Override

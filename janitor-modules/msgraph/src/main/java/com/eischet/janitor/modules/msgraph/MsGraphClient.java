@@ -123,7 +123,17 @@ public class MsGraphClient extends JanitorComposed<MsGraphClient> {
                 args.getRequired(2, JMap.class).applyTo(process, query);
             }
             return Janitor.list(call(process, () -> self.listMessages(user, folderId, query)));
-        }).setMetaData(Janitor.MetaData.HELP, "messages(user, folderId, query): Returns a list of all messages in the folder (default \"inbox\"), reading all pages; query is an optional map with select, top, orderBy, filter and bodyType.");
+        }).setMetaData(Janitor.MetaData.HELP, "messages(user, folderId, query): Returns a list of all messages in the folder (default \"inbox\"), reading all pages; query is an optional map with select, top, skip, orderBy, filter and bodyType.");
+        DISPATCH.addMethod("message", (self, process, args) -> {
+            args.require(2, 3);
+            final String user = args.getRequiredStringValue(0);
+            final String messageId = args.getRequiredStringValue(1);
+            final MessageQuery query = new MessageQuery();
+            if (args.size() > 2) {
+                args.getRequired(2, JMap.class).applyTo(process, query);
+            }
+            return call(process, () -> self.getMessage(user, messageId, query.getSelect()));
+        }).setMetaData(Janitor.MetaData.HELP, "message(user, messageId, query): Returns a single message; query is an optional map whose select names the properties to load.");
         DISPATCH.addMethod("mime", (self, process, args) -> {
             args.require(2);
             final String user = args.getRequiredStringValue(0);
@@ -329,6 +339,9 @@ public class MsGraphClient extends JanitorComposed<MsGraphClient> {
         final Map<String, String> params = new LinkedHashMap<>();
         params.put("$select", String.join(",", query.getSelect()));
         params.put("$top", String.valueOf(query.getTop()));
+        if (query.getSkip() > 0) {
+            params.put("$skip", String.valueOf(query.getSkip()));
+        }
         if (query.getOrderBy() != null && !query.getOrderBy().isBlank()) {
             params.put("$orderby", query.getOrderBy());
         }
@@ -337,6 +350,22 @@ public class MsGraphClient extends JanitorComposed<MsGraphClient> {
         }
         final String prefer = query.getBodyType() == null || query.getBodyType().isBlank() ? null : "outlook.body-content-type=\"" + query.getBodyType() + "\"";
         forEachItem(userUrl(user, "mailFolders", folderId, "messages") + query(params), prefer, MailMessage::new, consumer);
+    }
+
+    /**
+     * Fetches a single message.
+     * @param user mailbox owner
+     * @param messageId the message id
+     * @param select the properties to load ("$select"); null or empty means id, subject, sender and categories
+     * @return the message
+     * @throws MsGraphException with status 404 if there is no such message, e.g. because it was moved meanwhile
+     */
+    public MailMessage getMessage(final @NotNull String user, final @NotNull String messageId, final @Nullable List<String> select) {
+        final List<String> properties = select == null || select.isEmpty() ? MessageQuery.DEFAULT_SELECT : select;
+        final String json = getString(userUrl(user, "messages", messageId) + query(Map.of("$select", String.join(",", properties))), null);
+        final MailMessage message = new MailMessage();
+        readJson(json, message);
+        return message;
     }
 
     /**

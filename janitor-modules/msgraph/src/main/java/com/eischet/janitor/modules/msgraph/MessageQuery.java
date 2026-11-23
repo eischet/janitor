@@ -27,6 +27,8 @@ public class MessageQuery extends JanitorComposed<MessageQuery> {
                 .setMetaData(Janitor.MetaData.HELP, "select: List of the message properties to load ($select); null or empty means id, subject, sender and categories; writable.");
         DISPATCH.addIntegerProperty("top", MessageQuery::getTop, MessageQuery::setTop)
                 .setMetaData(Janitor.MetaData.HELP, "top: The page size ($top, default 10); all pages are read regardless; writable.");
+        DISPATCH.addIntegerProperty("skip", MessageQuery::getSkip, MessageQuery::setSkip)
+                .setMetaData(Janitor.MetaData.HELP, "skip: How many messages to leave out at the start ($skip, default 0); writable.");
         DISPATCH.addStringProperty("orderBy", MessageQuery::getOrderBy, MessageQuery::setOrderBy)
                 .setMetaData(Janitor.MetaData.HELP, "orderBy: The sort order ($orderby), default \"receivedDateTime asc\"; writable.");
         DISPATCH.addStringProperty("filter", MessageQuery::getFilter, MessageQuery::setFilter)
@@ -37,6 +39,7 @@ public class MessageQuery extends JanitorComposed<MessageQuery> {
 
     private @NotNull List<String> select = DEFAULT_SELECT;
     private int top = 10;
+    private int skip;
     private @Nullable String orderBy = "receivedDateTime asc";
     private @Nullable String filter;
     private @Nullable String bodyType;
@@ -66,6 +69,18 @@ public class MessageQuery extends JanitorComposed<MessageQuery> {
 
     public MessageQuery setTop(final int top) {
         this.top = top;
+        return this;
+    }
+
+    /**
+     * @return how many messages to leave out at the start ("$skip"), in the order of {@link #getOrderBy()}
+     */
+    public int getSkip() {
+        return skip;
+    }
+
+    public MessageQuery setSkip(final int skip) {
+        this.skip = Math.max(0, skip);
         return this;
     }
 

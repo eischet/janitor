@@ -2363,10 +2363,13 @@ This module defines no object types of its own.
 | `apply(map)` | method | Assigns each entry of the map to the property of the same name, and returns the object itself. |
 | `body` | property, writable | The body of the message, or null if not selected; writable. |
 | `categories` | property, list, writable | List of the category names of the message, or null if not selected; writable. |
+| `from` | property, writable | The author as a recipient with an emailAddress, which may differ from the sender, or null if not selected; writable. |
+| `hasAttachments` | property, bool, writable | True if the message has attachments that are not inline, or null if not selected; writable. |
 | `id` | property, string, writable | The Graph ID of the message; writable. |
 | `internetMessageId` | property, string, writable | The Message-ID header of the message, or null if not selected; writable. |
 | `isRead` | property, bool, writable | True if the message has been read, or null if not selected; writable. |
 | `parentFolderId` | property, string, writable | The Graph ID of the folder that contains the message, or null if not selected; writable. |
+| `receivedDateTime` | property, string, writable | When the message arrived, as the ISO 8601 string in UTC that Graph sends, or null if not selected; writable. |
 | `sender` | property, writable | The sender as a recipient with an emailAddress, or null if not selected; writable. |
 | `subject` | property, string, writable | The subject of the message, or null if not selected; writable. |
 | `uniqueBody` | property, writable | The part of the body that is unique to this message, without quoted earlier messages, or null if not selected; writable. |
@@ -2382,6 +2385,7 @@ This module defines no object types of its own.
 | `filter` | property, string, writable | An OData filter ($filter), e.g. "isRead eq false", or null for none; writable. |
 | `orderBy` | property, string, writable | The sort order ($orderby), default "receivedDateTime asc"; writable. |
 | `select` | property, list, writable | List of the message properties to load ($select); null or empty means id, subject, sender and categories; writable. |
+| `skip` | property, int, writable | How many messages to leave out at the start ($skip, default 0); writable. |
 | `top` | property, int, writable | The page size ($top, default 10); all pages are read regardless; writable. |
 
 <a id="types-msgraph-messageupdate"></a>
@@ -2408,7 +2412,8 @@ This module defines no object types of its own.
 | `findFolder(user, displayName, parentId)` | method | Returns the first folder with that name (case-insensitive) below the parent folder, or null; without a parent, searches the top level. |
 | `folder(user, folderId)` | method | Returns a mail folder of the user's mailbox, including its item counts; folderId may be a well-known name such as "inbox". |
 | `folders(user, parentId)` | method | Returns a list of the mail folders directly below the parent folder; without a parent, the top-level folders. |
-| `messages(user, folderId, query)` | method | Returns a list of all messages in the folder (default "inbox"), reading all pages; query is an optional map with select, top, orderBy, filter and bodyType. |
+| `message(user, messageId, query)` | method | Returns a single message; query is an optional map whose select names the properties to load. |
+| `messages(user, folderId, query)` | method | Returns a list of all messages in the folder (default "inbox"), reading all pages; query is an optional map with select, top, skip, orderBy, filter and bodyType. |
 | `mime(user, messageId)` | method | Returns the complete message in MIME format (RFC 822) as a string. |
 | `move(user, messageId, destinationId)` | method | Moves a message to another folder and returns its new ID, which Graph changes when moving. |
 | `update(user, messageId, changes)` | method | Changes a message; changes is a map with subject, categories and/or isRead, and only the given values are sent. |
