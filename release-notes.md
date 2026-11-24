@@ -1,4 +1,4 @@
-# 0.9.78 (in progress)
+# 0.9.78, 2026-11-24 (internal release only)
 
 - dbxs: `SimpleDataManager` can be read-only (new constructor argument `readOnly`, `DataManager.isReadOnly()`). Updates
   and inserts then fail with a `DatabaseError` before they reach the database, independent of whether the JDBC driver
