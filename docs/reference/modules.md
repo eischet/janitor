@@ -517,6 +517,8 @@ doc.close();
 | `Writer(document, path)` | method | Creates a writer that writes the document to the file path; without a path, the PDF is kept in memory and available as writer.bytes after closing the document. |
 | `ZAPFDINGBATS` | property, int, read-only | Font family constant for ZapfDingbats. |
 | `concat(targetFile, sourceFiles, pdfALevel)` | method | Concatenates the pages of the PDF files in the list sourceFiles into the new file targetFile. With pdfALevel ("1B", "2B" or "3B"), the result is PDF/A like with Writer.setPdfA, and the Interpolate flag, which PDF/A forbids, is removed from the images of the sources; the pages must meet the other PDF/A rules already, e.g. embedded fonts. |
+| `convertImageBytesToPdf(imageBytes)` | method | Converts the image data (binary) into a one-page PDF of the image's size in pixels and returns it as binary. |
+| `convertImageFileToPdf(imageFileName, pdfFileName)` | method | Converts the image file into a one-page PDF of the image's size in pixels and saves it as pdfFileName. |
 <!-- generated:end -->
 
 <a id="module-excel"></a>

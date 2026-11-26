@@ -229,4 +229,37 @@ public class PdfModuleTestCase extends JanitorTest {
         assertTrue(e.getMessage().contains("unsupported level"), e.getMessage());
     }
 
+    /**
+     * An image becomes a PDF with one page of the image's size in pixels, from binary data as well as from a file.
+     */
+    @Test
+    void imagesBecomeOnePagePdfsOfTheirSize(@TempDir Path tempDir) throws Exception {
+        final java.awt.image.BufferedImage image = new java.awt.image.BufferedImage(320, 200, java.awt.image.BufferedImage.TYPE_INT_RGB);
+        final Path png = tempDir.resolve("image.png");
+        javax.imageio.ImageIO.write(image, "png", png.toFile());
+        final Path pdf = tempDir.resolve("image.pdf");
+        final @Language("Janitor") String script = """
+            import pdf;
+            pdf.convertImageFileToPdf(imagePath, pdfPath);
+            return pdf.convertImageBytesToPdf(imageBytes);
+            """;
+        final byte[] imageBytes = java.nio.file.Files.readAllBytes(png);
+        final JanitorObject result = evaluate(script, env -> env.addModule(PdfModule.REGISTRATION), globals -> {
+            globals.bind("imagePath", com.eischet.janitor.api.Janitor.string(png.toString()));
+            globals.bind("pdfPath", com.eischet.janitor.api.Janitor.string(pdf.toString()));
+            globals.bind("imageBytes", com.eischet.janitor.api.Janitor.binary(imageBytes));
+        });
+        assertTrue(result instanceof JBinary, "expected Binary, got " + result.janitorClassName());
+        for (final byte[] bytes : java.util.List.of(((JBinary) result).janitorGetHostValue(), java.nio.file.Files.readAllBytes(pdf))) {
+            final PdfReader reader = new PdfReader(bytes);
+            try {
+                assertEquals(1, reader.getNumberOfPages());
+                assertEquals(320f, reader.getPageSize(1).getWidth(), 0.01f);
+                assertEquals(200f, reader.getPageSize(1).getHeight(), 0.01f);
+            } finally {
+                reader.close();
+            }
+        }
+    }
+
 }

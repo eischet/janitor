@@ -10,19 +10,25 @@ import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.modules.JanitorModule;
 import com.eischet.janitor.api.modules.JanitorModuleRegistration;
+import com.eischet.janitor.api.types.builtin.JBinary;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import org.openpdf.text.Document;
 import org.openpdf.text.DocumentException;
 import org.openpdf.text.Element;
 import org.openpdf.text.Font;
+import org.openpdf.text.Image;
 import org.openpdf.text.PageSize;
 import org.openpdf.text.Rectangle;
 import org.openpdf.text.pdf.PdfReader;
 import org.openpdf.text.pdf.PdfSmartCopy;
+import org.openpdf.text.pdf.PdfWriter;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.List;
 
 /**
@@ -99,6 +105,24 @@ public class PdfModule extends JanitorComposed<PdfModule> implements JanitorModu
                 .setMetaData(Janitor.MetaData.HELP, "Annotation(title, text): Creates a popup text note; Annotation(llx, lly, urx, ury, url) instead creates a link to the URL over the given area.");
         dispatcher.addMethod("Image", (self, process, args) -> JPDFImage.fromArgs(process, args))
                 .setMetaData(Janitor.MetaData.HELP, "Image(source): Loads an Image from a local file path or from binary data.");
+        dispatcher.addVoidMethod("convertImageFileToPdf", (self, process, args) -> {
+            args.require(2);
+            final String imageFileName = args.getRequiredStringValue(0);
+            final String pdfFileName = args.getRequiredStringValue(1);
+            try {
+                convertImageToPdf(new File(imageFileName), new File(pdfFileName));
+            } catch (IOException e) {
+                throw new JanitorNativeException(process, "error converting image '" + imageFileName + "' to pdf '" + pdfFileName + "'", e);
+            }
+        }).setMetaData(Janitor.MetaData.HELP, "convertImageFileToPdf(imageFileName, pdfFileName): Converts the image file into a one-page PDF of the image's size in pixels and saves it as pdfFileName.");
+        dispatcher.addMethod("convertImageBytesToPdf", (self, process, args) -> {
+            args.require(1);
+            try {
+                return Janitor.binary(convertImageToPdf(args.getRequired(0, JBinary.class).janitorGetHostValue()));
+            } catch (IOException e) {
+                throw new JanitorNativeException(process, "error converting image to pdf", e);
+            }
+        }).setMetaData(Janitor.MetaData.HELP, "convertImageBytesToPdf(imageBytes): Converts the image data (binary) into a one-page PDF of the image's size in pixels and returns it as binary.");
 
         // Layout / styling primitives
         dispatcher.addMethod("Font", (self, process, args) -> switch (args.size()) {
@@ -260,6 +284,45 @@ public class PdfModule extends JanitorComposed<PdfModule> implements JanitorModu
         } catch (DocumentException | IOException e) {
             throw new JanitorNativeException(process, "error concatenating pdf files into '" + targetFileName + "'", e);
         }
+    }
+
+    /**
+     * Turns an image into a PDF with a single page that has the size of the image in pixels and shows nothing but the image.
+     * The image data goes into the PDF as it is: a JPEG stays a JPEG, and the resolution and orientation its header may
+     * name are not applied.
+     *
+     * @param image the image file's content, in a format OpenPDF reads (JPEG, PNG, GIF, BMP, TIFF)
+     * @return the PDF
+     * @throws IOException if the data is no image OpenPDF can read, or the PDF cannot be written
+     */
+    public static byte[] convertImageToPdf(final byte[] image) throws IOException {
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try {
+            final Image picture = Image.getInstance(image);
+            final float width = picture.getWidth();
+            final float height = picture.getHeight();
+            final Document document = new Document(new Rectangle(width, height), 0, 0, 0, 0);
+            PdfWriter.getInstance(document, out);
+            document.open();
+            picture.scaleAbsolute(width, height);
+            picture.setAbsolutePosition(0, 0);
+            document.add(picture);
+            document.close();
+        } catch (DocumentException e) {
+            throw new IOException("error converting image to pdf", e);
+        }
+        return out.toByteArray();
+    }
+
+    /**
+     * Turns an image file into a PDF file, see {@link #convertImageToPdf(byte[])}.
+     *
+     * @param imageFile the image to read
+     * @param pdfFile   the PDF to write; an existing file is replaced
+     * @throws IOException if the image cannot be read or the PDF cannot be written
+     */
+    public static void convertImageToPdf(final File imageFile, final File pdfFile) throws IOException {
+        Files.write(pdfFile.toPath(), convertImageToPdf(Files.readAllBytes(imageFile.toPath())));
     }
 
     public PdfModule() {
