@@ -1,12 +1,13 @@
 # 0.9.79 (in progress)
 
-- New module `excel` (artifact `com.eischet.janitor.modules:excel`, `ExcelModule.REGISTRATION`): scripts create Excel
+- New module `excel` (artifact `com.eischet.janitor.modules:excel`, `ExcelModule.REGISTRATION`): scripts read Excel and CSV
+  files row by row with `excel.read(filename)`, `excel.fromBinary(data)` and `excel.fromString(csvText)`, and create Excel
   workbooks with `excel.create()` or open existing ones with `excel.open(source)`, fill sheets row by row
   (`sheet.append(values)`, `sheet.header(values)`) or cell by cell (`sheet.set(row, column, value)`,
   `sheet.formula(row, column, formula)`), and get the file with `wb.toBinary()` or `wb.save(path)`. Cell types follow
   the Janitor values; dates get Excel's date format. `create(streaming = true)` is for sheets with very many rows. Not
   part of `janitor-modules-common`; hosts register it explicitly. The standalone REPL has it. New dependencies: Apache POI
-  `poi` and `poi-ooxml` 6.0.0 (Apache License 2.0). POI logs through `log4j-api`; without a Log4j provider on the class
+  `poi` and `poi-ooxml` 6.0.0 and Apache Commons CSV 1.14.1 (all Apache License 2.0). POI logs through `log4j-api`; without a Log4j provider on the class
   path, Log4j prints one line about that when the module is first used.
 
 # 0.9.78, 2026-11-24 (internal release only)

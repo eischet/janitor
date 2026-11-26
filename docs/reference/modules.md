@@ -522,7 +522,29 @@ doc.close();
 
 ### excel
 
-Creates and changes Excel workbooks, based on the Apache POI library. `create()` returns a new workbook, `open(source)`
+Reads Excel and CSV files row by row, and creates and changes Excel workbooks, based on the Apache POI and Apache Commons CSV
+libraries.
+
+`read(filename)`, `fromBinary(data)` and `fromString(csvText)` return a reader, which a `for` loop walks row by row. A row
+gives its values as strings: by column number (`row[0]`), by Excel column name (`row.A`, and `row.dateA` for a date), or,
+after `useHeaders()`, by the title in the first row (`row["Title"]`). `sheet(nameOrNumber)` reads another sheet than the
+first, `startAt(n)` skips rows. The dialect (`EXCEL`, `CSV_UTF8`, `CSV_UTF16LE`) is guessed from the file name unless
+given; keyword arguments like `delimiter = ","` set the CSV format, which defaults to semicolons.
+
+```janitor
+import excel;
+csv = "Number;Title\n4711;Printer on fire\n4712;Coffee machine";
+for (row in excel.fromString(csv).useHeaders()) {
+    print(row["Number"], row.B);
+}
+```
+
+```output
+4711 Printer on fire
+4712 Coffee machine
+```
+
+For writing, `create()` returns a new workbook, `open(source)`
 an existing one, e.g. a template to fill in. A workbook has sheets (`wb.sheet(name)` returns the sheet of that name and
 creates it if needed), and a sheet is filled row by row with `append(values)` or cell by cell with
 `set(row, column, value)`. Rows and columns are counted from 0. `toBinary()` returns the finished file, `save(path)`
@@ -557,7 +579,10 @@ Tickets 4 [Tickets]
 | Member | Kind | Description |
 | --- | --- | --- |
 | `create(streaming = false)` | method | Creates a new, empty workbook (.xlsx). With streaming, rows are written to a temporary file as they are added, for sheets with very many rows: rows can only be appended then, autoSize() is not available, and the workbook is closed once it has been written with toBinary() or save(). |
+| `fromBinary(data, dialect = null, **format)` | method | Reads an Excel or CSV file from binary data, row by row; the dialect defaults to EXCEL. The keyword arguments set the CSV format. |
+| `fromString(contents, **format)` | method | Reads CSV text row by row. The keyword arguments set the CSV format. |
 | `open(source)` | method | Opens an existing workbook (.xlsx or .xls) from a file path or from binary data, e.g. a template to fill in. The source is read completely and is not changed; write the result with toBinary() or save(). |
+| `read(filename, dialect = null, **format)` | method | Opens an Excel or CSV file for reading row by row; without a dialect (EXCEL, CSV_UTF8, ...) it is guessed from the file name. The keyword arguments set the CSV format. |
 <!-- generated:end -->
 
 <a id="module-mustang"></a>

@@ -1204,6 +1204,31 @@ This module defines no object types of its own.
 
 ## excel
 
+<a id="types-excel-csvformatdefinition"></a>
+
+### CsvFormatDefinition
+
+| Member | Kind | Description |
+| --- | --- | --- |
+| `allowMissingColumnNames` | property, bool, writable | CSV option: allows missing column names in the header; write-only, reads as null. |
+| `apply(map)` | method | Assigns each entry of the map to the property of the same name, and returns the object itself. |
+| `autoFlush` | property, bool, writable | CSV option: flushes automatically when writing; write-only, reads as null. |
+| `commentMarker` | property, string, writable | CSV option: the character that starts a comment line, exactly one character; write-only, reads as null. |
+| `delimiter` | property, string, writable | CSV option: the delimiter between values (default semicolon); write-only, reads as null. |
+| `escapeCharacter` | property, string, writable | CSV option: the escape character, exactly one character; write-only, reads as null. |
+| `ignoreEmptyLines` | property, bool, writable | CSV option: skips empty lines (default true); write-only, reads as null. |
+| `ignoreHeaderCase` | property, bool, writable | CSV option: ignores the case of the header names; write-only, reads as null. |
+| `ignoreSurroundingSpaces` | property, bool, writable | CSV option: ignores spaces around values; write-only, reads as null. |
+| `lenientEof` | property, bool, writable | CSV option: tolerates an end of file inside a quoted value; write-only, reads as null. |
+| `maxRows` | property, int, writable | CSV option: the maximum number of rows to read; write-only, reads as 0. |
+| `nullString` | property, string, writable | CSV option: the string that stands for null; write-only, reads as null. |
+| `quoteCharacter` | property, string, writable | CSV option: the quote character, exactly one character (default double quote); write-only, reads as null. |
+| `recordSeparator` | property, string, writable | CSV option: the separator between records; write-only, reads as null. |
+| `skipHeaderRecord` | property, bool, writable | CSV option: skips the header record; write-only, reads as null. |
+| `trailingData` | property, bool, writable | CSV option: tolerates data after the closing quote of a value; write-only, reads as null. |
+| `trailingDelimiter` | property, bool, writable | CSV option: allows a delimiter at the end of each record; write-only, reads as null. |
+| `trim` | property, bool, writable | CSV option: trims leading and trailing blanks of values; write-only, reads as null. |
+
 <a id="types-excel-excelsheet"></a>
 
 ### ExcelSheet
@@ -1234,6 +1259,27 @@ This module defines no object types of its own.
 | `sheets` | property, list, read-only | The names of the sheets, in their order; read-only. |
 | `streaming` | property, bool, read-only | True if the workbook was created with streaming; read-only. |
 | `toBinary()` | method | Returns the workbook as binary data, the contents of an Excel file. |
+
+<a id="types-excel-filerow"></a>
+
+### FileRow
+
+| Member | Kind | Description |
+| --- | --- | --- |
+| `apply(map)` | method | Assigns each entry of the map to the property of the same name, and returns the object itself. |
+| `asMap()` | method | Returns the row as a map from column header to value. |
+
+<a id="types-excel-tabularfilereader"></a>
+
+### TabularFileReader
+
+| Member | Kind | Description |
+| --- | --- | --- |
+| `apply(map)` | method | Assigns each entry of the map to the property of the same name, and returns the object itself. |
+| `close()` | method | Closes the file; returns the reader. |
+| `sheet(sheet)` | method | Reads another sheet of an Excel file than the first one, given by its number (from 0) or its name; returns the reader. |
+| `startAt(row)` | method | Skips the given number of rows before reading; returns the reader. |
+| `useHeaders()` | method | Treats the first row read as the header row with the column names; returns the reader. |
 
 <a id="types-mustang"></a>
 
