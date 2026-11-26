@@ -27,6 +27,7 @@
         <module>commonmark</module>
         <module>docusign</module>
         <module>pdf</module>
+        <module>excel</module>
     </modules>
 
     <!-- these common dependencies are inherited by all nested modules -->

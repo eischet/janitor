@@ -1200,6 +1200,41 @@ This module defines no object types of its own.
 | `close()` | method | Closes the writer. |
 | `setPdfA(level)` | method | Makes the writer produce PDF/A, level "1B", "2B" or "3B", with the matching PDF version, an sRGB output intent and XMP metadata; call it before document.open(), and use only embedded fonts (BaseFont with embedded true). Returns the writer. |
 
+<a id="types-excel"></a>
+
+## excel
+
+<a id="types-excel-excelsheet"></a>
+
+### ExcelSheet
+
+| Member | Kind | Description |
+| --- | --- | --- |
+| `append(values, bold = false)` | method | Adds a row below the last one and writes the values of the list into its cells, from column 0; see set() for how values are written. Returns the sheet. |
+| `autoFilter()` | method | Turns the first row into filter buttons for all rows and columns written so far; call it after the last row. Returns the sheet. |
+| `autoSize()` | method | Fits the width of all columns written so far to their contents; call it after the last row. Not available in streaming workbooks, use columnWidth() there. Returns the sheet. |
+| `columnFormat(column, format)` | method | Sets the number format, in Excel's notation, for the values written into this column from now on; null removes it. Returns the sheet. |
+| `columnWidth(column, characters)` | method | Sets the width of a column in characters (up to 255). Returns the sheet. |
+| `formula(row, column, formula, bold = false, format = null)` | method | Writes a formula into a cell, in Excel's English notation and without the leading "=", e.g. "SUM(B2:B10)"; Excel calculates it when the file is opened. Returns the sheet. |
+| `freeze(rows = 1, columns = 0)` | method | Keeps the first rows and columns in place while the rest of the sheet scrolls; by default the first row. Returns the sheet. |
+| `header(values)` | method | Adds a row with column titles in bold, like append(values, bold = true). Returns the sheet. |
+| `name` | property, string, read-only | The name of the sheet; read-only. |
+| `rowCount` | property, int, read-only | The number of rows up to the last one written, which is the row that append() writes next; read-only. |
+| `set(row, column, value, bold = false, format = null)` | method | Writes a value into a cell; rows and columns are counted from 0. Strings, numbers, booleans, dates and date-times become cells of that type, null an empty cell, anything else its text. Dates and date-times are shown in Excel's date format, text with line breaks is wrapped. format is a number format in Excel's notation, e.g. "0.00" or "dd.mm.yyyy"; without it, the format set with columnFormat() applies. Returns the sheet. |
+
+<a id="types-excel-excelworkbook"></a>
+
+### ExcelWorkbook
+
+| Member | Kind | Description |
+| --- | --- | --- |
+| `close()` | method | Closes the workbook and frees its resources; it cannot be used afterwards. Calling it twice is harmless. |
+| `save(path)` | method | Writes the workbook to a file, replacing it if it exists. |
+| `sheet(sheet)` | method | Returns the sheet with the given name, creating it if the workbook has none of that name; a number returns the existing sheet at that position, counted from 0. |
+| `sheets` | property, list, read-only | The names of the sheets, in their order; read-only. |
+| `streaming` | property, bool, read-only | True if the workbook was created with streaming; read-only. |
+| `toBinary()` | method | Returns the workbook as binary data, the contents of an Excel file. |
+
 <a id="types-mustang"></a>
 
 ## mustang

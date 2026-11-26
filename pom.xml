@@ -19,7 +19,7 @@
 
     <properties>
         <!-- project revision -->
-        <revision>0.9.78</revision>
+        <revision>0.9.79-SNAPSHOT</revision>
 
         <!-- project settings -->
         <maven.plugin.validation>VERBOSE</maven.plugin.validation>
@@ -37,6 +37,7 @@
         <deps.azure-core-http-jdk-httpclient>1.2.0</deps.azure-core-http-jdk-httpclient>
         <deps.mcp>2.1.0</deps.mcp>
         <deps.jetty>12.1.14</deps.jetty>
+        <deps.poi>6.0.0</deps.poi>
 
     </properties>
 
@@ -279,6 +280,11 @@
             </dependency>
             <dependency>
                 <groupId>com.eischet.janitor.modules</groupId>
+                <artifactId>excel</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eischet.janitor.modules</groupId>
                 <artifactId>mcp</artifactId>
                 <version>${revision}</version>
             </dependency>
@@ -374,6 +380,18 @@
                 <groupId>com.github.librepdf</groupId>
                 <artifactId>openpdf</artifactId>
                 <version>3.0.5</version>
+            </dependency>
+
+            <!-- for the excel module -->
+            <dependency>
+                <groupId>org.apache.poi</groupId>
+                <artifactId>poi</artifactId>
+                <version>${deps.poi}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.poi</groupId>
+                <artifactId>poi-ooxml</artifactId>
+                <version>${deps.poi}</version>
             </dependency>
 
         </dependencies>

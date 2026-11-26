@@ -104,6 +104,7 @@ unknown, prefer the [built-in types and functions](builtins.md), which are alway
 | [`os`](modules.md#module-os) | `com.eischet.janitor.modules:os` | `OperatingSystemModule.REGISTRATION` | only with `includingNonSandboxed = true` |
 | [`commonmark`](modules.md#module-commonmark) | `com.eischet.janitor.modules:commonmark` | `CommonMarkModule.REGISTRATION` | no; register it explicitly |
 | [`pdf`](modules.md#module-pdf) | `com.eischet.janitor.modules:pdf` | `PdfModule.REGISTRATION` | no; register it explicitly |
+| [`excel`](modules.md#module-excel) | `com.eischet.janitor.modules:excel` | `ExcelModule.REGISTRATION` | no; register it explicitly |
 | [`mustang`](modules.md#module-mustang) | `com.eischet.janitor.modules:mustang` | `MustangModule.REGISTRATION` | no; register it explicitly |
 | [`docusign`](modules.md#module-docusign) | `com.eischet.janitor.modules:docusign` | `DocusignModule.REGISTRATION` | no; register it explicitly |
 | [`msgraph`](modules.md#module-msgraph) | `com.eischet.janitor.modules:msgraph` | `MsGraphModule.REGISTRATION` | no; register it explicitly |
@@ -515,6 +516,48 @@ doc.close();
 | `Writer(document, path)` | method | Creates a writer that writes the document to the file path; without a path, the PDF is kept in memory and available as writer.bytes after closing the document. |
 | `ZAPFDINGBATS` | property, int, read-only | Font family constant for ZapfDingbats. |
 | `concat(targetFile, sourceFiles, pdfALevel)` | method | Concatenates the pages of the PDF files in the list sourceFiles into the new file targetFile. With pdfALevel ("1B", "2B" or "3B"), the result is PDF/A like with Writer.setPdfA, and the Interpolate flag, which PDF/A forbids, is removed from the images of the sources; the pages must meet the other PDF/A rules already, e.g. embedded fonts. |
+<!-- generated:end -->
+
+<a id="module-excel"></a>
+
+### excel
+
+Creates and changes Excel workbooks, based on the Apache POI library. `create()` returns a new workbook, `open(source)`
+an existing one, e.g. a template to fill in. A workbook has sheets (`wb.sheet(name)` returns the sheet of that name and
+creates it if needed), and a sheet is filled row by row with `append(values)` or cell by cell with
+`set(row, column, value)`. Rows and columns are counted from 0. `toBinary()` returns the finished file, `save(path)`
+writes it. The members of workbooks and sheets are listed in [module-types.md](module-types.md#types-excel).
+
+The type of a cell follows the value: strings, numbers, booleans, dates and date-times become cells of that type, `null`
+an empty cell. Dates are shown in Excel's date format, which follows the country settings of the person who opens the
+file; `format` and `columnFormat()` take number formats in Excel's notation instead.
+
+For sheets with very many rows, `create(streaming = true)` writes the rows to a temporary file as they are added. Rows
+can only be appended then, `autoSize()` is not available, and the workbook is closed once it has been written.
+
+```janitor
+import excel;
+wb = excel.create();
+sheet = wb.sheet("Tickets");
+sheet.header(["Number", "Title", "Logged", "Hours"]);
+sheet.columnFormat(3, "0.00");
+sheet.append([4711, "Printer on fire", @2026-11-26, 1.5]);
+sheet.append([4712, "Coffee machine\nout of beans", @2026-11-26-08:30, 0.25]);
+sheet.formula(3, 3, "SUM(D2:D3)", bold = true);
+sheet.freeze().autoFilter().autoSize();
+data = wb.toBinary();
+print(sheet.name, sheet.rowCount, wb.sheets);
+```
+
+```output
+Tickets 4 [Tickets]
+```
+
+<!-- generated:begin modules/excel -->
+| Member | Kind | Description |
+| --- | --- | --- |
+| `create(streaming = false)` | method | Creates a new, empty workbook (.xlsx). With streaming, rows are written to a temporary file as they are added, for sheets with very many rows: rows can only be appended then, autoSize() is not available, and the workbook is closed once it has been written with toBinary() or save(). |
+| `open(source)` | method | Opens an existing workbook (.xlsx or .xls) from a file path or from binary data, e.g. a template to fill in. The source is read completely and is not changed; write the result with toBinary() or save(). |
 <!-- generated:end -->
 
 <a id="module-mustang"></a>

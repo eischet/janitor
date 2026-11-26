@@ -28,6 +28,7 @@ import com.eischet.janitor.modules.mcp.McpModule;
 import com.eischet.janitor.modules.msgraph.MsGraphModule;
 import com.eischet.janitor.modules.mustang.MustangModule;
 import com.eischet.janitor.modules.os.OperatingSystemModule;
+import com.eischet.janitor.modules.excel.ExcelModule;
 import com.eischet.janitor.modules.pdf.PdfModule;
 import com.eischet.janitor.runtime.JanitorFormattingGerman;
 import com.eischet.janitor.runtime.OutputCatchingTestRuntime;
@@ -97,6 +98,7 @@ public final class ReferenceGenerator {
             new ModuleInfo(OperatingSystemModule.REGISTRATION, "com.eischet.janitor.modules:os", "OperatingSystemModule.REGISTRATION"),
             new ModuleInfo(CommonMarkModule.REGISTRATION, "com.eischet.janitor.modules:commonmark", "CommonMarkModule.REGISTRATION"),
             new ModuleInfo(PdfModule.REGISTRATION, "com.eischet.janitor.modules:pdf", "PdfModule.REGISTRATION"),
+            new ModuleInfo(ExcelModule.REGISTRATION, "com.eischet.janitor.modules:excel", "ExcelModule.REGISTRATION"),
             new ModuleInfo(MustangModule.REGISTRATION, "com.eischet.janitor.modules:mustang", "MustangModule.REGISTRATION"),
             new ModuleInfo(DocusignModule.REGISTRATION, "com.eischet.janitor.modules:docusign", "DocusignModule.REGISTRATION"),
             new ModuleInfo(MsGraphModule.REGISTRATION, "com.eischet.janitor.modules:msgraph", "MsGraphModule.REGISTRATION"),
