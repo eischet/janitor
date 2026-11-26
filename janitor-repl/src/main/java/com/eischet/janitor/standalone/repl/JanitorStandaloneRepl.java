@@ -20,6 +20,7 @@ import com.eischet.janitor.modules.msgraph.MsGraphModule;
 import com.eischet.janitor.modules.mustang.MustangModule;
 import com.eischet.janitor.modules.excel.ExcelModule;
 import com.eischet.janitor.modules.pdf.PdfModule;
+import com.eischet.janitor.modules.word.WordModule;
 import com.eischet.janitor.repl.ConsoleReplIO;
 import com.eischet.janitor.repl.JanitorRepl;
 import com.eischet.janitor.repl.ReplIO;
@@ -213,6 +214,7 @@ public class JanitorStandaloneRepl {
         env.addModule(McpModule.REGISTRATION);
         env.addModule(PdfModule.REGISTRATION);
         env.addModule(ExcelModule.REGISTRATION);
+        env.addModule(WordModule.REGISTRATION);
 
         return env;
     }

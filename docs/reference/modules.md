@@ -105,6 +105,7 @@ unknown, prefer the [built-in types and functions](builtins.md), which are alway
 | [`commonmark`](modules.md#module-commonmark) | `com.eischet.janitor.modules:commonmark` | `CommonMarkModule.REGISTRATION` | no; register it explicitly |
 | [`pdf`](modules.md#module-pdf) | `com.eischet.janitor.modules:pdf` | `PdfModule.REGISTRATION` | no; register it explicitly |
 | [`excel`](modules.md#module-excel) | `com.eischet.janitor.modules:excel` | `ExcelModule.REGISTRATION` | no; register it explicitly |
+| [`word`](modules.md#module-word) | `com.eischet.janitor.modules:word` | `WordModule.REGISTRATION` | no; register it explicitly |
 | [`mustang`](modules.md#module-mustang) | `com.eischet.janitor.modules:mustang` | `MustangModule.REGISTRATION` | no; register it explicitly |
 | [`docusign`](modules.md#module-docusign) | `com.eischet.janitor.modules:docusign` | `DocusignModule.REGISTRATION` | no; register it explicitly |
 | [`msgraph`](modules.md#module-msgraph) | `com.eischet.janitor.modules:msgraph` | `MsGraphModule.REGISTRATION` | no; register it explicitly |
@@ -583,6 +584,56 @@ Tickets 4 [Tickets]
 | `fromString(contents, **format)` | method | Reads CSV text row by row. The keyword arguments set the CSV format. |
 | `open(source)` | method | Opens an existing workbook (.xlsx or .xls) from a file path or from binary data, e.g. a template to fill in. The source is read completely and is not changed; write the result with toBinary() or save(). |
 | `read(filename, dialect = null, **format)` | method | Opens an Excel or CSV file for reading row by row; without a dialect (EXCEL, CSV_UTF8, ...) it is guessed from the file name. The keyword arguments set the CSV format. |
+<!-- generated:end -->
+
+<a id="module-word"></a>
+
+### word
+
+Fills in, creates and reads Word documents (.docx), based on the Apache POI library. The members of a document are listed
+in [module-types.md](module-types.md#types-word).
+
+The usual way to a good-looking document is a template made in Word, with placeholders like `{{customer}}` where the
+script's values go. `open(source)` reads it from a file path or binary data, `replace(placeholder, value)` fills in a
+placeholder everywhere (text, tables, headers and footers) and returns how often it was found, `replaceAll(map)` does that
+for several at once. A placeholder is any text; it is found even where Word has split it into several runs, and the value
+gets the formatting of its first character. For a table with one row per item, put the placeholders into one row of the
+template: `repeatRow(marker, items)` replaces the row that contains the marker by one filled copy per item.
+
+```janitor compile-only
+import word;
+doc = word.open("/templates/offer.docx");
+doc.replaceAll({"{{customer}}": "ACME Corp.", "{{date}}": @today.format("yyyy-MM-dd")});
+doc.repeatRow("{{item}}", [
+    {"{{item}}": "Toner", "{{price}}": "59.90"},
+    {"{{item}}": "Paper", "{{price}}": "29.90"}
+]);
+doc.save("/tmp/offer.docx");
+```
+
+Without a template, `create()` returns an empty document, to which `heading`, `paragraph`, `table`, `image` and
+`pageBreak` add content at the end. `text`, `paragraphs` and `tables` read what a document contains, `toBinary()` returns
+the file and `save(path)` writes it.
+
+```janitor
+import word;
+doc = word.create();
+doc.heading("Report").paragraph("All printers are fine.", italic = true);
+doc.table([["Item", "State"], ["Printer 1", "ok"]]);
+print(doc.paragraphs);
+print(doc.tables);
+```
+
+```output
+[Report, All printers are fine.]
+[[[Item, State], [Printer 1, ok]]]
+```
+
+<!-- generated:begin modules/word -->
+| Member | Kind | Description |
+| --- | --- | --- |
+| `create()` | method | Creates a new, empty document. |
+| `open(source)` | method | Opens an existing document (.docx) from a file path or from binary data, e.g. a template with placeholders. The source is read completely and is not changed; write the result with toBinary() or save(). |
 <!-- generated:end -->
 
 <a id="module-mustang"></a>

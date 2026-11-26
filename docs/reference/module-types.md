@@ -1281,6 +1281,31 @@ This module defines no object types of its own.
 | `startAt(row)` | method | Skips the given number of rows before reading; returns the reader. |
 | `useHeaders()` | method | Treats the first row read as the header row with the column names; returns the reader. |
 
+<a id="types-word"></a>
+
+## word
+
+<a id="types-word-worddocument"></a>
+
+### WordDocument
+
+| Member | Kind | Description |
+| --- | --- | --- |
+| `close()` | method | Closes the document and frees its resources; it cannot be used afterwards. Calling it twice is harmless. |
+| `heading(text, level = 1)` | method | Adds a heading of level 1 to 9 at the end of the document, in the document's heading style, which is created if the document has none. Returns the document. |
+| `image(source, width = 16.0)` | method | Adds an image (PNG, JPEG or GIF) at the end of the document, from a file path or binary data, with the given width in centimetres; the height follows the proportions of the image. Returns the document. |
+| `pageBreak()` | method | Adds a page break at the end of the document. Returns the document. |
+| `paragraph(text, bold = false, italic = false, size = null, align = null)` | method | Adds a paragraph at the end of the document; line breaks in the text become line breaks in the paragraph. size is the font size in points, align one of "left", "center", "right" or "justify". Returns the document. |
+| `paragraphs` | property, list, read-only | The texts of the paragraphs outside of tables, in their order; read-only. |
+| `repeatRow(marker, items)` | method | Fills a table from a list: finds the first table row that contains the marker text, usually one of its placeholders, and replaces it by one copy per item. Each item is a map from placeholder text to value, which is replaced in its copy as with replace(). An empty list removes the row. Returns the number of rows written. |
+| `replace(placeholder, value)` | method | Replaces every occurrence of the placeholder text, e.g. "{{customer}}", by the value: in the text, in tables, and in headers and footers. The formatting of the placeholder's first character is kept; line breaks in the value become line breaks in the document, null an empty text. Returns the number of replacements. |
+| `replaceAll(values)` | method | Replaces several placeholders at once: the keys of the map are the placeholder texts, its values their replacements, as with replace(). Returns the number of replacements. |
+| `save(path)` | method | Writes the document to a file, replacing it if it exists. |
+| `table(rows, header = true)` | method | Adds a table at the end of the document from a list of rows, each a list of cell values; with header, the first row is written in bold. Returns the document. |
+| `tables` | property, list, read-only | The tables of the document, each a list of rows, each row a list of the texts of its cells; read-only. |
+| `text` | property, string, read-only | The text of the document, one line per paragraph, including the text in tables but not headers and footers; read-only. |
+| `toBinary()` | method | Returns the document as binary data, the contents of a .docx file. |
+
 <a id="types-mustang"></a>
 
 ## mustang

@@ -28,6 +28,7 @@
         <module>docusign</module>
         <module>pdf</module>
         <module>excel</module>
+        <module>word</module>
     </modules>
 
     <!-- these common dependencies are inherited by all nested modules -->

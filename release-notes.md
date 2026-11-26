@@ -10,6 +10,13 @@
   `poi` and `poi-ooxml` 6.0.0 and Apache Commons CSV 1.14.1 (all Apache License 2.0). POI logs through `log4j-api`; without a Log4j provider on the class
   path, Log4j prints one line about that when the module is first used.
 
+- New module `word` (artifact `com.eischet.janitor.modules:word`, `WordModule.REGISTRATION`): scripts fill in Word
+  templates (`word.open(source)`, `doc.replace(placeholder, value)`, `doc.replaceAll(map)`, and `doc.repeatRow(marker,
+  items)` for table rows), build simple documents (`word.create()`, `doc.heading`, `doc.paragraph`, `doc.table`,
+  `doc.image`, `doc.pageBreak`), read their text (`doc.text`, `doc.paragraphs`, `doc.tables`) and write them with
+  `doc.toBinary()` or `doc.save(path)`. Placeholders are found even where Word has split them into several runs. Not part
+  of `janitor-modules-common`; hosts register it explicitly. The standalone REPL has it. Uses the same Apache POI as `excel`.
+
 # 0.9.78, 2026-11-24 (internal release only)
 
 - dbxs: `SimpleDataManager` can be read-only (new constructor argument `readOnly`, `DataManager.isReadOnly()`). Updates
