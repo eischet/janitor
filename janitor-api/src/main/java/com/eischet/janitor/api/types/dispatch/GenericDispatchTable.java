@@ -603,7 +603,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
                 instance -> TemporaryAssignable.lazy(
                         name,
                         () -> Janitor.integer(getter.get(instance)),
-                        value -> setter.set(instance, Janitor.requireInt(value).janitorGetHostValue().intValue())
+                        value -> setter.set(instance, Conversions.toJavaInt(value))
                 ),
                 adapt(name, JSON_INT, getter::get, NullableSetter.guard(setter)),
                 JsonType.NUMBER,
@@ -721,7 +721,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
         return internalAddProperty(name, instance -> TemporaryAssignable.lazy(
                         name,
                         () -> Janitor.getBuiltins().integer(getter.get(instance)),
-                        value -> setter.set(instance, Janitor.requireInt(value).janitorGetHostValue())
+                        value -> setter.set(instance, Conversions.toJavaLong(value))
                 ),
                 adapt(name, JSON_LONG, getter::get, NullableSetter.guard(setter)),
                 JsonType.NUMBER,
@@ -744,7 +744,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
                             if (value == Janitor.NULL) {
                                 setter.set(instance, null);
                             } else if (value instanceof JNumber number) {
-                                setter.set(instance, new BigDecimal(number.toDouble()));
+                                setter.set(instance, number.toBigDecimal());
                             } else {
                                 throw new JanitorGlueException(JanitorArgumentException::fromGlue, "Expected a numeric value but got " + value.janitorClassName() + ".");
                             }

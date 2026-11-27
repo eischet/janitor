@@ -10,6 +10,7 @@ import com.eischet.janitor.api.metadata.MetaDataKey;
 import com.eischet.janitor.api.types.BuiltinTypes;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.*;
+import com.eischet.janitor.api.types.dispatch.Conversions;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import com.eischet.janitor.api.types.dispatch.Dispatcher;
 import com.eischet.janitor.toolbox.json.api.JsonException;
@@ -911,7 +912,7 @@ public final class Janitor {
             return duration.toSeconds();
         }
         try {
-            return requireInt(value).janitorGetHostValue();
+            return Conversions.toJavaLong(value);
         } catch (JanitorGlueException e) {
             throw new JanitorGlueException(JanitorArgumentException::fromGlue, "Expected a number of seconds or a duration but got " + ( value == null ? "<null>" : value.janitorClassName() ) + " ["+simpleClassNameOf(value)+"].");
         }

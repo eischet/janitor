@@ -17,6 +17,13 @@
   `doc.toBinary()` or `doc.save(path)`. Placeholders are found even where Word has split them into several runs. Not part
   of `janitor-modules-common`; hosts register it explicitly. The standalone REPL has it. Uses the same Apache POI as `excel`.
 
+- Numeric properties of dispatch tables take numbers the same way, nullable or not. Double properties accept integers
+  (`obj.minutes = 5` failed before). Integer, long and seconds properties accept a whole number written as a float (`5.0`)
+  and refuse a float with a fraction; nullable integer and long properties cut the fraction off before (`5.7` became 5).
+  Integer properties refuse a number that does not fit into an int instead of wrapping around. BigDecimal properties keep
+  the value as written (`5.7` became 5.70000000000000017763… before). `Janitor.requireSeconds` accepts `5.0` as well.
+  New helpers: `Conversions.toJavaInt` and `Conversions.toJavaLong`.
+
 # 0.9.78, 2026-11-24 (internal release only)
 
 - dbxs: `SimpleDataManager` can be read-only (new constructor argument `readOnly`, `DataManager.isReadOnly()`). Updates

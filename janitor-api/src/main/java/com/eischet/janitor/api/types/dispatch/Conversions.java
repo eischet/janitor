@@ -115,10 +115,73 @@ public class Conversions {
         if (value instanceof TemporaryAssignable ta) {
             return toNullableJavaInteger(ta.getValue());
         }
-        if (value instanceof JNumber number) {
-            return (int) number.toLong();
+        return narrowToInt(wholeNumber(value, "an integer value or null"));
+    }
+
+    /**
+     * Converts a Janitor value to a Java long.
+     * A float is taken if it is a whole number, so a script may write {@code 5.0} for 5; a float with a fraction is refused
+     * instead of being cut off.
+     *
+     * @param value a Janitor number
+     * @return the long value
+     * @throws JanitorGlueException if the value is not a whole number
+     */
+    public static long toJavaLong(final @NotNull JanitorObject value) throws JanitorGlueException {
+        return wholeNumber(value, "an integer value");
+    }
+
+    /**
+     * Converts a Janitor value to a Java int, by the rules of {@link #toJavaLong(JanitorObject)}.
+     *
+     * @param value a Janitor number
+     * @return the int value
+     * @throws JanitorGlueException if the value is not a whole number, or too large for an int
+     */
+    public static int toJavaInt(final @NotNull JanitorObject value) throws JanitorGlueException {
+        return narrowToInt(wholeNumber(value, "an integer value"));
+    }
+
+    private static int narrowToInt(final long number) throws JanitorGlueException {
+        if (number > Integer.MAX_VALUE || number < Integer.MIN_VALUE) {
+            throw new JanitorGlueException(JanitorArgumentException::fromGlue, "The number " + number + " is too large for this property.");
         }
-        throw new JanitorGlueException(JanitorArgumentException::fromGlue, "Expected an integer value or null but got " + value.janitorClassName() + " [" + simpleClassNameOf(value)+ "].");
+        return (int) number;
+    }
+
+    private static long wholeNumber(final JanitorObject value, final String expected) throws JanitorGlueException {
+        final JNumber number = numberIn(value);
+        if (number == null) {
+            throw new JanitorGlueException(JanitorArgumentException::fromGlue,
+                    "Expected " + expected + " but got " + (value == null ? "<null>" : value.janitorClassName()) + " [" + simpleClassNameOf(value) + "].");
+        }
+        if (number instanceof JInt) {
+            return number.toLong();
+        }
+        final double floating = number.toDouble();
+        // 2^63 as a double: every whole double below it fits into a long
+        if (floating != Math.rint(floating) || floating < -0x1p63 || floating >= 0x1p63) {
+            throw new JanitorGlueException(JanitorArgumentException::fromGlue, "Expected " + expected + " but got " + floating + ", which is not a whole number.");
+        }
+        return (long) floating;
+    }
+
+    private static JNumber numberIn(final JanitorObject value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof JNumber number) {
+            return number;
+        }
+        if (value instanceof TemporaryAssignable ta) {
+            return numberIn(ta.getValue());
+        }
+        for (final JanitorObject unpacked : value.janitorUnpackAll()) {
+            if (unpacked instanceof JNumber number) {
+                return number;
+            }
+        }
+        return null;
     }
 
     /**
@@ -134,10 +197,7 @@ public class Conversions {
         if (value instanceof TemporaryAssignable ta) {
             return toNullableJavaLong(ta.getValue());
         }
-        if (value instanceof JNumber number) {
-            return number.toLong();
-        }
-        throw new JanitorGlueException(JanitorArgumentException::fromGlue, "Expected a long value or null but got " + value.janitorClassName() + " [" + simpleClassNameOf(value)+ "].");
+        return wholeNumber(value, "a long value or null");
     }
 
     /**
