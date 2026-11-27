@@ -42,6 +42,9 @@
 - Fixed: reading JSON with `null` for a date or date-time property of a dispatch table failed with a parser error, so an
   object with an empty date could not read the JSON it had written itself.
 
+- Fixed: every request of the `docusign` module failed with an `AbstractMethodError`, because the DocuSign client brought
+  `jersey-hk2` 3.1.11 next to the module's Jersey 4.0.3. The module now depends on `jersey-hk2` 4.0.3 (with HK2 4.0.3).
+
 # 0.9.78, 2026-11-24 (internal release only)
 
 - dbxs: `SimpleDataManager` can be read-only (new constructor argument `readOnly`, `DataManager.isReadOnly()`). Updates

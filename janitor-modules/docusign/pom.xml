@@ -30,6 +30,12 @@
             <version>4.0.3</version>
         </dependency>
         <dependency>
+            <!-- the DocuSign client brings an older one that does not fit jersey-client -->
+            <groupId>org.glassfish.jersey.inject</groupId>
+            <artifactId>jersey-hk2</artifactId>
+            <version>4.0.3</version>
+        </dependency>
+        <dependency>
             <groupId>org.glassfish.jersey.media</groupId>
             <artifactId>jersey-media-json-jackson</artifactId>
             <version>4.0.3</version>
