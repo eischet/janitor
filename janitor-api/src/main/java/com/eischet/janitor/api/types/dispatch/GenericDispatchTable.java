@@ -1243,15 +1243,12 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
             @Override
             public void read(final JsonInputStream stream, final T instance) throws Exception {
                 if (stream.peek() == JsonTokenType.NULL) {
+                    stream.nextNull();
                     setter.set(instance, null);
                 } else {
-                    if (stream.peek() == JsonTokenType.NULL) {
-                        setter.set(instance, null);
-                    } else {
-                        final String jsonString = stream.nextString();
-                        final JDate scriptValue = (JDate) Janitor.nullableDateFromJsonString(jsonString);
-                        setter.set(instance, scriptValue.janitorGetHostValue());
-                    }
+                    final String jsonString = stream.nextString();
+                    final JDate scriptValue = (JDate) Janitor.nullableDateFromJsonString(jsonString);
+                    setter.set(instance, scriptValue.janitorGetHostValue());
                 }
             }
 
@@ -1376,6 +1373,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
             @Override
             public void read(final JsonInputStream stream, final T instance) throws Exception {
                 if (stream.peek() == JsonTokenType.NULL) {
+                    stream.nextNull();
                     setter.set(instance, null);
                 } else {
                     final String jsonString = stream.nextString();

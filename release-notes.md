@@ -24,6 +24,9 @@
   the value as written (`5.7` became 5.70000000000000017763… before). `Janitor.requireSeconds` accepts `5.0` as well.
   New helpers: `Conversions.toJavaInt` and `Conversions.toJavaLong`.
 
+- Fixed: reading JSON with `null` for a date or date-time property of a dispatch table failed with a parser error, so an
+  object with an empty date could not read the JSON it had written itself.
+
 # 0.9.78, 2026-11-24 (internal release only)
 
 - dbxs: `SimpleDataManager` can be read-only (new constructor argument `readOnly`, `DataManager.isReadOnly()`). Updates
