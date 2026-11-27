@@ -16,7 +16,7 @@ public final class JNull implements JanitorObject, JsonExportablePrimitive {
 
     @Override
     public String toString() {
-        return "{null}";
+        return "null";
     }
 
     private JNull() {

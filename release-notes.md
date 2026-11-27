@@ -1,5 +1,8 @@
 # 0.9.79 (in progress)
 
+- `null` inside a list, set or map is shown as `null`: `print([null])` prints `[null]` instead of `[{null}]`. For host
+  code, `JNull.NULL.toString()` returns `"null"`, as `janitorToString()` does.
+
 - `for` loops can have an else block: `for (x in list) { ... } else { ... }` and `for (i from a to b) { ... } else { ... }`.
   The else block runs if, and only if, the loop body did not run a single time; an iteration ended by `break` or
   `continue` counts as an iteration. `while` and `do`-`while` have no else.
