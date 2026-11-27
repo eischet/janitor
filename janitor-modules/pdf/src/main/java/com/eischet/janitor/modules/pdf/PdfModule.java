@@ -10,7 +10,10 @@ import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.modules.JanitorModule;
 import com.eischet.janitor.api.modules.JanitorModuleRegistration;
+import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.JBinary;
+import com.eischet.janitor.api.types.builtin.JList;
+import com.eischet.janitor.api.types.builtin.JString;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
 import org.openpdf.text.Document;
@@ -28,7 +31,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -76,10 +81,26 @@ public class PdfModule extends JanitorComposed<PdfModule> implements JanitorModu
         dispatcher.addVoidMethod("concat", (self, process, args) -> {
             args.require(2, 3);
             final String targetFileName = args.getRequiredStringValue(0);
-            final List<String> sourceFileNames = PdfElements.stringListArg(process, args.get(1));
+            final List<byte[]> sources = concatSources(process, args.get(1));
             final String pdfALevel = args.size() == 3 ? args.getRequiredStringValue(2) : null;
-            concat(process, targetFileName, sourceFileNames, pdfALevel);
-        }).setMetaData(Janitor.MetaData.HELP, "concat(targetFile, sourceFiles, pdfALevel): Concatenates the pages of the PDF files in the list sourceFiles into the new file targetFile. With pdfALevel (\"1B\", \"2B\" or \"3B\"), the result is PDF/A like with Writer.setPdfA, and the Interpolate flag, which PDF/A forbids, is removed from the images of the sources; the pages must meet the other PDF/A rules already, e.g. embedded fonts.");
+            try (FileOutputStream out = new FileOutputStream(targetFileName)) {
+                concat(process, out, sources, pdfALevel);
+            } catch (DocumentException | IOException e) {
+                throw new JanitorNativeException(process, "error concatenating pdf files into '" + targetFileName + "'", e);
+            }
+        }).setMetaData(Janitor.MetaData.HELP, "concat(targetFile, sources, pdfALevel): Concatenates the pages of the PDFs in the list sources (file paths or binary data) into the new file targetFile. With pdfALevel (\"1B\", \"2B\" or \"3B\"), the result is PDF/A like with Writer.setPdfA, and the Interpolate flag, which PDF/A forbids, is removed from the images of the sources; the pages must meet the other PDF/A rules already, e.g. embedded fonts.");
+        dispatcher.addMethod("concatBinary", (self, process, args) -> {
+            args.require(1, 2);
+            final List<byte[]> sources = concatSources(process, args.get(0));
+            final String pdfALevel = args.size() == 2 ? args.getRequiredStringValue(1) : null;
+            final ByteArrayOutputStream out = new ByteArrayOutputStream();
+            try {
+                concat(process, out, sources, pdfALevel);
+            } catch (DocumentException | IOException e) {
+                throw new JanitorNativeException(process, "error concatenating pdf files", e);
+            }
+            return Janitor.binary(out.toByteArray());
+        }).setMetaData(Janitor.MetaData.HELP, "concatBinary(sources, pdfALevel): Like concat, but returns the result as binary data instead of writing a file.");
 
         // Text building blocks
         dispatcher.addMethod("Chunk", (self, process, args) -> JPDFChunk.fromArgs(process, args))
@@ -253,37 +274,57 @@ public class PdfModule extends JanitorComposed<PdfModule> implements JanitorModu
      * PDF/A in a source (fonts that are not embedded, transparency for PDF/A-1, ...) is not repaired, so a checker like
      * Mustang's preflight still rejects the result.
      */
-    private static void concat(final JanitorScriptProcess process, final String targetFileName, final List<String> sourceFileNames,
-                               final @org.jetbrains.annotations.Nullable String pdfALevel) throws JanitorRuntimeException {
-        final Document document = new Document();
-        try (FileOutputStream out = new FileOutputStream(targetFileName)) {
-            final PdfSmartCopy copy = new PdfSmartCopy(document, out);
-            if (pdfALevel != null) {
-                PdfA.enable(process, "concat", copy, pdfALevel);
-            }
-            document.open();
-            for (final String sourceFileName : sourceFileNames) {
-                // Read fully into memory rather than PdfReader(filename), which memory-maps the file --
-                // on Windows, closing a memory-mapped PdfReader does not necessarily release the OS-level
-                // file lock right away (the mapping is only released on GC), which would leave the source
-                // file locked for a while after concat() returns.
-                final PdfReader reader = new PdfReader(java.nio.file.Files.readAllBytes(java.nio.file.Path.of(sourceFileName)));
-                try {
-                    if (pdfALevel != null) {
-                        PdfA.removeImageInterpolation(reader);
-                    }
-                    final int pages = reader.getNumberOfPages();
-                    for (int page = 1; page <= pages; page++) {
-                        copy.addPage(copy.getImportedPage(reader, page));
-                    }
-                } finally {
-                    reader.close();
-                }
-            }
-            document.close();
-        } catch (DocumentException | IOException e) {
-            throw new JanitorNativeException(process, "error concatenating pdf files into '" + targetFileName + "'", e);
+    /**
+     * Reads the sources of concat: each element of the list is a file path or binary data.
+     * Files are read fully into memory rather than with PdfReader(filename), which memory-maps the file -- on Windows,
+     * closing a memory-mapped PdfReader does not necessarily release the OS-level file lock right away (the mapping is
+     * only released on GC), which would leave the source file locked for a while after concat() returns.
+     */
+    private static List<byte[]> concatSources(final JanitorScriptProcess process, final JanitorObject value) throws JanitorRuntimeException {
+        if (!(value instanceof JList list)) {
+            throw new JanitorArgumentException(process, "expected a list of file paths or binary data, but got " + value.janitorClassName());
         }
+        final List<byte[]> result = new ArrayList<>(list.size());
+        for (int i = 0; i < list.size(); i++) {
+            final JanitorObject element = list.get(i);
+            if (element instanceof JBinary binary) {
+                result.add(binary.janitorGetHostValue());
+            } else if (element instanceof JString path) {
+                try {
+                    result.add(Files.readAllBytes(java.nio.file.Path.of(path.janitorGetHostValue())));
+                } catch (IOException e) {
+                    throw new JanitorNativeException(process, "error reading pdf file '" + path.janitorGetHostValue() + "'", e);
+                }
+            } else {
+                throw new JanitorArgumentException(process, "expected a list of file paths or binary data, but element " + i + " is " + element.janitorClassName());
+            }
+        }
+        return result;
+    }
+
+    private static void concat(final JanitorScriptProcess process, final OutputStream out, final List<byte[]> sources,
+                               final @org.jetbrains.annotations.Nullable String pdfALevel) throws JanitorRuntimeException, DocumentException, IOException {
+        final Document document = new Document();
+        final PdfSmartCopy copy = new PdfSmartCopy(document, out);
+        if (pdfALevel != null) {
+            PdfA.enable(process, "concat", copy, pdfALevel);
+        }
+        document.open();
+        for (final byte[] source : sources) {
+            final PdfReader reader = new PdfReader(source);
+            try {
+                if (pdfALevel != null) {
+                    PdfA.removeImageInterpolation(reader);
+                }
+                final int pages = reader.getNumberOfPages();
+                for (int page = 1; page <= pages; page++) {
+                    copy.addPage(copy.getImportedPage(reader, page));
+                }
+            } finally {
+                reader.close();
+            }
+        }
+        document.close();
     }
 
     /**

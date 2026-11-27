@@ -18,7 +18,6 @@ import com.eischet.janitor.api.types.builtin.JNull;
 import com.eischet.janitor.api.types.builtin.JString;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
-import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.types.functions.Signature;
 import com.eischet.janitor.api.types.functions.SignatureArguments;
 import com.eischet.janitor.env.JElement;
@@ -82,6 +81,10 @@ public class FilesModule extends JanitorComposed<FilesModule> implements Janitor
             .optional("charset", ScriptType.STRING, UTF_8)
             .returns(ELEMENT)
             .help("Reads an XML file and returns its root element.");
+    private static final Signature PARSE_XML = Signature.method("parseXml")
+            .param("text", ScriptType.STRING)
+            .returns(ELEMENT)
+            .help("Parses an XML text and returns its root element, as readXml does for a file.");
     private static final Signature WRITE_BINARY = Signature.method("writeBinary")
             .param("path", ScriptType.STRING)
             .param("data", BINARY)
@@ -127,6 +130,7 @@ public class FilesModule extends JanitorComposed<FilesModule> implements Janitor
         dispatcher.addMethod(WRITE, FilesModule::writeString);
         dispatcher.addMethod(READ, FilesModule::readString);
         dispatcher.addMethod(READ_XML, FilesModule::readXml);
+        dispatcher.addMethod(PARSE_XML, FilesModule::parseXml);
         dispatcher.addMethod(WRITE_BINARY, FilesModule::writeBinary);
         dispatcher.addMethod(READ_BINARY, FilesModule::readBinary);
         dispatcher.addMethod(LIST, FilesModule::list);
@@ -225,18 +229,17 @@ public class FilesModule extends JanitorComposed<FilesModule> implements Janitor
     }
 
     /**
-     * Parses an XML text.
+     * Script method {@code files.parseXml(text)}: parses an XML text.
      * @param process the running script process
      * @param arguments the call arguments
      * @return the root element
      * @throws JanitorRuntimeException if the call arguments are invalid or the operation fails
      */
-    public JElement parseXml(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+    public JElement parseXml(final JanitorScriptProcess process, final SignatureArguments arguments) throws JanitorRuntimeException {
         try {
-            final String contents = arguments.require(1).getRequiredStringValue(0);
-            return JanitorXmlParser.parseXml(contents);
+            return JanitorXmlParser.parseXml(arguments.requiredString("text"));
         } catch (XMLStreamException e) {
-            throw new JanitorNativeException(process, "error reading file", e);
+            throw new JanitorNativeException(process, "error parsing xml", e);
         }
     }
 

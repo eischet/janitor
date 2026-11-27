@@ -88,6 +88,32 @@ public class PdfModuleTestCase extends JanitorTest {
     }
 
     /**
+     * Hosts that keep their PDFs in memory or in a database concatenate them without files: binary sources (mixed with a file
+     * here) give a binary result with the pages of all of them, in order.
+     */
+    @Test
+    void concatBinaryMergesBinaryDataAndFiles(@TempDir Path tempDir) throws JanitorRuntimeException, JanitorCompilerException, IOException {
+        final Path fileB = tempDir.resolve("b.pdf");
+        writeSinglePagePdf(fileB, "Page from B", 3);
+
+        final @Language("Janitor") String script = """
+            import pdf;
+            doc = pdf.Document();
+            writer = pdf.Writer(doc);
+            doc.open();
+            doc.add(pdf.Paragraph("Page from A"));
+            doc.newPage();
+            doc.add(pdf.Paragraph("Page from A 2"));
+            doc.close();
+            return pdf.concatBinary([writer.bytes, fileB, writer.bytes]);
+            """;
+        final JanitorObject result = evaluate(script, env -> env.addModule(PdfModule.REGISTRATION), globals -> globals.bind("fileB", fileB.toString()));
+        try (PdfReader reader = new PdfReader(((JBinary) result).janitorGetHostValue())) {
+            assertEquals(7, reader.getNumberOfPages(), "the result must contain the pages of all sources (2 + 3 + 2)");
+        }
+    }
+
+    /**
      * Builds a tiny multi-page PDF at the given path, directly through the pdf module, for use as
      * concat() input.
      */

@@ -5,6 +5,7 @@ package com.eischet.janitor.modules.mustang;
 
 import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
+import com.eischet.janitor.api.types.builtin.JBinary;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
 import com.eischet.janitor.api.types.wrapped.WrapperDispatchTable;
 import com.eischet.janitor.logging.JanitorLogger;
@@ -14,6 +15,7 @@ import org.mustangproject.ZUGFeRD.IZUGFeRDExporter;
 import org.mustangproject.ZUGFeRD.ZUGFeRDExporterFromA1;
 import org.mustangproject.ZUGFeRD.ZUGFeRDExporterFromA3;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 /** Wrapper for the Mustang ZUGFeRD exporter, which embeds invoice data into PDF files. */
@@ -46,11 +48,15 @@ public class MustangExporter extends JanitorWrapper<IZUGFeRDExporter> {
         }).setMetaData(Janitor.MetaData.HELP, "ignorePDFAErrors(): Accepts a source PDF that is not valid PDF/A; only works for exporters from PDF/A-3, otherwise it only logs a warning. Returns this exporter.");
         DISPATCH.addBuilderMethod("load", (self, process, args) -> {
             try {
-                self.janitorGetHostValue().load(args.require(1).getRequiredStringValue(0));
+                if (args.require(1).get(0) instanceof JBinary binary) {
+                    self.janitorGetHostValue().load(binary.janitorGetHostValue());
+                } else {
+                    self.janitorGetHostValue().load(args.getRequiredStringValue(0));
+                }
             } catch (IOException e) {
-                throw new JanitorNativeException(process, "error loading file '"+args.get(0).janitorToString()+"'", e);
+                throw new JanitorNativeException(process, "error loading pdf '" + (args.get(0) instanceof JBinary ? "binary data" : args.get(0).janitorToString()) + "'", e);
             }
-        }).setMetaData(Janitor.MetaData.HELP, "load(path): Loads the PDF file to embed the invoice into. Returns this exporter.");
+        }).setMetaData(Janitor.MetaData.HELP, "load(source): Loads the PDF to embed the invoice into, from a file path or from binary data. Returns this exporter.");
         DISPATCH.addBuilderMethod("setTransaction", (self, process, args) -> {
             @Nullable final Object transaction = args.require(1).get(0).janitorGetHostValue();
             try {
@@ -70,6 +76,16 @@ public class MustangExporter extends JanitorWrapper<IZUGFeRDExporter> {
                 throw new JanitorNativeException(process, "export failed", e);
             }
         }).setMetaData(Janitor.MetaData.HELP, "export(path): Writes the PDF with the embedded invoice data to a file.");
+        DISPATCH.addMethod("toBinary", (self, process, args) -> {
+            args.require(0);
+            final ByteArrayOutputStream out = new ByteArrayOutputStream();
+            try {
+                self.janitorGetHostValue().export(out);
+            } catch (IOException e) {
+                throw new JanitorNativeException(process, "export failed", e);
+            }
+            return Janitor.binary(out.toByteArray());
+        }).setMetaData(Janitor.MetaData.HELP, "toBinary(): Returns the PDF with the embedded invoice data as binary data, like export(path) without a file.");
 
         DISPATCH.addBuilderMethod("setProfile", (self, process, args) -> {
             final String profileName = args.getRequiredStringValue(0);

@@ -1481,7 +1481,7 @@ This module defines no object types of its own.
 | `disableFacturX(...)` | method |  |
 | `export(path)` | method | Writes the PDF with the embedded invoice data to a file. |
 | `ignorePDFAErrors()` | method | Accepts a source PDF that is not valid PDF/A; only works for exporters from PDF/A-3, otherwise it only logs a warning. Returns this exporter. |
-| `load(path)` | method | Loads the PDF file to embed the invoice into. Returns this exporter. |
+| `load(source)` | method | Loads the PDF to embed the invoice into, from a file path or from binary data. Returns this exporter. |
 | `setCreator(creator)` | method | Sets the creator in the PDF's metadata. Returns this exporter. |
 | `setFacturX(...)` | method |  |
 | `setProducer(producer)` | method | Sets the producer in the PDF's metadata. Returns this exporter. |
@@ -1489,6 +1489,7 @@ This module defines no object types of its own.
 | `setTransaction(invoice)` | method | Sets the invoice whose data is embedded into the PDF. Returns this exporter. |
 | `setVersion(version)` | method | Same as setZUGFeRDVersion(version). Returns this exporter. |
 | `setZUGFeRDVersion(version)` | method | Sets the ZUGFeRD version to write, as a number. Returns this exporter. |
+| `toBinary()` | method | Returns the PDF with the embedded invoice data as binary data, like export(path) without a file. |
 
 <a id="types-mustang-mustangfileattachment"></a>
 

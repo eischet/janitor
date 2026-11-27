@@ -38,6 +38,16 @@ public class FilesNamedArgumentsTestCase extends JanitorTest {
     }
 
     @Test
+    void xmlTextParsesLikeAnXmlFile(@TempDir final Path dir) throws Exception {
+        final Path file = dir.resolve("data.xml");
+        final String xml = "<invoice><id>INV-7</id><total>238.00</total></invoice>";
+        Files.writeString(file, xml);
+        final String script = "x = %s; return x.name + ':' + x.children[0].text + ':' + x.children[1].text;";
+        assertEquals("invoice:INV-7:238.00", run(script.formatted("files.parseXml('" + xml + "')"), file).janitorToString());
+        assertEquals("invoice:INV-7:238.00", run(script.formatted("files.readXml(path)"), file).janitorToString());
+    }
+
+    @Test
     void aMisspelledNameFailsBeforeAnythingIsWritten(@TempDir final Path dir) {
         final Path file = dir.resolve("text.txt");
         final JanitorArgumentException e = assertThrows(JanitorArgumentException.class, () -> run("files.write(path, 'x', charst = 'UTF-8');", file));

@@ -310,4 +310,43 @@ public class MustangModuleTestCase extends JanitorTest {
         assertEquals("ok", result.janitorToString());
     }
 
+    /**
+     * A host that keeps no files (e.g. a server that stores its documents in a database) must be able to turn a PDF it holds in
+     * memory into an e-invoice it gets back in memory, with the invoice data embedded.
+     */
+    @Test
+    void exporterWorksWithBinaryDataInsteadOfFiles() throws JanitorCompilerException, JanitorRuntimeException {
+        final @Language("Janitor") String script = """
+            import mustang;
+            import pdf;
+
+            doc = pdf.Document(pdf.PageSize("A4"));
+            writer = pdf.Writer(doc);
+            writer.setPdfA("1B");
+            doc.addTitle("Invoice INV-7");
+            doc.open();
+            doc.add(pdf.Paragraph("Invoice INV-7", pdf.BaseFont("font-fallback/LiberationSans-Regular.ttf", "Identity-H", true).getFont(12.0)));
+            doc.close();
+
+            invoice = mustang.Invoice({number: "INV-7", currency: "EUR", issueDate: @2026-11-27});
+            invoice.setDueDate(@2026-12-11);
+            invoice.setDeliveryDate(@2026-11-27);
+            invoice.setSender(mustang.TradeParty({name: "Seller GmbH", street: "Hauptstr. 1", zip: "12345", location: "Berlin", country: "DE", vatId: "DE123456789"}));
+            invoice.setRecipient(mustang.TradeParty({name: "Buyer AG", street: "Rue 2", zip: "75001", location: "Paris", country: "FR"}));
+            invoice.addItem(mustang.Item({quantity: 2, price: 100.0, product: mustang.Product({name: "Consulting", unit: "HUR", vatPercent: 19})}));
+
+            exporter = mustang.Exporter();
+            exporter.load(writer.bytes);
+            exporter.setTransaction(invoice);
+            return exporter.toBinary();
+            """;
+        final JanitorObject result = evaluate(script, env -> {
+            env.addModule(MustangModule.REGISTRATION);
+            env.addModule(com.eischet.janitor.modules.pdf.PdfModule.REGISTRATION);
+        }, null);
+        final byte[] eInvoice = ((com.eischet.janitor.api.types.builtin.JBinary) result).janitorGetHostValue();
+        final org.mustangproject.ZUGFeRD.ZUGFeRDImporter importer = new org.mustangproject.ZUGFeRD.ZUGFeRDImporter(new java.io.ByteArrayInputStream(eInvoice));
+        assertEquals("INV-7", importer.getInvoiceID());
+    }
+
 }

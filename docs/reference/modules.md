@@ -346,6 +346,7 @@ print(files.list(folder));
 | `mkdirs(folder)` | method | Creates a folder including missing parent folders; returns true if it was created. |
 | `move(source, target)` | method | Moves a file; fails if the target already exists. |
 | `normalize(path)` | method | Returns the canonical absolute form of the path. |
+| `parseXml(text)` | method | Parses an XML text and returns its root element, as readXml does for a file. |
 | `read(path, charset = "UTF-8")` | method | Returns the contents of a file as text. |
 | `readBinary(path)` | method | Returns the contents of a file as binary data. |
 | `readXml(path, charset = "UTF-8")` | method | Reads an XML file and returns its root element. |
@@ -516,7 +517,8 @@ doc.close();
 | `UNDERLINE` | property, int, read-only | Font style flag for underlined text; combine flags with \|. |
 | `Writer(document, path)` | method | Creates a writer that writes the document to the file path; without a path, the PDF is kept in memory and available as writer.bytes after closing the document. |
 | `ZAPFDINGBATS` | property, int, read-only | Font family constant for ZapfDingbats. |
-| `concat(targetFile, sourceFiles, pdfALevel)` | method | Concatenates the pages of the PDF files in the list sourceFiles into the new file targetFile. With pdfALevel ("1B", "2B" or "3B"), the result is PDF/A like with Writer.setPdfA, and the Interpolate flag, which PDF/A forbids, is removed from the images of the sources; the pages must meet the other PDF/A rules already, e.g. embedded fonts. |
+| `concat(targetFile, sources, pdfALevel)` | method | Concatenates the pages of the PDFs in the list sources (file paths or binary data) into the new file targetFile. With pdfALevel ("1B", "2B" or "3B"), the result is PDF/A like with Writer.setPdfA, and the Interpolate flag, which PDF/A forbids, is removed from the images of the sources; the pages must meet the other PDF/A rules already, e.g. embedded fonts. |
+| `concatBinary(sources, pdfALevel)` | method | Like concat, but returns the result as binary data instead of writing a file. |
 | `convertImageBytesToPdf(imageBytes)` | method | Converts the image data (binary) into a one-page PDF of the image's size in pixels and returns it as binary. |
 | `convertImageFileToPdf(imageFileName, pdfFileName)` | method | Converts the image file into a one-page PDF of the image's size in pixels and saves it as pdfFileName. |
 <!-- generated:end -->
