@@ -70,6 +70,11 @@ public class NullAndListTextTestCase extends JanitorTest {
             return [obj];                                   | [script-text]
             return [1, obj, [obj, null]];                   | [1, script-text, [script-text, null]]
             return [];                                      | []
+            return "" + [obj];                              | [script-text]
+            return [obj] + "";                              | [script-text]
+            return "a" + [1, obj, [obj, null]] + "b";       | a[1, script-text, [script-text, null]]b
+            return "x: " + {a: [obj]}.a;                    | x: [script-text]
+            s = "list "; s += [obj]; return s;              | list [script-text]
             """)
     void listsShowTheirElementsAsScriptsSeeThem(final String script, final String expected) throws Exception {
         assertEquals(expected, evaluate(script, globals -> globals.bind("obj", TWO_FACED)).janitorToString());

@@ -481,7 +481,7 @@ public class JanitorSemantics {
      */
     public static @NotNull JanitorObject add(JanitorScriptProcess process, final JanitorObject leftValue, final JanitorObject rightValue) throws JanitorRuntimeException {
         if (leftValue instanceof JString || rightValue instanceof JString) {
-            return Janitor.string(leftValue.janitorGetHostValue() + String.valueOf(rightValue.janitorGetHostValue()));
+            return Janitor.string(concatenationText(leftValue) + concatenationText(rightValue));
         }
         return numericOperation(process,
                 "add",
@@ -495,6 +495,19 @@ public class JanitorSemantics {
                 null,
                 JDuration::add,
                 null, false);
+    }
+
+    /**
+     * The text an operand contributes to a string concatenation. A list contributes the text it has for scripts, so that
+     * its elements look the same as when the list is printed.
+     * @param value the operand
+     * @return its text
+     */
+    private static String concatenationText(final JanitorObject value) {
+        if (value instanceof JList list) {
+            return list.janitorToString();
+        }
+        return String.valueOf(value.janitorGetHostValue());
     }
 
     private static final BinOp<Long, Long, Long> longSum = BinOp.adapt(Long::sum);

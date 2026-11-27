@@ -1,5 +1,8 @@
 # 0.9.79 (in progress)
 
+- Concatenating a list with a string (`"items: " + list`) gives the same text for the list as `print(list)`; it used
+  the elements' Java `toString()` before.
+
 - The text of a list (`print(list)`) is built from the texts its elements have for scripts
   (`janitorToString()`); it used the elements' Java `toString()` before. `JList` overrides `janitorToString()` for that.
 
