@@ -172,7 +172,7 @@ public class ArticleLambdaSelectTestCase extends JanitorTest {
         assertRejected("return articles.select(a -> a.stock * 2 > 4)", "expected a property of the parameter");
         assertRejected("return articles.select(a -> { x = a.stock; return x > 1; })", "single expression");
         assertRejected("return articles.select((a, b) -> a.stock > 1)", "exactly one parameter");
-        assertRejected("return articles.select(\"stock > 1\")", "expecting a lambda");
+        assertRejected("return articles.select(17)", "expecting a condition");
         assertRejected("return articles.select(a -> a.stock in [])", "at least one value");
     }
 

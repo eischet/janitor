@@ -19,6 +19,7 @@ import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.JAssignable;
 import com.eischet.janitor.api.types.JIterable;
 import com.eischet.janitor.api.types.JanitorObject;
+import com.eischet.janitor.api.types.builtin.JList;
 import com.eischet.janitor.api.types.builtin.JMap;
 import com.eischet.janitor.api.types.builtin.JNumber;
 import com.eischet.janitor.api.types.builtin.JString;
@@ -65,6 +66,7 @@ import org.jetbrains.annotations.Unmodifiable;
 
 import java.sql.SQLException;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -139,7 +141,8 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
                 .setMetaData(Janitor.MetaData.PARAMETERS, DaoScriptTypes.QUERY_FOR_EACH)
                 .setMetaData(Janitor.MetaData.RETURNS, ScriptType.INT);
         DISPATCH.addMethod("select", GenericDao::scriptSelect)
-                .setMetaData(Janitor.MetaData.HELP, "select(condition): Returns the entities for which the condition holds, running it as a database query; the condition is a lambda like item -> item.code == \"FOO\" or a filter map like {field: \"code\", operator: \"eq\", valueString: \"FOO\"}.")
+                .setMetaData(Janitor.MetaData.HELP, "select(condition): Returns the entities for which the condition holds, running it as a database query; the condition is a lambda like item -> item.code == \"FOO\" or a filter map like {field: \"code\", operator: \"eq\", valueString: \"FOO\"}. "
+                        + "select(sql, parameters...) takes an SQL query instead, which must return entity IDs, with the parameters for its placeholders, and returns the entities in the order of the query.")
                 .setMetaData(Janitor.MetaData.PARAMETERS, DaoScriptTypes.CONDITION)
                 .setMetaData(Janitor.MetaData.RETURNS, DaoScriptTypes.ENTITIES);
         DISPATCH.addMethod("count", GenericDao::scriptCount)
@@ -1580,13 +1583,79 @@ public abstract class GenericDao<T extends OrmEntity, U extends OrmDaoCollection
      * @param process the running script process
      * @param arguments the call arguments
      * @return a list of the entities
+     * <p>
+     * {@code dao.select(sql, parameters...)} takes a query of the script's own instead, see {@link #scriptSelectBySql}.
+     * </p>
      * @throws JanitorRuntimeException if the condition cannot be used as a query, or the query fails
      */
     public JanitorObject scriptSelect(final JanitorScriptProcess process, final JCallArgs arguments) throws JanitorRuntimeException {
+        final JanitorObject first = arguments.size() == 0 ? null : arguments.get(0).janitorUnpack();
+        if (first instanceof JString sql) {
+            return scriptSelectBySql(process, sql.janitorGetHostValue(), arguments);
+        }
+        if (first != null && !(first instanceof JInspectableFunction) && !(first instanceof JMap) && !(first instanceof FilterExpression)) {
+            throw new JanitorArgumentException(process, arguments.getFunctionName() + ": expecting a condition (a lambda like 'item -> item.code == \"FOO\"' or a filter map), "
+                    + "or an SQL query that returns IDs, but found " + simpleClassNameOf(first));
+        }
         collection.checkScriptRead(process);
         final FilterExpression filter = scriptFilter(process, arguments);
         final FilterQuery query = FilterQuery.from(filter).withQueryTimeout(queryTimeoutFor(process));
         return callScriptTransaction(process, conn -> Janitor.list(findByFilter(conn, query).stream().map(this::forScript)));
+    }
+
+    /**
+     * Script method {@code dao.select(sql, parameters...)}: runs a query that returns IDs, and returns the entities for them in the order
+     * of the query. IDs without an entity are skipped.
+     * @param process the running script process
+     * @param sql the query
+     * @param arguments the call arguments: the query, then the parameters for its placeholders
+     * @return a list of the entities
+     * @throws JanitorRuntimeException if a parameter cannot be bound, or the query fails
+     */
+    private JanitorObject scriptSelectBySql(final JanitorScriptProcess process, @Language("SQL") final String sql, final JCallArgs arguments) throws JanitorRuntimeException {
+        collection.checkScriptSql(process);
+        final List<Object> parameters = new ArrayList<>();
+        for (int i = 1; i < arguments.size(); i++) {
+            final Object value = arguments.get(i).janitorUnpack().janitorGetHostValue();
+            if (value != null && !(value instanceof Long) && !(value instanceof Integer) && !(value instanceof String) && !(value instanceof Double)
+                    && !(value instanceof LocalDateTime) && !(value instanceof LocalDate)) {
+                throw new JanitorArgumentException(process, arguments.getFunctionName() + ": parameter " + i + " cannot be passed to the query, it is a "
+                        + simpleClassNameOf(arguments.get(i)) + "; expecting a number, a string, a date, a date-time or null");
+            }
+            parameters.add(value);
+        }
+        final Integer queryTimeout = queryTimeoutFor(process);
+        return callScriptTransaction(process, conn -> {
+            final List<Long> identifiers = conn.queryForList(new SelectStatement(sql), stmt -> {
+                if (queryTimeout != null) {
+                    stmt.setQueryTimeout(queryTimeout);
+                }
+                for (final Object value : parameters) {
+                    switch (value) {
+                        case null -> stmt.addNull();
+                        case Long number -> stmt.addLong(number);
+                        case Integer number -> stmt.addInt(number);
+                        case String string -> stmt.addString(string);
+                        case Double number -> stmt.addDouble(number);
+                        case LocalDateTime timestamp -> stmt.addTimestamp(timestamp);
+                        case LocalDate date -> stmt.addTimestamp(date);
+                        default -> throw new IllegalStateException("unchecked parameter " + value.getClass());
+                    }
+                }
+            }, SimpleResultSet::getLongInstance);
+            final Map<Long, T> loaded = new HashMap<>();
+            for (final T entity : findByIds(conn, identifiers.stream().filter(Objects::nonNull).toList())) {
+                loaded.put(entity.getId(), entity);
+            }
+            final JList result = Janitor.list();
+            for (final Long identifier : identifiers) {
+                final T entity = identifier == null ? null : loaded.get(identifier);
+                if (entity != null) {
+                    result.add(forScript(entity));
+                }
+            }
+            return result;
+        });
     }
 
     /**

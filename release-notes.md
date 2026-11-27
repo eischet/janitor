@@ -1,5 +1,10 @@
 # 0.9.79 (in progress)
 
+- orm: `dao.select(sql, parameters...)` takes an SQL query of the script's own, as `queryForEach` does: the query returns
+  entity IDs, the parameters fill its placeholders, and the result is the list of the entities in the order of the query,
+  e.g. `articles.select("select article_id from demo_article where stock > ?", 10)`. It asks `checkScriptSql`. A string
+  passed to `select` was refused before ("expecting a lambda"); it is now run as a query.
+
 - Concatenating a list with a string (`"items: " + list`) gives the same text for the list as `print(list)`; it used
   the elements' Java `toString()` before.
 

@@ -107,6 +107,7 @@ class ScriptReadCheckTestCase extends JanitorTest {
             "teamDao.select(t -> t.key == \"T1\");",
             "teamDao.count(t -> t.key == \"T1\");",
             "teamDao.queryForEach(\"select team_id from s_team\", (t, id) -> null);",
+            "teamDao.select(\"select team_id from s_team\");",
             "membershipDao.select(m -> m.team == 1);",
             "membershipDao.count(m -> m.team == 1);",
     })
