@@ -24,6 +24,10 @@
   the value as written (`5.7` became 5.70000000000000017763… before). `Janitor.requireSeconds` accepts `5.0` as well.
   New helpers: `Conversions.toJavaInt` and `Conversions.toJavaLong`.
 
+- BigDecimal properties of dispatch tables read and write JSON numbers exactly instead of through a double: `5.7` is read
+  as 5.7, and a value is written with all of its digits. The written form changes with that: a whole value is written as
+  `5` instead of `5.0`, and large values no longer come in exponent notation with rounded digits.
+
 - Fixed: reading JSON with `null` for a date or date-time property of a dispatch table failed with a parser error, so an
   object with an empty date could not read the JSON it had written itself.
 

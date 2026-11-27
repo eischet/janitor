@@ -71,12 +71,18 @@ public abstract class GenericDispatchTable<T extends JanitorObject> implements D
                     stream.nextNull();
                     return BigDecimal.ZERO;
                 } else if (stream.peek() == JsonTokenType.NUMBER) {
-                    return new BigDecimal(stream.nextDouble());
+                    // the digits as written: going through a double would turn 5.7 into 5.70000000000000017763...
+                    final String digits = stream.nextString();
+                    try {
+                        return new BigDecimal(digits);
+                    } catch (NumberFormatException e) {
+                        throw new JsonException("Expected a number, but got " + digits + " instead.");
+                    }
                 } else {
                     throw new JsonException("Expected a number, but got " + stream.peek() + " instead.");
                 }
             },
-            (stream, value) -> stream.value(value.doubleValue()),
+            (stream, value) -> stream.value(value),
             BigDecimal.ZERO::equals
     );
     protected final JsonSupportDelegate<Double> JSON_DOUBLE = new JsonSupportDelegate<>(JsonInputStream::nextDouble, JsonOutputStream::value, doubleValue -> doubleValue == 0.0d);
