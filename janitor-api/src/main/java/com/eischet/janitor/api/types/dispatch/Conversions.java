@@ -43,13 +43,16 @@ public class Conversions {
 
     /**
      * Converts a value to a Janitor float.
-     * @param value a {@link JFloat}, a Java {@link Number}, or an assignable wrapper around one of these
+     * @param value a {@link JFloat}, another {@link JNumber} such as an integer, a Java {@link Number}, or an assignable wrapper around one of these
      * @return the float value
      * @throws JanitorGlueException if the value is not numeric
      */
     public static JFloat requireFloat(final Object value) throws JanitorGlueException {
         if (value instanceof JFloat alreadyMatches) {
             return alreadyMatches;
+        }
+        if (value instanceof JNumber number) {
+            return Janitor.getBuiltins().floatingPoint(number.toDouble());
         }
         if (value instanceof Number num) {
             return Janitor.getBuiltins().floatingPoint(num.doubleValue());
