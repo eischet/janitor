@@ -6,6 +6,7 @@ package com.eischet.janitor.modules.msgraph;
 import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.composed.JanitorComposed;
 import com.eischet.janitor.api.types.dispatch.DispatchTable;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /** A Graph "recipient" resource, e.g. the sender of a message; it only wraps an email address. */
@@ -42,5 +43,10 @@ public class Recipient extends JanitorComposed<Recipient> {
     @Override
     public String toString() {
         return String.valueOf(emailAddress);
+    }
+
+    @Override
+    public @NotNull String janitorToString() {
+        return emailAddress == null ? "null" : emailAddress.janitorToString();
     }
 }
