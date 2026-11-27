@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.StringJoiner;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -435,7 +436,9 @@ public class VariableScope implements Scope, JanitorScopeAware {
 
     @Override
     public @NotNull String janitorToString() {
-        return String.valueOf(_variables);
+        final StringJoiner joiner = new StringJoiner(", ", "{", "}");
+        _variables.forEach((name, value) -> joiner.add(name + "=" + (value == null ? "null" : value.janitorToString())));
+        return joiner.toString();
     }
 
     /**

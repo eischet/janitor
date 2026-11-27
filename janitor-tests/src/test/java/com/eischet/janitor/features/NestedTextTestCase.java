@@ -4,6 +4,9 @@
 package com.eischet.janitor.features;
 
 import com.eischet.janitor.JanitorTest;
+import com.eischet.janitor.TestEnv;
+import com.eischet.janitor.api.scopes.ScriptSource;
+import com.eischet.janitor.api.scopes.VariableScope;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.JMap;
 import org.jetbrains.annotations.NotNull;
@@ -83,6 +86,14 @@ public class NestedTextTestCase extends JanitorTest {
         final String text = withObject("m = {}; for (i from 1 to 5000) { m[i] = obj; } return m;").janitorToString();
         assertEquals(5000, text.split("script-text", -1).length - 1);
         assertEquals(-1, text.indexOf("java-text"));
+    }
+
+    @Test
+    void scopesShowTheirVariablesAsScriptsSeeThem() {
+        final VariableScope scope = VariableScope.createGlobalScope(TestEnv.env, ScriptSource.unnamed(""));
+        assertEquals("{}", scope.janitorToString());
+        scope.bind("obj", TWO_FACED);
+        assertEquals("{obj=script-text}", scope.janitorToString());
     }
 
 }

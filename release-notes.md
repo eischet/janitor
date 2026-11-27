@@ -9,7 +9,8 @@
   passed to `select` was refused before ("expecting a lambda"); it is now run as a query.
 
 - The text of a map or set (`print(map)`, `"" + set`) is built from the texts its keys, values and elements have for
-  scripts (`janitorToString()`), as for lists; it used their Java `toString()` before.
+  scripts (`janitorToString()`), as for lists; it used their Java `toString()` before. The same holds for
+  `VariableScope.janitorToString()`.
 
 - Concatenating a list with a string (`"items: " + list`) gives the same text for the list as `print(list)`; it used
   the elements' Java `toString()` before.
