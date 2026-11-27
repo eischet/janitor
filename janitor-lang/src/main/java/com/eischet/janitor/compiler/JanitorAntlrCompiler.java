@@ -613,8 +613,9 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
     public Ast visitForStatement(final JanitorParser.ForStatementContext ctx) {
         final String loopVar = ctx.validIdentifier().getText();
         final Expression expression = (Expression) visit(ctx.expression());
-        final Block block = visitBlock(ctx.block());
-        return new ForLoop(location(ctx.start, ctx.stop), loopVar, expression, block);
+        final Block block = visitBlock(ctx.block(0));
+        final Block elseBlock = ctx.elseBlock == null ? null : visitBlock(ctx.elseBlock);
+        return new ForLoop(location(ctx.start, ctx.stop), loopVar, expression, block, elseBlock);
     }
 
     @Override
@@ -622,8 +623,9 @@ public class JanitorAntlrCompiler extends JanitorBaseVisitor<Ast> implements Jan
         final String loopVar = ctx.validIdentifier().getText();
         final Expression from = (Expression) visit(ctx.expression(0));
         final Expression to = (Expression) visit(ctx.expression(1));
-        final Block block = visitBlock(ctx.block());
-        return new ForRangeLoop(location(ctx.start, ctx.stop), loopVar, from, to, block);
+        final Block block = visitBlock(ctx.block(0));
+        final Block elseBlock = ctx.elseBlock == null ? null : visitBlock(ctx.elseBlock);
+        return new ForRangeLoop(location(ctx.start, ctx.stop), loopVar, from, to, block, elseBlock);
     }
 
     @Override

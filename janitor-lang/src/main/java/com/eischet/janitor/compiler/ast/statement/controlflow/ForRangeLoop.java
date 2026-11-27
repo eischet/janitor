@@ -20,11 +20,12 @@ import com.eischet.janitor.toolbox.json.api.JsonOutputStream;
 import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
 /**
- * For-range loop: for (i from start to end) { ... }.
+ * For-range loop: for (i from start to end) { ... }, optionally followed by else { ... }, which runs when the loop body did not run at all.
  */
 public class ForRangeLoop extends Statement implements JsonExportableObject {
     private final String loopVar;
     private final Block block;
+    private final Block elseBlock;
     private final Expression from;
     private final Expression to;
     //private final Expression step; // idea: stepping, e.g. for (i from 0 to 10 step 2) { ... }? Not sure if worth it.
@@ -36,21 +37,25 @@ public class ForRangeLoop extends Statement implements JsonExportableObject {
      * @param from start of the range
      * @param to end of the range
      * @param block loop body
+     * @param elseBlock block to run when there was no iteration at all (optional)
      */
     public ForRangeLoop(final Location location,
                         final String loopVar,
                         final Expression from,
                         final Expression to,
-                        final Block block) {
+                        final Block block,
+                        final Block elseBlock) {
         super(location);
         this.loopVar = loopVar;
         this.from = from;
         this.to = to;
         this.block = block;
+        this.elseBlock = elseBlock;
     }
 
     @Override
     public void execute(final JanitorScriptProcess process) throws JanitorRuntimeException, JanitorControlFlowException {
+        boolean iterated = false;
         try {
             process.setCurrentLocation(getLocation());
             final JanitorObject start = from.evaluate(process).janitorUnpack();
@@ -58,6 +63,7 @@ public class ForRangeLoop extends Statement implements JsonExportableObject {
             if (start instanceof JInt startInt && end instanceof JInt endInt) {
                 final long endIntValue = endInt.getValue();
                 for (long i = startInt.getValue(); i <= endIntValue; i++) {
+                    iterated = true;
                     try {
                         process.enterBlock(getLocation());
                         process.countInstruction();
@@ -75,6 +81,9 @@ public class ForRangeLoop extends Statement implements JsonExportableObject {
             }
         } catch (BreakStatement.Break ignored) {
         }
+        if (!iterated && elseBlock != null) {
+            elseBlock.execute(process);
+        }
     }
 
     @Override
@@ -85,6 +94,7 @@ public class ForRangeLoop extends Statement implements JsonExportableObject {
                 .optional("from", from)
                 .optional("to", to)
                 .optional("block", block)
+                .optional("elseBlock", elseBlock)
                 .endObject();
     }
 

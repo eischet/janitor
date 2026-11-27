@@ -1,5 +1,9 @@
 # 0.9.79 (in progress)
 
+- `for` loops can have an else block: `for (x in list) { ... } else { ... }` and `for (i from a to b) { ... } else { ... }`.
+  The else block runs if, and only if, the loop body did not run a single time; an iteration ended by `break` or
+  `continue` counts as an iteration. `while` and `do`-`while` have no else.
+
 - New module `excel` (artifact `com.eischet.janitor.modules:excel`, `ExcelModule.REGISTRATION`): scripts read Excel and CSV
   files row by row with `excel.read(filename)`, `excel.fromBinary(data)` and `excel.fromString(csvText)`, and create Excel
   workbooks with `excel.create()` or open existing ones with `excel.open(source)`, fill sheets row by row

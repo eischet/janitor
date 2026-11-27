@@ -245,6 +245,8 @@ Also note:
 - `for (i = 0; i < n; i++)`: use `for (i from 0 to n - 1)`. The range includes both ends and only counts upwards.
 - `for (x of list)`, `for x in list:`: write `for (x in list) { ... }`.
 - `switch`, `case`, `elif`: use `if` / `else if`.
+- Python's `for ... else` ("no `break` happened"): in Janitor, `else` after `for` means "the loop body never ran"
+  ([language.md](language.md#for-else)).
 - `if (x) doSomething();` without braces: braces are required.
 - `x ** 2`, `x ??= y`, `x?.[0]`, `...spread`, destructuring `[a, b] = list`.
 - Comprehensions like `[x * 2 for x in xs]`: use `xs.map(x -> x * 2)` and `filter`.

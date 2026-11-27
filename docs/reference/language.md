@@ -966,6 +966,39 @@ for (i from 3 to 1) {
 3
 ```
 
+<a id="for-else"></a>
+
+### for ... else
+
+Both forms of `for` can be followed by `else { ... }`. The else block runs if, and only if, the loop body did not run a
+single time: the collection was empty, or the range counted nothing. An iteration that ends with `break`, `continue` or
+an error still counts, so the else block does not run after it. This is **not** Python's `for ... else`, which looks at
+`break`. The braces are required, the loop variable does not exist in the else block, and `while` and `do`-`while` have
+no else.
+
+```janitor
+for (name in []) {
+    print("hello", name);
+} else {
+    print("nobody there");
+}
+for (n in [1, 2, 3]) {
+    break;
+} else {
+    print("never printed");
+}
+for (i from 3 to 1) {
+    print(i);
+} else {
+    print("empty range");
+}
+```
+
+```output
+nobody there
+empty range
+```
+
 <a id="while"></a>
 
 ### while and do-while

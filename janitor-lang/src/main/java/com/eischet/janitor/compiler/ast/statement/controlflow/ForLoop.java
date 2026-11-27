@@ -21,12 +21,13 @@ import java.util.Iterator;
 import static com.eischet.janitor.api.util.ObjectUtilities.simpleClassNameOf;
 
 /**
- * For loop: for (i in iterable) { ... }.
+ * For loop: for (i in iterable) { ... }, optionally followed by else { ... }, which runs when the loop body did not run at all.
  */
 public class ForLoop extends Statement implements JsonExportableObject {
     private final String loopVar;
     private final Expression expression;
     private final Block block;
+    private final Block elseBlock;
 
     /**
      * Constructor.
@@ -34,22 +35,26 @@ public class ForLoop extends Statement implements JsonExportableObject {
      * @param loopVar loop variable
      * @param expression range expression
      * @param block loop body
+     * @param elseBlock block to run when there was no iteration at all (optional)
      */
-    public ForLoop(final Location location, final String loopVar, final Expression expression, final Block block) {
+    public ForLoop(final Location location, final String loopVar, final Expression expression, final Block block, final Block elseBlock) {
         super(location);
         this.loopVar = loopVar;
         this.expression = expression;
         this.block = block;
+        this.elseBlock = elseBlock;
     }
 
     @Override
     public void execute(final JanitorScriptProcess process) throws JanitorRuntimeException, JanitorControlFlowException {
+        boolean iterated = false;
         try {
             process.setCurrentLocation(getLocation());
             final JanitorObject range = expression.evaluate(process).janitorUnpack();
             if (range instanceof JIterable iterableRange) {
                 final Iterator<? extends JanitorObject> iterator = iterableRange.getIterator();
                 while (iterator.hasNext()) {
+                    iterated = true;
                     try {
                         process.enterBlock(getLocation());
                         process.countInstruction();
@@ -68,6 +73,9 @@ public class ForLoop extends Statement implements JsonExportableObject {
             }
         } catch (BreakStatement.Break ignored) {
         }
+        if (!iterated && elseBlock != null) {
+            elseBlock.execute(process);
+        }
     }
 
     @Override
@@ -77,6 +85,7 @@ public class ForLoop extends Statement implements JsonExportableObject {
                 .optional("loopVar", loopVar)
                 .optional("expression", expression)
                 .optional("block", block)
+                .optional("elseBlock", elseBlock)
                 .endObject();
     }
 

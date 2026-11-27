@@ -44,8 +44,8 @@ importClause
 blockStatement
     : blockLabel=block                                                                      # nestedBlock
     | ifStatementDef                                                                        # ifStatement
-    | FOR LPAREN validIdentifier IN expression RPAREN block                                 # forStatement
-    | FOR LPAREN validIdentifier FROM expression TO expression RPAREN block                 # forRangeStatement
+    | FOR LPAREN validIdentifier IN expression RPAREN block (ELSE elseBlock=block)?         # forStatement
+    | FOR LPAREN validIdentifier FROM expression TO expression RPAREN block (ELSE elseBlock=block)? # forRangeStatement
     | WHILE LPAREN expression RPAREN block                                                  # whileStatement
     | DO block WHILE LPAREN expression RPAREN stmtTerminator                                # doWhileStatement
     | TRY block (catchClause? finallyBlock? | finallyBlock)                                 # tryCatchStatement
