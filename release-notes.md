@@ -1,6 +1,6 @@
 # 0.9.79 (in progress)
 
-- The text of a list (`print(list)`, `"" + list`) is built from the texts its elements have for scripts
+- The text of a list (`print(list)`) is built from the texts its elements have for scripts
   (`janitorToString()`); it used the elements' Java `toString()` before. `JList` overrides `janitorToString()` for that.
 
 - `null` inside a list, set or map is shown as `null`: `print([null])` prints `[null]` instead of `[{null}]`. For host
