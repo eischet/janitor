@@ -89,7 +89,13 @@ public class JMap extends JanitorWrapper<Map<JanitorObject, JanitorObject>> impl
     @Contract(pure = true)
     @Override
     public @NotNull String janitorToString() {
-        return wrapped.toString();
+        final StringJoiner joiner = new StringJoiner(", ", "{", "}");
+        for (final Map.Entry<JanitorObject, JanitorObject> entry : wrapped.entrySet()) {
+            final JanitorObject key = entry.getKey();
+            final JanitorObject value = entry.getValue();
+            joiner.add((key == null ? "null" : key.janitorToString()) + "=" + (value == null ? "null" : value.janitorToString()));
+        }
+        return joiner.toString();
     }
 
     @Contract(pure = true)

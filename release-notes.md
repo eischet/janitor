@@ -8,6 +8,9 @@
   e.g. `articles.select("select article_id from demo_article where stock > ?", 10)`. It asks `checkScriptSql`. A string
   passed to `select` was refused before ("expecting a lambda"); it is now run as a query.
 
+- The text of a map or set (`print(map)`, `"" + set`) is built from the texts its keys, values and elements have for
+  scripts (`janitorToString()`), as for lists; it used their Java `toString()` before.
+
 - Concatenating a list with a string (`"items: " + list`) gives the same text for the list as `print(list)`; it used
   the elements' Java `toString()` before.
 

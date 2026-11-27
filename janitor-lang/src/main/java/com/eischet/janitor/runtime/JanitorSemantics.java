@@ -498,14 +498,14 @@ public class JanitorSemantics {
     }
 
     /**
-     * The text an operand contributes to a string concatenation. A list contributes the text it has for scripts, so that
-     * its elements look the same as when the list is printed.
+     * The text an operand contributes to a string concatenation. A list, set or map contributes the text it has for
+     * scripts, so that its elements look the same as when it is printed.
      * @param value the operand
      * @return its text
      */
     private static String concatenationText(final JanitorObject value) {
-        if (value instanceof JList list) {
-            return list.janitorToString();
+        if (value instanceof JList || value instanceof JSet || value instanceof JMap) {
+            return value.janitorToString();
         }
         return String.valueOf(value.janitorGetHostValue());
     }

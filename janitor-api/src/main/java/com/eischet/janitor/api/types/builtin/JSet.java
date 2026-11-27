@@ -12,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.StringJoiner;
 
 /**
  * A set object, representing a mutable set of Janitor objects.
@@ -32,7 +33,11 @@ public class JSet extends JanitorWrapper<Set<JanitorObject>> implements JIterabl
 
     @Override
     public @NotNull String janitorToString() {
-        return wrapped.toString();
+        final StringJoiner joiner = new StringJoiner(", ", "[", "]");
+        for (final JanitorObject element : wrapped) {
+            joiner.add(element == null ? "null" : element.janitorToString());
+        }
+        return joiner.toString();
     }
 
     @Override
