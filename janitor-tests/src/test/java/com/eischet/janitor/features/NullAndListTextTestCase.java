@@ -4,7 +4,9 @@
 package com.eischet.janitor.features;
 
 import com.eischet.janitor.JanitorTest;
+import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.JNull;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -12,9 +14,23 @@ import org.junit.jupiter.params.provider.CsvSource;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * The text of null is "null" wherever it shows up, also inside collections.
+ * The text of null is "null" wherever it shows up, also inside collections, and a list shows its elements the way
+ * scripts see them.
  */
 public class NullAndListTextTestCase extends JanitorTest {
+
+    /** A host object whose text for scripts differs from its Java text. */
+    private static final JanitorObject TWO_FACED = new JanitorObject() {
+        @Override
+        public String toString() {
+            return "java-text";
+        }
+
+        @Override
+        public @NotNull String janitorToString() {
+            return "script-text";
+        }
+    };
 
     @Test
     void nullHasOneText() {
@@ -47,6 +63,21 @@ public class NullAndListTextTestCase extends JanitorTest {
     void manyNullsInAList() throws Exception {
         final String text = evaluate("r = []; for (i from 1 to 10000) { r.add(null); } return r;").janitorToString();
         assertEquals("[" + "null, ".repeat(9999) + "null]", text);
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @CsvSource(delimiter = '|', textBlock = """
+            return [obj];                                   | [script-text]
+            return [1, obj, [obj, null]];                   | [1, script-text, [script-text, null]]
+            return [];                                      | []
+            """)
+    void listsShowTheirElementsAsScriptsSeeThem(final String script, final String expected) throws Exception {
+        assertEquals(expected, evaluate(script, globals -> globals.bind("obj", TWO_FACED)).janitorToString());
+    }
+
+    @Test
+    void printShowsListElementsAsScriptsSeeThem() throws Exception {
+        assertEquals("[script-text]\n", getOutput("print([obj]);", globals -> globals.bind("obj", TWO_FACED)));
     }
 
 }

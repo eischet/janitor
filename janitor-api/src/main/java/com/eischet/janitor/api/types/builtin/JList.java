@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.StringJoiner;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -530,6 +531,19 @@ public class JList extends JanitorComposed<JList> implements JIterable, Iterable
     @Override
     public String toString() {
         return list.toString();
+    }
+
+    /**
+     * The text of this list for scripts: the texts its elements have for scripts, in brackets.
+     * @return the text
+     */
+    @Override
+    public @NotNull String janitorToString() {
+        final StringJoiner joiner = new StringJoiner(", ", "[", "]");
+        for (final JanitorObject element : list) {
+            joiner.add(element == null ? "null" : element.janitorToString());
+        }
+        return joiner.toString();
     }
 
     /**
