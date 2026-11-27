@@ -6,6 +6,7 @@ package com.eischet.janitor.modules.pdf;
 import com.eischet.janitor.api.JanitorScriptProcess;
 import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
+import com.eischet.janitor.api.types.builtin.JBinary;
 import com.eischet.janitor.api.types.functions.JCallArgs;
 import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.wrapped.JanitorWrapper;
@@ -21,11 +22,13 @@ import java.io.IOException;
  * to org.openpdf.text.Font, which is family/size/style/color and defers to a BaseFont for the actual glyphs).
  * <p>
  * Use pdf.BaseFont.HELVETICA etc. (see BaseFont's own String constants, exposed unchanged) as the "name" argument
- * for the standard 14 fonts, or a TrueType/OTF file path to embed a custom font.
+ * for the standard 14 fonts, a TrueType/OTF file path, or the font file's content as binary data to embed a custom font.
  */
 public class JPDFBaseFont extends JanitorWrapper<BaseFont> {
 
     public static final WrapperDispatchTable<BaseFont> DISPATCH_TABLE = new WrapperDispatchTable<>();
+
+    private static final String BINARY_FONT_NAME = "binary.ttf";
 
     static {
         DISPATCH_TABLE.addStringProperty("postscriptFontName", self -> self.janitorGetHostValue().getPostscriptFontName())
@@ -51,9 +54,19 @@ public class JPDFBaseFont extends JanitorWrapper<BaseFont> {
     }
 
     static JPDFBaseFont fromArgs(final JanitorScriptProcess process, final JCallArgs args) throws JanitorRuntimeException {
-        final String name = args.getRequiredStringValue(0);
+        args.require(1, 3);
         final String encoding = args.getOptionalStringValue(1, BaseFont.WINANSI);
         final boolean embedded = args.size() >= 3 && args.getRequiredBooleanValue(2);
+        if (args.get(0) instanceof JBinary binary) {
+            // OpenPDF picks the font parser by the name's extension; ".ttf" also covers OpenType data, whose CFF table it
+            // detects from the content. Not cached: the cache is keyed by name, and every binary font has the same one.
+            try {
+                return new JPDFBaseFont(BaseFont.createFont(BINARY_FONT_NAME, encoding, embedded, false, binary.janitorGetHostValue(), null));
+            } catch (DocumentException | IOException e) {
+                throw new JanitorNativeException(process, "error creating font from binary data", e);
+            }
+        }
+        final String name = args.getRequiredStringValue(0);
         try {
             return new JPDFBaseFont(BaseFont.createFont(name, encoding, embedded));
         } catch (DocumentException | IOException e) {

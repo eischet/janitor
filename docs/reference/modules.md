@@ -488,7 +488,7 @@ doc.close();
 | `BORDER_NONE` | property, int, read-only | Border constant: no border. |
 | `BORDER_RIGHT` | property, int, read-only | Border flag for the right side; combine flags with \|. |
 | `BORDER_TOP` | property, int, read-only | Border flag for the top side; combine flags with \|. |
-| `BaseFont(name, encoding, embedded)` | method | Creates a BaseFont from a standard font name or a TrueType/OpenType file path; encoding defaults to Cp1252 (WinAnsi), embedded to false. |
+| `BaseFont(source, encoding, embedded)` | method | Creates a BaseFont from a standard font name, a TrueType/OpenType file path or the content of such a file as binary data; encoding defaults to Cp1252 (WinAnsi), embedded to false. |
 | `COURIER` | property, int, read-only | Font family constant for Courier. |
 | `Chapter(title, number)` | method | Creates a chapter with the chapter number; the title is optional. |
 | `Chunk(text, font)` | method | Creates a Chunk, the smallest piece of text with a Font; text and font are optional. |

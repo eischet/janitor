@@ -1,5 +1,8 @@
 # 0.9.79 (in progress)
 
+- `pdf.BaseFont(source, encoding, embedded)` also takes the content of a TrueType/OpenType file as binary data, as
+  `pdf.Image` does, so scripts can embed fonts that are not on disk.
+
 - orm: `dao.select(sql, parameters...)` takes an SQL query of the script's own, as `queryForEach` does: the query returns
   entity IDs, the parameters fill its placeholders, and the result is the list of the entities in the order of the query,
   e.g. `articles.select("select article_id from demo_article where stock > ?", 10)`. It asks `checkScriptSql`. A string

@@ -140,7 +140,26 @@ public class PdfModuleTestCase extends JanitorTest {
         org.junit.jupiter.api.Assertions.assertThrows(IOException.class, () -> new org.mustangproject.ZUGFeRD.ZUGFeRDExporterFromA1().load(plain));
     }
 
+    /**
+     * Hosts that keep fonts in a database rather than on disk hand the font file to the script as binary data; the font
+     * has to end up embedded just as one read from a path, so the document still passes the PDF/A-1 check.
+     */
+    @Test
+    void baseFontFromBinaryDataIsEmbedded() throws JanitorRuntimeException, JanitorCompilerException, IOException {
+        final byte[] fontData;
+        try (var in = org.openpdf.text.pdf.BaseFont.class.getClassLoader().getResourceAsStream("font-fallback/LiberationSans-Regular.ttf")) {
+            org.junit.jupiter.api.Assertions.assertNotNull(in, "OpenPDF's bundled font must be on the class path");
+            fontData = in.readAllBytes();
+        }
+        final byte[] pdfA = buildDocument(com.eischet.janitor.api.Janitor.binary(fontData), true);
+        new org.mustangproject.ZUGFeRD.ZUGFeRDExporterFromA1().load(pdfA);
+    }
+
     private byte[] buildDocument(final String font, final boolean pdfA) throws JanitorRuntimeException, JanitorCompilerException {
+        return buildDocument(com.eischet.janitor.api.Janitor.string(font), pdfA);
+    }
+
+    private byte[] buildDocument(final JanitorObject font, final boolean pdfA) throws JanitorRuntimeException, JanitorCompilerException {
         final @Language("Janitor") String script = """
             import pdf;
             doc = pdf.Document(pdf.PageSize("A4"));

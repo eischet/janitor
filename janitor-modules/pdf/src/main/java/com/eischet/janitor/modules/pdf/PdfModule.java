@@ -134,7 +134,7 @@ public class PdfModule extends JanitorComposed<PdfModule> implements JanitorModu
             default -> throw new JanitorArgumentException(process, "Font() takes 0-4 arguments: ([family, [size, [style, [color]]]])");
         }).setMetaData(Janitor.MetaData.HELP, "Font(family, size, style, color): Creates a Font; all arguments are optional, e.g. pdf.Font(pdf.HELVETICA, 12, pdf.BOLD, pdf.Color(0, 0, 255)).");
         dispatcher.addMethod("BaseFont", (self, process, args) -> JPDFBaseFont.fromArgs(process, args))
-                .setMetaData(Janitor.MetaData.HELP, "BaseFont(name, encoding, embedded): Creates a BaseFont from a standard font name or a TrueType/OpenType file path; encoding defaults to Cp1252 (WinAnsi), embedded to false.");
+                .setMetaData(Janitor.MetaData.HELP, "BaseFont(source, encoding, embedded): Creates a BaseFont from a standard font name, a TrueType/OpenType file path or the content of such a file as binary data; encoding defaults to Cp1252 (WinAnsi), embedded to false.");
         dispatcher.addMethod("Color", (self, process, args) -> switch (args.size()) {
             case 3 -> new JPDFColor(args.getRequiredIntValue(0), args.getRequiredIntValue(1), args.getRequiredIntValue(2));
             case 4 -> new JPDFColor(args.getRequiredIntValue(0), args.getRequiredIntValue(1), args.getRequiredIntValue(2), args.getRequiredIntValue(3));
