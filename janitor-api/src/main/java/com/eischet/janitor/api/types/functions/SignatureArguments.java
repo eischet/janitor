@@ -9,12 +9,11 @@ import com.eischet.janitor.api.errors.runtime.JanitorArgumentException;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.JBool;
 import com.eischet.janitor.api.types.builtin.JDuration;
-import com.eischet.janitor.api.types.builtin.JInt;
 import com.eischet.janitor.api.types.builtin.JList;
 import com.eischet.janitor.api.types.builtin.JMap;
 import com.eischet.janitor.api.types.builtin.JNull;
-import com.eischet.janitor.api.types.builtin.JNumber;
 import com.eischet.janitor.api.types.builtin.JString;
+import com.eischet.janitor.api.types.dispatch.Conversions;
 import com.eischet.janitor.api.util.ObjectUtilities;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -99,13 +98,14 @@ public final class SignatureArguments {
 
     /**
      * @param name the name of a parameter
-     * @return its value as an integer
-     * @throws JanitorArgumentException if the value is not an integer
+     * @return its value as an integer; a float is taken if it is a whole number, e.g. {@code 5.0}
+     * @throws JanitorArgumentException if the value is not a whole number
      */
     public long integer(final @NotNull String name) throws JanitorArgumentException {
         final JanitorObject value = get(name);
-        if (value instanceof JInt number) {
-            return number.janitorGetHostValue();
+        final Long wholeNumber = Conversions.toWholeNumberOrNull(value);
+        if (wholeNumber != null) {
+            return wholeNumber;
         }
         throw wrongType(name, "an integer", value);
     }
@@ -125,7 +125,7 @@ public final class SignatureArguments {
 
     /**
      * @param name the name of a parameter
-     * @return its value as a number of seconds, written either as a duration like {@code @90s} or as a number
+     * @return its value as a number of seconds, written either as a duration like {@code @90s} or as a whole number
      * @throws JanitorArgumentException if the value is neither
      */
     public long seconds(final @NotNull String name) throws JanitorArgumentException {
@@ -133,8 +133,9 @@ public final class SignatureArguments {
         if (value instanceof JDuration duration) {
             return duration.toSeconds();
         }
-        if (value instanceof JNumber number) {
-            return number.toLong();
+        final Long wholeNumber = Conversions.toWholeNumberOrNull(value);
+        if (wholeNumber != null) {
+            return wholeNumber;
         }
         throw wrongType(name, "a duration or a number of seconds", value);
     }

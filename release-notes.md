@@ -24,6 +24,13 @@
   the value as written (`5.7` became 5.70000000000000017763… before). `Janitor.requireSeconds` accepts `5.0` as well.
   New helpers: `Conversions.toJavaInt` and `Conversions.toJavaLong`.
 
+- Numeric arguments of native methods follow the same rules as numeric properties. `JCallArgs.getInt`,
+  `getRequiredIntValue`, `getSeconds` and `SignatureArguments.integer` accept a whole number written as a float (`5.0`);
+  `JCallArgs.getFloat` accepts an integer (`f(5)` failed before). `JCallArgs.getRequiredLongValue` and
+  `SignatureArguments.seconds` refuse a float with a fraction instead of cutting it off. The error message of
+  `getRequiredIntValue` and `getRequiredLongValue` now asks for a whole number. New helper:
+  `Conversions.toWholeNumberOrNull`.
+
 - BigDecimal properties of dispatch tables read and write JSON numbers exactly instead of through a double: `5.7` is read
   as 5.7, and a value is written with all of its digits. The written form changes with that: a whole value is written as
   `5` instead of `5.0`, and large values no longer come in exponent notation with rounded digits.

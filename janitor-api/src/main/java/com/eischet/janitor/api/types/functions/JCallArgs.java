@@ -12,6 +12,7 @@ import com.eischet.janitor.api.errors.runtime.JanitorNativeException;
 import com.eischet.janitor.api.errors.runtime.JanitorRuntimeException;
 import com.eischet.janitor.api.types.JanitorObject;
 import com.eischet.janitor.api.types.builtin.*;
+import com.eischet.janitor.api.types.dispatch.Conversions;
 import com.eischet.janitor.api.util.ObjectUtilities;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -257,35 +258,32 @@ public class JCallArgs {
     }
 
     /**
-     * Gets a required integer argument.
+     * Gets a required integer argument. A float is taken if it is a whole number, e.g. {@code 5.0}.
      * @param i the index of the argument
      * @return the value as a Java int
-     * @throws JanitorArgumentException if the argument is missing, not an integer, or too big for an int
+     * @throws JanitorArgumentException if the argument is missing, not a whole number, or too big for an int
      */
     public int getRequiredIntValue(final int i) throws JanitorArgumentException {
-        final JanitorObject arg = get(i);
-        if (arg instanceof JInt num) {
-            final long value = num.toLong();
-            if (value > Integer.MAX_VALUE || value < Integer.MIN_VALUE) {
-                throw new JanitorArgumentException(process, "%s: argument %s must be an integer value, but the value that was provided is too big for an integer: %s".formatted(functionName, i, args));
-            }
-            return (int) value;
+        final long value = getRequiredLongValue(i);
+        if (value > Integer.MAX_VALUE || value < Integer.MIN_VALUE) {
+            throw new JanitorArgumentException(process, "%s: argument %s must be an integer value, but the value that was provided is too big for an integer: %s".formatted(functionName, i, args));
         }
-        throw new JanitorArgumentException(process, "%s: argument %s must be a numeric value, but the caller provided: %s".formatted(functionName, i, args));
+        return (int) value;
     }
 
     /**
-     * Gets a required numeric argument as a long.
+     * Gets a required integer argument as a long. A float is taken if it is a whole number, e.g. {@code 5.0}; a float with a
+     * fraction is refused instead of being cut off.
      * @param i the index of the argument
      * @return the value as a Java long
-     * @throws JanitorArgumentException if the argument is missing or not a number
+     * @throws JanitorArgumentException if the argument is missing or not a whole number
      */
     public long getRequiredLongValue(final int i) throws JanitorArgumentException {
-        final JanitorObject arg = get(i);
-        if (arg instanceof JNumber num) {
-            return num.toLong();
+        final Long value = Conversions.toWholeNumberOrNull(get(i));
+        if (value == null) {
+            throw new JanitorArgumentException(process, "%s: argument %s must be a whole number, but the caller provided: %s".formatted(functionName, i, args));
         }
-        throw new JanitorArgumentException(process, "%s: argument %s must be a numeric value, but the caller provided: %s".formatted(functionName, i, args));
+        return value;
     }
 
     /**
@@ -368,33 +366,43 @@ public class JCallArgs {
     }
 
     /**
-     * Get a boolean value at the given position.
-     * If it's not a Float, try to coerce it to one.
+     * Get a float value at the given position.
+     * Any other number, such as an integer, is converted to a float.
      * @param i the position of the argument to get.
-     * @return the boolean value at the given position.
-     * @throws JanitorRuntimeException if the argument is not a boolean value.
+     * @return the float value at the given position.
+     * @throws JanitorRuntimeException if the argument is not a number.
      */
     public JFloat getFloat(final int i) throws JanitorRuntimeException {
-        final JFloat floatValue = get(i).janitorCoerce(JFloat.class);
-        if (floatValue == null) {
-            throw new JanitorArgumentException(process, "%s: argument %s must be a float value, but the caller provided: %s".formatted(functionName, i, args));
+        final JanitorObject value = get(i);
+        final JFloat floatValue = value.janitorCoerce(JFloat.class);
+        if (floatValue != null) {
+            return floatValue;
         }
-        return floatValue;
+        final JNumber number = value.janitorCoerce(JNumber.class);
+        if (number == null) {
+            throw new JanitorArgumentException(process, "%s: argument %s must be a number, but the caller provided: %s".formatted(functionName, i, args));
+        }
+        return Janitor.floatingPoint(number.toDouble());
     }
 
     /**
      * Get an integer value at the given position.
-     * If it's not an integer, try to coerce it to an integer.
+     * A float is taken if it is a whole number, e.g. {@code 5.0}.
      * @param i the position of the argument to get.
      * @return the integer value at the given position.
-     * @throws JanitorRuntimeException if the argument is not an integer value.
+     * @throws JanitorRuntimeException if the argument is not a whole number.
      */
     public JInt getInt(final int i) throws JanitorRuntimeException {
-        final JInt intValue = get(i).janitorCoerce(JInt.class);
-        if (intValue == null) {
+        final JanitorObject value = get(i);
+        final JInt intValue = value.janitorCoerce(JInt.class);
+        if (intValue != null) {
+            return intValue;
+        }
+        final Long wholeNumber = Conversions.toWholeNumberOrNull(value);
+        if (wholeNumber == null) {
             throw new JanitorArgumentException(process, "%s: argument %s must be an integer value, but the caller provided: %s".formatted(functionName, i, args));
         }
-        return intValue;
+        return Janitor.integer(wholeNumber);
     }
 
     /**
@@ -409,11 +417,11 @@ public class JCallArgs {
         if (duration != null) {
             return duration.toSeconds();
         }
-        final JInt intValue = value.janitorCoerce(JInt.class);
-        if (intValue == null) {
+        final Long seconds = Conversions.toWholeNumberOrNull(value);
+        if (seconds == null) {
             throw new JanitorArgumentException(process, "%s: argument %s must be a number of seconds or a duration, but the caller provided: %s".formatted(functionName, i, args));
         }
-        return intValue.janitorGetHostValue();
+        return seconds;
     }
 
     /**

@@ -10,6 +10,7 @@ import com.eischet.janitor.api.Janitor;
 import com.eischet.janitor.api.types.TemporaryAssignable;
 import com.eischet.janitor.api.types.builtin.*;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -142,6 +143,30 @@ public class Conversions {
         return narrowToInt(wholeNumber(value, "an integer value"));
     }
 
+    /**
+     * Returns the whole number that a value stands for, by the rules of {@link #toJavaLong(JanitorObject)}, for callers that
+     * write their own error message.
+     *
+     * @param value any value
+     * @return the number, or null if the value is not a number, has a fraction or does not fit into a long
+     */
+    public static @Nullable Long toWholeNumberOrNull(final @Nullable JanitorObject value) {
+        final JNumber number = numberIn(value);
+        if (number == null) {
+            return null;
+        }
+        if (number instanceof JInt) {
+            return number.toLong();
+        }
+        final double floating = number.toDouble();
+        return isWholeLong(floating) ? (long) floating : null;
+    }
+
+    private static boolean isWholeLong(final double floating) {
+        // 2^63 as a double: every whole double below it fits into a long
+        return floating == Math.rint(floating) && floating >= -0x1p63 && floating < 0x1p63;
+    }
+
     private static int narrowToInt(final long number) throws JanitorGlueException {
         if (number > Integer.MAX_VALUE || number < Integer.MIN_VALUE) {
             throw new JanitorGlueException(JanitorArgumentException::fromGlue, "The number " + number + " is too large for this property.");
@@ -159,8 +184,7 @@ public class Conversions {
             return number.toLong();
         }
         final double floating = number.toDouble();
-        // 2^63 as a double: every whole double below it fits into a long
-        if (floating != Math.rint(floating) || floating < -0x1p63 || floating >= 0x1p63) {
+        if (!isWholeLong(floating)) {
             throw new JanitorGlueException(JanitorArgumentException::fromGlue, "Expected " + expected + " but got " + floating + ", which is not a whole number.");
         }
         return (long) floating;
