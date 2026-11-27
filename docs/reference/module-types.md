@@ -1317,10 +1317,10 @@ This module defines no object types of its own.
 | Member | Kind | Description |
 | --- | --- | --- |
 | `apply(map)` | method | Assigns each entry of the map to the property of the same name, and returns the object itself. |
-| `basisAmount` | property, int, writable | The amount the percentage applies to; writable. |
-| `basisQuantity` | property, int, writable |  |
+| `basisAmount` | property, float, writable | The amount the percentage applies to; writable. |
+| `basisQuantity` | property, float, writable |  |
 | `isCharge` | property, bool, read-only | True for a charge (surcharge), false for an allowance (discount); read-only. |
-| `percent` | property, int, writable | The amount as a percentage of the basis amount; writable. |
+| `percent` | property, float, writable | The amount as a percentage of the basis amount; writable. |
 | `reason` | property, string, writable | The reason as free text; writable. |
 | `reasonCode` | property, string, writable | The reason as a code; writable. |
 | `sequenceNumeric` | property, int, writable |  |
@@ -1341,17 +1341,17 @@ This module defines no object types of its own.
 | `setTaxPointDate(...)` | method |  |
 | `setTaxRateApplicablePercent(percent)` | method | Sets the VAT rate in percent. Returns this charge or allowance. |
 | `setTotalAmount(amount)` | method | Sets the absolute amount. Returns this charge or allowance. |
-| `taxAllowanceChargeBasisAmount` | property, int, writable |  |
-| `taxBasisAmount` | property, int, writable |  |
-| `taxCalculatedAmount` | property, int, writable |  |
+| `taxAllowanceChargeBasisAmount` | property, float, writable |  |
+| `taxBasisAmount` | property, float, writable |  |
+| `taxCalculatedAmount` | property, float, writable |  |
 | `taxCategoryCode` | property, string, writable | The VAT category code, e.g. "S" for the standard rate; writable. |
 | `taxDueDateTypeCode` | property, string, writable |  |
 | `taxExemptionReason` | property, string, writable | The reason for a VAT exemption as free text; writable. |
 | `taxExemptionReasonCode` | property, string, writable | The reason for a VAT exemption as a code; writable. |
-| `taxLineTotalBasisAmount` | property, int, writable |  |
+| `taxLineTotalBasisAmount` | property, float, writable |  |
 | `taxPointDate` | property, date, writable |  |
-| `taxRateApplicablePercent` | property, int, writable | The VAT rate in percent; writable. |
-| `totalAmount` | property, int, writable | The absolute amount, or null while neither it nor a percentage is set; writable. |
+| `taxRateApplicablePercent` | property, float, writable | The VAT rate in percent; writable. |
+| `totalAmount` | property, float, writable | The absolute amount, or null while neither it nor a percentage is set; writable. |
 
 <a id="types-mustang-mustangbankdetails"></a>
 
@@ -1378,9 +1378,9 @@ This module defines no object types of its own.
 | Member | Kind | Description |
 | --- | --- | --- |
 | `apply(map)` | method | Assigns each entry of the map to the property of the same name, and returns the object itself. |
-| `basisAmount` | property, int, writable | The amount the discount percentage applies to; writable. |
+| `basisAmount` | property, float, writable | The amount the discount percentage applies to; writable. |
 | `days` | property, int, writable | The number of days within which the payment must be made to get the discount, or null; writable. |
-| `percent` | property, int, writable | The discount in percent; writable. |
+| `percent` | property, float, writable | The discount in percent; writable. |
 | `setBasisAmount(amount)` | method | Sets the amount the discount percentage applies to. Returns this cash discount. |
 | `setDays(days)` | method | Sets the number of days within which the payment must be made to get the discount. Returns this cash discount. |
 | `setPercent(percent)` | method | Sets the discount in percent. Returns this cash discount. |
@@ -1392,10 +1392,10 @@ This module defines no object types of its own.
 | Member | Kind | Description |
 | --- | --- | --- |
 | `apply(map)` | method | Assigns each entry of the map to the property of the same name, and returns the object itself. |
-| `basisAmount` | property, int, writable | The amount the percentage applies to; writable. |
-| `basisQuantity` | property, int, writable |  |
+| `basisAmount` | property, float, writable | The amount the percentage applies to; writable. |
+| `basisQuantity` | property, float, writable |  |
 | `isCharge` | property, bool, read-only | True for a charge (surcharge), false for an allowance (discount); read-only. |
-| `percent` | property, int, writable | The amount as a percentage of the basis amount; writable. |
+| `percent` | property, float, writable | The amount as a percentage of the basis amount; writable. |
 | `reason` | property, string, writable | The reason as free text; writable. |
 | `reasonCode` | property, string, writable | The reason as a code; writable. |
 | `sequenceNumeric` | property, int, writable |  |
@@ -1416,17 +1416,17 @@ This module defines no object types of its own.
 | `setTaxPointDate(...)` | method |  |
 | `setTaxRateApplicablePercent(percent)` | method | Sets the VAT rate in percent. Returns this charge or allowance. |
 | `setTotalAmount(amount)` | method | Sets the absolute amount. Returns this charge or allowance. |
-| `taxAllowanceChargeBasisAmount` | property, int, writable |  |
-| `taxBasisAmount` | property, int, writable |  |
-| `taxCalculatedAmount` | property, int, writable |  |
+| `taxAllowanceChargeBasisAmount` | property, float, writable |  |
+| `taxBasisAmount` | property, float, writable |  |
+| `taxCalculatedAmount` | property, float, writable |  |
 | `taxCategoryCode` | property, string, writable | The VAT category code, e.g. "S" for the standard rate; writable. |
 | `taxDueDateTypeCode` | property, string, writable |  |
 | `taxExemptionReason` | property, string, writable | The reason for a VAT exemption as free text; writable. |
 | `taxExemptionReasonCode` | property, string, writable | The reason for a VAT exemption as a code; writable. |
-| `taxLineTotalBasisAmount` | property, int, writable |  |
+| `taxLineTotalBasisAmount` | property, float, writable |  |
 | `taxPointDate` | property, date, writable |  |
-| `taxRateApplicablePercent` | property, int, writable | The VAT rate in percent; writable. |
-| `totalAmount` | property, int, writable | The absolute amount, or null while neither it nor a percentage is set; writable. |
+| `taxRateApplicablePercent` | property, float, writable | The VAT rate in percent; writable. |
+| `totalAmount` | property, float, writable | The absolute amount, or null while neither it nor a percentage is set; writable. |
 
 <a id="types-mustang-mustangcontact"></a>
 
@@ -1592,7 +1592,7 @@ This module defines no object types of its own.
 | `paymentTerms` | property, writable | The payment terms, or null; writable. |
 | `recipient` | property, writable | The recipient (buyer) of the invoice, or null; writable. |
 | `referenceNumber` | property, string, writable | The buyer reference, e.g. the routing ID required by public buyers; writable. |
-| `roundingAmount` | property, int, writable | The amount by which the total was rounded, or null; writable. |
+| `roundingAmount` | property, float, writable | The amount by which the total was rounded, or null; writable. |
 | `sellerOrderReferencedDocument` | property, writable | The reference to the seller's order (order confirmation), or null; writable. |
 | `sender` | property, writable | The sender (seller) of the invoice, or null; writable. |
 | `setBusinessProcessId(...)` | method |  |
@@ -1652,12 +1652,12 @@ This module defines no object types of its own.
 | `shipToZip` | property, string, writable | The postal code of the ship-to address; writable. |
 | `specifiedProcuringProjectId` | property, string, writable | The ID of the project the invoice refers to; writable. |
 | `specifiedProcuringProjectName` | property, string, writable | The name of the project the invoice refers to; writable. |
-| `taxConversionRate` | property, int, writable |  |
+| `taxConversionRate` | property, float, writable |  |
 | `taxConversionRateDateTime` | property, date, writable |  |
 | `taxCurrency` | property, string, writable | The currency for the VAT amounts if it differs from the invoice currency, or null; writable. |
 | `taxRepresentative` | property, writable | The seller's tax representative, or null; writable. |
 | `testIndicator` | property, bool, read-only | True if the invoice is marked as a test; read-only. |
-| `totalPrepaidAmount` | property, int, writable | The amount that has already been paid, or null; writable. |
+| `totalPrepaidAmount` | property, float, writable | The amount that has already been paid, or null; writable. |
 | `valid` | property, bool, read-only |  |
 | `vatDueDateTypeCode` | property, string, writable |  |
 
@@ -1675,7 +1675,7 @@ This module defines no object types of its own.
 | `addNote(text)` | method | Adds a free-text note to the line. Returns this item. |
 | `addReferencedDocument(...)` | method |  |
 | `apply(map)` | method | Assigns each entry of the map to the property of the same name, and returns the object itself. |
-| `basisQuantity` | property, int, writable | The quantity the price refers to, e.g. 100 for a price per hundred; writable. |
+| `basisQuantity` | property, float, writable | The quantity the price refers to, e.g. 100 for a price per hundred; writable. |
 | `buyerOrderReferencedDocument` | property, writable | The reference to the buyer's order for this line, or null; writable. |
 | `contractReferencedDocument` | property, writable | The reference to the contract for this line, or null; writable. |
 | `deliveryNoteReferencedDocument` | property, writable | The reference to the delivery note for this line, or null; writable. |
@@ -1688,15 +1688,15 @@ This module defines no object types of its own.
 | `getNotes()` | method | Returns a list of the line's notes as note objects with content and subject code. |
 | `getPlainNotes()` | method | Returns a list of the texts of the line's notes as strings. |
 | `getReferencedDocuments(...)` | method |  |
-| `grossPrice` | property, int, writable | The unit price before item allowances and charges; writable. |
+| `grossPrice` | property, float, writable | The unit price before item allowances and charges; writable. |
 | `id` | property, string, writable | The ID of the line; writable. |
 | `lineSeller` | property, writable | The seller of this line, if it differs from the invoice's seller, or null; writable. |
 | `lineStatusReasonCode` | property, string, writable |  |
-| `lineTotalAmount` | property, int, writable | The net total amount of the line; writable. |
+| `lineTotalAmount` | property, float, writable | The net total amount of the line; writable. |
 | `parentLineId` | property, string, writable | The ID of the line this line belongs to, or null; writable. |
-| `price` | property, int, writable | The net unit price; writable. |
+| `price` | property, float, writable | The net unit price; writable. |
 | `product` | property, writable | The product of the line, or null; writable. |
-| `quantity` | property, int, writable | The invoiced quantity; writable. |
+| `quantity` | property, float, writable | The invoiced quantity; writable. |
 | `sellerOrderReferencedDocument` | property, writable | The reference to the seller's order (order confirmation) for this line, or null; writable. |
 | `setAccountingReference(reference)` | method | Sets the buyer's accounting reference for the line. Returns this item. |
 | `setBasisQuantity(quantity)` | method | Sets the quantity the price refers to, e.g. 100 for a price per hundred. Returns this item. |
@@ -1716,7 +1716,7 @@ This module defines no object types of its own.
 | `setQuantity(quantity)` | method | Sets the invoiced quantity. Returns this item. |
 | `setSellerOrderReferencedDocument(document)` | method | Sets the reference to the seller's order (order confirmation) for this line. Returns this item. |
 | `setTax(...)` | method |  |
-| `tax` | property, int, writable |  |
+| `tax` | property, float, writable |  |
 
 <a id="types-mustang-mustanglegalorganisation"></a>
 
@@ -1779,7 +1779,7 @@ This module defines no object types of its own.
 | `taxExemptionReason` | property, string, writable | The free-text reason for a VAT exemption; writable. |
 | `taxExemptionReasonCode` | property, string, writable | The code of the reason for a VAT exemption; writable. |
 | `unit` | property, string, writable | The unit code of the product's quantity; writable. |
-| `vatPercent` | property, int, writable | The VAT rate of the product in percent; writable. |
+| `vatPercent` | property, float, writable | The VAT rate of the product in percent; writable. |
 
 <a id="types-mustang-mustangreferenceddocument"></a>
 

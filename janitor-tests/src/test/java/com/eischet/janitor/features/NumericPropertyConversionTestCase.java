@@ -110,6 +110,18 @@ public class NumericPropertyConversionTestCase extends JanitorTest {
     }
 
     @Test
+    void decimalsAreReadWithTheirFraction() throws Exception {
+        final Thing thing = new Thing();
+        thing.decimal = new BigDecimal("19.99");
+        assertEquals(19.99, evaluate("thing.decimal", g -> g.bind("thing", thing)).janitorGetHostValue());
+        assertEquals(true, evaluate("thing.decimal > 19.5 and thing.decimal < 20", g -> g.bind("thing", thing)).janitorGetHostValue());
+        thing.decimal = new BigDecimal("-0.9");
+        assertEquals(-0.9, evaluate("thing.decimal", g -> g.bind("thing", thing)).janitorGetHostValue());
+        thing.decimal = null;
+        assertEquals(true, evaluate("thing.decimal == null", g -> g.bind("thing", thing)).janitorGetHostValue());
+    }
+
+    @Test
     void otherTypesAreStillRefused() {
         for (final String property : WHOLE_NUMBER_PROPERTIES) {
             assertThrows(Exception.class, () -> assign(property, "'5'"), property);

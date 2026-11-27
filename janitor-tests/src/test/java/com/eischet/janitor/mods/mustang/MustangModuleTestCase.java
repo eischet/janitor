@@ -135,8 +135,8 @@ public class MustangModuleTestCase extends JanitorTest {
             "Seller GmbH",          // invoice.sender.name
             "FR",                   // invoice.recipient.country
             "1",                    // invoice.getItems().size()
-            "3",                    // invoice.getItems()[0].quantity
-            "10",                   // invoice.getItems()[0].price
+            "3.0",                  // invoice.getItems()[0].quantity
+            "10.0",                 // invoice.getItems()[0].price
             "Widget",               // invoice.getItems()[0].product.name
             "1",                    // invoice.getItems()[0].getCharges().size()
             "true",                 // invoice.getItems()[0].getCharges()[0].isCharge
@@ -271,8 +271,8 @@ public class MustangModuleTestCase extends JanitorTest {
             "Seller GmbH",          // invoice.sender.name
             "FR",                   // invoice.recipient.country
             "1",                    // invoice.getItems().size()
-            "3",                    // invoice.getItems()[0].quantity
-            "10",                   // invoice.getItems()[0].price
+            "3.0",                  // invoice.getItems()[0].quantity
+            "10.0",                 // invoice.getItems()[0].price
             "Widget",               // invoice.getItems()[0].product.name
             "1",                    // invoice.getItems()[0].getCharges().size()
             "true",                 // invoice.getItems()[0].getCharges()[0].isCharge

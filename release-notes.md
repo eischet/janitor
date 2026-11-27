@@ -35,6 +35,10 @@
   as 5.7, and a value is written with all of its digits. The written form changes with that: a whole value is written as
   `5` instead of `5.0`, and large values no longer come in exponent notation with rounded digits.
 
+- Fixed: scripts read only the whole part of a BigDecimal property (19.99 was read as 19). They now read it as a float,
+  so a whole value prints as `3.0` instead of `3`. This concerns the amounts, quantities and percentages of the module
+  `mustang`, whose reference now lists them as float.
+
 - Fixed: reading JSON with `null` for a date or date-time property of a dispatch table failed with a parser error, so an
   object with an empty date could not read the JSON it had written itself.
 

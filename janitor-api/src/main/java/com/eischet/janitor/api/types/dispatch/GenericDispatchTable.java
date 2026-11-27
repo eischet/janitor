@@ -739,13 +739,18 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
 
     /**
      * Adds a BigDecimal property.
+     * Scripts read it as a float, as they have no decimal type, and may assign any number.
      */
     public PropertyHandle<T, BigDecimal> addBigDecimalProperty(final @NotNull String name,
                                                     final @NotNull NullableGetter<T, BigDecimal> getter,
                                                     final @NotNull NullableSetter<T, BigDecimal> setter) {
         return internalAddProperty(name, instance -> TemporaryAssignable.lazy(
                         name,
-                        () -> Janitor.nullableInteger(getter.get(instance)),
+                        () -> {
+                            // scripts have no decimal type: they read the value as a float, with its fraction
+                            final BigDecimal decimal = getter.get(instance);
+                            return Janitor.getBuiltins().nullableFloatingPoint(decimal == null ? null : decimal.doubleValue());
+                        },
                         value -> {
                             if (value == Janitor.NULL) {
                                 setter.set(instance, null);
@@ -759,7 +764,7 @@ public JanitorObject dispatch(T instance, JanitorScriptProcess process, String n
                 JsonType.NUMBER, null,
                 getter,
                 setter
-        ).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.INTEGER);
+        ).setMetaData(TYPE_HINT, Janitor.MetaData.TypeHint.FLOAT);
     }
 
 
